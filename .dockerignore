@@ -1,0 +1,59 @@
+# Git
+.git
+.gitignore
+
+# Dependencies
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+env
+ENV
+
+# Build outputs
+dist
+build
+.next
+out
+*.egg-info
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Tests
+coverage
+.pytest_cache
+htmlcov
+
+# Temp files
+tmp
+temp
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+docs
+*.md
+
+# CI/CD
+.github
+.gitlab-ci.yml

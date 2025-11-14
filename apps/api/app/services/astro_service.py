@@ -9,7 +9,13 @@ from zoneinfo import ZoneInfo
 
 from app.schemas.chart import PlanetPosition, HousePosition, AspectData
 
+# Set ephemeris path to None to use built-in Moshier ephemeris (lower precision but no files needed)
+# For production, download Swiss Ephemeris files for higher precision
+swe.set_ephe_path(None)
+
 # Planet constants from Swiss Ephemeris
+# Note: Using Moshier ephemeris (built-in) which supports main planets and nodes
+# Chiron and other asteroids require external ephemeris files
 PLANETS = {
     "Sun": swe.SUN,
     "Moon": swe.MOON,
@@ -22,7 +28,7 @@ PLANETS = {
     "Neptune": swe.NEPTUNE,
     "Pluto": swe.PLUTO,
     "North Node": swe.TRUE_NODE,
-    "Chiron": swe.CHIRON,
+    # "Chiron": swe.CHIRON,  # Requires external ephemeris files
 }
 
 # Zodiac signs
@@ -133,8 +139,8 @@ def calculate_planets(jd: float, house_cusps: List[float]) -> List[PlanetPositio
 
     for name, planet_id in PLANETS.items():
         # Calculate planet position
-        # flags: SEFLG_SWIEPH (Swiss Ephemeris) + SEFLG_SPEED (get speed)
-        result, flags_ret = swe.calc_ut(jd, planet_id, swe.FLG_SWIEPH | swe.FLG_SPEED)
+        # flags: SEFLG_MOSEPH (Moshier ephemeris, built-in) + SEFLG_SPEED (get speed)
+        result, flags_ret = swe.calc_ut(jd, planet_id, swe.FLG_MOSEPH | swe.FLG_SPEED)
 
         longitude = result[0]
         latitude = result[1]
@@ -214,18 +220,18 @@ def calculate_houses(
     # Calculate houses
     cusps, ascmc = swe.houses(jd, latitude, longitude, hsys)
 
-    # cusps[1:13] are houses 1-12, cusps[0] is unused
+    # cusps[0:12] are houses 1-12 (indices 0-11)
     # ascmc[0] = Ascendant, ascmc[1] = MC (Midheaven)
     ascendant = ascmc[0]
     midheaven = ascmc[1]
 
     houses = []
-    for i in range(1, 13):
+    for i in range(12):
         cusp_longitude = cusps[i]
         sign_data = get_sign_and_position(cusp_longitude)
 
         houses.append(HousePosition(
-            house=i,
+            house=i + 1,  # Houses are numbered 1-12, but index is 0-11
             longitude=cusp_longitude,
             sign=sign_data["sign"],
             degree=sign_data["degree"],
@@ -363,5 +369,5 @@ def calculate_birth_chart(
         "aspects": [a.model_dump() for a in aspects],
         "ascendant": ascendant,
         "midheaven": midheaven,
-        "calculation_timestamp": datetime.utcnow(),
+        "calculation_timestamp": datetime.utcnow().isoformat(),
     }

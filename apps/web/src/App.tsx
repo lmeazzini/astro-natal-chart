@@ -4,6 +4,7 @@ import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { ChartsPage } from './pages/Charts';
 import { NewChartPage } from './pages/NewChart';
+import { ChartDetailPage } from './pages/ChartDetail';
 import { OAuthCallbackPage } from './pages/OAuthCallback';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/charts/new" element={<NewChartPage />} />
+          <Route path="/charts/:id" element={<ChartDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
@@ -188,12 +190,6 @@ function DashboardPage() {
             <li className="flex items-start gap-3">
               <span className="text-primary">→</span>
               <span className="text-muted-foreground">
-                Visualização gráfica dos mapas natais
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-primary">→</span>
-              <span className="text-muted-foreground">
                 Análise textual de dignidades essenciais
               </span>
             </li>
@@ -201,6 +197,12 @@ function DashboardPage() {
               <span className="text-primary">→</span>
               <span className="text-muted-foreground">
                 Exportação de mapas em PDF com LaTeX
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-primary">→</span>
+              <span className="text-muted-foreground">
+                Trânsitos e progressões planetárias
               </span>
             </li>
           </ul>

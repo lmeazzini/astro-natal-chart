@@ -1,0 +1,197 @@
+"""
+Authentication endpoints for user registration, login, and token management.
+"""
+
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.dependencies import get_current_user, get_db
+from app.core.security import decode_token
+from app.models.user import User
+from app.schemas.auth import LoginRequest, RefreshTokenRequest, Token
+from app.schemas.user import UserCreate, UserRead
+from app.services import auth_service
+
+router = APIRouter()
+
+
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register new user",
+    description="Register a new user with email and password. Password must meet strength requirements.",
+)
+async def register(
+    user_data: UserCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    """
+    Register a new user.
+
+    Args:
+        user_data: User registration data (email, password, full_name)
+        db: Database session
+
+    Returns:
+        Created user data
+
+    Raises:
+        HTTPException 400: If user already exists or validation fails
+    """
+    try:
+        user = await auth_service.register_user(db, user_data)
+        return user
+    except auth_service.UserAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/login",
+    response_model=Token,
+    summary="User login",
+    description="Authenticate user with email and password, returns JWT tokens.",
+)
+async def login(
+    login_data: LoginRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Token:
+    """
+    Login user with email and password.
+
+    Args:
+        login_data: Login credentials (email, password)
+        db: Database session
+
+    Returns:
+        JWT access and refresh tokens
+
+    Raises:
+        HTTPException 401: If credentials are invalid
+    """
+    try:
+        token = await auth_service.login_user(
+            db,
+            email=login_data.email,
+            password=login_data.password,
+        )
+        return token
+    except auth_service.AuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@router.post(
+    "/refresh",
+    response_model=Token,
+    summary="Refresh access token",
+    description="Generate new access token using refresh token.",
+)
+async def refresh_token(
+    refresh_data: RefreshTokenRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Token:
+    """
+    Refresh access token using refresh token.
+
+    Args:
+        refresh_data: Refresh token
+        db: Database session
+
+    Returns:
+        New JWT access token
+
+    Raises:
+        HTTPException 401: If refresh token is invalid
+    """
+    try:
+        # Decode and validate refresh token
+        payload = decode_token(refresh_data.refresh_token)
+
+        # Check if token type is refresh
+        if payload.get("type") != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Extract user_id from token
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        from uuid import UUID
+        user_id = UUID(user_id_str)
+
+        # Generate new access token
+        token = await auth_service.refresh_access_token(db, user_id)
+        return token
+
+    except auth_service.AuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@router.get(
+    "/me",
+    response_model=UserRead,
+    summary="Get current user",
+    description="Get current authenticated user information.",
+)
+async def get_current_user_info(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Get current authenticated user.
+
+    Args:
+        current_user: Current authenticated user from JWT token
+
+    Returns:
+        Current user data
+    """
+    return current_user
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="User logout",
+    description="Logout current user (client should discard tokens).",
+)
+async def logout(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> None:
+    """
+    Logout user.
+
+    Note: With JWT tokens, logout is handled client-side by discarding tokens.
+    This endpoint exists for consistency and future token blacklisting.
+
+    Args:
+        current_user: Current authenticated user from JWT token
+    """
+    # With JWT, logout is handled client-side
+    # In the future, we could implement token blacklisting here
+    pass

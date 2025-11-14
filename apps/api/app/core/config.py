@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
+    DEFAULT_LOCALE: str = "pt-BR"
+    DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
 
     # Server
     HOST: str = "0.0.0.0"
@@ -60,15 +62,12 @@ class Settings(BaseSettings):
     NOMINATIM_USER_AGENT: str = "astro-natal-chart/1.0"
 
     # CORS
-    ALLOWED_ORIGINS: List[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v: str | List[str]) -> List[str]:
-        """Parse ALLOWED_ORIGINS from comma-separated string or list."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+    @property
+    def cors_origins(self) -> List[str]:
+        """Get CORS origins as list."""
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
     # Celery
     CELERY_BROKER_URL: str | None = None

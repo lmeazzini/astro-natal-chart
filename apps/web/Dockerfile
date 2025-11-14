@@ -6,7 +6,7 @@ WORKDIR /app
 # Install dependencies
 FROM base as dependencies
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install
 
 # Development stage
 FROM base as development

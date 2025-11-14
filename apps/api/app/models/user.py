@@ -5,7 +5,7 @@ User model for database.
 from datetime import datetime
 from typing import List
 from uuid import uuid4
-from sqlalchemy import Boolean, String, DateTime, func
+from sqlalchemy import Boolean, String, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -73,6 +73,7 @@ class OAuthAccount(Base):
     )
     user_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

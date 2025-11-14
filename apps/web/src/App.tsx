@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
+import { ChartsPage } from './pages/Charts';
+import { NewChartPage } from './pages/NewChart';
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/charts" element={<ChartsPage />} />
+          <Route path="/charts/new" element={<NewChartPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
@@ -140,27 +144,61 @@ function DashboardPage() {
           </div>
         </div>
 
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 bg-card border border-border rounded-lg">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
+              Criar Mapa Natal
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Calcule seu mapa natal ou de outra pessoa com precisão usando dados
+              astronômicos do Swiss Ephemeris.
+            </p>
+            <Link
+              to="/charts/new"
+              className="inline-block w-full text-center py-3 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition font-medium"
+            >
+              + Novo Mapa Natal
+            </Link>
+          </div>
+
+          <div className="p-6 bg-card border border-border rounded-lg">
+            <h3 className="text-xl font-semibold text-foreground mb-4">
+              Meus Mapas
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Acesse todos os seus mapas natais salvos, visualize detalhes e faça
+              análises astrológicas.
+            </p>
+            <Link
+              to="/charts"
+              className="inline-block w-full text-center py-3 px-4 bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition font-medium"
+            >
+              Ver Meus Mapas
+            </Link>
+          </div>
+        </div>
+
         <div className="mt-8 p-6 bg-card border border-border rounded-lg">
           <h3 className="text-xl font-semibold text-foreground mb-4">
-            Próximos Passos
+            Próximas Funcionalidades
           </h3>
           <ul className="space-y-3">
             <li className="flex items-start gap-3">
               <span className="text-primary">→</span>
               <span className="text-muted-foreground">
-                Criar seu primeiro mapa natal (em desenvolvimento)
+                Visualização gráfica dos mapas natais
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-primary">→</span>
               <span className="text-muted-foreground">
-                Personalizar suas configurações (em desenvolvimento)
+                Análise textual de dignidades essenciais
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-primary">→</span>
               <span className="text-muted-foreground">
-                Exportar mapas em PDF (em desenvolvimento)
+                Exportação de mapas em PDF com LaTeX
               </span>
             </li>
           </ul>

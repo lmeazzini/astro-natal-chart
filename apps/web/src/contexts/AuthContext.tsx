@@ -12,6 +12,7 @@ interface AuthContextData {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, fullName: string, password: string, passwordConfirm: string) => Promise<void>;
   logout: () => void;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -108,6 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         register,
         logout,
+        setUser,
       }}
     >
       {children}

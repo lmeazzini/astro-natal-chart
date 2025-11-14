@@ -4,7 +4,7 @@ API v1 router - aggregates all v1 endpoints.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, charts
+from app.api.v1.endpoints import auth, charts, oauth
 
 api_router = APIRouter()
 
@@ -20,4 +20,11 @@ api_router.include_router(
     charts.router,
     prefix="/charts",
     tags=["birth-charts"],
+)
+
+# OAuth endpoints
+api_router.include_router(
+    oauth.router,
+    prefix="/oauth",
+    tags=["oauth"],
 )

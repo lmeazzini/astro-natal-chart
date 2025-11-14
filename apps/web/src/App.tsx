@@ -4,6 +4,7 @@ import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { ChartsPage } from './pages/Charts';
 import { NewChartPage } from './pages/NewChart';
+import { OAuthCallbackPage } from './pages/OAuthCallback';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/charts/new" element={<NewChartPage />} />

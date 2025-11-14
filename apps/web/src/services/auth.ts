@@ -1,0 +1,76 @@
+/**
+ * Authentication service
+ */
+
+import { apiClient } from './api';
+
+export interface RegisterData {
+  email: string;
+  full_name: string;
+  password: string;
+  password_confirm: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  locale: string;
+  timezone: string | null;
+  avatar_url: string | null;
+  email_verified: boolean;
+  is_active: boolean;
+  is_superuser: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuthTokens {
+  access_token: string;
+  refresh_token: string | null;
+  token_type: string;
+}
+
+export const authService = {
+  /**
+   * Register a new user
+   */
+  async register(data: RegisterData): Promise<User> {
+    return apiClient.post<User>('/api/v1/auth/register', data);
+  },
+
+  /**
+   * Login with email and password
+   */
+  async login(data: LoginData): Promise<AuthTokens> {
+    return apiClient.post<AuthTokens>('/api/v1/auth/login', data);
+  },
+
+  /**
+   * Get current user information
+   */
+  async getCurrentUser(token: string): Promise<User> {
+    return apiClient.get<User>('/api/v1/auth/me', token);
+  },
+
+  /**
+   * Refresh access token
+   */
+  async refreshToken(refreshToken: string): Promise<AuthTokens> {
+    return apiClient.post<AuthTokens>('/api/v1/auth/refresh', {
+      refresh_token: refreshToken,
+    });
+  },
+
+  /**
+   * Logout user
+   */
+  async logout(token: string): Promise<void> {
+    return apiClient.post<void>('/api/v1/auth/logout', undefined, token);
+  },
+};

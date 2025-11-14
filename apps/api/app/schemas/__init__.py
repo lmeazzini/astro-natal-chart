@@ -12,6 +12,16 @@ from app.schemas.auth import (
     PasswordResetRequest,
     PasswordResetConfirm,
 )
+from app.schemas.chart import (
+    BirthChartCreate,
+    BirthChartUpdate,
+    BirthChartRead,
+    BirthChartList,
+    PlanetPosition,
+    HousePosition,
+    AspectData,
+    ChartData,
+)
 
 __all__ = [
     # User schemas
@@ -28,4 +38,13 @@ __all__ = [
     "OAuthCallbackRequest",
     "PasswordResetRequest",
     "PasswordResetConfirm",
+    # Chart schemas
+    "BirthChartCreate",
+    "BirthChartUpdate",
+    "BirthChartRead",
+    "BirthChartList",
+    "PlanetPosition",
+    "HousePosition",
+    "AspectData",
+    "ChartData",
 ]

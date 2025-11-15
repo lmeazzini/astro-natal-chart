@@ -191,6 +191,7 @@ npm run test:e2e
 ## Documentação
 
 - **Especificação Técnica**: [`PROJECT_SPEC.md`](./PROJECT_SPEC.md) - Requisitos funcionais, não funcionais, arquitetura completa
+- **OAuth2 Setup**: [`docs/OAUTH_SETUP.md`](./docs/OAUTH_SETUP.md) - Guia completo de configuração do OAuth2 (Google, GitHub, Facebook)
 - **API Docs**: http://localhost:8000/docs (Swagger UI automático)
 - **API Redoc**: http://localhost:8000/redoc
 

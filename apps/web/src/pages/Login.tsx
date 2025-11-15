@@ -175,7 +175,7 @@ export function LoginPage() {
           </form>
 
           {/* OAuth Login Options */}
-          {oauthProviders.length > 0 && (
+          {oauthProviders?.length > 0 && (
             <>
               <div className="my-6 flex items-center">
                 <div className="flex-1 border-t border-border"></div>
@@ -184,7 +184,7 @@ export function LoginPage() {
               </div>
 
               <div className="space-y-3">
-                {oauthProviders.map((provider) => (
+                {oauthProviders?.map((provider) => (
                   <button
                     key={provider.name}
                     onClick={() => handleOAuthLogin(provider.name)}

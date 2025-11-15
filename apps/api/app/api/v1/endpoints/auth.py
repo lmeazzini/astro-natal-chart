@@ -141,6 +141,7 @@ async def refresh_token(
             )
 
         from uuid import UUID
+
         user_id = UUID(user_id_str)
 
         # Generate new access token

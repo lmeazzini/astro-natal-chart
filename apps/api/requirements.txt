@@ -27,6 +27,9 @@ pyswisseph==2.10.3.2
 timezonefinder==6.4.0
 httpx==0.25.2
 
+# AI/ML
+openai==1.54.4
+
 # Task Queue
 celery[redis]==5.3.4
 redis==4.6.0
@@ -36,6 +39,7 @@ Jinja2==3.1.2
 
 # Utilities
 python-dateutil==2.8.2
+PyYAML==6.0.1
 
 # Development
 pytest==7.4.3
@@ -45,3 +49,4 @@ httpx==0.25.2  # For TestClient
 ruff==0.1.9
 mypy==1.7.1
 types-python-jose==3.3.4.20240106
+types-PyYAML==6.0.12.20240917

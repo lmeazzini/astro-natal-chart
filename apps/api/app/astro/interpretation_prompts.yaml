@@ -1,0 +1,172 @@
+# Prompts para geração de interpretações astrológicas
+# Versão: 1.0
+# Estilo: Misto (técnico + prático)
+# Idioma: Português (pt-BR)
+# Sistema: Astrologia Tradicional (Helênica/Medieval)
+
+version: "1.0"
+language: "pt-BR"
+style: "mixed"  # technical + practical
+
+# Sistema de interpretação baseado nos 7 planetas clássicos
+classical_planets:
+  - Sol
+  - Lua
+  - Mercúrio
+  - Vênus
+  - Marte
+  - Júpiter
+  - Saturno
+
+# Prompt base para contexto de interpretação
+system_prompt: |
+  Você é um astrólogo tradicional especializado em astrologia helênica e medieval.
+  Suas interpretações devem ser:
+  1. Baseadas em princípios tradicionais (dignidades essenciais, sect, triplicity, etc.)
+  2. Escritas em português brasileiro (pt-BR)
+  3. Estilo misto: combinando terminologia técnica com aplicações práticas
+  4. Concisas e diretas (máximo 3-4 frases)
+  5. Focadas nos 7 planetas clássicos apenas (ignore planetas modernos)
+  6. Considere sempre o contexto de sect (diurnal/nocturnal)
+
+# Prompts para interpretação de planetas
+planet_prompts:
+  base: |
+    Gere uma interpretação astrológica para {planet} em {sign} na casa {house}.
+
+    Contexto adicional:
+    - Dignidades essenciais: {dignities}
+    - Sect do mapa: {sect}
+    - Retrógrado: {retrograde}
+
+    A interpretação deve:
+    1. Começar mencionando a dignidade do planeta (se relevante)
+    2. Explicar brevemente o significado dessa posição
+    3. Dar 1-2 aplicações práticas na vida da pessoa
+    4. Ser escrita em português brasileiro
+    5. Ter no máximo 4 frases
+    6. Usar terminologia técnica quando apropriado, mas explicar de forma acessível
+
+  examples:
+    dignified: |
+      "Sol em Leão (domicílio) na casa 10 sugere forte identidade pessoal e capacidade
+      de liderança. Esta posição dignificada favorece carreiras de destaque e autoridade.
+      A pessoa tende a brilhar naturalmente em posições públicas e de comando."
+
+    debilitated: |
+      "Lua em Escorpião (queda) na casa 12 indica intensidade emocional subconsciente.
+      Esta posição desafiadora pode trazer flutuações de humor e necessidade de trabalhar
+      questões emocionais profundas. Práticas de autocuidado emocional são especialmente
+      importantes."
+
+    peregrine: |
+      "Mercúrio em Sagitário (peregrino) na casa 3 mostra comunicação expansiva e filosófica.
+      Sem dignidades maiores, o planeta opera de forma neutra, podendo tanto dispersar quanto
+      enriquecer o pensamento. A pessoa se beneficia de estruturar suas ideias."
+
+# Prompts para interpretação de casas
+house_prompts:
+  base: |
+    Gere uma interpretação astrológica para a casa {house} com {sign} na cúspide.
+
+    Contexto adicional:
+    - Regente da casa: {ruler}
+    - Dignidades do regente: {ruler_dignities}
+    - Sect do mapa: {sect}
+
+    A interpretação deve:
+    1. Explicar o significado do signo na cúspide desta casa
+    2. Mencionar o estado do regente (se forte/fraco/neutro)
+    3. Dar aplicações práticas para essa área da vida
+    4. Ser concisa (máximo 3 frases)
+
+  examples:
+    strong_ruler: |
+      "Casa 7 com Libra na cúspide, regida por Vênus dignificada. Esta posição favorece
+      parcerias harmoniosas e diplomáticas. O estado forte do regente sugere facilidade
+      em relações e contratos."
+
+    weak_ruler: |
+      "Casa 2 com Áries na cúspide, regida por Marte em detrimento. Pode haver impulsividade
+      com finanças e recursos. Desenvolvimento de paciência e planejamento são importantes
+      para estabilidade material."
+
+# Prompts para interpretação de aspectos
+aspect_prompts:
+  base: |
+    Gere uma interpretação astrológica para o aspecto {aspect} entre {planet1} em {sign1}
+    e {planet2} em {sign2}.
+
+    Contexto adicional:
+    - Orbe: {orb}°
+    - Aplicativo: {applying}
+    - Sect do mapa: {sect}
+    - Dignidades de {planet1}: {dignities1}
+    - Dignidades de {planet2}: {dignities2}
+
+    A interpretação deve:
+    1. Explicar o significado do aspecto entre estes planetas
+    2. Considerar a natureza (benéfica/maléfica) dos planetas envolvidos
+    3. Mencionar se o aspecto é aplicativo ou separativo
+    4. Dar aplicação prática dessa dinâmica
+    5. Máximo 4 frases
+
+  aspect_types:
+    conjunction:
+      nature: neutral
+      description: "União de energias, fusão de princípios"
+
+    opposition:
+      nature: tense
+      description: "Polarização, necessidade de integração"
+
+    trine:
+      nature: harmonious
+      description: "Fluxo natural, facilidade de expressão"
+
+    square:
+      nature: tense
+      description: "Tensão dinâmica, necessidade de ação"
+
+    sextile:
+      nature: harmonious
+      description: "Oportunidade, cooperação"
+
+  examples:
+    benefic_trine: |
+      "Trino entre Vênus e Júpiter forma aspecto extremamente favorável. Esta configuração
+      traz otimismo social, generosidade e facilidade em atrair oportunidades. A pessoa
+      naturalmente harmoniza beleza, prazer e expansão."
+
+    malefic_square: |
+      "Quadratura entre Marte e Saturno cria tensão dinâmica entre ação e restrição.
+      Este aspecto desafiador pode trazer frustração, mas também desenvolve disciplina
+      e determinação. Trabalhar com paciência ativa (nem impulsiva, nem paralisada) é a chave."
+
+    applying_aspect: |
+      "Trino aplicativo entre Sol e Lua (ainda se formando) sugere crescente harmonia
+      entre vontade consciente e natureza emocional. O aspecto ganha força com o tempo,
+      favorecendo integração interna progressiva."
+
+# Guia de dignidades para contexto
+dignities_guide:
+  ruler: "+5 pontos - domicílio, planeta em seu próprio signo"
+  exalted: "+4 pontos - exaltação, posição de honra"
+  triplicity: "+3 pontos - governante da triplicidade (elemento)"
+  term: "+2 pontos - governante do termo (bounds egípcios)"
+  face: "+1 ponto - governante da face (decanato)"
+  detriment: "-5 pontos - detrimento, oposto ao domicílio"
+  fall: "-4 pontos - queda, oposto à exaltação"
+  peregrine: "0 pontos - peregrino, sem dignidades maiores"
+
+# Guia de sect
+sect_guide:
+  diurnal:
+    description: "Mapa diurno - Sol acima do horizonte"
+    benefics: ["Júpiter", "Sol"]
+    malefics_supported: ["Saturno"]
+
+  nocturnal:
+    description: "Mapa noturno - Sol abaixo do horizonte"
+    benefics: ["Vênus", "Lua"]
+    malefics_supported: ["Marte"]

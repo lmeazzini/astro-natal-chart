@@ -2,6 +2,7 @@
 Birth Chart service for CRUD operations.
 """
 
+import logging
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -11,22 +12,28 @@ from app.models.chart import BirthChart
 from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import BirthChartCreate, BirthChartUpdate
 from app.services.astro_service import calculate_birth_chart
+from app.services.interpretation_service import InterpretationService
+
+logger = logging.getLogger(__name__)
 
 
 class ChartNotFoundError(Exception):
     """Raised when chart is not found."""
+
     pass
 
 
 class UnauthorizedAccessError(Exception):
     """Raised when user tries to access chart they don't own."""
+
     pass
 
 
 async def create_birth_chart(
     db: AsyncSession,
     user_id: UUID,
-    chart_data: BirthChartCreate
+    chart_data: BirthChartCreate,
+    generate_interpretations: bool = True,
 ) -> BirthChart:
     """
     Create a new birth chart with astrological calculations.
@@ -35,6 +42,7 @@ async def create_birth_chart(
         db: Database session
         user_id: User ID creating the chart
         chart_data: Birth chart data
+        generate_interpretations: Whether to automatically generate AI interpretations
 
     Returns:
         Created birth chart
@@ -71,15 +79,26 @@ async def create_birth_chart(
         visibility="private",
     )
 
-    return await chart_repo.create(chart)
+    created_chart = await chart_repo.create(chart)
+
+    # Generate AI interpretations automatically (classical 7 planets only)
+    if generate_interpretations:
+        try:
+            interpretation_service = InterpretationService(db)
+            await interpretation_service.generate_all_interpretations(
+                chart_id=UUID(str(created_chart.id)),
+                chart_data=calculated_data,
+            )
+            logger.info(f"Generated interpretations for chart {created_chart.id}")
+        except Exception as e:
+            # Log error but don't fail chart creation
+            logger.error(f"Failed to generate interpretations for chart {created_chart.id}: {e}")
+
+    return created_chart
 
 
 async def get_user_charts(
-    db: AsyncSession,
-    user_id: UUID,
-    skip: int = 0,
-    limit: int = 100,
-    include_deleted: bool = False
+    db: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 100, include_deleted: bool = False
 ) -> list[BirthChart]:
     """
     Get all birth charts for a user.
@@ -103,11 +122,7 @@ async def get_user_charts(
     )
 
 
-async def get_chart_by_id(
-    db: AsyncSession,
-    chart_id: UUID,
-    user_id: UUID
-) -> BirthChart:
+async def get_chart_by_id(db: AsyncSession, chart_id: UUID, user_id: UUID) -> BirthChart:
     """
     Get a birth chart by ID.
 
@@ -133,10 +148,7 @@ async def get_chart_by_id(
 
 
 async def update_birth_chart(
-    db: AsyncSession,
-    chart_id: UUID,
-    user_id: UUID,
-    update_data: BirthChartUpdate
+    db: AsyncSession, chart_id: UUID, user_id: UUID, update_data: BirthChartUpdate
 ) -> BirthChart:
     """
     Update a birth chart.
@@ -169,10 +181,7 @@ async def update_birth_chart(
 
 
 async def delete_birth_chart(
-    db: AsyncSession,
-    chart_id: UUID,
-    user_id: UUID,
-    soft_delete: bool = True
+    db: AsyncSession, chart_id: UUID, user_id: UUID, soft_delete: bool = True
 ) -> None:
     """
     Delete a birth chart.
@@ -196,11 +205,7 @@ async def delete_birth_chart(
         await chart_repo.delete(chart)
 
 
-async def count_user_charts(
-    db: AsyncSession,
-    user_id: UUID,
-    include_deleted: bool = False
-) -> int:
+async def count_user_charts(db: AsyncSession, user_id: UUID, include_deleted: bool = False) -> int:
     """
     Count total number of charts for a user.
 

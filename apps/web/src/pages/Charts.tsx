@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
+import { getSignSymbol } from '../utils/astro';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -62,6 +63,15 @@ export function ChartsPage() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  function getSignFromLongitude(longitude: number): string {
+    const signIndex = Math.floor(longitude / 30);
+    const signs = [
+      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    ];
+    return signs[signIndex] || 'N/A';
   }
 
   if (isLoading) {
@@ -159,17 +169,33 @@ export function ChartsPage() {
 
                 {chart.chart_data && (
                   <div className="mt-4 pt-4 border-t border-border">
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <p className="text-muted-foreground">Ascendente</p>
-                        <p className="font-medium text-foreground">
+                    <p className="text-xs text-muted-foreground mb-2">Big Three</p>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <p className="text-muted-foreground mb-1">☉ Sol</p>
+                        <p className="font-medium text-foreground flex items-center justify-center gap-1">
+                          <span className="text-base">
+                            {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || '')}
+                          </span>
                           {chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Planetas</p>
-                        <p className="font-medium text-foreground">
-                          {chart.chart_data.planets.length}
+                      <div className="text-center">
+                        <p className="text-muted-foreground mb-1">☽ Lua</p>
+                        <p className="font-medium text-foreground flex items-center justify-center gap-1">
+                          <span className="text-base">
+                            {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || '')}
+                          </span>
+                          {chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-muted-foreground mb-1">ASC</p>
+                        <p className="font-medium text-foreground flex items-center justify-center gap-1">
+                          <span className="text-base">
+                            {getSignSymbol(getSignFromLongitude(chart.chart_data.ascendant))}
+                          </span>
+                          {getSignFromLongitude(chart.chart_data.ascendant)}
                         </p>
                       </div>
                     </div>

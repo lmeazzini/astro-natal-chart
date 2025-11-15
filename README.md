@@ -6,6 +6,7 @@ Sistema web completo para geração e análise de mapas natais utilizando astrol
 
 - **Cálculos Precisos**: Swiss Ephemeris (JPL DE431) com erro < 1 arcsecond
 - **Astrologia Tradicional**: Dignidades essenciais, sect, triplicidades
+- **Interpretações IA**: Geração automática de interpretações usando OpenAI GPT-4o-mini
 - **Visualização Profissional**: Gráficos SVG interativos
 - **Exportação LaTeX**: PDFs profissionais de alta qualidade
 - **Autenticação Completa**: JWT + OAuth2 (Google, GitHub, Facebook)
@@ -157,6 +158,12 @@ GITHUB_CLIENT_SECRET=your-github-client-secret
 # Geocoding API
 OPENCAGE_API_KEY=your-opencage-api-key
 
+# OpenAI (REQUIRED for AI interpretations)
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_MAX_TOKENS=500
+OPENAI_TEMPERATURE=0.7
+
 # CORS
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
@@ -169,6 +176,36 @@ Criar `apps/web/.env`:
 VITE_API_URL=http://localhost:8000
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
+
+### Configuração do OpenAI (Interpretações IA)
+
+O sistema gera automaticamente interpretações astrológicas usando OpenAI GPT-4o-mini. Para habilitar este recurso:
+
+1. **Criar conta OpenAI**: Acesse [platform.openai.com](https://platform.openai.com) e crie uma conta
+
+2. **Obter API key**:
+   - Acesse [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+   - Clique em "Create new secret key"
+   - Copie a chave (ela só será exibida uma vez)
+
+3. **Adicionar ao .env**:
+   ```bash
+   OPENAI_API_KEY=sk-proj-xxxxxxxxxxxx
+   ```
+
+   **⚠️ IMPORTANTE**: Nunca commit a chave no git! O arquivo `.env` já está no `.gitignore`.
+
+4. **Custo estimado**: ~$0.01 por mapa natal gerado (7 planetas + 12 casas + aspectos)
+
+**Como funciona:**
+- Ao criar um mapa natal, interpretações são geradas automaticamente
+- Foca apenas nos 7 planetas clássicos (Sol, Lua, Mercúrio, Vênus, Marte, Júpiter, Saturno)
+- Considera dignidades essenciais, sect (diurnal/noturno), e contexto tradicional
+- Interpretações em português brasileiro com estilo misto (técnico + prático)
+- Pode regenerar interpretações via botão "Regenerar" na interface
+
+**Desabilitar interpretações IA:**
+Se não configurar a chave OpenAI, os mapas serão criados normalmente, mas sem as interpretações textuais.
 
 ## Arquitetura
 
@@ -236,7 +273,7 @@ npm run test:e2e
 
 ### Fase 2: Enriquecimento (4-6 semanas)
 - [ ] Geração de PDF com LaTeX
-- [ ] Interpretações textuais ricas
+- [x] Interpretações textuais ricas (IA com OpenAI GPT-4o-mini)
 - [ ] Estrelas fixas
 - [ ] Tema dark mode
 - [ ] Internacionalização (i18n)

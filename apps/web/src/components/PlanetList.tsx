@@ -19,9 +19,37 @@ export interface PlanetPosition {
 
 interface PlanetListProps {
   planets: PlanetPosition[];
+  showOnlyClassical?: boolean;
+  interpretations?: Record<string, string>;
+  interpretationsLoading?: boolean;
+  onRegenerateInterpretations?: () => void;
 }
 
-export function PlanetList({ planets }: PlanetListProps) {
+// Classical 7 planets (no modern planets)
+const CLASSICAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+
+// Planet names in Portuguese
+const PLANET_NAMES_PT: Record<string, string> = {
+  Sun: 'Sol',
+  Moon: 'Lua',
+  Mercury: 'Mercúrio',
+  Venus: 'Vênus',
+  Mars: 'Marte',
+  Jupiter: 'Júpiter',
+  Saturn: 'Saturno',
+};
+
+export function PlanetList({
+  planets,
+  showOnlyClassical = false,
+  interpretations,
+  interpretationsLoading = false,
+  onRegenerateInterpretations,
+}: PlanetListProps) {
+  // Filter planets if showOnlyClassical is true
+  const displayPlanets = showOnlyClassical
+    ? planets.filter((p) => CLASSICAL_PLANETS.includes(p.name))
+    : planets;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -48,7 +76,7 @@ export function PlanetList({ planets }: PlanetListProps) {
           </tr>
         </thead>
         <tbody>
-          {planets.map((planet, index) => (
+          {displayPlanets.map((planet, index) => (
             <tr
               key={planet.name}
               className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${
@@ -122,14 +150,92 @@ export function PlanetList({ planets }: PlanetListProps) {
       {/* Summary */}
       <div className="mt-4 px-4 py-3 bg-muted/30 rounded-md text-sm text-muted-foreground">
         <p>
-          <strong className="text-foreground">{planets.length}</strong> planetas
-          calculados •{' '}
+          <strong className="text-foreground">{displayPlanets.length}</strong> planetas
+          {showOnlyClassical && ' clássicos'} calculados •{' '}
           <strong className="text-foreground">
-            {planets.filter((p) => p.retrograde).length}
+            {displayPlanets.filter((p) => p.retrograde).length}
           </strong>{' '}
           retrógrado(s)
         </p>
+        {showOnlyClassical && (
+          <p className="mt-1 text-xs">
+            Exibindo apenas os 7 planetas clássicos da astrologia tradicional
+          </p>
+        )}
       </div>
+
+      {/* Interpretations Section */}
+      {interpretations && (
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-foreground">
+              Interpretações Astrológicas
+            </h3>
+            {onRegenerateInterpretations && (
+              <button
+                onClick={onRegenerateInterpretations}
+                disabled={interpretationsLoading}
+                className="px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {interpretationsLoading ? 'Regenerando...' : '↻ Regenerar'}
+              </button>
+            )}
+          </div>
+
+          {interpretationsLoading ? (
+            <div className="space-y-4">
+              {[...Array(displayPlanets.length)].map((_, i) => (
+                <div key={i} className="bg-muted/30 border border-border rounded-lg p-5 animate-pulse">
+                  <div className="h-6 bg-muted rounded w-1/4 mb-3"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted rounded w-full"></div>
+                    <div className="h-4 bg-muted rounded w-5/6"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {CLASSICAL_PLANETS.map((planetKey) => {
+                const interpretation = interpretations[planetKey];
+                if (!interpretation) return null;
+
+                return (
+                  <div
+                    key={planetKey}
+                    className="bg-gradient-to-r from-muted/50 to-background border border-border rounded-lg p-5"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-3xl" title={PLANET_NAMES_PT[planetKey]}>
+                        {getPlanetSymbol(planetKey)}
+                      </span>
+                      <h4 className="text-lg font-semibold text-foreground">
+                        {PLANET_NAMES_PT[planetKey] || planetKey}
+                      </h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      {interpretation}
+                    </p>
+                  </div>
+                );
+              })}
+              {Object.keys(interpretations).filter((k) => CLASSICAL_PLANETS.includes(k)).length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  Nenhuma interpretação disponível
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-6 bg-muted/30 border border-border rounded-lg p-4">
+            <p className="text-xs text-muted-foreground">
+              <strong>ℹ️ Sobre as interpretações:</strong> Geradas por IA baseando-se em
+              princípios de astrologia tradicional (dignidades essenciais, sect). Foco nos 7
+              planetas clássicos.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

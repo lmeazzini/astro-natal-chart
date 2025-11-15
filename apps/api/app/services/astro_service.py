@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 import swisseph as swe
 
+from app.astro.dignities import calculate_essential_dignities
 from app.schemas.chart import AspectData, HousePosition, PlanetPosition
 
 # Set ephemeris path to None to use built-in Moshier ephemeris (lower precision but no files needed)
@@ -34,9 +35,18 @@ PLANETS = {
 
 # Zodiac signs
 SIGNS = [
-    "Aries", "Taurus", "Gemini", "Cancer",
-    "Leo", "Virgo", "Libra", "Scorpio",
-    "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
 ]
 
 # House systems
@@ -63,12 +73,7 @@ ASPECTS = {
 }
 
 
-def convert_to_julian_day(
-    dt: datetime,
-    timezone: str,
-    latitude: float,
-    longitude: float
-) -> float:
+def convert_to_julian_day(dt: datetime, timezone: str, latitude: float, longitude: float) -> float:
     """
     Convert datetime to Julian Day for Swiss Ephemeris calculations.
 
@@ -91,7 +96,7 @@ def convert_to_julian_day(
         dt_utc.year,
         dt_utc.month,
         dt_utc.day,
-        dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0
+        dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0,
     )
 
     return jd  # type: ignore[no-any-return]
@@ -156,18 +161,20 @@ def calculate_planets(jd: float, house_cusps: list[float]) -> list[PlanetPositio
         # Check if retrograde (speed < 0)
         retrograde = speed < 0
 
-        planets.append(PlanetPosition(
-            name=name,
-            longitude=longitude,
-            latitude=latitude,
-            speed=speed,
-            sign=sign_data["sign"],
-            degree=sign_data["degree"],
-            minute=sign_data["minute"],
-            second=sign_data["second"],
-            house=house,
-            retrograde=retrograde,
-        ))
+        planets.append(
+            PlanetPosition(
+                name=name,
+                longitude=longitude,
+                latitude=latitude,
+                speed=speed,
+                sign=sign_data["sign"],
+                degree=sign_data["degree"],
+                minute=sign_data["minute"],
+                second=sign_data["second"],
+                house=house,
+                retrograde=retrograde,
+            )
+        )
 
     return planets
 
@@ -199,10 +206,7 @@ def get_house_for_planet(planet_longitude: float, house_cusps: list[float]) -> i
 
 
 def calculate_houses(
-    jd: float,
-    latitude: float,
-    longitude: float,
-    house_system: str = "placidus"
+    jd: float, latitude: float, longitude: float, house_system: str = "placidus"
 ) -> tuple[list[HousePosition], float, float]:
     """
     Calculate house cusps and angles.
@@ -231,14 +235,16 @@ def calculate_houses(
         cusp_longitude = cusps[i]
         sign_data = get_sign_and_position(cusp_longitude)
 
-        houses.append(HousePosition(
-            house=i + 1,  # Houses are numbered 1-12, but index is 0-11
-            longitude=cusp_longitude,
-            sign=sign_data["sign"],
-            degree=sign_data["degree"],
-            minute=sign_data["minute"],
-            second=sign_data["second"],
-        ))
+        houses.append(
+            HousePosition(
+                house=i + 1,  # Houses are numbered 1-12, but index is 0-11
+                longitude=cusp_longitude,
+                sign=sign_data["sign"],
+                degree=sign_data["degree"],
+                minute=sign_data["minute"],
+                second=sign_data["second"],
+            )
+        )
 
     return houses, ascendant, midheaven
 
@@ -257,7 +263,7 @@ def calculate_aspects(planets: list[PlanetPosition]) -> list[AspectData]:
 
     # Compare each planet with every other planet
     for i, planet1 in enumerate(planets):
-        for planet2 in planets[i + 1:]:
+        for planet2 in planets[i + 1 :]:
             # Calculate angle between planets
             angle_diff = abs(planet1.longitude - planet2.longitude)
 
@@ -281,27 +287,25 @@ def calculate_aspects(planets: list[PlanetPosition]) -> list[AspectData]:
                         planet2.longitude,
                         planet1.speed,
                         planet2.speed,
-                        aspect_angle
+                        aspect_angle,
                     )
 
-                    aspects.append(AspectData(
-                        planet1=planet1.name,
-                        planet2=planet2.name,
-                        aspect=aspect_name,
-                        angle=angle_diff,
-                        orb=orb_diff,
-                        applying=applying,
-                    ))
+                    aspects.append(
+                        AspectData(
+                            planet1=planet1.name,
+                            planet2=planet2.name,
+                            aspect=aspect_name,
+                            angle=angle_diff,
+                            orb=orb_diff,
+                            applying=applying,
+                        )
+                    )
 
     return aspects
 
 
 def is_aspect_applying(
-    lon1: float,
-    lon2: float,
-    speed1: float,
-    speed2: float,
-    aspect_angle: float
+    lon1: float, lon2: float, speed1: float, speed2: float, aspect_angle: float
 ) -> bool:
     """
     Determine if an aspect is applying or separating.
@@ -325,8 +329,42 @@ def is_aspect_applying(
         current_angle = 360 - current_angle
 
     # If faster planet is catching up, aspect is applying
-    return (relative_speed > 0 and current_angle < aspect_angle) or \
-           (relative_speed < 0 and current_angle > aspect_angle)
+    return (relative_speed > 0 and current_angle < aspect_angle) or (
+        relative_speed < 0 and current_angle > aspect_angle
+    )
+
+
+def calculate_sect(ascendant: float, sun_longitude: float) -> str:
+    """
+    Calculate chart sect (day chart vs night chart).
+
+    In traditional astrology, sect determines whether a chart is diurnal or nocturnal:
+    - Diurnal (day chart): Sun is above the horizon (houses 7-12)
+    - Nocturnal (night chart): Sun is below the horizon (houses 1-6)
+
+    Args:
+        ascendant: Ascendant degree (0-360)
+        sun_longitude: Sun's ecliptic longitude (0-360)
+
+    Returns:
+        "diurnal" if day chart, "nocturnal" if night chart
+    """
+    # Calculate descendant (opposite of ascendant)
+    descendant = (ascendant + 180) % 360
+
+    # Normalize sun longitude
+    sun_lon = sun_longitude % 360
+
+    # Check if Sun is between Ascendant and Descendant (going through MC)
+    # This determines if Sun is above horizon (day chart)
+    if ascendant < descendant:
+        # Normal case: ASC is at smaller degree than DSC
+        is_day_chart = ascendant <= sun_lon <= descendant
+    else:
+        # Wrapped case: ASC crosses 0° Aries
+        is_day_chart = sun_lon >= ascendant or sun_lon <= descendant
+
+    return "diurnal" if is_day_chart else "nocturnal"
 
 
 def calculate_birth_chart(
@@ -334,7 +372,7 @@ def calculate_birth_chart(
     timezone: str,
     latitude: float,
     longitude: float,
-    house_system: str = "placidus"
+    house_system: str = "placidus",
 ) -> dict[str, Any]:
     """
     Calculate complete birth chart.
@@ -361,14 +399,35 @@ def calculate_birth_chart(
     # Calculate planet positions
     planets = calculate_planets(jd, house_cusps)
 
+    # Find Sun to calculate sect
+    sun_longitude = 0.0
+    for planet in planets:
+        if planet.name == "Sun":
+            sun_longitude = planet.longitude
+            break
+
+    # Calculate sect (day/night chart)
+    sect = calculate_sect(ascendant, sun_longitude)
+
+    # Add essential dignities to each planet
+    planets_with_dignities = []
+    for planet in planets:
+        planet_dict = planet.model_dump()
+        # Only calculate dignities for classical 7 planets
+        if planet.name in ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]:
+            dignities = calculate_essential_dignities(planet.name, planet.sign, planet.degree, sect)
+            planet_dict["dignities"] = dignities
+        planets_with_dignities.append(planet_dict)
+
     # Calculate aspects
     aspects = calculate_aspects(planets)
 
     return {
-        "planets": [p.model_dump() for p in planets],
+        "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
         "aspects": [a.model_dump() for a in aspects],
         "ascendant": ascendant,
         "midheaven": midheaven,
+        "sect": sect,
         "calculation_timestamp": datetime.utcnow().isoformat(),
     }

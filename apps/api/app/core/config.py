@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     OPENCAGE_API_KEY: str | None = None
     NOMINATIM_USER_AGENT: str = "astro-natal-chart/1.0"
 
+    # OpenAI
+    OPENAI_API_KEY: str
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_MAX_TOKENS: int = 500
+    OPENAI_TEMPERATURE: float = 0.7
+
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 

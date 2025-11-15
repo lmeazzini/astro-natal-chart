@@ -2,6 +2,7 @@
 Birth Chart service for CRUD operations.
 """
 
+import logging
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -11,6 +12,9 @@ from app.models.chart import BirthChart
 from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import BirthChartCreate, BirthChartUpdate
 from app.services.astro_service import calculate_birth_chart
+from app.services.interpretation_service import InterpretationService
+
+logger = logging.getLogger(__name__)
 
 
 class ChartNotFoundError(Exception):
@@ -26,7 +30,10 @@ class UnauthorizedAccessError(Exception):
 
 
 async def create_birth_chart(
-    db: AsyncSession, user_id: UUID, chart_data: BirthChartCreate
+    db: AsyncSession,
+    user_id: UUID,
+    chart_data: BirthChartCreate,
+    generate_interpretations: bool = True,
 ) -> BirthChart:
     """
     Create a new birth chart with astrological calculations.
@@ -35,6 +42,7 @@ async def create_birth_chart(
         db: Database session
         user_id: User ID creating the chart
         chart_data: Birth chart data
+        generate_interpretations: Whether to automatically generate AI interpretations
 
     Returns:
         Created birth chart
@@ -71,7 +79,22 @@ async def create_birth_chart(
         visibility="private",
     )
 
-    return await chart_repo.create(chart)
+    created_chart = await chart_repo.create(chart)
+
+    # Generate AI interpretations automatically (classical 7 planets only)
+    if generate_interpretations:
+        try:
+            interpretation_service = InterpretationService(db)
+            await interpretation_service.generate_all_interpretations(
+                chart_id=UUID(str(created_chart.id)),
+                chart_data=calculated_data,
+            )
+            logger.info(f"Generated interpretations for chart {created_chart.id}")
+        except Exception as e:
+            # Log error but don't fail chart creation
+            logger.error(f"Failed to generate interpretations for chart {created_chart.id}: {e}")
+
+    return created_chart
 
 
 async def get_user_charts(

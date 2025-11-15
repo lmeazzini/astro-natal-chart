@@ -17,6 +17,7 @@ export function OAuthCallbackPage() {
 
   useEffect(() => {
     handleOAuthCallback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleOAuthCallback() {

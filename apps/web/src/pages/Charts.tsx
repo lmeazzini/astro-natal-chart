@@ -17,6 +17,7 @@ export function ChartsPage() {
 
   useEffect(() => {
     loadCharts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadCharts() {

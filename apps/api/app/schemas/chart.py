@@ -3,9 +3,10 @@ Birth Chart schemas for request/response validation.
 """
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
+
 from pydantic import BaseModel, Field
-from typing import Dict, List, Any
 
 
 class BirthChartCreate(BaseModel):
@@ -20,7 +21,7 @@ class BirthChartCreate(BaseModel):
     city: str | None = Field(None, max_length=100)
     country: str | None = Field(None, max_length=100)
     notes: str | None = None
-    tags: List[str] | None = None
+    tags: list[str] | None = None
     house_system: str = Field(default="placidus", max_length=20)
     zodiac_type: str = Field(default="tropical", max_length=20)
     node_type: str = Field(default="true", max_length=20)
@@ -32,7 +33,7 @@ class BirthChartUpdate(BaseModel):
     person_name: str | None = Field(None, min_length=1, max_length=100)
     gender: str | None = Field(None, max_length=50)
     notes: str | None = None
-    tags: List[str] | None = None
+    tags: list[str] | None = None
     visibility: str | None = Field(None, max_length=20)
 
 
@@ -76,9 +77,9 @@ class AspectData(BaseModel):
 class ChartData(BaseModel):
     """Schema for complete chart calculation data."""
 
-    planets: List[PlanetPosition]
-    houses: List[HousePosition]
-    aspects: List[AspectData]
+    planets: list[PlanetPosition]
+    houses: list[HousePosition]
+    aspects: list[AspectData]
     ascendant: float
     midheaven: float
     calculation_timestamp: datetime
@@ -98,11 +99,11 @@ class BirthChartRead(BaseModel):
     city: str | None
     country: str | None
     notes: str | None
-    tags: List[str] | None
+    tags: list[str] | None
     house_system: str
     zodiac_type: str
     node_type: str
-    chart_data: Dict[str, Any]
+    chart_data: dict[str, Any]
     visibility: str
     share_uuid: UUID | None
     created_at: datetime
@@ -115,7 +116,7 @@ class BirthChartRead(BaseModel):
 class BirthChartList(BaseModel):
     """Schema for list of birth charts."""
 
-    charts: List[BirthChartRead]
+    charts: list[BirthChartRead]
     total: int
     page: int
     page_size: int

@@ -3,15 +3,16 @@ OAuth2 service for social authentication.
 Supports Google, GitHub, and Facebook.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any
+
 from authlib.integrations.starlette_client import OAuth
-from starlette.config import Config
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.config import Config
 
 from app.core.config import settings
-from app.models.user import User, OAuthAccount
 from app.core.security import create_access_token, create_refresh_token
+from app.models.user import OAuthAccount, User
 
 # Initialize OAuth with settings
 config = Config(environ={
@@ -67,7 +68,7 @@ class OAuthService:
         provider_user_id: str,
         email: str,
         full_name: str,
-        avatar_url: Optional[str] = None,
+        avatar_url: str | None = None,
     ) -> tuple[User, bool]:
         """
         Get or create a user from OAuth provider data.
@@ -138,7 +139,7 @@ class OAuthService:
 
         return new_user, True
 
-    def create_tokens_for_user(self, user: User) -> Dict[str, str]:
+    def create_tokens_for_user(self, user: User) -> dict[str, str]:
         """
         Create access and refresh tokens for a user.
 
@@ -158,7 +159,7 @@ class OAuthService:
         }
 
     @staticmethod
-    def extract_user_info_from_google(userinfo: Dict[str, Any]) -> Dict[str, str]:
+    def extract_user_info_from_google(userinfo: dict[str, Any]) -> dict[str, str]:
         """Extract user information from Google OAuth response."""
         return {
             "provider_user_id": userinfo.get("sub", ""),
@@ -168,7 +169,7 @@ class OAuthService:
         }
 
     @staticmethod
-    def extract_user_info_from_github(userinfo: Dict[str, Any]) -> Dict[str, str]:
+    def extract_user_info_from_github(userinfo: dict[str, Any]) -> dict[str, str]:
         """Extract user information from GitHub OAuth response."""
         return {
             "provider_user_id": str(userinfo.get("id", "")),
@@ -178,7 +179,7 @@ class OAuthService:
         }
 
     @staticmethod
-    def extract_user_info_from_facebook(userinfo: Dict[str, Any]) -> Dict[str, str]:
+    def extract_user_info_from_facebook(userinfo: dict[str, Any]) -> dict[str, str]:
         """Extract user information from Facebook OAuth response."""
         return {
             "provider_user_id": userinfo.get("id", ""),
@@ -187,7 +188,7 @@ class OAuthService:
             "avatar_url": userinfo.get("picture", {}).get("data", {}).get("url"),
         }
 
-    def extract_user_info(self, provider: str, userinfo: Dict[str, Any]) -> Dict[str, str]:
+    def extract_user_info(self, provider: str, userinfo: dict[str, Any]) -> dict[str, str]:
         """
         Extract user information based on provider.
 

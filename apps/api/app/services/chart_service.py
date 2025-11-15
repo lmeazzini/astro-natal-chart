@@ -4,8 +4,8 @@ Birth Chart service for CRUD operations.
 
 from datetime import datetime
 from uuid import UUID, uuid4
-from typing import List, Optional
-from sqlalchemy import select, and_
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.chart import BirthChart
@@ -82,7 +82,7 @@ async def get_user_charts(
     skip: int = 0,
     limit: int = 100,
     include_deleted: bool = False
-) -> List[BirthChart]:
+) -> list[BirthChart]:
     """
     Get all birth charts for a user.
 

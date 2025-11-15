@@ -3,11 +3,12 @@ Astrological calculation service using Swiss Ephemeris (PySwisseph).
 """
 
 from datetime import datetime
-from typing import Dict, List, Any
-import swisseph as swe
+from typing import Any
 from zoneinfo import ZoneInfo
 
-from app.schemas.chart import PlanetPosition, HousePosition, AspectData
+import swisseph as swe
+
+from app.schemas.chart import AspectData, HousePosition, PlanetPosition
 
 # Set ephemeris path to None to use built-in Moshier ephemeris (lower precision but no files needed)
 # For production, download Swiss Ephemeris files for higher precision
@@ -96,7 +97,7 @@ def convert_to_julian_day(
     return jd
 
 
-def get_sign_and_position(longitude: float) -> Dict[str, Any]:
+def get_sign_and_position(longitude: float) -> dict[str, Any]:
     """
     Get zodiac sign and precise position from longitude.
 
@@ -124,7 +125,7 @@ def get_sign_and_position(longitude: float) -> Dict[str, Any]:
     }
 
 
-def calculate_planets(jd: float, house_cusps: List[float]) -> List[PlanetPosition]:
+def calculate_planets(jd: float, house_cusps: list[float]) -> list[PlanetPosition]:
     """
     Calculate positions of all planets.
 
@@ -171,7 +172,7 @@ def calculate_planets(jd: float, house_cusps: List[float]) -> List[PlanetPositio
     return planets
 
 
-def get_house_for_planet(planet_longitude: float, house_cusps: List[float]) -> int:
+def get_house_for_planet(planet_longitude: float, house_cusps: list[float]) -> int:
     """
     Determine which house a planet is in.
 
@@ -202,7 +203,7 @@ def calculate_houses(
     latitude: float,
     longitude: float,
     house_system: str = "placidus"
-) -> tuple[List[HousePosition], float, float]:
+) -> tuple[list[HousePosition], float, float]:
     """
     Calculate house cusps and angles.
 
@@ -242,7 +243,7 @@ def calculate_houses(
     return houses, ascendant, midheaven
 
 
-def calculate_aspects(planets: List[PlanetPosition]) -> List[AspectData]:
+def calculate_aspects(planets: list[PlanetPosition]) -> list[AspectData]:
     """
     Calculate aspects between planets.
 
@@ -334,7 +335,7 @@ def calculate_birth_chart(
     latitude: float,
     longitude: float,
     house_system: str = "placidus"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Calculate complete birth chart.
 

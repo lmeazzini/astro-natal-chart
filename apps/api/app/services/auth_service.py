@@ -3,8 +3,8 @@ Authentication service for user registration, login, and token management.
 """
 
 from datetime import timedelta
-from typing import Tuple
 from uuid import UUID, uuid4
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -187,7 +187,7 @@ async def create_or_update_oauth_user(
     email: str,
     full_name: str,
     avatar_url: str | None = None,
-) -> Tuple[User, bool]:
+) -> tuple[User, bool]:
     """
     Create or update user from OAuth provider.
 

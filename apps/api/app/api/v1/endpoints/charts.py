@@ -4,16 +4,17 @@ Birth chart endpoints for creating and managing natal charts.
 
 from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.schemas.chart import (
     BirthChartCreate,
-    BirthChartUpdate,
-    BirthChartRead,
     BirthChartList,
+    BirthChartRead,
+    BirthChartUpdate,
 )
 from app.services import chart_service
 
@@ -54,7 +55,7 @@ async def create_chart(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error calculating birth chart: {str(e)}",
-        )
+        ) from e
 
 
 @router.get(
@@ -136,12 +137,12 @@ async def get_chart(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
-        )
+        ) from None
     except chart_service.UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
-        )
+        ) from None
 
 
 @router.put(
@@ -180,12 +181,12 @@ async def update_chart(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
-        )
+        ) from None
     except chart_service.UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
-        )
+        ) from None
 
 
 @router.delete(
@@ -220,9 +221,9 @@ async def delete_chart(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
-        )
+        ) from None
     except chart_service.UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
-        )
+        ) from None

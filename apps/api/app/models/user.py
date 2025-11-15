@@ -3,9 +3,9 @@ User model for database.
 """
 
 from datetime import datetime
-from typing import List
 from uuid import uuid4
-from sqlalchemy import Boolean, String, DateTime, ForeignKey, func
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -45,12 +45,12 @@ class User(Base):
     )
 
     # Relationships
-    birth_charts: Mapped[List["BirthChart"]] = relationship(  # noqa: F821
+    birth_charts: Mapped[list["BirthChart"]] = relationship(  # noqa: F821
         "BirthChart",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    oauth_accounts: Mapped[List["OAuthAccount"]] = relationship(  # noqa: F821
+    oauth_accounts: Mapped[list["OAuthAccount"]] = relationship(  # noqa: F821
         "OAuthAccount",
         back_populates="user",
         cascade="all, delete-orphan",

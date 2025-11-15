@@ -2,8 +2,8 @@
 Database models.
 """
 
-from app.models.user import User, OAuthAccount
-from app.models.chart import BirthChart, AuditLog
+from app.models.chart import AuditLog, BirthChart
+from app.models.user import OAuthAccount, User
 
 __all__ = [
     "User",

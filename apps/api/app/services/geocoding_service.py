@@ -4,8 +4,9 @@ Uses Nominatim (OpenStreetMap) as primary provider (free, no API key needed).
 Falls back to OpenCage if API key is configured.
 """
 
-from typing import List, Optional
+
 import httpx
+
 from app.core.config import settings
 
 
@@ -37,7 +38,7 @@ class GeocodingService:
         self.opencage_url = "https://api.opencagedata.com/geocode/v1/json"
         self.timeout = 10.0
 
-    async def search_location(self, query: str, limit: int = 5) -> List[LocationResult]:
+    async def search_location(self, query: str, limit: int = 5) -> list[LocationResult]:
         """
         Search for locations by city name or address.
 
@@ -57,7 +58,7 @@ class GeocodingService:
 
         return results
 
-    async def _search_nominatim(self, query: str, limit: int) -> List[LocationResult]:
+    async def _search_nominatim(self, query: str, limit: int) -> list[LocationResult]:
         """
         Search using Nominatim (OpenStreetMap).
         Free service, no API key required.
@@ -112,7 +113,7 @@ class GeocodingService:
             print(f"Nominatim search error: {e}")
             return []
 
-    async def _search_opencage(self, query: str, limit: int) -> List[LocationResult]:
+    async def _search_opencage(self, query: str, limit: int) -> list[LocationResult]:
         """
         Search using OpenCage Geocoding API.
         Requires API key in settings.
@@ -159,7 +160,7 @@ class GeocodingService:
             print(f"OpenCage search error: {e}")
             return []
 
-    async def get_coordinates(self, city: str, country: str = "") -> Optional[LocationResult]:
+    async def get_coordinates(self, city: str, country: str = "") -> LocationResult | None:
         """
         Get coordinates for a specific city.
 

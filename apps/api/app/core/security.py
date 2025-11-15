@@ -4,6 +4,7 @@ Security utilities: password hashing, JWT creation/validation.
 
 from datetime import datetime, timedelta
 from typing import Any
+
 import bcrypt
 from jose import JWTError, jwt
 

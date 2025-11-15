@@ -4,13 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **natal chart (birth chart) generation system** using traditional astrology. The application provides high-precision astronomical calculations (Swiss Ephemeris), professional chart visualization, and detailed astrological interpretations. The project is LGPD/GDPR compliant and handles sensitive personal data (birth date/time/location).
+This is a **natal chart (birth chart) generation system** using traditional astrology. The application provides astronomical calculations (Swiss Ephemeris), professional chart visualization, and basic astrological interpretations. The project is LGPD/GDPR compliant and handles sensitive personal data (birth date/time/location).
+
+**Current Status**: MVP in progress (~60-70% complete). Core functionality is working: authentication, chart creation, calculations, and visualization.
 
 **Tech Stack:**
 - **Monorepo**: Turborepo (npm workspaces)
-- **Backend**: Python 3.11+ with FastAPI (async), PostgreSQL 16 (JSONB), Celery + Redis
+- **Backend**: Python 3.11+ with FastAPI (async), PostgreSQL 16 (JSONB), Redis
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
-- **Astrology Engine**: PySwisseph (Swiss Ephemeris, JPL DE431 ephemeris)
+- **Astrology Engine**: PySwisseph (Moshier ephemeris - built-in)
 - **Infrastructure**: Docker Compose for development
 
 ## Essential Commands
@@ -61,6 +63,8 @@ cd apps/api && pytest tests/test_astro/test_calculator.py -v
 # Single test function
 cd apps/api && pytest tests/test_api/test_auth.py::test_register_user -v
 ```
+
+**NOTE**: Test infrastructure exists but no tests are written yet (0% coverage). Test directories exist at `apps/api/tests/` and frontend test setup is configured.
 
 ### Database Migrations (Alembic)
 ```bash
@@ -113,23 +117,24 @@ make web-shell          # Shell in web container
 apps/
   api/           # Python FastAPI backend
   web/           # React TypeScript frontend
-packages/        # Shared code (future: shared-types, ui-components)
+packages/        # Shared code (EMPTY - planned for future)
 ```
 
 All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev` from root executes both frontend and backend in parallel.
 
+**IMPORTANT**: The `packages/shared-types/` and `packages/ui-components/` directories exist but are empty placeholders for future work.
+
 ### Backend Architecture (FastAPI)
 
 **Layered architecture:**
-1. **API Layer** (`app/api/v1/`): FastAPI routes, request/response handling
+1. **API Layer** (`app/api/v1/endpoints/`): FastAPI routes, request/response handling
 2. **Service Layer** (`app/services/`): Business logic orchestration
-3. **Domain Layer** (`app/astro/`): Astrological calculation engine (core logic)
-4. **Data Layer** (`app/models/`): SQLAlchemy models, database access
+3. **Data Layer** (`app/models/`): SQLAlchemy models, database access
 
 **Key patterns:**
 - **Async everywhere**: SQLAlchemy async engine, FastAPI async endpoints
 - **Dependency Injection**: FastAPI's `Depends()` for `get_db()` and `get_current_user()`
-- **Repository pattern** (planned): Abstract database access in services
+- **NO Repository pattern**: Services directly access SQLAlchemy models (not abstracted)
 
 **Database (PostgreSQL with JSONB):**
 - User accounts and OAuth providers in normalized tables
@@ -154,40 +159,52 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 ### Frontend Architecture (React)
 
 **Structure:**
-- `src/pages/`: Route components (HomePage, LoginPage, ChartViewPage, etc.)
-- `src/components/`: Reusable UI components organized by domain (auth/, chart/, ui/, layout/)
-- `src/services/`: API client (axios instance with interceptors)
-- `src/hooks/`: Custom React hooks (useAuth, useCharts, etc.)
-- `src/utils/`: Utility functions (cn for className merging, validators, formatters)
+- `src/pages/`: Route components (Login, Register, ChartDetail, NewChart, Charts, Dashboard)
+- `src/components/`: Reusable UI components (ChartWheel, PlanetList, AspectGrid, HouseTable)
+- `src/services/`: API client (fetch-based, NOT axios despite being installed)
+- `src/contexts/`: AuthContext for authentication state
+- `src/utils/`: Utility functions (astro symbols, cn for className merging)
 
-**State management:**
-- **React Query** (@tanstack/react-query) for server state (API data caching)
-- **Zustand** (lightweight) or React Context for client state (if needed)
-- **React Hook Form + Zod** for form state and validation
+**IMPORTANT State Management Reality:**
+- **Actually using**: React Context API for auth, component state for everything else
+- **Installed but NOT used**: React Query (@tanstack/react-query), Zustand
+- **Form handling**: Controlled inputs with useState (React Hook Form and Zod are installed but not actively used)
 
 **API communication:**
-- Axios instance in `src/services/api.ts` with interceptors
-- Request interceptor adds JWT from localStorage
-- Response interceptor handles 401 (redirect to login)
+- Fetch API in `src/services/` (axios is installed but not used)
+- JWT from localStorage added to Authorization header
+- Manual error handling (no response interceptors)
 
 ### Astrological Calculations (Critical Domain Logic)
 
-**Location in codebase:** `apps/api/app/astro/`
+**ACTUAL IMPLEMENTATION**: All calculation logic is in `apps/api/app/services/astro_service.py` (374 lines)
 
-**Planned modules:**
-- `calculator.py`: Main calculation orchestrator
-- `planets.py`: Planetary positions using PySwisseph
-- `houses.py`: House cusp calculations (Placidus, Whole Sign, Koch, etc.)
-- `aspects.py`: Aspect detection with orbs
-- `dignities.py`: Essential dignities (rulership, exaltation, triplicity, term, face)
-- `interpretations.py`: Text generation from templates
+**The `apps/api/app/astro/` directory exists but is EMPTY** - this was planned for future refactoring but currently all logic is in the service layer.
 
-**Critical requirements:**
-- Use **Swiss Ephemeris** (PySwisseph) for all calculations
-- Precision requirement: < 1 arcsecond error
-- Support multiple house systems (Placidus default, but also Whole Sign, Koch, etc.)
-- Calculate sect (day/night chart) based on Sun position relative to horizon
-- Store ephemeris files path in `EPHEMERIS_PATH` env var (default: `/usr/share/ephe`)
+**Actually Implemented:**
+- ✅ PySwisseph integration with **Moshier ephemeris** (built-in, no external files needed)
+- ✅ Julian Day conversion with timezone support (via timezonefinder)
+- ✅ Planet positions: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node
+- ✅ House systems: Placidus (default), Koch, Equal, Whole Sign, Campanus, Regiomontanus
+- ✅ House cusp calculations (all 12 houses + ASC/MC/IC/DC)
+- ✅ Aspect detection: Conjunction (0°), Opposition (180°), Trine (120°), Square (90°), Sextile (60°), Quincunx (150°), Semisextile (30°), Semisquare (45°), Sesquiquadrate (135°)
+- ✅ Configurable aspect orbs (default: 8° for major, 3° for minor)
+- ✅ Applying/separating aspect detection (based on planet speeds)
+- ✅ Retrograde detection
+- ✅ Sign and degree calculations (e.g., "15° Taurus")
+
+**NOT Implemented (requires external ephemeris files or additional logic):**
+- ❌ Chiron and asteroids (Ceres, Pallas, Juno, Vesta)
+- ❌ Essential dignities calculation (rulership, exaltation, triplicity, term, face)
+- ❌ Sect determination (day/night chart)
+- ❌ Lot of Fortune calculation
+- ❌ Text interpretations (no template engine)
+- ❌ Fixed stars conjunctions
+- ❌ High-precision JPL DE431 ephemeris (currently using lower-precision Moshier)
+
+**Precision:**
+- Current: Moshier ephemeris (good for most uses, ~1-2 arcsecond error)
+- Target: JPL DE431 (< 0.001° error, requires external ephemeris files)
 
 **Chart data structure (stored in BirthChart.chart_data JSONB):**
 ```json
@@ -201,12 +218,7 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
       "retrograde": false,
       "sign": "Taurus",
       "degree": 15.123,
-      "house": 10,
-      "dignities": {
-        "ruler": false,
-        "exaltation": false,
-        "total_score": 4
-      }
+      "house": 10
     }
   ],
   "houses": [
@@ -217,6 +229,7 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
       "planet1": "Sun",
       "planet2": "Moon",
       "aspect": "trine",
+      "angle": 120.0,
       "orb": 2.3,
       "applying": true
     }
@@ -224,8 +237,8 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
   "chart_info": {
     "ascendant": 123.456,
     "mc": 234.567,
-    "sect": "diurnal",
-    "lot_of_fortune": 198.765
+    "ic": 303.456,
+    "descendant": 303.456
   }
 }
 ```
@@ -234,7 +247,9 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 
 **Location:** `apps/api/app/tasks/`
 
-**Use cases:**
+**CURRENT STATUS**: `tasks/__init__.py` exists but is **EMPTY**. Celery is configured in docker-compose.yml and runs as a service, but NO tasks are implemented yet.
+
+**Planned use cases:**
 - PDF generation (heavy LaTeX compilation)
 - Bulk chart calculations
 - Email sending (future)
@@ -242,20 +257,20 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 **Setup:**
 - Celery worker runs in separate Docker container
 - Redis as message broker and result backend
-- Task results stored in Redis with TTL
+- Task infrastructure ready but unused
 
 ### Environment Configuration
 
 **Backend** (`apps/api/.env`):
 - `DATABASE_URL`: PostgreSQL async URL (postgresql+asyncpg://...)
 - `SECRET_KEY`: For JWT signing (CRITICAL - change in production)
-- OAuth2 credentials: `GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`, etc.
+- OAuth2 credentials: `GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`, `FACEBOOK_CLIENT_ID` + secrets
 - `OPENCAGE_API_KEY`: For geocoding (location search)
-- `EPHEMERIS_PATH`: Path to Swiss Ephemeris data files
+- `ALLOWED_ORIGINS`: CORS configuration
 
 **Frontend** (`apps/web/.env`):
 - `VITE_API_URL`: Backend API URL (http://localhost:8000 in dev)
-- OAuth2 client IDs (for frontend OAuth buttons)
+- `VITE_GOOGLE_CLIENT_ID`: For Google OAuth button
 
 ## Critical Development Patterns
 
@@ -263,13 +278,13 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 
 1. Create Pydantic schemas in `app/schemas/` (request/response)
 2. Add business logic in `app/services/`
-3. Create route in `app/api/v1/`
+3. Create route in `app/api/v1/endpoints/`
 4. Use `Depends(get_current_user)` for authenticated endpoints
 5. Document with FastAPI docstrings (auto-generates OpenAPI)
 
 Example:
 ```python
-# app/api/v1/charts.py
+# app/api/v1/endpoints/charts.py
 @router.post("/", response_model=ChartRead, status_code=201)
 async def create_chart(
     chart_data: ChartCreate,
@@ -291,35 +306,33 @@ async def create_chart(
 
 ### Adding React Component
 
-1. Create in appropriate subdirectory (`src/components/ui/`, `src/components/chart/`, etc.)
+1. Create in `src/components/` or `src/pages/`
 2. Use TypeScript with explicit prop types
 3. Use Tailwind for styling
 4. Use `cn()` utility from `@/utils/cn` for conditional classes
-5. Extract form logic to custom hooks if complex
-
-### Form Validation Pattern
-
-Always use Zod + React Hook Form:
-```typescript
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-const { register, handleSubmit, formState: { errors } } = useForm({
-  resolver: zodResolver(schema),
-});
-```
+5. For forms, use controlled inputs with useState (React Hook Form is available but not currently in use)
 
 ### API Call Pattern
 
-Use React Query for all API calls:
+Currently using **plain fetch API** (NOT React Query):
 ```typescript
-const { data, isLoading, error } = useQuery({
-  queryKey: ['charts'],
-  queryFn: () => chartService.getCharts(),
-});
+// src/services/charts.ts
+export async function createChart(chartData: ChartCreate): Promise<Chart> {
+  const response = await fetch(`${API_URL}/api/v1/charts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(chartData),
+  });
+
+  if (!response.ok) throw new Error('Failed to create chart');
+  return response.json();
+}
 ```
+
+**NOTE**: React Query is installed but not currently integrated. If you want to use it, you'll need to add QueryClientProvider to App.tsx and convert service calls to use `useQuery`/`useMutation`.
 
 ## Security & Compliance
 
@@ -333,9 +346,22 @@ const { data, isLoading, error } = useQuery({
 
 ## Testing Guidelines
 
-- **Backend:** Use pytest fixtures for DB setup (transaction rollback)
-- **Astrological calculations:** Validate against known cases (compare with astro.com)
-- **Frontend:** Use Testing Library, avoid implementation details
+**CURRENT STATUS**: Infrastructure exists but **NO TESTS ARE WRITTEN** (0% coverage)
+
+**Backend test directories exist:**
+- `apps/api/tests/test_api/` - API endpoint tests (empty)
+- `apps/api/tests/test_astro/` - Calculation tests (empty)
+- `apps/api/tests/test_services/` - Service tests (empty)
+
+**Frontend testing:**
+- Vitest configured in `package.json`
+- @testing-library/react installed
+- No test files written yet
+
+**When writing tests:**
+- Backend: Use pytest fixtures for DB setup (transaction rollback)
+- Astrological calculations: Validate against known cases (compare with astro.com)
+- Frontend: Use Testing Library, avoid implementation details
 - Coverage target: 70% minimum
 
 ## Docker Services
@@ -345,7 +371,7 @@ When running `docker-compose up -d`, these services start:
 1. **db** (postgres:16-alpine) - Port 5432
 2. **redis** (redis:7-alpine) - Port 6379
 3. **api** (FastAPI) - Port 8000, depends on db+redis
-4. **celery_worker** (Celery) - No exposed port, depends on db+redis
+4. **celery_worker** (Celery) - No exposed port, depends on db+redis (NOT USED YET)
 5. **web** (React+Vite) - Port 5173, depends on api
 
 All services are on `astro-network` bridge network with persistent volumes for postgres and redis data.
@@ -356,21 +382,48 @@ All services are on `astro-network` bridge network with persistent volumes for p
 2. **Async/sync mismatch:** Backend is fully async - use `async def` and `await`
 3. **JSONB queries:** Use PostgreSQL JSONB operators (`->`, `->>`, `@>`) for querying chart_data
 4. **Timezone handling:** Always use timezone-aware datetimes, store birth_timezone IANA name
-5. **PySwisseph path:** Ephemeris files must be downloaded separately and path configured
+5. **PySwisseph precision:** Currently using Moshier (built-in). For high precision, need to download ephemeris files and set `EPHEMERIS_PATH`
+6. **Empty directories:** `packages/`, `app/astro/`, `app/tasks/`, component subdirectories exist but are empty/unused
+7. **Installed but unused:** React Query, Zustand, axios, React Hook Form (installed but not actively used in current code)
+
+## What's Actually Working vs. Planned
+
+**✅ WORKING:**
+- User registration and login (JWT + OAuth2: Google, GitHub, Facebook)
+- Chart creation with geocoding (OpenCage API)
+- Astronomical calculations (planets, houses, aspects)
+- Chart visualization (SVG wheel with planets and aspects)
+- Chart CRUD operations
+- Dashboard and chart list
+- PostgreSQL persistence with soft deletes
+- Docker development environment
+
+**❌ NOT IMPLEMENTED YET:**
+- Essential dignities calculation
+- Sect determination (day/night)
+- Lot of Fortune
+- Text interpretations/templates
+- PDF generation (LaTeX infrastructure exists but no tasks)
+- Celery task processing
+- Email functionality
+- Rate limiting
+- Any tests whatsoever
+- Dark mode
+- Internationalization
+- Shared packages (`packages/shared-types/`, `packages/ui-components/`)
 
 ## Documentation References
 
 - **Technical Specification:** `PROJECT_SPEC.md` (50+ pages, comprehensive requirements)
 - **API Docs:** http://localhost:8000/docs (Swagger, auto-generated)
-- **Getting Started:** `GETTING_STARTED.md` (setup guide)
-- **Backend Details:** `apps/api/README.md`
-- **Frontend Details:** `apps/web/README.md`
+- **Getting Started:** `README.md` (setup guide)
+- **OAuth Setup:** `docs/OAUTH_SETUP.md` (Google/GitHub/Facebook configuration)
 
 ## Development Workflow
 
 1. Create feature branch: `git checkout -b feature/name`
 2. Make changes with hot-reload active (both frontend and backend)
-3. Write tests: `make test`
+3. Write tests: `make test` (when test infrastructure is ready)
 4. Lint: `make lint`
 5. Commit with Conventional Commits: `git commit -m "feat: add aspect calculation"`
 6. Push and create PR
@@ -381,6 +434,8 @@ All services are on `astro-network` bridge network with persistent volumes for p
 - **SQLAlchemy 2.0:** ORM with async support
 - **Pydantic:** Data validation and settings management
 - **PySwisseph:** Astronomical calculations (Python bindings to Swiss Ephemeris)
-- **React Query:** Server state management and caching
-- **Zod:** Schema validation (TypeScript)
+- **React 18:** UI library
+- **TypeScript 5:** Type safety
+- **Vite 5:** Build tool (fast HMR)
+- **TailwindCSS 3:** Utility-first CSS
 - **Turborepo:** Monorepo build orchestration

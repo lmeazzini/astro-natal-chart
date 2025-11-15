@@ -2,12 +2,11 @@
 Geocoding endpoints for location search.
 """
 
-from typing import List
-from fastapi import APIRouter, Query, HTTPException
+
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from app.services.geocoding_service import GeocodingService, LocationResult
-
+from app.services.geocoding_service import GeocodingService
 
 router = APIRouter()
 
@@ -23,7 +22,7 @@ class LocationResponse(BaseModel):
     country_code: str
 
 
-@router.get("/search", response_model=List[LocationResponse])
+@router.get("/search", response_model=list[LocationResponse])
 async def search_location(
     q: str = Query(..., min_length=2, description="City name or address to search"),
     limit: int = Query(5, ge=1, le=10, description="Maximum number of results"),
@@ -61,7 +60,7 @@ async def search_location(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to search location: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/coordinates")
@@ -103,4 +102,4 @@ async def get_coordinates(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get coordinates: {str(e)}",
-        )
+        ) from e

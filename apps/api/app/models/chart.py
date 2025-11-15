@@ -4,8 +4,9 @@ Birth Chart model for database.
 
 from datetime import datetime
 from uuid import uuid4
-from sqlalchemy import String, DateTime, Numeric, Text, ForeignKey, func, ARRAY
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+
+from sqlalchemy import ARRAY, DateTime, ForeignKey, Numeric, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base

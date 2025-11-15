@@ -3,17 +3,18 @@ Alembic migration environment configuration.
 """
 
 from logging.config import fileConfig
+
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
 from alembic import context
+from app.core.config import settings
 
 # Import models to ensure they are registered with Base.metadata
 from app.core.database import Base
-from app.core.config import settings
-from app.models.user import User, OAuthAccount  # noqa: F401
-from app.models.chart import BirthChart, AuditLog  # noqa: F401
-
+from app.models.chart import AuditLog, BirthChart  # noqa: F401
+from app.models.user import OAuthAccount, User  # noqa: F401
 
 # Alembic Config object
 config = context.config

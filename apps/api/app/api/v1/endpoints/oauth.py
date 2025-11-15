@@ -4,12 +4,12 @@ OAuth2 authentication endpoints for social login.
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.services.oauth_service import oauth, OAuthService
 from app.core.config import settings
+from app.core.database import get_db
+from app.services.oauth_service import OAuthService, oauth
 
 router = APIRouter()
 
@@ -160,7 +160,7 @@ async def oauth_callback(
         raise HTTPException(
             status_code=400,
             detail=f"OAuth authentication failed: {str(e)}"
-        )
+        ) from e
 
 
 @router.get("/providers")

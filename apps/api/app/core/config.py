@@ -3,8 +3,8 @@ Application configuration using Pydantic Settings.
 Loads environment variables from .env file.
 """
 
-from typing import List
-from pydantic import Field, PostgresDsn, RedisDsn, field_validator
+
+from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
     @property
-    def cors_origins(self) -> List[str]:
+    def cors_origins(self) -> list[str]:
         """Get CORS origins as list."""
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 

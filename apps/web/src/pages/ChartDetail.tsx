@@ -5,11 +5,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
+import { interpretationsService, ChartInterpretations } from '../services/interpretations';
 import { ChartWheel } from '../components/ChartWheel';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
-import { ChartInterpretationsComponent } from '../components/ChartInterpretations';
 import { getSignSymbol } from '../utils/astro';
 
 const TOKEN_KEY = 'astro_access_token';
@@ -21,10 +21,13 @@ export function ChartDetailPage() {
   const [chart, setChart] = useState<BirthChart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'visual' | 'planets' | 'houses' | 'aspects' | 'interpretations'>('visual');
+  const [activeTab, setActiveTab] = useState<'visual' | 'planets' | 'houses' | 'aspects'>('visual');
+  const [interpretations, setInterpretations] = useState<ChartInterpretations | null>(null);
+  const [interpretationsLoading, setInterpretationsLoading] = useState(false);
 
   useEffect(() => {
     loadChart();
+    loadInterpretations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -47,6 +50,39 @@ export function ChartDetailPage() {
       setError(err instanceof Error ? err.message : 'Erro ao carregar mapa natal');
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function loadInterpretations() {
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token || !id) return;
+
+      const data = await interpretationsService.getByChartId(id, token);
+      setInterpretations(data);
+    } catch (err) {
+      // Silently fail - interpretations are optional
+      console.error('Failed to load interpretations:', err);
+    }
+  }
+
+  async function handleRegenerateInterpretations() {
+    if (!confirm('Deseja regenerar todas as interpretações? As atuais serão substituídas.')) {
+      return;
+    }
+
+    try {
+      setInterpretationsLoading(true);
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token || !id) return;
+
+      const data = await interpretationsService.regenerate(id, token);
+      setInterpretations(data);
+    } catch (err) {
+      alert('Erro ao regenerar interpretações');
+      console.error(err);
+    } finally {
+      setInterpretationsLoading(false);
     }
   }
 
@@ -242,16 +278,6 @@ export function ChartDetailPage() {
           >
             Aspectos ({chart.chart_data?.aspects.length || 0})
           </button>
-          <button
-            onClick={() => setActiveTab('interpretations')}
-            className={`px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
-              activeTab === 'interpretations'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Interpretações ✨
-          </button>
         </div>
 
         {/* Tab Content */}
@@ -340,7 +366,13 @@ export function ChartDetailPage() {
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Posições Planetárias
               </h2>
-              <PlanetList planets={chart.chart_data.planets} showOnlyClassical={true} />
+              <PlanetList
+                planets={chart.chart_data.planets}
+                showOnlyClassical={true}
+                interpretations={interpretations?.planets}
+                interpretationsLoading={interpretationsLoading}
+                onRegenerateInterpretations={handleRegenerateInterpretations}
+              />
             </div>
           )}
 
@@ -349,7 +381,12 @@ export function ChartDetailPage() {
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Casas Astrológicas
               </h2>
-              <HouseTable houses={chart.chart_data.houses} />
+              <HouseTable
+                houses={chart.chart_data.houses}
+                interpretations={interpretations?.houses}
+                interpretationsLoading={interpretationsLoading}
+                onRegenerateInterpretations={handleRegenerateInterpretations}
+              />
             </div>
           )}
 
@@ -358,12 +395,13 @@ export function ChartDetailPage() {
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Aspectos Planetários
               </h2>
-              <AspectGrid aspects={chart.chart_data.aspects} />
+              <AspectGrid
+                aspects={chart.chart_data.aspects}
+                interpretations={interpretations?.aspects}
+                interpretationsLoading={interpretationsLoading}
+                onRegenerateInterpretations={handleRegenerateInterpretations}
+              />
             </div>
-          )}
-
-          {activeTab === 'interpretations' && id && (
-            <ChartInterpretationsComponent chartId={id} />
           )}
         </div>
 

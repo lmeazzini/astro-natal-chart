@@ -59,6 +59,17 @@ class Settings(BaseSettings):
     FACEBOOK_CLIENT_SECRET: str | None = None
     FACEBOOK_REDIRECT_URI: str | None = None
 
+    # Frontend URL (for password reset links, etc.)
+    FRONTEND_URL: str = "http://localhost:5173"
+
+    # Email (SMTP)
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM_EMAIL: str = "noreply@astro-app.com"
+    SMTP_USE_TLS: bool = True
+
     # Geocoding
     OPENCAGE_API_KEY: str | None = None
     NOMINATIM_USER_AGENT: str = "astro-natal-chart/1.0"

@@ -2,7 +2,7 @@
 Authentication schemas for login, tokens, OAuth2.
 """
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class LoginRequest(BaseModel):
@@ -41,14 +41,67 @@ class OAuthCallbackRequest(BaseModel):
 
 
 class PasswordResetRequest(BaseModel):
-    """Schema for password reset request."""
+    """Request para iniciar recuperação de senha."""
 
-    email: EmailStr
+    email: EmailStr = Field(..., description="Email do usuário")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "user@example.com",
+            }
+        }
 
 
 class PasswordResetConfirm(BaseModel):
-    """Schema for password reset confirmation."""
+    """Request para confirmar recuperação de senha com token."""
 
-    token: str
-    new_password: str
-    new_password_confirm: str
+    token: str = Field(
+        ...,
+        min_length=32,
+        max_length=128,
+        description="Token de recuperação recebido por email",
+    )
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Nova senha (mínimo 8 caracteres)",
+    )
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        """Valida força da senha."""
+        if len(v) < 8:
+            raise ValueError("Senha deve ter no mínimo 8 caracteres")
+        if not any(c.isupper() for c in v):
+            raise ValueError("Senha deve conter pelo menos uma letra maiúscula")
+        if not any(c.islower() for c in v):
+            raise ValueError("Senha deve conter pelo menos uma letra minúscula")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Senha deve conter pelo menos um número")
+        return v
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "token": "a1b2c3d4e5f6...",
+                "new_password": "NewSecurePassword123!",
+            }
+        }
+
+
+class PasswordResetResponse(BaseModel):
+    """Response genérico para operações de password reset."""
+
+    message: str = Field(..., description="Mensagem de confirmação")
+    success: bool = Field(default=True, description="Se operação foi bem-sucedida")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "message": "Email de recuperação enviado com sucesso",
+                "success": True,
+            }
+        }

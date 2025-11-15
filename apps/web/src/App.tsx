@@ -7,6 +7,8 @@ import { ChartsPage } from './pages/Charts';
 import { NewChartPage } from './pages/NewChart';
 import { ChartDetailPage } from './pages/ChartDetail';
 import { OAuthCallbackPage } from './pages/OAuthCallback';
+import { ForgotPasswordPage } from './pages/ForgotPassword';
+import { ResetPasswordPage } from './pages/ResetPassword';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/charts" element={<ChartsPage />} />

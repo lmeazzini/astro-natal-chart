@@ -7,6 +7,7 @@ from app.schemas.auth import (
     OAuthCallbackRequest,
     PasswordResetConfirm,
     PasswordResetRequest,
+    PasswordResetResponse,
     RefreshTokenRequest,
     Token,
     TokenData,
@@ -38,6 +39,7 @@ __all__ = [
     "OAuthCallbackRequest",
     "PasswordResetRequest",
     "PasswordResetConfirm",
+    "PasswordResetResponse",
     # Chart schemas
     "BirthChartCreate",
     "BirthChartUpdate",

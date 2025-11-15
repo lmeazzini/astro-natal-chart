@@ -4,7 +4,14 @@ API v1 router - aggregates all v1 endpoints.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, charts, geocoding, interpretations, oauth
+from app.api.v1.endpoints import (
+    auth,
+    charts,
+    geocoding,
+    interpretations,
+    oauth,
+    password_reset,
+)
 
 api_router = APIRouter()
 
@@ -40,4 +47,10 @@ api_router.include_router(
 api_router.include_router(
     interpretations.router,
     tags=["interpretations"],
+)
+
+# Password reset endpoints
+api_router.include_router(
+    password_reset.router,
+    tags=["password-reset"],
 )

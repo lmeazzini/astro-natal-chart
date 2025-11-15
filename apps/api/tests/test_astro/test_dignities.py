@@ -2,12 +2,8 @@
 Tests for essential dignities calculation module.
 """
 
-import pytest
 
 from app.astro.dignities import (
-    EXALTATIONS,
-    FACES,
-    RULERSHIPS,
     calculate_essential_dignities,
     get_planet_in_face,
     get_planet_in_term,

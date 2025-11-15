@@ -1,0 +1,9 @@
+# Certbot - Ignore all SSL certificates and private keys
+# These should NEVER be committed to git
+
+conf/
+www/
+
+# Keep directory structure
+!.gitignore
+!README.md

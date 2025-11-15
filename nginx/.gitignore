@@ -1,0 +1,12 @@
+# Nginx generated files
+logs/
+*.log
+
+# Backup files
+*.bak
+*.pre-ssl
+
+# Don't ignore configuration files
+!nginx.conf
+!conf.d/
+!conf.d/*.conf

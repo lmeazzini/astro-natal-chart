@@ -311,13 +311,15 @@ export function AspectGrid({
                     key={aspectKey}
                     className="bg-gradient-to-r from-muted/50 to-background border border-border rounded-lg p-5"
                   >
-                    <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2 flex-wrap">
-                      <span className="text-xl">{getPlanetSymbol(planet1)}</span>
-                      <span className="text-sm text-muted-foreground">{aspect}</span>
-                      <span className="text-xl">{getPlanetSymbol(planet2)}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {PLANET_NAMES_PT[planet1] || planet1} - {PLANET_NAMES_PT[planet2] || planet2}
-                      </span>
+                    <h4 className="text-lg font-semibold text-foreground mb-3">
+                      <div className="text-sm text-muted-foreground mb-1">{aspect}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xl">{getPlanetSymbol(planet1)}</span>
+                        <span className="text-sm">{PLANET_NAMES_PT[planet1] || planet1}</span>
+                        <span className="text-sm text-muted-foreground">-</span>
+                        <span className="text-xl">{getPlanetSymbol(planet2)}</span>
+                        <span className="text-sm">{PLANET_NAMES_PT[planet2] || planet2}</span>
+                      </div>
                     </h4>
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {interpretation}

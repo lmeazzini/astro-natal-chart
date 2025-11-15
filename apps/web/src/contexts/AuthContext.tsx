@@ -2,6 +2,7 @@
  * Authentication context for managing user state
  */
 
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User } from '../services/auth';
 

@@ -2,11 +2,21 @@
  * New Birth Chart creation page
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { chartsService, BirthChartCreate } from '../services/charts';
 
 const TOKEN_KEY = 'astro_access_token';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+interface LocationSuggestion {
+  display_name: string;
+  latitude: number;
+  longitude: number;
+  city: string;
+  country: string;
+  country_code: string;
+}
 
 export function NewChartPage() {
   const navigate = useNavigate();
@@ -29,6 +39,75 @@ export function NewChartPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchingLocation, setSearchingLocation] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const suggestionRef = useRef<HTMLDivElement>(null);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function searchLocation(query: string) {
+    if (query.length < 3) {
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setSearchingLocation(true);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/geocoding/search?q=${encodeURIComponent(query)}&limit=5`
+      );
+
+      if (response.ok) {
+        const suggestions: LocationSuggestion[] = await response.json();
+        setLocationSuggestions(suggestions);
+        setShowSuggestions(suggestions.length > 0);
+      }
+    } catch (error) {
+      console.error('Error searching location:', error);
+    } finally {
+      setSearchingLocation(false);
+    }
+  }
+
+  function handleCityInputChange(value: string) {
+    setFormData({ ...formData, city: value });
+
+    // Clear timeout if exists
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Debounce search
+    searchTimeoutRef.current = setTimeout(() => {
+      searchLocation(value);
+    }, 500);
+  }
+
+  function selectLocation(location: LocationSuggestion) {
+    setFormData({
+      ...formData,
+      city: location.city || location.display_name.split(',')[0],
+      country: location.country,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
+    setShowSuggestions(false);
+    setLocationSuggestions([]);
+  }
 
   function validateForm(): boolean {
     const newErrors: Record<string, string> = {};
@@ -254,21 +333,62 @@ export function NewChartPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="relative" ref={suggestionRef}>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Cidade *
                   </label>
-                  <input
-                    type="text"
-                    value={formData.city || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
-                    }
-                    className={`w-full px-4 py-2 bg-background border ${
-                      errors.city ? 'border-destructive' : 'border-input'
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                    placeholder="São Paulo"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.city || ''}
+                      onChange={(e) => handleCityInputChange(e.target.value)}
+                      onFocus={() => {
+                        if (locationSuggestions.length > 0) {
+                          setShowSuggestions(true);
+                        }
+                      }}
+                      className={`w-full px-4 py-2 bg-background border ${
+                        errors.city ? 'border-destructive' : 'border-input'
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+                      placeholder="Digite o nome da cidade..."
+                      autoComplete="off"
+                    />
+                    {searchingLocation && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Location Suggestions Dropdown */}
+                  {showSuggestions && locationSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {locationSuggestions.map((location, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => selectLocation(location)}
+                          className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="text-lg">📍</span>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-foreground">
+                                {location.city || location.display_name.split(',')[0]}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {location.display_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                📌 {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   {errors.city && (
                     <p className="mt-1 text-sm text-destructive">{errors.city}</p>
                   )}

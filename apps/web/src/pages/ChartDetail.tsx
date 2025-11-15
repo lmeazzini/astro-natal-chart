@@ -9,6 +9,7 @@ import { ChartWheel } from '../components/ChartWheel';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
+import { ChartInterpretationsComponent } from '../components/ChartInterpretations';
 import { getSignSymbol } from '../utils/astro';
 
 const TOKEN_KEY = 'astro_access_token';
@@ -20,7 +21,7 @@ export function ChartDetailPage() {
   const [chart, setChart] = useState<BirthChart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'visual' | 'planets' | 'houses' | 'aspects'>('visual');
+  const [activeTab, setActiveTab] = useState<'visual' | 'planets' | 'houses' | 'aspects' | 'interpretations'>('visual');
 
   useEffect(() => {
     loadChart();
@@ -241,6 +242,16 @@ export function ChartDetailPage() {
           >
             Aspectos ({chart.chart_data?.aspects.length || 0})
           </button>
+          <button
+            onClick={() => setActiveTab('interpretations')}
+            className={`px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+              activeTab === 'interpretations'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Interpretações ✨
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -329,7 +340,7 @@ export function ChartDetailPage() {
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Posições Planetárias
               </h2>
-              <PlanetList planets={chart.chart_data.planets} />
+              <PlanetList planets={chart.chart_data.planets} showOnlyClassical={true} />
             </div>
           )}
 
@@ -349,6 +360,10 @@ export function ChartDetailPage() {
               </h2>
               <AspectGrid aspects={chart.chart_data.aspects} />
             </div>
+          )}
+
+          {activeTab === 'interpretations' && id && (
+            <ChartInterpretationsComponent chartId={id} />
           )}
         </div>
 

@@ -19,9 +19,17 @@ export interface PlanetPosition {
 
 interface PlanetListProps {
   planets: PlanetPosition[];
+  showOnlyClassical?: boolean;
 }
 
-export function PlanetList({ planets }: PlanetListProps) {
+// Classical 7 planets (no modern planets)
+const CLASSICAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+
+export function PlanetList({ planets, showOnlyClassical = false }: PlanetListProps) {
+  // Filter planets if showOnlyClassical is true
+  const displayPlanets = showOnlyClassical
+    ? planets.filter((p) => CLASSICAL_PLANETS.includes(p.name))
+    : planets;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -48,7 +56,7 @@ export function PlanetList({ planets }: PlanetListProps) {
           </tr>
         </thead>
         <tbody>
-          {planets.map((planet, index) => (
+          {displayPlanets.map((planet, index) => (
             <tr
               key={planet.name}
               className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${
@@ -122,13 +130,18 @@ export function PlanetList({ planets }: PlanetListProps) {
       {/* Summary */}
       <div className="mt-4 px-4 py-3 bg-muted/30 rounded-md text-sm text-muted-foreground">
         <p>
-          <strong className="text-foreground">{planets.length}</strong> planetas
-          calculados •{' '}
+          <strong className="text-foreground">{displayPlanets.length}</strong> planetas
+          {showOnlyClassical && ' clássicos'} calculados •{' '}
           <strong className="text-foreground">
-            {planets.filter((p) => p.retrograde).length}
+            {displayPlanets.filter((p) => p.retrograde).length}
           </strong>{' '}
           retrógrado(s)
         </p>
+        {showOnlyClassical && (
+          <p className="mt-1 text-xs">
+            Exibindo apenas os 7 planetas clássicos da astrologia tradicional
+          </p>
+        )}
       </div>
     </div>
   );

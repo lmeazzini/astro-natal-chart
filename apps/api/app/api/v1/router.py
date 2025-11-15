@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     interpretations,
     oauth,
     password_reset,
+    privacy,
 )
 
 api_router = APIRouter()
@@ -53,4 +54,10 @@ api_router.include_router(
 api_router.include_router(
     password_reset.router,
     tags=["password-reset"],
+)
+
+# Privacy & LGPD endpoints
+api_router.include_router(
+    privacy.router,
+    tags=["privacy"],
 )

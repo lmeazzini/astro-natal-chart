@@ -5,7 +5,7 @@ This module provides pytest fixtures and configuration for the test suite.
 """
 
 import asyncio
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import AsyncClient

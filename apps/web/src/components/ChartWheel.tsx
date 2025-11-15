@@ -47,7 +47,6 @@ export function ChartWheel({
       const midLongitude = startLongitude + 15;
 
       const startAngle = longitudeToAngle(startLongitude);
-      const endAngle = longitudeToAngle(startLongitude + 30);
       const midAngle = longitudeToAngle(midLongitude);
 
       // Draw arc for sign boundary

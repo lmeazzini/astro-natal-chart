@@ -9,7 +9,7 @@ import { ChartWheel } from '../components/ChartWheel';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
-import { getSignSymbol, formatDMS } from '../utils/astro';
+import { getSignSymbol } from '../utils/astro';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -127,11 +127,13 @@ export function ChartDetailPage() {
 
   // Get Sun and Moon signs for the "Big Three"
   function getSunSign(): string {
+    if (!chart) return '';
     const sun = chart.chart_data?.planets.find(p => p.name === 'Sun');
     return sun?.sign || '';
   }
 
   function getMoonSign(): string {
+    if (!chart) return '';
     const moon = chart.chart_data?.planets.find(p => p.name === 'Moon');
     return moon?.sign || '';
   }

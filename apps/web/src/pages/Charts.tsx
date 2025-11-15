@@ -5,13 +5,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
-import { useAuth } from '../contexts/AuthContext';
 
 const TOKEN_KEY = 'astro_access_token';
 
 export function ChartsPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const [charts, setCharts] = useState<BirthChart[]>([]);
   const [isLoading, setIsLoading] = useState(true);

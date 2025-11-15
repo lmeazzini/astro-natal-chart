@@ -2,8 +2,8 @@
 Birth Chart model for database.
 """
 
-from typing import TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from sqlalchemy import ARRAY, DateTime, ForeignKey, Numeric, String, Text, func

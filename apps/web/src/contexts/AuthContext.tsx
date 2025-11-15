@@ -3,7 +3,7 @@
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, User, AuthTokens } from '../services/auth';
+import { authService, User } from '../services/auth';
 
 interface AuthContextData {
   user: User | null;

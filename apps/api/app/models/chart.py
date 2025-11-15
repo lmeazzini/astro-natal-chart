@@ -13,6 +13,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
+    from app.models.interpretation import ChartInterpretation
     from app.models.user import User
 
 
@@ -89,6 +90,11 @@ class BirthChart(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="birth_charts")  # noqa: F821
+    interpretations: Mapped[list["ChartInterpretation"]] = relationship(  # noqa: F821
+        "ChartInterpretation",
+        back_populates="chart",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return f"<BirthChart {self.person_name} ({self.id})>"

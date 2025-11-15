@@ -16,6 +16,7 @@ router = APIRouter()
 
 class OAuthTokenResponse(BaseModel):
     """OAuth token response model."""
+
     access_token: str
     refresh_token: str
     token_type: str
@@ -40,10 +41,7 @@ async def oauth_login(provider: str, request: Request) -> RedirectResponse:
     # Get the OAuth client for the provider
     client = oauth.create_client(provider)
     if not client:
-        raise HTTPException(
-            status_code=500,
-            detail=f"OAuth provider {provider} is not configured"
-        )
+        raise HTTPException(status_code=500, detail=f"OAuth provider {provider} is not configured")
 
     # Generate redirect URI based on provider
     if provider == "google":
@@ -55,8 +53,7 @@ async def oauth_login(provider: str, request: Request) -> RedirectResponse:
 
     if not redirect_uri:
         raise HTTPException(
-            status_code=500,
-            detail=f"Redirect URI for {provider} is not configured"
+            status_code=500, detail=f"Redirect URI for {provider} is not configured"
         )
 
     # Generate authorization URL and redirect user
@@ -86,10 +83,7 @@ async def oauth_callback(
     # Get the OAuth client
     client = oauth.create_client(provider)
     if not client:
-        raise HTTPException(
-            status_code=500,
-            detail=f"OAuth provider {provider} is not configured"
-        )
+        raise HTTPException(status_code=500, detail=f"OAuth provider {provider} is not configured")
 
     try:
         # Exchange authorization code for access token
@@ -116,8 +110,7 @@ async def oauth_callback(
                         break
         else:  # facebook
             resp = await client.get(
-                "https://graph.facebook.com/v18.0/me?fields=id,name,email,picture",
-                token=token
+                "https://graph.facebook.com/v18.0/me?fields=id,name,email,picture", token=token
             )
             userinfo = resp.json()
 
@@ -129,7 +122,7 @@ async def oauth_callback(
         if not user_data.get("email") or not user_data.get("provider_user_id"):
             raise HTTPException(
                 status_code=400,
-                detail="Failed to retrieve required user information from OAuth provider"
+                detail="Failed to retrieve required user information from OAuth provider",
             )
 
         # Get or create user
@@ -157,10 +150,7 @@ async def oauth_callback(
 
     except Exception as e:
         # In production, log this error
-        raise HTTPException(
-            status_code=400,
-            detail=f"OAuth authentication failed: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"OAuth authentication failed: {str(e)}") from e
 
 
 @router.get("/providers")
@@ -174,21 +164,27 @@ async def get_oauth_providers() -> list[dict[str, str]]:
     providers = []
 
     if settings.GOOGLE_CLIENT_ID and settings.GOOGLE_CLIENT_SECRET:
-        providers.append({
-            "name": "google",
-            "display_name": "Google",
-        })
+        providers.append(
+            {
+                "name": "google",
+                "display_name": "Google",
+            }
+        )
 
     if settings.GITHUB_CLIENT_ID and settings.GITHUB_CLIENT_SECRET:
-        providers.append({
-            "name": "github",
-            "display_name": "GitHub",
-        })
+        providers.append(
+            {
+                "name": "github",
+                "display_name": "GitHub",
+            }
+        )
 
     if settings.FACEBOOK_CLIENT_ID and settings.FACEBOOK_CLIENT_SECRET:
-        providers.append({
-            "name": "facebook",
-            "display_name": "Facebook",
-        })
+        providers.append(
+            {
+                "name": "facebook",
+                "display_name": "Facebook",
+            }
+        )
 
     return providers

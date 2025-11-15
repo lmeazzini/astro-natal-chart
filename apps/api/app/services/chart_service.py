@@ -15,18 +15,18 @@ from app.services.astro_service import calculate_birth_chart
 
 class ChartNotFoundError(Exception):
     """Raised when chart is not found."""
+
     pass
 
 
 class UnauthorizedAccessError(Exception):
     """Raised when user tries to access chart they don't own."""
+
     pass
 
 
 async def create_birth_chart(
-    db: AsyncSession,
-    user_id: UUID,
-    chart_data: BirthChartCreate
+    db: AsyncSession, user_id: UUID, chart_data: BirthChartCreate
 ) -> BirthChart:
     """
     Create a new birth chart with astrological calculations.
@@ -75,11 +75,7 @@ async def create_birth_chart(
 
 
 async def get_user_charts(
-    db: AsyncSession,
-    user_id: UUID,
-    skip: int = 0,
-    limit: int = 100,
-    include_deleted: bool = False
+    db: AsyncSession, user_id: UUID, skip: int = 0, limit: int = 100, include_deleted: bool = False
 ) -> list[BirthChart]:
     """
     Get all birth charts for a user.
@@ -103,11 +99,7 @@ async def get_user_charts(
     )
 
 
-async def get_chart_by_id(
-    db: AsyncSession,
-    chart_id: UUID,
-    user_id: UUID
-) -> BirthChart:
+async def get_chart_by_id(db: AsyncSession, chart_id: UUID, user_id: UUID) -> BirthChart:
     """
     Get a birth chart by ID.
 
@@ -133,10 +125,7 @@ async def get_chart_by_id(
 
 
 async def update_birth_chart(
-    db: AsyncSession,
-    chart_id: UUID,
-    user_id: UUID,
-    update_data: BirthChartUpdate
+    db: AsyncSession, chart_id: UUID, user_id: UUID, update_data: BirthChartUpdate
 ) -> BirthChart:
     """
     Update a birth chart.
@@ -169,10 +158,7 @@ async def update_birth_chart(
 
 
 async def delete_birth_chart(
-    db: AsyncSession,
-    chart_id: UUID,
-    user_id: UUID,
-    soft_delete: bool = True
+    db: AsyncSession, chart_id: UUID, user_id: UUID, soft_delete: bool = True
 ) -> None:
     """
     Delete a birth chart.
@@ -196,11 +182,7 @@ async def delete_birth_chart(
         await chart_repo.delete(chart)
 
 
-async def count_user_charts(
-    db: AsyncSession,
-    user_id: UUID,
-    include_deleted: bool = False
-) -> int:
+async def count_user_charts(db: AsyncSession, user_id: UUID, include_deleted: bool = False) -> int:
     """
     Count total number of charts for a user.
 

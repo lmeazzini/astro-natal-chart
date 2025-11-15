@@ -15,14 +15,16 @@ from app.core.security import create_access_token, create_refresh_token
 from app.models.user import OAuthAccount, User
 
 # Initialize OAuth with settings
-config = Config(environ={
-    "GOOGLE_CLIENT_ID": settings.GOOGLE_CLIENT_ID or "",
-    "GOOGLE_CLIENT_SECRET": settings.GOOGLE_CLIENT_SECRET or "",
-    "GITHUB_CLIENT_ID": settings.GITHUB_CLIENT_ID or "",
-    "GITHUB_CLIENT_SECRET": settings.GITHUB_CLIENT_SECRET or "",
-    "FACEBOOK_CLIENT_ID": settings.FACEBOOK_CLIENT_ID or "",
-    "FACEBOOK_CLIENT_SECRET": settings.FACEBOOK_CLIENT_SECRET or "",
-})
+config = Config(
+    environ={
+        "GOOGLE_CLIENT_ID": settings.GOOGLE_CLIENT_ID or "",
+        "GOOGLE_CLIENT_SECRET": settings.GOOGLE_CLIENT_SECRET or "",
+        "GITHUB_CLIENT_ID": settings.GITHUB_CLIENT_ID or "",
+        "GITHUB_CLIENT_SECRET": settings.GITHUB_CLIENT_SECRET or "",
+        "FACEBOOK_CLIENT_ID": settings.FACEBOOK_CLIENT_ID or "",
+        "FACEBOOK_CLIENT_SECRET": settings.FACEBOOK_CLIENT_SECRET or "",
+    }
+)
 
 oauth = OAuth(config)
 

@@ -4,6 +4,8 @@ Loads environment variables from .env file.
 """
 
 
+from typing import Literal
+
 from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -84,6 +86,12 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = "INFO"
+
+    # Cookie Security Settings
+    COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
+    COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"  # CSRF protection
+    COOKIE_DOMAIN: str | None = None  # Cookie domain (None = current domain)
 
     @property
     def database_url_sync(self) -> str:

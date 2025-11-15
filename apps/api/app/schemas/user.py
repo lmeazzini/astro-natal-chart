@@ -5,8 +5,7 @@ User schemas for request/response validation.
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from pydantic_core.core_schema import ValidationInfo
+from pydantic import BaseModel, EmailStr, Field, ValidationInfo, field_validator
 
 
 class UserBase(BaseModel):

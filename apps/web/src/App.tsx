@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './pages/Login';
@@ -78,6 +79,36 @@ function HomePage() {
 
 function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
+  const [chartCount, setChartCount] = React.useState<number>(0);
+  const [loadingCharts, setLoadingCharts] = React.useState(true);
+
+  React.useEffect(() => {
+    if (user) {
+      loadChartCount();
+    }
+  }, [user]);
+
+  async function loadChartCount() {
+    try {
+      const token = localStorage.getItem('astro_access_token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:8000/api/v1/charts/?page=1&page_size=1', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setChartCount(data.total || 0);
+      }
+    } catch (error) {
+      console.error('Error loading chart count:', error);
+    } finally {
+      setLoadingCharts(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -121,9 +152,13 @@ function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 bg-card border border-border rounded-lg">
             <h3 className="font-semibold text-foreground mb-2">Meus Mapas</h3>
-            <p className="text-3xl font-bold text-primary">0</p>
+            {loadingCharts ? (
+              <p className="text-3xl font-bold text-muted-foreground">...</p>
+            ) : (
+              <p className="text-3xl font-bold text-primary">{chartCount}</p>
+            )}
             <p className="text-sm text-muted-foreground mt-2">
-              Nenhum mapa criado ainda
+              {chartCount === 0 ? 'Nenhum mapa criado ainda' : chartCount === 1 ? '1 mapa salvo' : `${chartCount} mapas salvos`}
             </p>
           </div>
 

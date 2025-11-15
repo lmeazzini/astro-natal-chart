@@ -54,11 +54,21 @@ jobs:
 
       - name: Run linting
         working-directory: ./apps/api
+        env:
+          DATABASE_URL: postgresql+asyncpg://astro:test_password@localhost:5432/astro_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+          OPENAI_API_KEY: sk-test-dummy-key-for-ci
         run: |
           ruff check .
 
       - name: Run type checking
         working-directory: ./apps/api
+        env:
+          DATABASE_URL: postgresql+asyncpg://astro:test_password@localhost:5432/astro_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+          OPENAI_API_KEY: sk-test-dummy-key-for-ci
         run: |
           mypy app/
 
@@ -68,6 +78,7 @@ jobs:
           DATABASE_URL: postgresql+asyncpg://astro:test_password@localhost:5432/astro_test
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
+          OPENAI_API_KEY: sk-test-dummy-key-for-ci
         run: |
           pytest --cov=app --cov-report=xml
 

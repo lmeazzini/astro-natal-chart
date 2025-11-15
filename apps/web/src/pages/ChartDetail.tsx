@@ -125,6 +125,20 @@ export function ChartDetailPage() {
     ? Math.floor((chart.chart_data.ascendant % 30))
     : 0;
 
+  // Get Sun and Moon signs for the "Big Three"
+  function getSunSign(): string {
+    const sun = chart.chart_data?.planets.find(p => p.name === 'Sun');
+    return sun?.sign || '';
+  }
+
+  function getMoonSign(): string {
+    const moon = chart.chart_data?.planets.find(p => p.name === 'Moon');
+    return moon?.sign || '';
+  }
+
+  const sunSign = getSunSign();
+  const moonSign = getMoonSign();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -233,6 +247,70 @@ export function ChartDetailPage() {
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Mapa Natal
               </h2>
+
+              {/* Big Three Summary */}
+              <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Sun */}
+                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl" title="Sol">
+                      ☉
+                    </span>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Sua essência
+                      </p>
+                      <p className="text-lg font-semibold text-foreground">
+                        Sol em {getSignSymbol(sunSign)} {sunSign}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Identidade e propósito de vida
+                  </p>
+                </div>
+
+                {/* Moon */}
+                <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl" title="Lua">
+                      ☽
+                    </span>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Suas emoções
+                      </p>
+                      <p className="text-lg font-semibold text-foreground">
+                        Lua em {getSignSymbol(moonSign)} {moonSign}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Mundo emocional e necessidades
+                  </p>
+                </div>
+
+                {/* Ascendant */}
+                <div className="bg-gradient-to-br from-green-500/10 to-teal-500/10 border border-green-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl font-bold text-primary" title="Ascendente">
+                      ASC
+                    </span>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Sua aparência
+                      </p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {getSignSymbol(ascSign)} {ascSign}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Como os outros te veem
+                  </p>
+                </div>
+              </div>
+
               <ChartWheel
                 planets={chart.chart_data.planets}
                 houses={chart.chart_data.houses}

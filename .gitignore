@@ -29,6 +29,7 @@ pip-delete-this-directory.txt
 *.swo
 *~
 .DS_Store
+.claude/
 
 # Build outputs
 dist/
@@ -62,13 +63,15 @@ tmp/
 temp/
 *.tmp
 
-# LaTeX
+# LaTeX (generated files, but allow reference PDFs in docs/)
 *.aux
 *.log
 *.out
 *.toc
-*.pdf
 *.synctex.gz
+# Ignore PDFs except in docs/references/
+*.pdf
+!docs/references/*.pdf
 
 # OS
 Thumbs.db

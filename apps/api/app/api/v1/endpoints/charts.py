@@ -5,7 +5,7 @@ Birth chart endpoints for creating and managing natal charts.
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
@@ -32,6 +32,7 @@ router = APIRouter()
 @limiter.limit(RateLimits.CHART_CREATE)
 async def create_chart(
     request: Request,
+    response: Response,
     chart_data: BirthChartCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -70,6 +71,7 @@ async def create_chart(
 @limiter.limit(RateLimits.CHART_LIST)
 async def list_charts(
     request: Request,
+    response: Response,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
     page: int = Query(1, ge=1, description="Page number"),
@@ -118,6 +120,7 @@ async def list_charts(
 @limiter.limit(RateLimits.CHART_READ)
 async def get_chart(
     request: Request,
+    response: Response,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],

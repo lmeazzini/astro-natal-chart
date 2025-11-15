@@ -2,9 +2,81 @@
 name = "astro-natal-api"
 version = "1.0.0"
 description = "API para sistema de mapas natais com astrologia tradicional"
+readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
 authors = [
     {name = "Astro Team", email = "team@example.com"}
+]
+keywords = ["astrology", "natal-chart", "birth-chart", "fastapi", "traditional-astrology"]
+
+# Production dependencies
+dependencies = [
+    # Core Framework
+    "fastapi==0.108.0",
+    "uvicorn[standard]==0.25.0",
+    "python-multipart==0.0.6",
+    "slowapi==0.1.9",
+
+    # Database
+    "sqlalchemy==2.0.25",
+    "alembic==1.13.1",
+    "psycopg[binary]==3.1.16",
+    "asyncpg==0.29.0",
+
+    # Authentication
+    "python-jose[cryptography]==3.3.0",
+    "bcrypt==4.1.2",
+    "authlib==1.3.0",
+    "python-dotenv==1.0.0",
+
+    # Data Validation
+    "pydantic==2.5.3",
+    "pydantic-settings==2.1.0",
+    "email-validator>=2.2.0",
+
+    # Email
+    "aiosmtplib==3.0.2",
+
+    # Astrological Calculations
+    "pyswisseph==2.10.3.2",
+
+    # Geolocation & Timezone
+    "timezonefinder==6.4.0",
+    "httpx==0.25.2",
+
+    # AI/ML
+    "openai==1.54.4",
+
+    # Task Queue
+    "celery[redis]==5.3.4",
+    "redis==4.6.0",
+
+    # PDF Generation
+    "Jinja2==3.1.2",
+
+    # Utilities
+    "python-dateutil==2.8.2",
+    "PyYAML==6.0.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[dependency-groups]
+# Development dependencies (UV standard)
+dev = [
+    "pytest==7.4.3",
+    "pytest-asyncio==0.21.1",
+    "pytest-cov==4.1.0",
+    "ruff==0.1.9",
+    "mypy==1.7.1",
+    "types-python-jose==3.3.4.20240106",
+    "types-PyYAML==6.0.12.20240917",
 ]
 
 [tool.ruff]
@@ -38,7 +110,15 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["swisseph", "timezonefinder"]
+module = [
+    "swisseph",
+    "timezonefinder",
+    "jose",
+    "slowapi",
+    "celery",
+    "authlib",
+    "aiosmtplib",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

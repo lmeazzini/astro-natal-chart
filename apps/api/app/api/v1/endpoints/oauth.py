@@ -2,7 +2,7 @@
 OAuth2 authentication endpoints for social login.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ class OAuthTokenResponse(BaseModel):
 
 @router.get("/login/{provider}")
 @limiter.limit(RateLimits.OAUTH_LOGIN)
-async def oauth_login(provider: str, request: Request) -> RedirectResponse:
+async def oauth_login(provider: str, request: Request, response: Response) -> RedirectResponse:
     """
     Initiate OAuth login with a provider.
 
@@ -67,6 +67,7 @@ async def oauth_login(provider: str, request: Request) -> RedirectResponse:
 async def oauth_callback(
     provider: str,
     request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> RedirectResponse:
     """

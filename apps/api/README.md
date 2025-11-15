@@ -36,8 +36,31 @@ app/
 - Python 3.11+
 - PostgreSQL 16+
 - Redis 7+
+- **UV** (recomendado) ou pip
 
 ### Instalação
+
+#### Opção 1: Com UV (Recomendado - 10-100x mais rápido)
+
+```bash
+# Instalar UV
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Instalar todas as dependências (produção + dev)
+uv sync
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env com suas configurações
+
+# Executar migrations
+uv run alembic upgrade head
+
+# Iniciar servidor de desenvolvimento
+uv run uvicorn app.main:app --reload
+```
+
+#### Opção 2: Com pip (tradicional)
 
 ```bash
 # Criar ambiente virtual
@@ -96,16 +119,46 @@ pytest tests/test_astro/
 open htmlcov/index.html
 ```
 
+## Gerenciamento de Dependências
+
+O projeto usa **UV** (https://github.com/astral-sh/uv) - gerenciador de pacotes Python ultra-rápido escrito em Rust.
+
+```bash
+# Adicionar nova dependência de produção
+uv add package-name
+
+# Adicionar dependência de desenvolvimento
+uv add --dev package-name
+
+# Remover dependência
+uv remove package-name
+
+# Atualizar dependências
+uv lock --upgrade
+
+# Sincronizar ambiente com pyproject.toml
+uv sync
+
+# Sincronizar apenas produção
+uv sync --no-dev
+```
+
+**Arquivos importantes:**
+- `pyproject.toml`: Metadados do projeto e dependências (PEP 621)
+- `uv.lock`: Lockfile com versões exatas (equivalente ao package-lock.json)
+- `requirements.txt`: Mantido para compatibilidade, mas UV usa pyproject.toml
+
 ## Linting e Formatação
 
 ```bash
-# Lint com Ruff
+# Com UV (recomendado)
+uv run ruff check .
+uv run ruff check --fix .
+uv run mypy app/
+
+# Sem UV (tradicional)
 ruff check .
-
-# Auto-fix
 ruff check --fix .
-
-# Type checking com mypy
 mypy app/
 ```
 

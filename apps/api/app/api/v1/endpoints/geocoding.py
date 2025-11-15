@@ -3,7 +3,7 @@ Geocoding endpoints for location search.
 """
 
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import BaseModel
 
 from app.core.rate_limit import RateLimits, limiter
@@ -27,6 +27,7 @@ class LocationResponse(BaseModel):
 @limiter.limit(RateLimits.GEOCODING_SEARCH)
 async def search_location(
     request: Request,
+    response: Response,
     q: str = Query(..., min_length=2, description="City name or address to search"),
     limit: int = Query(5, ge=1, le=10, description="Maximum number of results"),
 ) -> list[LocationResponse]:
@@ -70,6 +71,7 @@ async def search_location(
 @limiter.limit(RateLimits.GEOCODING_COORDINATES)
 async def get_coordinates(
     request: Request,
+    response: Response,
     city: str = Query(..., min_length=2, description="City name"),
     country: str = Query("", description="Country name (optional, improves accuracy)"),
 ) -> LocationResponse:

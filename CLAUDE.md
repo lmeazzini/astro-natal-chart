@@ -46,6 +46,44 @@ make dev
 # Frontend: cd apps/web && npm run dev
 ```
 
+### Package Management (UV)
+
+The backend uses **UV** (https://github.com/astral-sh/uv) - a blazing-fast Python package manager written in Rust (10-100x faster than pip).
+
+```bash
+# Install UV (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install all dependencies from pyproject.toml (production + dev)
+cd apps/api && uv sync
+
+# Install only production dependencies
+cd apps/api && uv sync --no-dev
+
+# Add a new dependency
+cd apps/api && uv add package-name
+
+# Add a dev dependency
+cd apps/api && uv add --dev package-name
+
+# Update dependencies
+cd apps/api && uv lock --upgrade
+
+# Run commands in UV-managed environment
+cd apps/api && uv run pytest
+cd apps/api && uv run mypy app/
+
+# Create/update uv.lock from pyproject.toml
+cd apps/api && uv lock
+```
+
+**Key files:**
+- `pyproject.toml`: Project metadata and dependencies (PEP 621 standard)
+- `uv.lock`: Lockfile with exact versions (similar to package-lock.json)
+- `requirements.txt`: Legacy file, kept for compatibility but UV uses pyproject.toml
+
+**Note**: Docker build now uses UV instead of pip for faster builds.
+
 ### Testing
 ```bash
 # All tests (backend + frontend)

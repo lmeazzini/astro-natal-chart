@@ -1,27 +1,34 @@
-# Multi-stage Dockerfile for FastAPI backend
+# Multi-stage Dockerfile for FastAPI backend with UV
 
 FROM python:3.11-slim as base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
-# Install system dependencies
+# Install system dependencies and UV
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Add UV to PATH
+ENV PATH="/root/.local/bin:$PATH"
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements
-COPY requirements.txt .
+# Copy dependency files
+COPY pyproject.toml .
+COPY uv.lock* .
+COPY README.md .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies with UV (production only)
+RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY . .
@@ -31,7 +38,11 @@ EXPOSE 8000
 
 # Development stage
 FROM base as development
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# Install dev dependencies
+RUN uv sync --frozen
+
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # Production stage
 FROM base as production
@@ -40,4 +51,4 @@ FROM base as production
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

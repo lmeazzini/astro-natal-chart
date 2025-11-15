@@ -4,7 +4,7 @@ Authentication endpoints for user registration, login, and token management.
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
@@ -28,6 +28,7 @@ router = APIRouter()
 @limiter.limit(RateLimits.REGISTER)
 async def register(
     request: Request,
+    response: Response,
     user_data: UserCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> User:
@@ -63,6 +64,7 @@ async def register(
 @limiter.limit(RateLimits.LOGIN)
 async def login(
     request: Request,
+    response: Response,
     login_data: LoginRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Token:
@@ -103,6 +105,7 @@ async def login(
 @limiter.limit(RateLimits.REFRESH)
 async def refresh_token(
     request: Request,
+    response: Response,
     refresh_data: RefreshTokenRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Token:

@@ -5,10 +5,11 @@ Birth chart endpoints for creating and managing natal charts.
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
+from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.schemas.chart import (
     BirthChartCreate,
@@ -28,7 +29,9 @@ router = APIRouter()
     summary="Create birth chart",
     description="Calculate and save a new birth chart with complete astrological data.",
 )
+@limiter.limit(RateLimits.CHART_CREATE)
 async def create_chart(
+    request: Request,
     chart_data: BirthChartCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -64,7 +67,9 @@ async def create_chart(
     summary="List user's birth charts",
     description="Get all birth charts for the current user with pagination.",
 )
+@limiter.limit(RateLimits.CHART_LIST)
 async def list_charts(
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
     page: int = Query(1, ge=1, description="Page number"),
@@ -110,7 +115,9 @@ async def list_charts(
     summary="Get birth chart",
     description="Get a specific birth chart by ID.",
 )
+@limiter.limit(RateLimits.CHART_READ)
 async def get_chart(
+    request: Request,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -151,7 +158,9 @@ async def get_chart(
     summary="Update birth chart",
     description="Update birth chart metadata (name, notes, tags, etc).",
 )
+@limiter.limit(RateLimits.CHART_UPDATE)
 async def update_chart(
+    request: Request,
     chart_id: UUID,
     update_data: BirthChartUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -195,7 +204,9 @@ async def update_chart(
     summary="Delete birth chart",
     description="Delete a birth chart (soft delete by default).",
 )
+@limiter.limit(RateLimits.CHART_DELETE)
 async def delete_chart(
+    request: Request,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],

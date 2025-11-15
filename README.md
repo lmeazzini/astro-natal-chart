@@ -198,6 +198,65 @@ O backend segue uma arquitetura em camadas com separação clara de responsabili
 - **Context**: AuthContext para gerenciamento de autenticação
 - **Utils**: Funções utilitárias (símbolos astrológicos, formatação)
 
+## Rate Limiting
+
+O sistema implementa rate limiting para proteger a API contra abuso e controlar custos de APIs externas.
+
+### Limites por Endpoint
+
+| Endpoint | Método | Limite | Janela | Identificação |
+|----------|--------|--------|--------|---------------|
+| `/auth/login` | POST | 10 | 1 minuto | IP |
+| `/auth/register` | POST | 5 | 1 hora | IP |
+| `/auth/refresh` | POST | 10 | 1 minuto | IP |
+| `/charts/` | POST | 30 | 1 hora | User ID |
+| `/charts/` | GET | 100 | 1 minuto | User ID |
+| `/charts/{id}` | GET | 200 | 1 minuto | User ID |
+| `/charts/{id}` | PUT | 60 | 1 hora | User ID |
+| `/charts/{id}` | DELETE | 30 | 1 hora | User ID |
+| `/geocoding/search` | GET | 60 | 1 minuto | IP |
+| `/geocoding/coordinates` | GET | 60 | 1 minuto | IP |
+| `/oauth/login/{provider}` | GET | 10 | 1 minuto | IP |
+| `/oauth/callback/{provider}` | GET | 10 | 1 minuto | IP |
+
+### Configuração
+
+O rate limiting utiliza **Redis** como backend de armazenamento e a biblioteca **slowapi** para FastAPI.
+
+**Estratégias:**
+- **Endpoints públicos** (login, register, geocoding): Limitados por **endereço IP**
+- **Endpoints autenticados** (charts): Limitados por **User ID** (do JWT token)
+
+**Headers de Resposta:**
+Quando o limite é excedido (HTTP 429), a resposta inclui:
+- `X-RateLimit-Limit`: Limite total de requests
+- `X-RateLimit-Remaining`: Requests restantes na janela atual
+- `X-RateLimit-Reset`: Timestamp Unix quando o limite será resetado
+- `Retry-After`: Segundos até poder tentar novamente
+
+**Exemplo de resposta 429:**
+```json
+{
+  "error": "Rate limit exceeded",
+  "detail": "10 per 1 minute"
+}
+```
+
+### Desabilitar em Desenvolvimento
+
+Para desabilitar rate limiting durante desenvolvimento local (não Docker):
+
+```python
+# apps/api/app/core/rate_limit.py
+# Comente a linha:
+# storage_uri=str(settings.REDIS_URL),
+
+# E use:
+storage_uri="memory://",  # In-memory storage (não persistente)
+```
+
+**Nota:** Em ambiente Docker, o Redis já está configurado e funciona sem alterações.
+
 ## Testes
 
 ```bash
@@ -207,6 +266,9 @@ pytest
 
 # Com coverage
 pytest --cov=app --cov-report=html
+
+# Testes de rate limiting
+pytest tests/test_rate_limit.py -v
 
 # Frontend (vitest)
 cd apps/web

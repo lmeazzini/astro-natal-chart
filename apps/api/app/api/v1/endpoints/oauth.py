@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.rate_limit import RateLimits, limiter
 from app.services.oauth_service import OAuthService, oauth
 
 router = APIRouter()
@@ -23,6 +24,7 @@ class OAuthTokenResponse(BaseModel):
 
 
 @router.get("/login/{provider}")
+@limiter.limit(RateLimits.OAUTH_LOGIN)
 async def oauth_login(provider: str, request: Request) -> RedirectResponse:
     """
     Initiate OAuth login with a provider.
@@ -64,6 +66,7 @@ async def oauth_login(provider: str, request: Request) -> RedirectResponse:
 
 
 @router.get("/callback/{provider}")
+@limiter.limit(RateLimits.OAUTH_CALLBACK)
 async def oauth_callback(
     provider: str,
     request: Request,

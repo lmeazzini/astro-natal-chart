@@ -9,6 +9,11 @@ import { ChartDetailPage } from './pages/ChartDetail';
 import { OAuthCallbackPage } from './pages/OAuthCallback';
 import { ForgotPasswordPage } from './pages/ForgotPassword';
 import { ResetPasswordPage } from './pages/ResetPassword';
+import { TermsPage } from './pages/Terms';
+import { PrivacyPage } from './pages/Privacy';
+import { CookiesPage } from './pages/Cookies';
+import { ConsentPage } from './pages/Consent';
+import { CookieBanner } from './components/CookieBanner';
 
 function App() {
   return (
@@ -25,8 +30,14 @@ function App() {
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/charts/new" element={<NewChartPage />} />
           <Route path="/charts/:id" element={<ChartDetailPage />} />
+          {/* Legal Pages */}
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/cookies" element={<CookiesPage />} />
+          <Route path="/consent" element={<ConsentPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <CookieBanner />
       </BrowserRouter>
     </AuthProvider>
   );

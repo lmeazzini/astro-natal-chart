@@ -35,7 +35,7 @@ class PasswordResetService:
         self,
         db: AsyncSession,
         email: str,
-    ) -> dict[str, str]:
+    ) -> dict[str, str | bool]:
         """
         Solicita recuperação de senha.
 
@@ -47,7 +47,7 @@ class PasswordResetService:
             email: Email do usuário
 
         Returns:
-            Dict com mensagem de sucesso
+            Dict com mensagem de sucesso e flag de sucesso
         """
         # Buscar usuário
         result = await db.execute(select(User).where(User.email == email))

@@ -165,7 +165,7 @@ async def get_oauth_providers() -> list[dict[str, str]]:
     Returns:
         List of configured OAuth providers
     """
-    providers = []
+    providers: list[dict[str, str]] = []
 
     if settings.GOOGLE_CLIENT_ID and settings.GOOGLE_CLIENT_SECRET:
         providers.append(

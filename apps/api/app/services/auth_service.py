@@ -212,7 +212,7 @@ async def create_or_update_oauth_user(
     # Check if user with email exists
     existing_user = await user_repo.get_by_email(email)
 
-    if existing_user:
+    if existing_user is not None:
         # Link OAuth account to existing user
         oauth_account = OAuthAccount(
             id=uuid4(),

@@ -3,7 +3,7 @@ Privacy and LGPD/GDPR compliance endpoints.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status

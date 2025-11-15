@@ -5,8 +5,9 @@ Model for password reset tokens.
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
@@ -26,17 +27,17 @@ class PasswordResetToken(Base):
 
     __tablename__ = "password_reset_tokens"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(
+    id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    token = Column(String(64), unique=True, nullable=False, index=True)  # SHA256 hash
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    used = Column(Boolean, default=False, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)  # SHA256 hash
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     @property
     def is_valid(self) -> bool:

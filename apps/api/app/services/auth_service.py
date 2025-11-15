@@ -5,7 +5,6 @@ Authentication service for user registration, login, and token management.
 from datetime import timedelta
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -15,6 +14,7 @@ from app.core.security import (
     verify_password,
 )
 from app.models.user import OAuthAccount, User
+from app.repositories.user_repository import OAuthAccountRepository, UserRepository
 from app.schemas.auth import Token
 from app.schemas.user import UserCreate
 
@@ -45,12 +45,10 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> User:
     Raises:
         UserAlreadyExistsError: If email already registered
     """
-    # Check if user already exists
-    stmt = select(User).where(User.email == user_data.email)
-    result = await db.execute(stmt)
-    existing_user = result.scalar_one_or_none()
+    user_repo = UserRepository(db)
 
-    if existing_user:
+    # Check if user already exists
+    if await user_repo.email_exists(user_data.email):
         raise UserAlreadyExistsError(f"User with email {user_data.email} already exists")
 
     # Create new user
@@ -66,11 +64,7 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> User:
         is_superuser=False,
     )
 
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-
-    return user
+    return await user_repo.create(user)
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User:
@@ -88,10 +82,10 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
     Raises:
         AuthenticationError: If credentials are invalid
     """
+    user_repo = UserRepository(db)
+
     # Find user by email
-    stmt = select(User).where(User.email == email)
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    user = await user_repo.get_by_email(email)
 
     if not user:
         raise AuthenticationError("Invalid email or password")
@@ -157,16 +151,13 @@ async def refresh_access_token(db: AsyncSession, user_id: UUID) -> Token:
     Raises:
         AuthenticationError: If user not found or inactive
     """
-    # Find user
-    stmt = select(User).where(User.id == user_id)
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    user_repo = UserRepository(db)
+
+    # Find active user
+    user = await user_repo.get_active_user_by_id(user_id)
 
     if not user:
-        raise AuthenticationError("User not found")
-
-    if not user.is_active:
-        raise AuthenticationError("User account is inactive")
+        raise AuthenticationError("User not found or inactive")
 
     # Generate new access token
     access_token = create_access_token(
@@ -205,42 +196,36 @@ async def create_or_update_oauth_user(
     Raises:
         AuthenticationError: If OAuth account exists for different user
     """
+    user_repo = UserRepository(db)
+    oauth_repo = OAuthAccountRepository(db)
+
     # Check if OAuth account exists
-    stmt = select(OAuthAccount).where(
-        OAuthAccount.provider == provider,
-        OAuthAccount.provider_user_id == provider_user_id,
-    )
-    result = await db.execute(stmt)
-    oauth_account = result.scalar_one_or_none()
+    oauth_account = await oauth_repo.get_by_provider_and_user_id(provider, provider_user_id)
 
     if oauth_account:
         # Update existing OAuth account
         user = oauth_account.user
-        oauth_account.access_token = None  # Will be updated by caller if needed
         user.avatar_url = avatar_url or user.avatar_url
-        await db.commit()
-        await db.refresh(user)
+        await user_repo.update(user)
         return user, False
 
     # Check if user with email exists
-    stmt = select(User).where(User.email == email)
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    existing_user = await user_repo.get_by_email(email)
 
-    if user:
+    if existing_user:
         # Link OAuth account to existing user
         oauth_account = OAuthAccount(
             id=uuid4(),
-            user_id=user.id,
+            user_id=existing_user.id,
             provider=provider,
             provider_user_id=provider_user_id,
         )
-        db.add(oauth_account)
-        user.email_verified = True  # Verified by OAuth provider
-        user.avatar_url = avatar_url or user.avatar_url
-        await db.commit()
-        await db.refresh(user)
-        return user, False
+        await oauth_repo.create(oauth_account)
+
+        existing_user.email_verified = True  # Verified by OAuth provider
+        existing_user.avatar_url = avatar_url or existing_user.avatar_url
+        await user_repo.update(existing_user)
+        return existing_user, False
 
     # Create new user with OAuth account
     user = User(
@@ -254,19 +239,16 @@ async def create_or_update_oauth_user(
         is_active=True,
         is_superuser=False,
     )
-    db.add(user)
-    await db.flush()  # Flush to get user.id
+    await user_repo.create(user)
 
+    # Create OAuth account
     oauth_account = OAuthAccount(
         id=uuid4(),
         user_id=user.id,
         provider=provider,
         provider_user_id=provider_user_id,
     )
-    db.add(oauth_account)
-
-    await db.commit()
-    await db.refresh(user)
+    await oauth_repo.create(oauth_account)
 
     return user, True
 
@@ -282,9 +264,8 @@ async def get_user_by_id(db: AsyncSession, user_id: UUID) -> User | None:
     Returns:
         User instance or None if not found
     """
-    stmt = select(User).where(User.id == user_id)
-    result = await db.execute(stmt)
-    return result.scalar_one_or_none()
+    user_repo = UserRepository(db)
+    return await user_repo.get_by_id(user_id)
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -298,6 +279,5 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     Returns:
         User instance or None if not found
     """
-    stmt = select(User).where(User.email == email)
-    result = await db.execute(stmt)
-    return result.scalar_one_or_none()
+    user_repo = UserRepository(db)
+    return await user_repo.get_by_email(email)

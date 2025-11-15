@@ -129,12 +129,18 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 **Layered architecture:**
 1. **API Layer** (`app/api/v1/endpoints/`): FastAPI routes, request/response handling
 2. **Service Layer** (`app/services/`): Business logic orchestration
-3. **Data Layer** (`app/models/`): SQLAlchemy models, database access
+3. **Repository Layer** (`app/repositories/`): Data access abstraction
+4. **Data Layer** (`app/models/`): SQLAlchemy models, database schema
 
 **Key patterns:**
 - **Async everywhere**: SQLAlchemy async engine, FastAPI async endpoints
 - **Dependency Injection**: FastAPI's `Depends()` for `get_db()` and `get_current_user()`
-- **NO Repository pattern**: Services directly access SQLAlchemy models (not abstracted)
+- **Repository pattern**: Data access abstracted through repository layer
+  - `BaseRepository`: Generic CRUD operations
+  - `UserRepository`: User-specific queries (by email, active users, etc.)
+  - `OAuthAccountRepository`: OAuth account queries
+  - `ChartRepository`: Chart queries with authorization (by user, soft delete, search, tags)
+  - `AuditRepository`: Audit log creation and queries
 
 **Database (PostgreSQL with JSONB):**
 - User accounts and OAuth providers in normalized tables
@@ -274,24 +280,55 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 
 ## Critical Development Patterns
 
-### Adding New API Endpoint
+### Adding New Repository
 
-1. Create Pydantic schemas in `app/schemas/` (request/response)
-2. Add business logic in `app/services/`
-3. Create route in `app/api/v1/endpoints/`
-4. Use `Depends(get_current_user)` for authenticated endpoints
-5. Document with FastAPI docstrings (auto-generates OpenAPI)
+1. Create repository class in `app/repositories/` (inherit from `BaseRepository`)
+2. Add specialized query methods for the model
+3. Import and use in service layer
 
 Example:
 ```python
-# app/api/v1/endpoints/charts.py
-@router.post("/", response_model=ChartRead, status_code=201)
-async def create_chart(
-    chart_data: ChartCreate,
+# app/repositories/my_repository.py
+from app.repositories.base import BaseRepository
+from app.models.my_model import MyModel
+
+class MyRepository(BaseRepository[MyModel]):
+    def __init__(self, db: AsyncSession):
+        super().__init__(MyModel, db)
+
+    async def get_by_custom_field(self, value: str) -> MyModel | None:
+        stmt = select(MyModel).where(MyModel.custom_field == value)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+```
+
+### Adding New API Endpoint
+
+1. Create Pydantic schemas in `app/schemas/` (request/response)
+2. Create repository in `app/repositories/` (if new model)
+3. Add business logic in `app/services/` (use repository)
+4. Create route in `app/api/v1/endpoints/`
+5. Use `Depends(get_current_user)` for authenticated endpoints
+6. Document with FastAPI docstrings (auto-generates OpenAPI)
+
+Example:
+```python
+# app/services/my_service.py
+from app.repositories.my_repository import MyRepository
+
+async def create_item(db: AsyncSession, data: ItemCreate) -> Item:
+    repo = MyRepository(db)
+    item = Item(**data.model_dump())
+    return await repo.create(item)
+
+# app/api/v1/endpoints/items.py
+@router.post("/", response_model=ItemRead, status_code=201)
+async def create_item(
+    item_data: ItemCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await chart_service.create_chart(db, chart_data, current_user.id)
+    return await my_service.create_item(db, item_data)
 ```
 
 ### Adding Database Model

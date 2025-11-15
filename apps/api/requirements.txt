@@ -44,3 +44,4 @@ pytest-cov==4.1.0
 httpx==0.25.2  # For TestClient
 ruff==0.1.9
 mypy==1.7.1
+types-python-jose==3.3.4.20240106

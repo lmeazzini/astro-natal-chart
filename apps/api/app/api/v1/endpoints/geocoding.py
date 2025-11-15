@@ -26,7 +26,7 @@ class LocationResponse(BaseModel):
 async def search_location(
     q: str = Query(..., min_length=2, description="City name or address to search"),
     limit: int = Query(5, ge=1, le=10, description="Maximum number of results"),
-):
+) -> list[LocationResponse]:
     """
     Search for locations by city name or address.
 
@@ -67,7 +67,7 @@ async def search_location(
 async def get_coordinates(
     city: str = Query(..., min_length=2, description="City name"),
     country: str = Query("", description="Country name (optional, improves accuracy)"),
-):
+) -> LocationResponse:
     """
     Get coordinates for a specific city.
 

@@ -47,10 +47,10 @@ async def create_chart(
     try:
         chart = await chart_service.create_birth_chart(
             db=db,
-            user_id=current_user.id,
+            user_id=UUID(str(current_user.id)),
             chart_data=chart_data,
         )
-        return chart
+        return chart  # type: ignore[return-value]
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -86,14 +86,14 @@ async def list_charts(
 
     charts = await chart_service.get_user_charts(
         db=db,
-        user_id=current_user.id,
+        user_id=UUID(str(current_user.id)),
         skip=skip,
         limit=page_size,
     )
 
     total = await chart_service.count_user_charts(
         db=db,
-        user_id=current_user.id,
+        user_id=UUID(str(current_user.id)),
     )
 
     return BirthChartList(
@@ -130,9 +130,9 @@ async def get_chart(
         chart = await chart_service.get_chart_by_id(
             db=db,
             chart_id=chart_id,
-            user_id=current_user.id,
+            user_id=UUID(str(current_user.id)),
         )
-        return chart
+        return chart  # type: ignore[return-value]
     except chart_service.ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -173,10 +173,10 @@ async def update_chart(
         chart = await chart_service.update_birth_chart(
             db=db,
             chart_id=chart_id,
-            user_id=current_user.id,
+            user_id=UUID(str(current_user.id)),
             update_data=update_data,
         )
-        return chart
+        return chart  # type: ignore[return-value]
     except chart_service.ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -214,7 +214,7 @@ async def delete_chart(
         await chart_service.delete_birth_chart(
             db=db,
             chart_id=chart_id,
-            user_id=current_user.id,
+            user_id=UUID(str(current_user.id)),
             soft_delete=not hard_delete,
         )
     except chart_service.ChartNotFoundError:

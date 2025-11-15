@@ -94,7 +94,7 @@ def convert_to_julian_day(
         dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0
     )
 
-    return jd
+    return jd  # type: ignore[no-any-return]
 
 
 def get_sign_and_position(longitude: float) -> dict[str, Any]:

@@ -2,6 +2,7 @@
 Birth Chart model for database.
 """
 
+from typing import TYPE_CHECKING
 from datetime import datetime
 from uuid import uuid4
 
@@ -10,6 +11,9 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class BirthChart(Base):

@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic_core.core_schema import ValidationInfo
 
 
 class UserBase(BaseModel):
@@ -42,7 +43,7 @@ class UserCreate(UserBase):
 
     @field_validator("password_confirm")
     @classmethod
-    def passwords_match(cls, v: str, info) -> str:
+    def passwords_match(cls, v: str, info: ValidationInfo) -> str:
         """Validate that passwords match."""
         if "password" in info.data and v != info.data["password"]:
             raise ValueError("Passwords do not match")

@@ -5,10 +5,10 @@ Birth Chart service for CRUD operations.
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.chart import BirthChart
+from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import BirthChartCreate, BirthChartUpdate
 from app.services.astro_service import calculate_birth_chart
 
@@ -39,6 +39,8 @@ async def create_birth_chart(
     Returns:
         Created birth chart
     """
+    chart_repo = ChartRepository(db)
+
     # Calculate astrological data
     calculated_data = calculate_birth_chart(
         birth_datetime=chart_data.birth_datetime,
@@ -69,11 +71,7 @@ async def create_birth_chart(
         visibility="private",
     )
 
-    db.add(chart)
-    await db.commit()
-    await db.refresh(chart)
-
-    return chart
+    return await chart_repo.create(chart)
 
 
 async def get_user_charts(
@@ -96,21 +94,13 @@ async def get_user_charts(
     Returns:
         List of birth charts
     """
-    conditions = [BirthChart.user_id == user_id]
-
-    if not include_deleted:
-        conditions.append(BirthChart.deleted_at.is_(None))
-
-    stmt = (
-        select(BirthChart)
-        .where(and_(*conditions))
-        .order_by(BirthChart.created_at.desc())
-        .offset(skip)
-        .limit(limit)
+    chart_repo = ChartRepository(db)
+    return await chart_repo.get_all_by_user(
+        user_id=user_id,
+        skip=skip,
+        limit=limit,
+        include_deleted=include_deleted,
     )
-
-    result = await db.execute(stmt)
-    return list(result.scalars().all())
 
 
 async def get_chart_by_id(
@@ -133,18 +123,11 @@ async def get_chart_by_id(
         ChartNotFoundError: If chart not found
         UnauthorizedAccessError: If user doesn't own chart
     """
-    stmt = select(BirthChart).where(
-        BirthChart.id == chart_id,
-        BirthChart.deleted_at.is_(None)
-    )
-    result = await db.execute(stmt)
-    chart = result.scalar_one_or_none()
+    chart_repo = ChartRepository(db)
+    chart = await chart_repo.get_by_id_and_user(chart_id, user_id)
 
     if not chart:
         raise ChartNotFoundError(f"Chart {chart_id} not found")
-
-    if chart.user_id != user_id:
-        raise UnauthorizedAccessError("You don't have access to this chart")
 
     return chart
 
@@ -171,6 +154,7 @@ async def update_birth_chart(
         ChartNotFoundError: If chart not found
         UnauthorizedAccessError: If user doesn't own chart
     """
+    chart_repo = ChartRepository(db)
     chart = await get_chart_by_id(db, chart_id, user_id)
 
     # Update fields
@@ -181,10 +165,7 @@ async def update_birth_chart(
 
     chart.updated_at = datetime.utcnow()
 
-    await db.commit()
-    await db.refresh(chart)
-
-    return chart
+    return await chart_repo.update(chart)
 
 
 async def delete_birth_chart(
@@ -206,14 +187,13 @@ async def delete_birth_chart(
         ChartNotFoundError: If chart not found
         UnauthorizedAccessError: If user doesn't own chart
     """
+    chart_repo = ChartRepository(db)
     chart = await get_chart_by_id(db, chart_id, user_id)
 
     if soft_delete:
-        chart.deleted_at = datetime.utcnow()
-        await db.commit()
+        await chart_repo.soft_delete(chart)
     else:
-        await db.delete(chart)
-        await db.commit()
+        await chart_repo.delete(chart)
 
 
 async def count_user_charts(
@@ -232,13 +212,8 @@ async def count_user_charts(
     Returns:
         Total count
     """
-    conditions = [BirthChart.user_id == user_id]
-
-    if not include_deleted:
-        conditions.append(BirthChart.deleted_at.is_(None))
-
-    stmt = select(BirthChart).where(and_(*conditions))
-    result = await db.execute(stmt)
-    charts = result.scalars().all()
-
-    return len(list(charts))
+    chart_repo = ChartRepository(db)
+    return await chart_repo.count_by_user(
+        user_id=user_id,
+        include_deleted=include_deleted,
+    )

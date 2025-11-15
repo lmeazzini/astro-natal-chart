@@ -5,7 +5,7 @@ Supports Google, GitHub, and Facebook.
 
 from typing import Any
 
-from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.starlette_client import OAuth  # type: ignore[import-untyped]
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.config import Config
@@ -93,15 +93,15 @@ class OAuthService:
 
         if oauth_account:
             # OAuth account exists, return the associated user
-            stmt = select(User).where(User.id == oauth_account.user_id)
-            result = await self.db.execute(stmt)
-            user = result.scalar_one()
+            user_stmt = select(User).where(User.id == oauth_account.user_id)
+            user_result = await self.db.execute(user_stmt)
+            user = user_result.scalar_one()
             return user, False
 
         # Check if user with this email already exists
-        stmt = select(User).where(User.email == email)
-        result = await self.db.execute(stmt)
-        existing_user = result.scalar_one_or_none()
+        email_stmt = select(User).where(User.email == email)
+        email_result = await self.db.execute(email_stmt)
+        existing_user = email_result.scalar_one_or_none()
 
         if existing_user:
             # User exists, link the OAuth account
@@ -165,7 +165,7 @@ class OAuthService:
             "provider_user_id": userinfo.get("sub", ""),
             "email": userinfo.get("email", ""),
             "full_name": userinfo.get("name", ""),
-            "avatar_url": userinfo.get("picture"),
+            "avatar_url": userinfo.get("picture", ""),
         }
 
     @staticmethod
@@ -175,7 +175,7 @@ class OAuthService:
             "provider_user_id": str(userinfo.get("id", "")),
             "email": userinfo.get("email", ""),
             "full_name": userinfo.get("name") or userinfo.get("login", ""),
-            "avatar_url": userinfo.get("avatar_url"),
+            "avatar_url": userinfo.get("avatar_url", ""),
         }
 
     @staticmethod

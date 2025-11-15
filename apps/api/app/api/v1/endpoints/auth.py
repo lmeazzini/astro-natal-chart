@@ -116,6 +116,13 @@ async def refresh_token(
         # Decode and validate refresh token
         payload = decode_token(refresh_data.refresh_token)
 
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         # Check if token type is refresh
         if payload.get("type") != "refresh":
             raise HTTPException(

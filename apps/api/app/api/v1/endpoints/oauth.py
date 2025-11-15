@@ -23,7 +23,7 @@ class OAuthTokenResponse(BaseModel):
 
 
 @router.get("/login/{provider}")
-async def oauth_login(provider: str, request: Request):
+async def oauth_login(provider: str, request: Request) -> RedirectResponse:
     """
     Initiate OAuth login with a provider.
 
@@ -60,7 +60,7 @@ async def oauth_login(provider: str, request: Request):
         )
 
     # Generate authorization URL and redirect user
-    return await client.authorize_redirect(request, redirect_uri)
+    return await client.authorize_redirect(request, redirect_uri)  # type: ignore[no-any-return]
 
 
 @router.get("/callback/{provider}")
@@ -68,7 +68,7 @@ async def oauth_callback(
     provider: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
-):
+) -> RedirectResponse:
     """
     Handle OAuth callback from provider.
 
@@ -164,7 +164,7 @@ async def oauth_callback(
 
 
 @router.get("/providers")
-async def get_oauth_providers():
+async def get_oauth_providers() -> list[dict[str, str]]:
     """
     Get list of available OAuth providers.
 
@@ -191,4 +191,4 @@ async def get_oauth_providers():
             "display_name": "Facebook",
         })
 
-    return {"providers": providers}
+    return providers

@@ -33,7 +33,7 @@ class LocationResult:
 class GeocodingService:
     """Service for geocoding operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.nominatim_url = "https://nominatim.openstreetmap.org/search"
         self.opencage_url = "https://api.opencagedata.com/geocode/v1/json"
         self.timeout = 10.0

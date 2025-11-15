@@ -170,6 +170,34 @@ VITE_API_URL=http://localhost:8000
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
+## Arquitetura
+
+### Backend (FastAPI)
+
+O backend segue uma arquitetura em camadas com separação clara de responsabilidades:
+
+1. **API Layer** (`app/api/v1/endpoints/`): Rotas FastAPI, validação de requests/responses
+2. **Service Layer** (`app/services/`): Lógica de negócio e orquestração
+3. **Repository Layer** (`app/repositories/`): Abstração de acesso a dados
+4. **Data Layer** (`app/models/`): Modelos SQLAlchemy e schema do banco
+
+**Padrões Implementados:**
+- **Repository Pattern**: Acesso a dados abstraído através de repositories
+  - `BaseRepository`: Operações CRUD genéricas (get_by_id, create, update, delete)
+  - `UserRepository`: Consultas específicas de usuários (por email, usuários ativos)
+  - `ChartRepository`: Consultas de mapas com autorização (por usuário, soft delete, busca, tags)
+  - `AuditRepository`: Criação e consulta de logs de auditoria
+- **Dependency Injection**: FastAPI `Depends()` para sessão DB e autenticação
+- **Async/await**: Totalmente assíncrono (SQLAlchemy async, FastAPI async)
+
+### Frontend (React)
+
+- **Pages**: Componentes de rotas (Login, Register, ChartDetail, NewChart, Charts, Dashboard)
+- **Components**: Componentes reutilizáveis (ChartWheel, PlanetList, AspectGrid, HouseTable)
+- **Services**: Cliente API baseado em fetch
+- **Context**: AuthContext para gerenciamento de autenticação
+- **Utils**: Funções utilitárias (símbolos astrológicos, formatação)
+
 ## Testes
 
 ```bash

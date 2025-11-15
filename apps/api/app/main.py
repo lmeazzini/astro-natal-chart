@@ -12,7 +12,6 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import close_db, init_db
 from app.core.rate_limit import limiter
-from app.middleware.security import SecurityHeadersMiddleware
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -27,30 +26,15 @@ app = FastAPI(
 app.state.limiter = limiter
 
 # Add rate limit exceeded exception handler
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
-# Security headers middleware - should be added before CORS
-app.add_middleware(SecurityHeadersMiddleware)
-
-# CORS middleware - configured based on environment
-# Production: restrictive, Development: more permissive
-if settings.ENVIRONMENT == "production":
-    allowed_origins = settings.cors_origins
-    allowed_methods = ["GET", "POST", "PUT", "DELETE", "PATCH"]
-    allowed_headers = ["Authorization", "Content-Type", "X-CSRF-Token"]
-else:
-    # Development: allow all for easier testing
-    allowed_origins = settings.cors_origins
-    allowed_methods = ["*"]
-    allowed_headers = ["*"]
-
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=allowed_methods,
-    allow_headers=allowed_headers,
-    expose_headers=["X-Total-Count", "X-RateLimit-Limit", "X-RateLimit-Remaining"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

@@ -20,9 +20,20 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 
+// Allowed email domains for registration
+const ALLOWED_EMAIL_DOMAINS = ['realastrology'];
+
 // Complex password validation schema
 const registerFormSchema = z.object({
-  email: z.string().min(1, 'Email é obrigatório').email('Email inválido'),
+  email: z.string()
+    .min(1, 'Email é obrigatório')
+    .email('Email inválido')
+    .refine((email) => {
+      const domain = email.split('@')[1];
+      return domain && ALLOWED_EMAIL_DOMAINS.includes(domain);
+    }, {
+      message: `Cadastro restrito. Use um email @${ALLOWED_EMAIL_DOMAINS.join(' ou @')}`,
+    }),
   fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
   password: z.string()
     .min(8, 'Senha deve ter pelo menos 8 caracteres')
@@ -144,7 +155,7 @@ export function RegisterPage() {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="seu@email.com"
+                          placeholder="seu.nome@realastrology"
                           autoComplete="email"
                           {...field}
                         />

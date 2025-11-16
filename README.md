@@ -171,6 +171,10 @@ OPENAI_MODEL=gpt-4o-mini
 OPENAI_MAX_TOKENS=500
 OPENAI_TEMPERATURE=0.7
 
+# Email Domain Restriction
+ENABLE_EMAIL_DOMAIN_RESTRICTION=true
+ALLOWED_EMAIL_DOMAINS=realastrology
+
 # CORS
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
@@ -213,6 +217,32 @@ O sistema gera automaticamente interpretações astrológicas usando OpenAI GPT-
 
 **Desabilitar interpretações IA:**
 Se não configurar a chave OpenAI, os mapas serão criados normalmente, mas sem as interpretações textuais.
+
+### Restrição de Domínio de Email
+
+O sistema permite restringir o cadastro de novos usuários apenas a domínios de email específicos. Esta funcionalidade é útil para controlar o acesso à aplicação.
+
+**Configuração:**
+
+1. **Habilitar restrição**: Configure `ENABLE_EMAIL_DOMAIN_RESTRICTION=true` no `.env` do backend
+
+2. **Domínios permitidos**: Configure `ALLOWED_EMAIL_DOMAINS` com uma lista separada por vírgulas (sem o @)
+   ```bash
+   ALLOWED_EMAIL_DOMAINS=realastrology,example
+   ```
+
+3. **Comportamento**:
+   - Quando habilitado, apenas emails dos domínios especificados podem se registrar
+   - A validação ocorre tanto no backend (Pydantic validator) quanto no frontend (Zod schema)
+   - Tentativas de registro com domínios não autorizados retornam erro descritivo
+
+**Exemplo de mensagem de erro:**
+```
+Cadastro restrito. Apenas emails dos domínios autorizados são permitidos: @realastrology
+```
+
+**Desabilitar restrição:**
+Para permitir cadastro com qualquer email, configure `ENABLE_EMAIL_DOMAIN_RESTRICTION=false` no `.env`.
 
 ## Arquitetura
 

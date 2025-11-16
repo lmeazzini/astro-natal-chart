@@ -70,6 +70,15 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str = "noreply@real-astrology.com"
     SMTP_USE_TLS: bool = True
 
+    # Email Domain Restriction
+    ENABLE_EMAIL_DOMAIN_RESTRICTION: bool = True
+    ALLOWED_EMAIL_DOMAINS: str = "realastrology"
+
+    @property
+    def allowed_email_domains_list(self) -> list[str]:
+        """Get allowed email domains as list."""
+        return [domain.strip() for domain in self.ALLOWED_EMAIL_DOMAINS.split(",")]
+
     # Geocoding
     OPENCAGE_API_KEY: str | None = None
     NOMINATIM_USER_AGENT: str = "real-astrology/1.0"

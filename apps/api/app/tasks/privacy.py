@@ -7,10 +7,9 @@ import logging
 from datetime import datetime, timedelta
 
 from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.celery_app import celery_app
-from app.core.database import SessionLocal
+from app.core.database import AsyncSessionLocal
 from app.models.chart import AuditLog, BirthChart
 from app.models.password_reset import PasswordResetToken
 from app.models.user import OAuthAccount, User
@@ -46,7 +45,7 @@ def cleanup_deleted_users() -> dict[str, int]:
 
 async def _cleanup_deleted_users_async() -> dict[str, int]:
     """Versão async da tarefa de hard delete."""
-    async with SessionLocal() as db:
+    async with AsyncSessionLocal() as db:
         # Data de corte: 30 dias atrás
         cutoff_date = datetime.utcnow() - timedelta(days=30)
 

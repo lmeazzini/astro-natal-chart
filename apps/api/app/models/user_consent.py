@@ -3,10 +3,11 @@ Model for user consent tracking (LGPD/GDPR compliance).
 """
 
 from datetime import datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
@@ -30,34 +31,34 @@ class UserConsent(Base):
 
     __tablename__ = "user_consents"
 
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(
+    id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    consent_type = Column(
+    consent_type: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
         index=True,
         comment="Type: terms, privacy, cookies, marketing",
     )
-    version = Column(
+    version: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
         comment="Document version (e.g., '1.0', '2024-11-15')",
     )
-    accepted = Column(Boolean, nullable=False, default=True)
-    ip_address = Column(String(45), nullable=True, comment="IPv4 or IPv6 address")
-    user_agent = Column(Text, nullable=True, comment="Browser user agent string")
-    consent_text = Column(
+    accepted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True, comment="IPv4 or IPv6 address")
+    user_agent: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Browser user agent string")
+    consent_text: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
         comment="Snapshot of consent text at acceptance time",
     )
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
-    revoked_at = Column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     @property
     def is_active(self) -> bool:

@@ -46,7 +46,6 @@ services:
     volumes:
       - ./apps/api:/app
       - /app/__pycache__  # Prevent pycache from being mounted
-      - /app/.venv  # Prevent venv from being mounted (UV managed)
     ports:
       - "8000:8000"
     env_file:
@@ -71,11 +70,10 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: astro-celery
-    command: sh -c ". /app/.venv/bin/activate && celery -A app.tasks.celery_app worker --loglevel=info"
+    command: sh -c ". /app/.venv/bin/activate && celery -A app.core.celery_app worker --loglevel=info"
     volumes:
       - ./apps/api:/app
       - /app/__pycache__  # Prevent pycache from being mounted
-      - /app/.venv  # Prevent venv from being mounted (UV managed)
     env_file:
       - ./apps/api/.env
     environment:

@@ -33,8 +33,15 @@ RUN uv sync --frozen --no-dev
 # Copy application code
 COPY . .
 
+# Copy and set entrypoint
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Expose port
 EXPOSE 8000
+
+# Set entrypoint
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Development stage
 FROM base as development

@@ -2,10 +2,10 @@
 Model for password reset tokens.
 """
 
-from datetime import datetime, timedelta
-from uuid import uuid4
+from datetime import datetime
+from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import Mapped, mapped_column
 

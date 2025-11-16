@@ -2,7 +2,6 @@
 Privacy and LGPD/GDPR compliance endpoints.
 """
 
-import json
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -13,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.chart import AuditLog, BirthChart
-from app.models.password_reset import PasswordResetToken
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
 
@@ -89,7 +87,8 @@ async def export_user_data(
             "birth_timezone": chart.birth_timezone,
             "latitude": float(chart.latitude),
             "longitude": float(chart.longitude),
-            "location": chart.location,
+            "city": chart.city,
+            "country": chart.country,
             "chart_data": chart.chart_data,  # Full calculation data
             "created_at": chart.created_at.isoformat() if chart.created_at else None,
             "updated_at": chart.updated_at.isoformat() if chart.updated_at else None,
@@ -121,8 +120,8 @@ async def export_user_data(
     audit_result = await db.execute(
         select(AuditLog).where(
             AuditLog.user_id == current_user.id,
-            AuditLog.timestamp >= cutoff_date,
-        ).order_by(AuditLog.timestamp.desc())
+            AuditLog.created_at >= cutoff_date,
+        ).order_by(AuditLog.created_at.desc())
     )
     audit_logs = audit_result.scalars().all()
     audit_data = [
@@ -130,7 +129,7 @@ async def export_user_data(
             "action": log.action,
             "resource_type": log.resource_type,
             "resource_id": str(log.resource_id) if log.resource_id else None,
-            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "timestamp": log.created_at.isoformat() if log.created_at else None,
             "ip_address": log.ip_address,
         }
         for log in audit_logs

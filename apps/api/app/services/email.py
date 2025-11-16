@@ -5,7 +5,6 @@ Email service for sending transactional emails.
 import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any
 
 import aiosmtplib
 
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 class EmailService:
     """Serviço para envio de emails transacionais."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Inicializa o serviço de email."""
         self.smtp_enabled = bool(
             settings.SMTP_HOST

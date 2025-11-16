@@ -9,6 +9,7 @@ import { ChartDetailPage } from './pages/ChartDetail';
 import { OAuthCallbackPage } from './pages/OAuthCallback';
 import { ForgotPasswordPage } from './pages/ForgotPassword';
 import { ResetPasswordPage } from './pages/ResetPassword';
+import { ProfilePage } from './pages/Profile';
 import { TermsPage } from './pages/Terms';
 import { PrivacyPage } from './pages/Privacy';
 import { CookiesPage } from './pages/Cookies';
@@ -27,6 +28,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/charts/new" element={<NewChartPage />} />
           <Route path="/charts/:id" element={<ChartDetailPage />} />
@@ -143,6 +145,12 @@ function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-foreground">Astro</h1>
           <div className="flex items-center gap-4">
+            <Link
+              to="/profile"
+              className="text-sm text-primary hover:underline"
+            >
+              Perfil
+            </Link>
             <span className="text-sm text-muted-foreground">
               {user.full_name}
             </span>

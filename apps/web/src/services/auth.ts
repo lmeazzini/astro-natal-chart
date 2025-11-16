@@ -27,6 +27,12 @@ export interface User {
   email_verified: boolean;
   is_active: boolean;
   is_superuser: boolean;
+  bio: string | null;
+  profile_public: boolean;
+  allow_email_notifications: boolean;
+  analytics_consent: boolean;
+  last_login_at: string | null;
+  last_activity_at: string | null;
   created_at: string;
   updated_at: string;
 }

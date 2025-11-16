@@ -20,13 +20,14 @@ from pathlib import Path
 # Add parent directory to path to import app modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from loguru import logger
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+# Module imports must come after sys.path modification
+from loguru import logger  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
 
-from app.core.config import settings
-from app.repositories.chart_repository import ChartRepository
-from app.services.interpretation_service import InterpretationService
+from app.core.config import settings  # noqa: E402
+from app.repositories.chart_repository import ChartRepository  # noqa: E402
+from app.services.interpretation_service import InterpretationService  # noqa: E402
 
 
 async def generate_missing_interpretations(

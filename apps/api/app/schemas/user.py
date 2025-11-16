@@ -68,6 +68,8 @@ class UserUpdate(BaseModel):
     locale: str | None = Field(None, max_length=10)
     timezone: str | None = Field(None, max_length=50)
     avatar_url: str | None = None
+    bio: str | None = Field(None, max_length=500, description="User biography")
+    profile_public: bool | None = Field(None, description="Make profile publicly visible")
 
 
 class UserRead(UserBase):
@@ -80,6 +82,12 @@ class UserRead(UserBase):
     email_verified: bool
     is_active: bool
     is_superuser: bool
+    bio: str | None
+    profile_public: bool
+    allow_email_notifications: bool
+    analytics_consent: bool
+    last_login_at: datetime | None
+    last_activity_at: datetime | None
     created_at: datetime
     updated_at: datetime
 

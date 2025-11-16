@@ -1,0 +1,302 @@
+"""
+User profile and account management endpoints.
+"""
+
+from typing import Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.dependencies import get_current_user, get_db
+from app.core.rate_limit import RateLimits, limiter
+from app.models.user import User
+from app.repositories.user_repository import OAuthAccountRepository
+from app.schemas.password import PasswordChange
+from app.schemas.user import UserRead, UserUpdate
+from app.schemas.user_activity import UserActivityList
+from app.schemas.user_stats import UserStats
+from app.services import user_service
+
+router = APIRouter()
+
+
+@router.get(
+    "/me",
+    response_model=UserRead,
+    summary="Get current user profile",
+    description="Get the profile of the currently authenticated user.",
+)
+async def get_current_user_profile(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Get current user profile.
+
+    Args:
+        current_user: Authenticated user from JWT token
+
+    Returns:
+        User profile data
+    """
+    return current_user
+
+
+@router.put(
+    "/me",
+    response_model=UserRead,
+    summary="Update user profile",
+    description="Update the authenticated user's profile information.",
+)
+@limiter.limit(RateLimits.CHART_UPDATE)
+async def update_user_profile(
+    request: Request,
+    response: Response,
+    profile_data: UserUpdate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    """
+    Update user profile.
+
+    Args:
+        profile_data: Profile update data
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Updated user profile
+    """
+    return await user_service.update_profile(db, current_user, profile_data)
+
+
+@router.put(
+    "/me/password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Change password",
+    description="Change the authenticated user's password.",
+)
+@limiter.limit(RateLimits.CHART_UPDATE)
+async def change_user_password(
+    request: Request,
+    response: Response,
+    password_data: PasswordChange,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """
+    Change user password.
+
+    Args:
+        password_data: Password change data
+        current_user: Authenticated user
+        db: Database session
+
+    Raises:
+        HTTPException 400: If current password is incorrect
+    """
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
+    await user_service.change_password(
+        db,
+        current_user,
+        password_data,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+
+
+@router.get(
+    "/me/stats",
+    response_model=UserStats,
+    summary="Get user statistics",
+    description="Get statistics about the user's account (charts created, account age, etc.).",
+)
+@limiter.limit(RateLimits.CHART_LIST)
+async def get_user_stats(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserStats:
+    """
+    Get user statistics.
+
+    Args:
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        User statistics
+    """
+    return await user_service.get_stats(db, current_user)
+
+
+@router.get(
+    "/me/activity",
+    response_model=UserActivityList,
+    summary="Get user activity log",
+    description="Get the activity log for the authenticated user (login history, chart operations, etc.).",
+)
+@limiter.limit(RateLimits.CHART_LIST)
+async def get_user_activity(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    limit: int = 50,
+    offset: int = 0,
+) -> UserActivityList:
+    """
+    Get user activity log.
+
+    Args:
+        current_user: Authenticated user
+        db: Database session
+        limit: Maximum number of activities to return
+        offset: Number of activities to skip
+
+    Returns:
+        List of user activities
+    """
+    return await user_service.get_activities(db, current_user, limit=limit, offset=offset)
+
+
+@router.get(
+    "/me/export",
+    summary="Export user data",
+    description="Export all user data in JSON format (LGPD/GDPR compliance).",
+)
+@limiter.limit("10/hour")
+async def export_user_data(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict:
+    """
+    Export all user data (LGPD/GDPR compliance).
+
+    Args:
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Dictionary with all user data
+    """
+    return await user_service.export_data(db, current_user)
+
+
+@router.delete(
+    "/me",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete user account",
+    description="Soft delete the authenticated user's account. This action can be reversed within 30 days.",
+)
+@limiter.limit(RateLimits.CHART_DELETE)
+async def delete_user_account(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """
+    Soft delete user account.
+
+    Args:
+        current_user: Authenticated user
+        db: Database session
+    """
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
+    await user_service.soft_delete_user(
+        db,
+        current_user,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+
+
+@router.get(
+    "/me/oauth-connections",
+    summary="Get OAuth connections",
+    description="Get all OAuth provider connections for the authenticated user.",
+)
+async def get_oauth_connections(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[dict]:
+    """
+    Get all OAuth connections for user.
+
+    Args:
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        List of OAuth connections
+    """
+    oauth_repo = OAuthAccountRepository(db)
+    accounts = await oauth_repo.get_by_user_id(UUID(str(current_user.id)))
+
+    return [
+        {
+            "provider": account.provider,
+            "provider_user_id": account.provider_user_id,
+            "connected_at": account.created_at.isoformat(),
+        }
+        for account in accounts
+    ]
+
+
+@router.delete(
+    "/me/oauth-connections/{provider}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Disconnect OAuth provider",
+    description="Disconnect an OAuth provider from the user account.",
+)
+async def disconnect_oauth_provider(
+    provider: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """
+    Disconnect OAuth provider from user account.
+
+    Args:
+        provider: OAuth provider name (google, github, facebook)
+        current_user: Authenticated user
+        db: Database session
+
+    Raises:
+        HTTPException 400: If user has no password and this is the only OAuth connection
+        HTTPException 404: If OAuth connection not found
+    """
+    oauth_repo = OAuthAccountRepository(db)
+
+    # Get all user's OAuth accounts
+    all_accounts = await oauth_repo.get_by_user_id(UUID(str(current_user.id)))
+
+    # Check if user has password or other OAuth accounts
+    if not current_user.password_hash and len(all_accounts) <= 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot disconnect last OAuth provider without setting a password first",
+        )
+
+    # Find the specific OAuth account to disconnect
+    account_to_delete = next(
+        (acc for acc in all_accounts if acc.provider == provider),
+        None,
+    )
+
+    if not account_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"OAuth connection for {provider} not found",
+        )
+
+    # Delete the OAuth account
+    await oauth_repo.delete(account_to_delete)

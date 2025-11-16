@@ -2,7 +2,7 @@
 Authentication service for user registration, login, and token management.
 """
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -167,6 +167,13 @@ async def login_user(db: AsyncSession, email: str, password: str) -> Token:
     """
     # Authenticate user
     user = await authenticate_user(db, email, password)
+
+    # Update last login and activity timestamps
+    user.last_login_at = datetime.now(UTC)
+    user.last_activity_at = datetime.now(UTC)
+
+    user_repo = UserRepository(db)
+    await user_repo.update(user)
 
     # Generate tokens
     access_token = create_access_token(

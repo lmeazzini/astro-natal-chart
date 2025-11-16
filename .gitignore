@@ -76,3 +76,6 @@ temp/
 # OS
 Thumbs.db
 Desktop.ini
+
+# Autentication
+*.pem

@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="ux/figures/logo-transparent.png" alt="Astro - Sistema de Mapas Natais" width="200"/>
+  <img src="ux/figures/logo-transparent.png" alt="Real Astrology - Sistema de Mapas Natais" width="200"/>
 
-  # Sistema de Mapas Natais - Astrologia Tradicional
+  # Real Astrology - Sistema de Mapas Natais com Astrologia Tradicional
 
   Sistema web completo para geração e análise de mapas natais utilizando astrologia tradicional, com cálculos astronômicos de alta precisão baseados em Swiss Ephemeris.
 

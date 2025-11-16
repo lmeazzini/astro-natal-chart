@@ -1,8 +1,8 @@
 {
-  "name": "astro-natal-chart-monorepo",
+  "name": "real-astrology-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistema completo de mapas natais com astrologia tradicional",
+  "description": "Sistema completo de astrologia natal tradicional",
   "workspaces": [
     "apps/*",
     "packages/*"

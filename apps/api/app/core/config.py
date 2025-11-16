@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    APP_NAME: str = "Astro Natal Chart API"
+    APP_NAME: str = "Real Astrology API"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
@@ -67,12 +67,12 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
-    SMTP_FROM_EMAIL: str = "noreply@astro-app.com"
+    SMTP_FROM_EMAIL: str = "noreply@real-astrology.com"
     SMTP_USE_TLS: bool = True
 
     # Geocoding
     OPENCAGE_API_KEY: str | None = None
-    NOMINATIM_USER_AGENT: str = "astro-natal-chart/1.0"
+    NOMINATIM_USER_AGENT: str = "real-astrology/1.0"
 
     # OpenAI
     OPENAI_API_KEY: str

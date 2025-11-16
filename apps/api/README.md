@@ -1,6 +1,6 @@
-# Astro Natal Chart API
+# Real Astrology API
 
-Backend API para sistema de mapas natais com astrologia tradicional.
+Backend API para sistema de astrologia natal tradicional.
 
 ## Stack Tecnológica
 

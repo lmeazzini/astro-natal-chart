@@ -1,14 +1,14 @@
 [project]
-name = "astro-natal-api"
+name = "real-astrology-api"
 version = "1.0.0"
-description = "API para sistema de mapas natais com astrologia tradicional"
+description = "API para sistema de astrologia natal tradicional"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    {name = "Astro Team", email = "team@example.com"}
+    {name = "Real Astrology Team", email = "team@example.com"}
 ]
-keywords = ["astrology", "natal-chart", "birth-chart", "fastapi", "traditional-astrology"]
+keywords = ["astrology", "natal-chart", "birth-chart", "fastapi", "traditional-astrology", "real-astrology"]
 
 # Production dependencies
 dependencies = [

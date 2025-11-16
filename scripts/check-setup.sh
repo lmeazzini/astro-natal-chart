@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}Astro Natal Chart - Setup Verification${NC}"
+echo -e "${GREEN}Real Astrology - Setup Verification${NC}"
 echo -e "${GREEN}========================================${NC}\n"
 
 # Function to check if command exists

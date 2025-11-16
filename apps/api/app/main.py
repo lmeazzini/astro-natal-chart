@@ -81,7 +81,7 @@ async def shutdown_event() -> None:
 async def root() -> dict[str, str]:
     """Root endpoint."""
     return {
-        "message": "Astro Natal Chart API",
+        "message": "Real Astrology API",
         "version": settings.APP_VERSION,
         "docs": "/docs",
     }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# reboot.sh - Complete system reboot script for Astro Natal Chart application
+# reboot.sh - Complete system reboot script for Real Astrology application
 # This script stops all services, rebuilds containers, and starts everything fresh
 
 set -e  # Exit on error
@@ -43,7 +43,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-print_header "🔄 ASTRO NATAL CHART - SYSTEM REBOOT"
+print_header "🔄 REAL ASTROLOGY - SYSTEM REBOOT"
 log_info "Starting complete system reboot..."
 log_warning "This will stop all services, rebuild containers, and restart everything"
 echo ""

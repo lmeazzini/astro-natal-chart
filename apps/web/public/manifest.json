@@ -1,6 +1,6 @@
 {
-  "name": "Astro - Mapas Natais Astrológicos",
-  "short_name": "Astro",
+  "name": "Real Astrology - Mapas Natais Astrológicos",
+  "short_name": "Real Astrology",
   "description": "Sistema de mapas natais com astrologia tradicional - Cálculos precisos usando Swiss Ephemeris",
   "start_url": "/",
   "display": "standalone",

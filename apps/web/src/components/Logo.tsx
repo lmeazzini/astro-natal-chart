@@ -39,7 +39,7 @@ export function Logo({ size = 'md', className = '', onClick }: LogoProps) {
   return (
     <img
       src="/logo.png"
-      alt="Astro - Astrologia Natal"
+      alt="Real Astrology - Astrologia Natal"
       className={`${sizeClass} ${className}`}
       onClick={onClick}
       loading="lazy"

@@ -1,6 +1,6 @@
-# Astro Natal Chart - Frontend
+# Real Astrology - Frontend
 
-Interface web moderna para sistema de mapas natais com astrologia tradicional.
+Interface web moderna para sistema de astrologia natal tradicional.
 
 ## Stack Tecnológica
 

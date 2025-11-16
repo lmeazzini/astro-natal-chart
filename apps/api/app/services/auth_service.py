@@ -14,6 +14,7 @@ from app.core.security import (
     verify_password,
 )
 from app.models.user import OAuthAccount, User
+from app.models.user_consent import UserConsent
 from app.repositories.user_repository import OAuthAccountRepository, UserRepository
 from app.schemas.auth import Token
 from app.schemas.user import UserCreate
@@ -31,13 +32,20 @@ class UserAlreadyExistsError(Exception):
     pass
 
 
-async def register_user(db: AsyncSession, user_data: UserCreate) -> User:
+async def register_user(
+    db: AsyncSession,
+    user_data: UserCreate,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+) -> User:
     """
     Register a new user with email and password.
 
     Args:
         db: Database session
         user_data: User registration data
+        ip_address: User's IP address for consent tracking
+        user_agent: User's browser User-Agent for consent tracking
 
     Returns:
         Created user instance
@@ -64,7 +72,48 @@ async def register_user(db: AsyncSession, user_data: UserCreate) -> User:
         is_superuser=False,
     )
 
-    return await user_repo.create(user)
+    created_user = await user_repo.create(user)
+
+    # If user accepted terms, create consent record
+    if user_data.accept_terms:
+        # Terms of Service consent
+        terms_text = (
+            "Ao criar uma conta, você concorda com nossos Termos de Uso, "
+            "incluindo a coleta e processamento de seus dados pessoais conforme "
+            "descrito em nossa Política de Privacidade."
+        )
+        consent = UserConsent(
+            id=uuid4(),
+            user_id=created_user.id,
+            consent_type="terms",
+            version="1.0",
+            accepted=True,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            consent_text=terms_text,
+        )
+        db.add(consent)
+
+        # Privacy Policy consent
+        privacy_text = (
+            "Você aceita nossa Política de Privacidade, incluindo o uso de cookies "
+            "essenciais para o funcionamento do site e a proteção de seus dados "
+            "conforme a LGPD e GDPR."
+        )
+        privacy_consent = UserConsent(
+            id=uuid4(),
+            user_id=created_user.id,
+            consent_type="privacy",
+            version="1.0",
+            accepted=True,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            consent_text=privacy_text,
+        )
+        db.add(privacy_consent)
+        await db.commit()
+
+    return created_user
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User:

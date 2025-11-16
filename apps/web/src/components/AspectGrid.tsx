@@ -23,8 +23,6 @@ export interface AspectData {
 interface AspectGridProps {
   aspects: AspectData[];
   interpretations?: Record<string, string>;
-  interpretationsLoading?: boolean;
-  onRegenerateInterpretations?: () => void;
 }
 
 // Planet names in Portuguese
@@ -41,8 +39,6 @@ const PLANET_NAMES_PT: Record<string, string> = {
 export function AspectGrid({
   aspects,
   interpretations,
-  interpretationsLoading = false,
-  onRegenerateInterpretations,
 }: AspectGridProps) {
   const [filter, setFilter] = useState<'all' | 'major'>('all');
   const [sortBy, setSortBy] = useState<'orb' | 'type'>('orb');
@@ -270,70 +266,45 @@ export function AspectGrid({
       {/* Interpretations Section */}
       {interpretations && (
         <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Interpretações Astrológicas
-            </h3>
-            {onRegenerateInterpretations && (
-              <button
-                onClick={onRegenerateInterpretations}
-                disabled={interpretationsLoading}
-                className="px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {interpretationsLoading ? 'Regenerando...' : '↻ Regenerar'}
-              </button>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Interpretações Astrológicas
+          </h3>
+
+          <div className="space-y-4">
+            {Object.entries(interpretations).map(([aspectKey, interpretation]) => {
+              // Parse aspect key like "Sun-Trine-Moon"
+              const parts = aspectKey.split('-');
+              if (parts.length !== 3) return null;
+
+              const [planet1, aspect, planet2] = parts;
+
+              return (
+                <div
+                  key={aspectKey}
+                  className="bg-gradient-to-r from-muted/50 to-background border border-border rounded-lg p-5"
+                >
+                  <h4 className="text-lg font-semibold text-foreground mb-3">
+                    <div className="text-sm text-muted-foreground mb-1">{aspect}</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xl">{getPlanetSymbol(planet1)}</span>
+                      <span className="text-sm">{PLANET_NAMES_PT[planet1] || planet1}</span>
+                      <span className="text-sm text-muted-foreground">-</span>
+                      <span className="text-xl">{getPlanetSymbol(planet2)}</span>
+                      <span className="text-sm">{PLANET_NAMES_PT[planet2] || planet2}</span>
+                    </div>
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {interpretation}
+                  </p>
+                </div>
+              );
+            })}
+            {Object.keys(interpretations).length === 0 && (
+              <p className="text-center text-muted-foreground py-8">
+                Nenhuma interpretação disponível
+              </p>
             )}
           </div>
-
-          {interpretationsLoading ? (
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="bg-muted/30 border border-border rounded-lg p-5 animate-pulse">
-                  <div className="h-6 bg-muted rounded w-1/3 mb-3"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-full"></div>
-                    <div className="h-4 bg-muted rounded w-5/6"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {Object.entries(interpretations).map(([aspectKey, interpretation]) => {
-                // Parse aspect key like "Sun-Trine-Moon"
-                const parts = aspectKey.split('-');
-                if (parts.length !== 3) return null;
-
-                const [planet1, aspect, planet2] = parts;
-
-                return (
-                  <div
-                    key={aspectKey}
-                    className="bg-gradient-to-r from-muted/50 to-background border border-border rounded-lg p-5"
-                  >
-                    <h4 className="text-lg font-semibold text-foreground mb-3">
-                      <div className="text-sm text-muted-foreground mb-1">{aspect}</div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xl">{getPlanetSymbol(planet1)}</span>
-                        <span className="text-sm">{PLANET_NAMES_PT[planet1] || planet1}</span>
-                        <span className="text-sm text-muted-foreground">-</span>
-                        <span className="text-xl">{getPlanetSymbol(planet2)}</span>
-                        <span className="text-sm">{PLANET_NAMES_PT[planet2] || planet2}</span>
-                      </div>
-                    </h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      {interpretation}
-                    </p>
-                  </div>
-                );
-              })}
-              {Object.keys(interpretations).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                  Nenhuma interpretação disponível
-                </p>
-              )}
-            </div>
-          )}
 
           <div className="mt-6 bg-muted/30 border border-border rounded-lg p-4">
             <p className="text-xs text-muted-foreground">

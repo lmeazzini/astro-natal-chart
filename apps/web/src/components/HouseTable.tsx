@@ -16,15 +16,11 @@ export interface HousePosition {
 interface HouseTableProps {
   houses: HousePosition[];
   interpretations?: Record<string, string>;
-  interpretationsLoading?: boolean;
-  onRegenerateInterpretations?: () => void;
 }
 
 export function HouseTable({
   houses,
   interpretations,
-  interpretationsLoading = false,
-  onRegenerateInterpretations,
 }: HouseTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -130,63 +126,38 @@ export function HouseTable({
       {/* Interpretations Section */}
       {interpretations && (
         <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Interpretações Astrológicas
-            </h3>
-            {onRegenerateInterpretations && (
-              <button
-                onClick={onRegenerateInterpretations}
-                disabled={interpretationsLoading}
-                className="px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {interpretationsLoading ? 'Regenerando...' : '↻ Regenerar'}
-              </button>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Interpretações Astrológicas
+          </h3>
+
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((houseNum) => {
+              const interpretation = interpretations[houseNum.toString()];
+              if (!interpretation) return null;
+
+              return (
+                <div
+                  key={houseNum}
+                  className="bg-gradient-to-r from-muted/50 to-background border border-border rounded-lg p-5"
+                >
+                  <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                      {houseNum}
+                    </span>
+                    Casa {houseNum}
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {interpretation}
+                  </p>
+                </div>
+              );
+            })}
+            {Object.keys(interpretations).length === 0 && (
+              <p className="text-center text-muted-foreground py-8">
+                Nenhuma interpretação disponível
+              </p>
             )}
           </div>
-
-          {interpretationsLoading ? (
-            <div className="space-y-4">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="bg-muted/30 border border-border rounded-lg p-5 animate-pulse">
-                  <div className="h-6 bg-muted rounded w-1/4 mb-3"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-full"></div>
-                    <div className="h-4 bg-muted rounded w-5/6"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((houseNum) => {
-                const interpretation = interpretations[houseNum.toString()];
-                if (!interpretation) return null;
-
-                return (
-                  <div
-                    key={houseNum}
-                    className="bg-gradient-to-r from-muted/50 to-background border border-border rounded-lg p-5"
-                  >
-                    <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
-                        {houseNum}
-                      </span>
-                      Casa {houseNum}
-                    </h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      {interpretation}
-                    </p>
-                  </div>
-                );
-              })}
-              {Object.keys(interpretations).length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                  Nenhuma interpretação disponível
-                </p>
-              )}
-            </div>
-          )}
 
           <div className="mt-6 bg-muted/30 border border-border rounded-lg p-4">
             <p className="text-xs text-muted-foreground">

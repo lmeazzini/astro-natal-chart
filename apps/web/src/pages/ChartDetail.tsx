@@ -23,7 +23,6 @@ export function ChartDetailPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'visual' | 'planets' | 'houses' | 'aspects'>('visual');
   const [interpretations, setInterpretations] = useState<ChartInterpretations | null>(null);
-  const [interpretationsLoading, setInterpretationsLoading] = useState(false);
 
   useEffect(() => {
     loadChart();
@@ -63,26 +62,6 @@ export function ChartDetailPage() {
     } catch (err) {
       // Silently fail - interpretations are optional
       console.error('Failed to load interpretations:', err);
-    }
-  }
-
-  async function handleRegenerateInterpretations() {
-    if (!confirm('Deseja regenerar todas as interpretações? As atuais serão substituídas.')) {
-      return;
-    }
-
-    try {
-      setInterpretationsLoading(true);
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token || !id) return;
-
-      const data = await interpretationsService.regenerate(id, token);
-      setInterpretations(data);
-    } catch (err) {
-      alert('Erro ao regenerar interpretações');
-      console.error(err);
-    } finally {
-      setInterpretationsLoading(false);
     }
   }
 
@@ -370,8 +349,6 @@ export function ChartDetailPage() {
                 planets={chart.chart_data.planets}
                 showOnlyClassical={true}
                 interpretations={interpretations?.planets}
-                interpretationsLoading={interpretationsLoading}
-                onRegenerateInterpretations={handleRegenerateInterpretations}
               />
             </div>
           )}
@@ -384,8 +361,6 @@ export function ChartDetailPage() {
               <HouseTable
                 houses={chart.chart_data.houses}
                 interpretations={interpretations?.houses}
-                interpretationsLoading={interpretationsLoading}
-                onRegenerateInterpretations={handleRegenerateInterpretations}
               />
             </div>
           )}
@@ -398,8 +373,6 @@ export function ChartDetailPage() {
               <AspectGrid
                 aspects={chart.chart_data.aspects}
                 interpretations={interpretations?.aspects}
-                interpretationsLoading={interpretationsLoading}
-                onRegenerateInterpretations={handleRegenerateInterpretations}
               />
             </div>
           )}

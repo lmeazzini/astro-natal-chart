@@ -25,6 +25,10 @@ class UserCreate(UserBase):
         description="Password must be at least 8 characters",
     )
     password_confirm: str = Field(..., description="Password confirmation")
+    accept_terms: bool = Field(
+        default=False,
+        description="User must accept terms of service and privacy policy",
+    )
 
     @field_validator("password")
     @classmethod
@@ -46,6 +50,14 @@ class UserCreate(UserBase):
         """Validate that passwords match."""
         if "password" in info.data and v != info.data["password"]:
             raise ValueError("Passwords do not match")
+        return v
+
+    @field_validator("accept_terms")
+    @classmethod
+    def validate_terms_accepted(cls, v: bool) -> bool:
+        """Validate that user has accepted terms."""
+        if not v:
+            raise ValueError("You must accept the terms of service and privacy policy")
         return v
 
 

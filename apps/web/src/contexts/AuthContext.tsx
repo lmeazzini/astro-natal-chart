@@ -11,7 +11,7 @@ interface AuthContextData {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, fullName: string, password: string, passwordConfirm: string) => Promise<void>;
+  register: (email: string, fullName: string, password: string, passwordConfirm: string, acceptTerms?: boolean) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
 }
@@ -71,7 +71,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     email: string,
     fullName: string,
     password: string,
-    passwordConfirm: string
+    passwordConfirm: string,
+    acceptTerms?: boolean
   ) {
     try {
       await authService.register({
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         full_name: fullName,
         password,
         password_confirm: passwordConfirm,
+        accept_terms: acceptTerms,
       });
 
       // Auto-login after registration

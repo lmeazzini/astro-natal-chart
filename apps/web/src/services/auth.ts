@@ -9,6 +9,7 @@ export interface RegisterData {
   full_name: string;
   password: string;
   password_confirm: string;
+  accept_terms?: boolean;
 }
 
 export interface LoginData {

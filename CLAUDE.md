@@ -291,7 +291,13 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 
 **Location:** `apps/api/app/tasks/`
 
-**CURRENT STATUS**: `tasks/__init__.py` exists but is **EMPTY**. Celery is configured in docker-compose.yml and runs as a service, but NO tasks are implemented yet.
+**CURRENT STATUS**: Privacy tasks implemented in `app/tasks/privacy.py`
+
+**Implemented tasks:**
+- ✅ `cleanup_deleted_users()`: Hard delete users after 30-day retention period (LGPD compliance)
+  - Runs daily at 3 AM
+  - Removes all user data (charts, OAuth accounts, consents, tokens)
+  - Keeps audit logs for 5 years (legal requirement)
 
 **Planned use cases:**
 - PDF generation (heavy LaTeX compilation)
@@ -301,7 +307,7 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 **Setup:**
 - Celery worker runs in separate Docker container
 - Redis as message broker and result backend
-- Task infrastructure ready but unused
+- Scheduled via Celery Beat (periodic tasks)
 
 ### Environment Configuration
 
@@ -310,6 +316,8 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 - `SECRET_KEY`: For JWT signing (CRITICAL - change in production)
 - OAuth2 credentials: `GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`, `FACEBOOK_CLIENT_ID` + secrets
 - `OPENCAGE_API_KEY`: For geocoding (location search)
+- `OPENAI_API_KEY`: For AI interpretations (optional, sk-proj-...)
+- `SMTP_*`: Gmail SMTP for emails (optional, see issue #40 for setup)
 - `ALLOWED_ORIGINS`: CORS configuration
 
 **Frontend** (`apps/web/.env`):
@@ -451,6 +459,44 @@ When running `docker-compose up -d`, these services start:
 
 All services are on `astro-network` bridge network with persistent volumes for postgres and redis data.
 
+## Logging System
+
+**Library:** Loguru (replaces standard Python logging)
+
+**Configuration:** `apps/api/app/core/logging_config.py`
+
+**Features:**
+- **Development**: Colorized console logs with DEBUG level
+- **Production**: JSON structured logs with rotation (500 MB, 30 days retention, compressed)
+- **Request tracking**: Unique request_id per request via middleware
+- **Context binding**: Can add user_id, request_id to all logs
+
+**Usage:**
+```python
+from loguru import logger
+
+# Simple logging
+logger.info("Starting calculation")
+logger.error(f"Failed to process: {error}")
+
+# With context
+logger.bind(user_id=user.id).info("Chart created")
+```
+
+**Request middleware:** `apps/api/app/core/middleware.py`
+- Adds X-Request-ID header to responses
+- Logs incoming requests and completion time
+- Automatically binds request_id to all logs in request scope
+
+## Docker Watchfiles Fix
+
+**Issue:** Uvicorn's file watcher crashes in Docker/WSL2 when watching `.venv/` directory.
+
+**Solution (already implemented):**
+- Added `--reload-exclude '.venv/*'` to uvicorn command in docker-compose.yml
+- Added anonymous volume `/app/.venv` to prevent .venv from being watched
+- This is critical for Docker stability - do not remove these configurations
+
 ## Common Pitfalls
 
 1. **Alembic migrations not detected:** Ensure model is imported in `alembic/env.py`
@@ -458,8 +504,9 @@ All services are on `astro-network` bridge network with persistent volumes for p
 3. **JSONB queries:** Use PostgreSQL JSONB operators (`->`, `->>`, `@>`) for querying chart_data
 4. **Timezone handling:** Always use timezone-aware datetimes, store birth_timezone IANA name
 5. **PySwisseph precision:** Currently using Moshier (built-in). For high precision, need to download ephemeris files and set `EPHEMERIS_PATH`
-6. **Empty directories:** `packages/`, `app/astro/`, `app/tasks/`, component subdirectories exist but are empty/unused
+6. **Empty directories:** `packages/`, `app/astro/` exist but are empty/unused
 7. **Installed but unused:** React Query, Zustand, axios, React Hook Form (installed but not actively used in current code)
+8. **Docker watchfiles:** Never remove `.venv` exclusions from docker-compose.yml - causes container crashes
 
 ## What's Actually Working vs. Planned
 
@@ -472,18 +519,22 @@ All services are on `astro-network` bridge network with persistent volumes for p
 - Dashboard and chart list
 - PostgreSQL persistence with soft deletes
 - Docker development environment
+- Loguru structured logging with request tracking
+- Privacy tasks (hard delete after 30 days via Celery)
+- AI interpretations (OpenAI GPT-4o-mini) - optional
 
 **❌ NOT IMPLEMENTED YET:**
 - Essential dignities calculation
 - Sect determination (day/night)
 - Lot of Fortune
-- Text interpretations/templates
 - PDF generation (LaTeX infrastructure exists but no tasks)
-- Celery task processing
-- Email functionality
-- Rate limiting
-- Any tests whatsoever
-- Dark mode
+- Email functionality (service exists, needs SMTP config - see issue #40)
+- Rate limiting (TODO)
+- Any tests whatsoever (0% coverage)
+- Dark mode (see issue #35)
+- User privacy endpoints (access, export, rectification, deletion - see issues #36-39)
+- Solar phase calculation (see issue #34)
+- Logo integration (see issue #41)
 - Internationalization
 - Shared packages (`packages/shared-types/`, `packages/ui-components/`)
 
@@ -494,14 +545,44 @@ All services are on `astro-network` bridge network with persistent volumes for p
 - **Getting Started:** `README.md` (setup guide)
 - **OAuth Setup:** `docs/OAUTH_SETUP.md` (Google/GitHub/Facebook configuration)
 
+## CI/CD Pipeline
+
+**GitHub Actions:** `.github/workflows/ci.yml`
+
+**Runs on:** Push to main/develop, Pull Requests
+
+**Jobs:**
+1. **Backend Tests** (ubuntu-latest):
+   - PostgreSQL 16 + Redis 7 services
+   - UV package manager for dependencies
+   - Ruff linting
+   - Mypy type checking (must pass with 0 errors)
+   - Pytest with coverage
+   - Coverage uploaded to Codecov
+
+2. **Frontend Tests** (ubuntu-latest):
+   - Node.js 20
+   - ESLint linting
+   - TypeScript type checking
+   - Vitest with coverage
+   - Build verification
+   - Coverage uploaded to Codecov
+
+3. **Monorepo Checks**:
+   - Turborepo build (all apps)
+   - Turborepo lint (all apps)
+
+**Critical:** All checks must pass before merging. Mypy and Ruff have zero tolerance for errors.
+
 ## Development Workflow
 
 1. Create feature branch: `git checkout -b feature/name`
 2. Make changes with hot-reload active (both frontend and backend)
-3. Write tests: `make test` (when test infrastructure is ready)
-4. Lint: `make lint`
+3. Run linting locally: `make lint` (or `uv run ruff check .` + `uv run mypy app/`)
+4. Write tests: `make test` (infrastructure ready but no tests written yet)
 5. Commit with Conventional Commits: `git commit -m "feat: add aspect calculation"`
-6. Push and create PR
+6. Push and create PR (CI will run automatically)
+7. Wait for CI to pass (all 3 jobs must be green)
 
 ## Key Dependencies to Know
 

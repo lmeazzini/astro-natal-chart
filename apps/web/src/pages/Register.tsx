@@ -18,6 +18,7 @@ export function RegisterPage() {
     passwordConfirm: '',
   });
 
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
@@ -30,9 +31,10 @@ export function RegisterPage() {
   async function loadOAuthProviders() {
     try {
       const providers = await oauthService.getProviders();
-      setOauthProviders(providers);
+      setOauthProviders(providers || []);
     } catch (error) {
       console.error('Failed to load OAuth providers:', error);
+      setOauthProviders([]);
     }
   }
 
@@ -81,6 +83,11 @@ export function RegisterPage() {
       newErrors.passwordConfirm = 'As senhas não coincidem';
     }
 
+    // Terms acceptance validation
+    if (!acceptedTerms) {
+      newErrors.terms = 'Você deve aceitar os Termos de Uso e a Política de Privacidade';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -100,7 +107,8 @@ export function RegisterPage() {
         formData.email,
         formData.fullName,
         formData.password,
-        formData.passwordConfirm
+        formData.passwordConfirm,
+        acceptedTerms
       );
       navigate('/dashboard');
     } catch (error) {
@@ -242,6 +250,40 @@ export function RegisterPage() {
               )}
             </div>
 
+            {/* Terms Acceptance */}
+            <div className="space-y-2">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="acceptTerms"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
+                />
+                <label htmlFor="acceptTerms" className="text-sm text-muted-foreground cursor-pointer">
+                  Li e concordo com os{' '}
+                  <Link
+                    to="/terms"
+                    target="_blank"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Termos de Uso
+                  </Link>
+                  {' '}e a{' '}
+                  <Link
+                    to="/privacy"
+                    target="_blank"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Política de Privacidade
+                  </Link>
+                </label>
+              </div>
+              {errors.terms && (
+                <p className="text-sm text-destructive">{errors.terms}</p>
+              )}
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -253,7 +295,7 @@ export function RegisterPage() {
           </form>
 
           {/* OAuth Login Options */}
-          {oauthProviders.length > 0 && (
+          {oauthProviders?.length > 0 && (
             <>
               <div className="my-6 flex items-center">
                 <div className="flex-1 border-t border-border"></div>
@@ -262,7 +304,7 @@ export function RegisterPage() {
               </div>
 
               <div className="space-y-3">
-                {oauthProviders.map((provider) => (
+                {oauthProviders?.map((provider) => (
                   <button
                     key={provider.name}
                     onClick={() => handleOAuthLogin(provider.name)}

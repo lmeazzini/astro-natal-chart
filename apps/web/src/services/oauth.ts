@@ -19,7 +19,7 @@ export const oauthService = {
       throw new Error('Failed to fetch OAuth providers');
     }
     const data = await response.json();
-    return data.providers;
+    return data.providers || [];
   },
 
   /**

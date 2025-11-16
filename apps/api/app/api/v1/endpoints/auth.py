@@ -46,7 +46,16 @@ async def register(
         HTTPException 400: If user already exists or validation fails
     """
     try:
-        user = await auth_service.register_user(db, user_data)
+        # Extract IP address and user agent for consent tracking
+        ip_address = request.client.host if request.client else None
+        user_agent = request.headers.get("user-agent")
+
+        user = await auth_service.register_user(
+            db,
+            user_data,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
         return user
     except auth_service.UserAlreadyExistsError as e:
         raise HTTPException(

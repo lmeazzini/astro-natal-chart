@@ -28,10 +28,11 @@ export function LoginPage() {
   async function loadOAuthProviders() {
     try {
       const providers = await oauthService.getProviders();
-      setOauthProviders(providers);
+      setOauthProviders(providers || []);
     } catch (error) {
       // Silently fail - OAuth is optional
       console.error('Failed to load OAuth providers:', error);
+      setOauthProviders([]);
     }
   }
 

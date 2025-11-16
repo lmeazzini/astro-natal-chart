@@ -7,8 +7,10 @@ from uuid import UUID
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.chart import BirthChart
+from app.models.interpretation import ChartInterpretation
 from app.repositories.base import BaseRepository
 
 
@@ -198,6 +200,41 @@ class ChartRepository(BaseRepository[BirthChart]):
                 BirthChart.user_id == user_id,
                 BirthChart.tags.overlap(tags),  # PostgreSQL array overlap operator
                 BirthChart.deleted_at.is_(None),
+            )
+            .order_by(BirthChart.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_charts_without_interpretations(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[BirthChart]:
+        """
+        Get all charts that don't have any interpretations yet.
+
+        Useful for batch generating interpretations for existing charts.
+
+        Args:
+            skip: Number of records to skip
+            limit: Maximum number of records to return
+
+        Returns:
+            List of charts without interpretations
+        """
+        # Subquery to get chart IDs that have interpretations
+        subquery = select(ChartInterpretation.chart_id).distinct().subquery()
+
+        # Main query to get charts NOT in the subquery
+        stmt = (
+            select(BirthChart)
+            .where(
+                BirthChart.deleted_at.is_(None),
+                ~BirthChart.id.in_(select(subquery)),  # NOT IN subquery
             )
             .order_by(BirthChart.created_at.desc())
             .offset(skip)

@@ -1,0 +1,21 @@
+{
+  "name": "Astro - Mapas Natais Astrológicos",
+  "short_name": "Astro",
+  "description": "Sistema de mapas natais com astrologia tradicional - Cálculos precisos usando Swiss Ephemeris",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "education"],
+  "lang": "pt-BR",
+  "dir": "ltr"
+}

@@ -6,6 +6,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { oauthService, OAuthProvider } from '../services/oauth';
+import { Logo } from '../components/Logo';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -84,6 +85,9 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-6">
+            <Logo size="lg" />
+          </div>
           <h1 className="text-4xl font-bold text-foreground mb-2">
             Bem-vindo de volta
           </h1>

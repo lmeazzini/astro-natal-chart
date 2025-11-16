@@ -118,6 +118,9 @@ class EmailService:
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{settings.FRONTEND_URL}/logo.png" alt="Astro" style="width: 80px; height: 80px;" />
+            </div>
             <div style="background-color: #f4f4f4; border-radius: 10px; padding: 30px;">
                 <h1 style="color: #4F46E5; margin-top: 0;">Recuperação de Senha</h1>
 
@@ -202,6 +205,9 @@ class EmailService:
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{settings.FRONTEND_URL}/logo.png" alt="Astro" style="width: 80px; height: 80px;" />
+            </div>
             <div style="background-color: #f4f4f4; border-radius: 10px; padding: 30px;">
                 <h1 style="color: #10B981; margin-top: 0;">✓ Senha Alterada</h1>
 

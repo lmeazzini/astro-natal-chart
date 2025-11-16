@@ -1,6 +1,13 @@
-# Sistema de Mapas Natais - Astrologia Tradicional
+<div align="center">
+  <img src="ux/figures/logo-transparent.png" alt="Astro - Sistema de Mapas Natais" width="200"/>
 
-Sistema web completo para geração e análise de mapas natais utilizando astrologia tradicional, com cálculos astronômicos de alta precisão baseados em Swiss Ephemeris.
+  # Sistema de Mapas Natais - Astrologia Tradicional
+
+  Sistema web completo para geração e análise de mapas natais utilizando astrologia tradicional, com cálculos astronômicos de alta precisão baseados em Swiss Ephemeris.
+
+  [![Stars](https://img.shields.io/github/stars/lmeazzini/astro-natal-chart?style=for-the-badge)](https://github.com/lmeazzini/astro-natal-chart/stargazers)
+  [![License](https://img.shields.io/github/license/lmeazzini/astro-natal-chart?style=for-the-badge)](LICENSE)
+</div>
 
 ## Características Principais
 

@@ -135,6 +135,35 @@ cd apps/api && mypy app/
 cd apps/web && npm run type-check
 ```
 
+### CI Verification (MANDATORY Before Commit)
+
+**ALWAYS run these checks locally before committing** to ensure CI will pass:
+
+```bash
+# Quick verification (runs all CI checks locally)
+make lint                    # Backend + Frontend linting
+cd apps/api && uv run mypy app/    # Backend type checking
+cd apps/web && npm run type-check  # Frontend type checking
+cd apps/web && npm run build       # Verify frontend builds
+
+# Alternative: Run individual checks
+cd apps/api && uv run ruff check .    # Backend linting (Ruff)
+cd apps/web && npm run lint           # Frontend linting (ESLint)
+```
+
+**Why this matters:**
+- The CI pipeline runs the EXACT same checks
+- If any check fails locally, it WILL fail in CI
+- Failed CI blocks merging and wastes time
+- Mypy and Ruff have **zero tolerance** for errors
+
+**CI Pipeline Jobs:**
+1. **Backend**: Ruff linting + Mypy type checking
+2. **Frontend**: ESLint + TypeScript type checking
+3. **Build**: Vite production build
+
+All 3 jobs must be GREEN before merging.
+
 ### Docker Management
 ```bash
 make docker-up          # Start services
@@ -578,11 +607,27 @@ logger.bind(user_id=user.id).info("Chart created")
 
 1. Create feature branch: `git checkout -b feature/name`
 2. Make changes with hot-reload active (both frontend and backend)
-3. Run linting locally: `make lint` (or `uv run ruff check .` + `uv run mypy app/`)
-4. Write tests: `make test` (infrastructure ready but no tests written yet)
+3. Run tests locally: `make test`
+4. **BEFORE COMMITTING: Verify CI checks pass locally**
+   ```bash
+   # Backend linting and type checking
+   cd apps/api && uv run ruff check .
+   cd apps/api && uv run mypy app/
+
+   # Frontend linting and type checking
+   cd apps/web && npm run lint
+   cd apps/web && npm run type-check
+
+   # Build verification
+   cd apps/web && npm run build
+
+   # Or run all at once
+   make lint
+   ```
+   **CRITICAL**: All these checks MUST pass before committing. The CI pipeline runs the same checks and will fail if any errors exist.
 5. Commit with Conventional Commits: `git commit -m "feat: add aspect calculation"`
 6. Push and create PR (CI will run automatically)
-7. Wait for CI to pass (all 3 jobs must be green)
+7. Wait for CI to pass (all 3 jobs must be green: backend, frontend, build)
 
 ## Key Dependencies to Know
 

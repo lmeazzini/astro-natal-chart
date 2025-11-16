@@ -16,6 +16,12 @@ import { CookiesPage } from './pages/Cookies';
 import { ConsentPage } from './pages/Consent';
 import { CookieBanner } from './components/CookieBanner';
 
+// shadcn/ui components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+
 function App() {
   return (
     <AuthProvider>
@@ -47,47 +53,74 @@ function App() {
 
 function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center px-4">
-      <div className="text-center max-w-4xl">
-        <h1 className="text-6xl font-bold text-foreground mb-4">Astro</h1>
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+      {/* Header with Logo */}
+      <nav className="bg-card/50 backdrop-blur-sm border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity w-fit"
+            aria-label="Página Inicial"
+          >
+            <img
+              src="/logo.png"
+              alt="Astro"
+              className="h-8 w-8"
+            />
+            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+          </Link>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="flex items-center justify-center px-4 py-16">
+        <div className="text-center max-w-4xl">
+          <h2 className="text-6xl font-bold text-foreground mb-4">Bem-vindo ao Astro</h2>
         <p className="text-xl text-muted-foreground mb-8">
           Sistema de Mapas Natais com Astrologia Tradicional
         </p>
         <div className="flex gap-4 justify-center">
-          <Link
-            to="/login"
-            className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition font-medium"
-          >
-            Entrar
-          </Link>
-          <Link
-            to="/register"
-            className="inline-block bg-background text-foreground px-8 py-3 rounded-lg border-2 border-border hover:bg-secondary transition font-medium"
-          >
-            Criar Conta
-          </Link>
+          <Button asChild size="lg">
+            <Link to="/login">
+              Entrar
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link to="/register">
+              Criar Conta
+            </Link>
+          </Button>
         </div>
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm text-muted-foreground">
-          <div className="p-4 bg-card border border-border rounded-lg">
-            <div className="text-2xl mb-2">✨</div>
-            <p className="font-medium text-foreground">Cálculos Precisos</p>
-            <p className="text-xs mt-1">Swiss Ephemeris JPL DE431</p>
-          </div>
-          <div className="p-4 bg-card border border-border rounded-lg">
-            <div className="text-2xl mb-2">📊</div>
-            <p className="font-medium text-foreground">Visualização Gráfica</p>
-            <p className="text-xs mt-1">Mapas natais profissionais</p>
-          </div>
-          <div className="p-4 bg-card border border-border rounded-lg">
-            <div className="text-2xl mb-2">📄</div>
-            <p className="font-medium text-foreground">Exportação PDF</p>
-            <p className="text-xs mt-1">Templates LaTeX personalizados</p>
-          </div>
-          <div className="p-4 bg-card border border-border rounded-lg">
-            <div className="text-2xl mb-2">🔒</div>
-            <p className="font-medium text-foreground">Segurança</p>
-            <p className="text-xs mt-1">Conforme LGPD/GDPR</p>
-          </div>
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl mb-2">✨</div>
+              <p className="font-medium text-foreground">Cálculos Precisos</p>
+              <p className="text-xs text-muted-foreground mt-1">Swiss Ephemeris JPL DE431</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl mb-2">📊</div>
+              <p className="font-medium text-foreground">Visualização Gráfica</p>
+              <p className="text-xs text-muted-foreground mt-1">Mapas natais profissionais</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl mb-2">📄</div>
+              <p className="font-medium text-foreground">Exportação PDF</p>
+              <p className="text-xs text-muted-foreground mt-1">Templates LaTeX personalizados</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl mb-2">🔒</div>
+              <p className="font-medium text-foreground">Segurança</p>
+              <p className="text-xs text-muted-foreground mt-1">Conforme LGPD/GDPR</p>
+            </CardContent>
+          </Card>
+        </div>
         </div>
       </div>
     </div>
@@ -130,7 +163,10 @@ function DashboardPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="text-center">
+          <Skeleton className="h-8 w-32 mx-auto mb-2" />
+          <Skeleton className="h-4 w-24 mx-auto" />
+        </div>
       </div>
     );
   }
@@ -143,23 +179,30 @@ function DashboardPage() {
     <div className="min-h-screen bg-background">
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            aria-label="Voltar ao Dashboard"
+          >
+            <img
+              src="/logo.png"
+              alt="Astro"
+              className="h-8 w-8"
+            />
+            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+          </Link>
           <div className="flex items-center gap-4">
-            <Link
-              to="/profile"
-              className="text-sm text-primary hover:underline"
-            >
-              Perfil
-            </Link>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/profile">
+                Perfil
+              </Link>
+            </Button>
             <span className="text-sm text-muted-foreground">
               {user.full_name}
             </span>
-            <button
-              onClick={logout}
-              className="text-sm text-primary hover:underline"
-            >
+            <Button variant="ghost" size="sm" onClick={logout}>
               Sair
-            </button>
+            </Button>
           </div>
         </div>
       </nav>
@@ -173,130 +216,167 @@ function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 bg-card border border-border rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Meus Mapas</h3>
-            {loadingCharts ? (
-              <p className="text-3xl font-bold text-muted-foreground">...</p>
-            ) : (
-              <p className="text-3xl font-bold text-primary">{chartCount}</p>
-            )}
-            <p className="text-sm text-muted-foreground mt-2">
-              {chartCount === 0 ? 'Nenhum mapa criado ainda' : chartCount === 1 ? '1 mapa salvo' : `${chartCount} mapas salvos`}
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Meus Mapas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingCharts ? (
+                <>
+                  <Skeleton className="h-9 w-20 mb-2" />
+                  <Skeleton className="h-4 w-32" />
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-primary">{chartCount}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {chartCount === 0 ? 'Nenhum mapa criado ainda' : chartCount === 1 ? '1 mapa salvo' : `${chartCount} mapas salvos`}
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="p-6 bg-card border border-border rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Conta</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              Email: {user.email}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Status: {user.email_verified ? 'Verificado' : 'Não verificado'}
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Conta</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm font-medium">{user.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Status</p>
+                {user.email_verified ? (
+                  <Badge variant="default">Verificado</Badge>
+                ) : (
+                  <Badge variant="secondary">Não verificado</Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="p-6 bg-card border border-border rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Configurações</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              Idioma: {user.locale}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Fuso: {user.timezone || 'Não configurado'}
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Idioma</p>
+                <p className="text-sm font-medium">{user.locale}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Fuso Horário</p>
+                <p className="text-sm font-medium">{user.timezone || 'Não configurado'}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 bg-card border border-border rounded-lg">
-            <h3 className="text-xl font-semibold text-foreground mb-4">
-              Criar Mapa Natal
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Calcule seu mapa natal ou de outra pessoa com precisão usando dados
-              astronômicos do Swiss Ephemeris.
-            </p>
-            <Link
-              to="/charts/new"
-              className="inline-block w-full text-center py-3 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition font-medium"
-            >
-              + Novo Mapa Natal
-            </Link>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Criar Mapa Natal</CardTitle>
+              <CardDescription>
+                Calcule seu mapa natal ou de outra pessoa com precisão usando dados
+                astronômicos do Swiss Ephemeris.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" asChild>
+                <Link to="/charts/new">
+                  + Novo Mapa Natal
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
 
-          <div className="p-6 bg-card border border-border rounded-lg">
-            <h3 className="text-xl font-semibold text-foreground mb-4">
-              Meus Mapas
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Acesse todos os seus mapas natais salvos, visualize detalhes e faça
-              análises astrológicas.
-            </p>
-            <Link
-              to="/charts"
-              className="inline-block w-full text-center py-3 px-4 bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition font-medium"
-            >
-              Ver Meus Mapas
-            </Link>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Meus Mapas</CardTitle>
+              <CardDescription>
+                Acesse todos os seus mapas natais salvos, visualize detalhes e faça
+                análises astrológicas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="secondary" className="w-full" asChild>
+                <Link to="/charts">
+                  Ver Meus Mapas
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="mt-8 p-6 bg-card border border-border rounded-lg">
-          <h3 className="text-xl font-semibold text-foreground mb-4">
-            Em Desenvolvimento
-          </h3>
-          <ul className="space-y-4">
-            <li className="flex items-start gap-3">
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Em Desenvolvimento</CardTitle>
+            <CardDescription>
+              Funcionalidades planejadas para as próximas versões
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
               <span className="text-primary text-xl">🔬</span>
-              <div>
-                <span className="text-foreground font-medium">Cálculo do Temperamento</span>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <p className="font-medium">Cálculo do Temperamento</p>
+                <p className="text-sm text-muted-foreground">
                   Sistema dos 4 temperamentos baseado em 5 fatores da astrologia tradicional
                 </p>
               </div>
-            </li>
-            <li className="flex items-start gap-3">
+              <Badge variant="outline">Em breve</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
               <span className="text-primary text-xl">💳</span>
-              <div>
-                <span className="text-foreground font-medium">Sistema de Pagamento</span>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <p className="font-medium">Sistema de Pagamento</p>
+                <p className="text-sm text-muted-foreground">
                   Planos profissionais com relatórios avançados e exportação PDF
                 </p>
               </div>
-            </li>
-            <li className="flex items-start gap-3">
+              <Badge variant="outline">Planejado</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
               <span className="text-primary text-xl">🌙</span>
-              <div>
-                <span className="text-foreground font-medium">Modo Escuro</span>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <p className="font-medium">Modo Escuro</p>
+                <p className="text-sm text-muted-foreground">
                   Dark mode completo para melhor experiência noturna
                 </p>
               </div>
-            </li>
-            <li className="flex items-start gap-3">
+              <Badge variant="outline">Planejado</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
               <span className="text-primary text-xl">📚</span>
-              <div>
-                <span className="text-foreground font-medium">Conteúdo Educacional</span>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <p className="font-medium">Conteúdo Educacional</p>
+                <p className="text-sm text-muted-foreground">
                   Explicações sobre astrologia tradicional e precisão dos cálculos
                 </p>
               </div>
-            </li>
-          </ul>
+              <Badge variant="outline">Planejado</Badge>
+            </div>
 
-          <div className="mt-6 pt-4 border-t border-border">
-            <p className="text-sm text-muted-foreground">
-              Veja todas as funcionalidades planejadas no nosso{' '}
-              <a
-                href="https://github.com/lmeazzini/astro-natal-chart/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                roadmap público →
-              </a>
-            </p>
-          </div>
-        </div>
+            <div className="mt-6 pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Veja todas as funcionalidades planejadas no nosso{' '}
+                <a
+                  href="https://github.com/lmeazzini/astro-natal-chart/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  roadmap público →
+                </a>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

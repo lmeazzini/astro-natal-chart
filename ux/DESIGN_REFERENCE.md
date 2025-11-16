@@ -134,113 +134,479 @@ A combination that feels both astrological and elegant:
 
 ## 🎭 4. UI Components
 
+> **Design System**: Using [shadcn/ui](https://ui.shadcn.com/) component library
+>
+> shadcn/ui components are copied into the project (not a dependency), giving full control while maintaining accessibility and best practices.
+
+### Component Library Setup
+
+**Installation**:
+```bash
+npx shadcn@latest init
+```
+
+**Configuration** (`components.json`):
+```json
+{
+  "style": "new-york",
+  "tailwind": {
+    "baseColor": "slate",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
 ### Buttons
 
-**Primary Button**:
-```css
-background: #4A5FC1
-color: white
-padding: 12px 24px
-border-radius: 12px
-font: Inter Medium 15px
-box-shadow: 0 4px 12px rgba(74, 95, 193, 0.2)
-transition: all 0.2s ease
+**shadcn/ui Button Component** with Astro Essence styling:
 
-hover:
-  transform: translateY(-2px)
-  box-shadow: 0 8px 24px rgba(74, 95, 193, 0.3)
+**Variants**:
+```tsx
+import { Button } from '@/components/ui/button'
+
+// Primary (Default)
+<Button>
+  Calcular Mapa
+</Button>
+
+// Secondary (Outline)
+<Button variant="outline">
+  Cancelar
+</Button>
+
+// Subtle (Ghost)
+<Button variant="ghost">
+  Ver Mais
+</Button>
+
+// Destructive
+<Button variant="destructive">
+  Excluir
+</Button>
 ```
 
-**Secondary Button**:
-```css
-background: transparent
-color: #4A5FC1
-border: 1.5px solid #4A5FC1
-padding: 12px 24px
-border-radius: 12px
-font: Inter Medium 15px
-
-hover:
-  background: #F3F6FF
-  border-color: #3A4FB1
-```
-
-**Subtle Button**:
-```css
-background: #F7F7FC
-color: #2B2B38
-padding: 10px 20px
-border-radius: 10px
-font: Inter Medium 14px
-
-hover:
-  background: #EDEDF5
+**Custom Styling** (in `components/ui/button.tsx`):
+```tsx
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-xl font-medium transition-all",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground shadow-[0_4px_12px_rgba(74,95,193,0.2)] hover:translate-y-[-2px] hover:shadow-[0_8px_24px_rgba(74,95,193,0.3)]",
+        outline: "border-[1.5px] border-primary bg-transparent text-primary hover:bg-[#F3F6FF]",
+        ghost: "bg-[#F7F7FC] text-foreground hover:bg-[#EDEDF5]",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+      },
+      size: {
+        default: "h-11 px-6 py-3 text-[15px]",
+        sm: "h-9 px-4 py-2 text-[14px]",
+        lg: "h-12 px-8 py-3.5 text-[16px]",
+        icon: "h-10 w-10",
+      },
+    },
+  }
+)
 ```
 
 ### Cards
 
-**Standard Card**:
-```css
-background: white
-padding: 24px
-border-radius: 20px
-border: 1px solid #D8DAE5
-box-shadow: 0 2px 8px rgba(43, 43, 56, 0.04)
-transition: all 0.3s ease
+**shadcn/ui Card Component**:
 
-hover:
-  transform: translateY(-4px)
-  box-shadow: 0 8px 24px rgba(43, 43, 56, 0.12)
-  border-color: #C8A2C8
+```tsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+
+// Standard Card
+<Card className="transition-all hover:translate-y-[-4px] hover:shadow-lg hover:border-secondary">
+  <CardHeader>
+    <CardTitle>Mapa Natal</CardTitle>
+    <CardDescription>Criado em 10/11/2024</CardDescription>
+  </CardHeader>
+  <CardContent>
+    {/* Content */}
+  </CardContent>
+  <CardFooter>
+    <Button>Ver Detalhes</Button>
+  </CardFooter>
+</Card>
+
+// Premium Card (with gradient)
+<Card className="border-2 border-secondary bg-gradient-to-br from-[#FDFBFF] to-[#F9F6FF] shadow-[0_4px_16px_rgba(200,162,200,0.15)]">
+  <CardContent className="p-8">
+    {/* Premium content */}
+  </CardContent>
+</Card>
 ```
 
-**Premium Card** (for important content):
-```css
-background: linear-gradient(135deg, #FDFBFF 0%, #F9F6FF 100%)
-padding: 32px
-border-radius: 24px
-border: 2px solid #C8A2C8
-box-shadow: 0 4px 16px rgba(200, 162, 200, 0.15)
+**Custom Card Styling** (in `components/ui/card.tsx`):
+```tsx
+const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "rounded-[20px] border border-border bg-card text-card-foreground shadow-[0_2px_8px_rgba(43,43,56,0.04)]",
+        "transition-all duration-300",
+        className
+      )}
+      {...props}
+    />
+  )
+)
 ```
 
 ### Form Inputs
 
-**Text Input**:
-```css
-background: #F7F7FC
-border: 1.5px solid #D8DAE5
-border-radius: 12px
-padding: 14px 16px
-font: Inter Regular 15px
-color: #2B2B38
+**shadcn/ui Form Components** (integrates React Hook Form + Zod):
 
-focus:
-  background: white
-  border-color: #4A5FC1
-  box-shadow: 0 0 0 4px rgba(74, 95, 193, 0.1)
+```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+const formSchema = z.object({
+  personName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  birthDate: z.string(),
+})
+
+function ChartForm() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  })
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="personName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="uppercase text-[13px] tracking-wider">Nome da Pessoa</FormLabel>
+              <FormControl>
+                <Input placeholder="João Silva" {...field} />
+              </FormControl>
+              <FormDescription>Nome completo da pessoa</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Criar Mapa</Button>
+      </form>
+    </Form>
+  )
+}
 ```
 
-**Label**:
-```css
-font: Inter Medium 13px
-color: #2B2B38
-text-transform: uppercase
-letter-spacing: 0.04em
-margin-bottom: 8px
+**Custom Input Styling** (in `components/ui/input.tsx`):
+```tsx
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        className={cn(
+          "flex h-11 w-full rounded-xl border-[1.5px] border-input",
+          "bg-[#F7F7FC] px-4 py-3 text-[15px]",
+          "placeholder:text-muted-foreground",
+          "focus-visible:bg-background focus-visible:border-primary",
+          "focus-visible:ring-4 focus-visible:ring-primary/10",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          "transition-all",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
 ```
 
-### Modals
+**Other Form Components**:
+```tsx
+// Select
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-```css
-background: white
-padding: 40px
-border-radius: 24px
-max-width: 600px
-box-shadow: 0 24px 64px rgba(43, 43, 56, 0.2)
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Selecione o signo" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="aries">Áries</SelectItem>
+    <SelectItem value="taurus">Touro</SelectItem>
+  </SelectContent>
+</Select>
 
-backdrop:
-  background: rgba(43, 43, 56, 0.5)
-  backdrop-filter: blur(8px)
+// Checkbox
+import { Checkbox } from '@/components/ui/checkbox'
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label htmlFor="terms">Aceito os termos</Label>
+</div>
+
+// Radio Group
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+
+<RadioGroup defaultValue="male">
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="male" id="male" />
+    <Label htmlFor="male">Masculino</Label>
+  </div>
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="female" id="female" />
+    <Label htmlFor="female">Feminino</Label>
+  </div>
+</RadioGroup>
+```
+
+### Modals (Dialogs)
+
+**shadcn/ui Dialog Component**:
+
+```tsx
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button variant="destructive">Excluir Mapa</Button>
+  </DialogTrigger>
+  <DialogContent className="sm:max-w-[600px] rounded-[24px]">
+    <DialogHeader>
+      <DialogTitle className="font-playfair text-[22px]">Tem certeza?</DialogTitle>
+      <DialogDescription>
+        Esta ação não pode ser desfeita. O mapa natal será excluído permanentemente.
+      </DialogDescription>
+    </DialogHeader>
+    <DialogFooter className="gap-2">
+      <Button variant="outline">Cancelar</Button>
+      <Button variant="destructive" onClick={handleDelete}>Excluir</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+**Custom Dialog Styling** (in `components/ui/dialog.tsx`):
+```tsx
+const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
+  ({ className, children, ...props }, ref) => (
+    <DialogPortal>
+      <DialogOverlay className="bg-[rgba(43,43,56,0.5)] backdrop-blur-sm" />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4",
+          "rounded-[24px] border bg-background p-10 shadow-[0_24px_64px_rgba(43,43,56,0.2)]",
+          "duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  )
+)
+```
+
+### Additional shadcn/ui Components
+
+**Table** (for PlanetList, HouseTable, AspectGrid):
+```tsx
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Planeta</TableHead>
+      <TableHead>Signo</TableHead>
+      <TableHead>Posição</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {planets.map((planet) => (
+      <TableRow key={planet.name} className="hover:bg-[#F7F7FC]/50">
+        <TableCell className="font-medium">{planet.name}</TableCell>
+        <TableCell>{planet.sign}</TableCell>
+        <TableCell className="font-mono">{planet.position}°</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+**Badge** (for planet aspects, retrograde status):
+```tsx
+import { Badge } from '@/components/ui/badge'
+
+<Badge>Retrógrado</Badge>
+<Badge variant="secondary">Aplicando</Badge>
+<Badge variant="outline">Separando</Badge>
+<Badge variant="destructive">Debilitado</Badge>
+```
+
+**Toast** (for user feedback with Sonner):
+```tsx
+import { toast } from 'sonner'
+
+// Success
+toast.success('Mapa natal criado com sucesso!')
+
+// Error
+toast.error('Erro ao calcular mapa natal')
+
+// Loading
+const toastId = toast.loading('Calculando posições planetárias...')
+// Later:
+toast.success('Mapa calculado!', { id: toastId })
+
+// Custom with action
+toast('Mapa salvo', {
+  description: 'Seu mapa natal foi salvo com sucesso',
+  action: {
+    label: 'Ver',
+    onClick: () => navigate('/charts')
+  }
+})
+```
+
+**Skeleton** (for loading states):
+```tsx
+import { Skeleton } from '@/components/ui/skeleton'
+
+// Card skeleton
+<Card>
+  <CardHeader>
+    <Skeleton className="h-6 w-48" />
+    <Skeleton className="h-4 w-32 mt-2" />
+  </CardHeader>
+  <CardContent>
+    <Skeleton className="h-32 w-full" />
+  </CardContent>
+</Card>
+
+// Table skeleton
+{[...Array(5)].map((_, i) => (
+  <TableRow key={i}>
+    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+  </TableRow>
+))}
+```
+
+**Tooltip** (for planet information):
+```tsx
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="cursor-help">☉</span>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-xs">
+      <p className="font-semibold">Sol</p>
+      <p className="text-sm">Representa a essência, identidade e propósito de vida</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+**Tabs** (for Chart Detail page sections):
+```tsx
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+<Tabs defaultValue="visual" className="w-full">
+  <TabsList className="grid w-full grid-cols-4">
+    <TabsTrigger value="visual">🌟 Visualização</TabsTrigger>
+    <TabsTrigger value="planets">🪐 Planetas</TabsTrigger>
+    <TabsTrigger value="houses">🏠 Casas</TabsTrigger>
+    <TabsTrigger value="aspects">✨ Aspectos</TabsTrigger>
+  </TabsList>
+  <TabsContent value="visual">
+    <ChartWheel {...chartData} />
+  </TabsContent>
+  <TabsContent value="planets">
+    <PlanetList planets={chartData.planets} />
+  </TabsContent>
+  {/* ... */}
+</Tabs>
+```
+
+**Alert** (for CookieBanner, important messages):
+```tsx
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { InfoIcon } from 'lucide-react'
+
+<Alert className="border-secondary bg-secondary/10">
+  <InfoIcon className="h-4 w-4" />
+  <AlertTitle>Cookies</AlertTitle>
+  <AlertDescription>
+    Este site usa cookies essenciais para garantir a melhor experiência.
+  </AlertDescription>
+</Alert>
+
+// Variants
+<Alert variant="destructive">
+  <AlertTitle>Erro</AlertTitle>
+  <AlertDescription>Não foi possível calcular o mapa natal</AlertDescription>
+</Alert>
+```
+
+**Separator** (for visual dividers):
+```tsx
+import { Separator } from '@/components/ui/separator'
+
+<div>
+  <h2>Informações Pessoais</h2>
+  <Separator className="my-4" />
+  <p>Conteúdo...</p>
+</div>
+```
+
+**DropdownMenu** (for card actions):
+```tsx
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { MoreVertical, Edit, Trash, Share } from 'lucide-react'
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost" size="icon">
+      <MoreVertical className="h-4 w-4" />
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end">
+    <DropdownMenuItem>
+      <Edit className="mr-2 h-4 w-4" />
+      <span>Editar</span>
+    </DropdownMenuItem>
+    <DropdownMenuItem>
+      <Share className="mr-2 h-4 w-4" />
+      <span>Compartilhar</span>
+    </DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem className="text-destructive">
+      <Trash className="mr-2 h-4 w-4" />
+      <span>Excluir</span>
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+**ScrollArea** (for long content):
+```tsx
+import { ScrollArea } from '@/components/ui/scroll-area'
+
+<ScrollArea className="h-[400px] rounded-xl border p-4">
+  {/* Long content here */}
+</ScrollArea>
 ```
 
 ---
@@ -798,6 +1164,18 @@ Use **Unicode symbols** (already implemented):
 - [Figma](https://figma.com) — Design tool
 - [Coolors](https://coolors.co/) — Color palette generator
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) — Accessibility testing
+- [shadcn/ui](https://ui.shadcn.com/) — Component library (Tailwind + Radix UI)
+- [Radix UI](https://www.radix-ui.com/) — Unstyled, accessible components (base for shadcn/ui)
+- [React Hook Form](https://react-hook-form.com/) — Form validation
+- [Zod](https://zod.dev/) — Schema validation
+
+### shadcn/ui Resources
+- **Documentation**: https://ui.shadcn.com/docs
+- **Components**: https://ui.shadcn.com/docs/components
+- **Examples**: https://ui.shadcn.com/examples
+- **Blocks**: https://ui.shadcn.com/blocks (pre-built component compositions)
+- **Themes**: https://ui.shadcn.com/themes (color customization)
+- **CLI Reference**: https://ui.shadcn.com/docs/cli
 
 ---
 
@@ -855,6 +1233,45 @@ Before shipping any new screen:
 
 ---
 
+## 📝 Implementation Notes
+
+### shadcn/ui Integration
+
+**Why shadcn/ui?**
+- ✅ **Maintains Astro Essence**: All custom design tokens (colors, spacing, typography) are preserved
+- ✅ **Accessibility First**: Built on Radix UI (WCAG 2.1 AA compliant by default)
+- ✅ **Full Control**: Components are copied to your project, not installed as a dependency
+- ✅ **Customizable**: Every component can be modified to match our design system
+- ✅ **Production Ready**: Used by companies like Vercel, Supabase, and thousands of projects
+- ✅ **Type Safe**: Full TypeScript support
+- ✅ **Integration**: Works seamlessly with React Hook Form, Zod, and our existing stack
+
+**Customization Strategy**:
+1. Install base shadcn/ui components with CLI
+2. Modify component styling in `components/ui/*.tsx` to match Astro Essence design tokens
+3. Use Tailwind classes with our CSS variables for colors (`bg-primary`, `text-secondary`, etc.)
+4. Adjust border radius to `rounded-xl` (12px) or `rounded-[20px]` for cards
+5. Add custom hover effects and transitions per our animation guidelines
+
+**Key Customizations**:
+- Border radius: `12px` (inputs), `20px` (cards), `24px` (modals)
+- Font family: `font-playfair` for headings, `font-inter` for body
+- Shadows: Custom shadows matching our design tokens
+- Spacing: 8px grid system (sm: 8px, md: 16px, lg: 24px, etc.)
+- Colors: Use CSS variables from `globals.css` (`hsl(var(--primary))`, etc.)
+
+**Components Priority** (install order):
+1. **Foundation**: button, card, input, label, form
+2. **Navigation**: tabs, dialog, dropdown-menu
+3. **Feedback**: toast, alert, skeleton, tooltip
+4. **Data Display**: table, badge, separator, scroll-area
+5. **Forms**: select, checkbox, radio-group
+
+---
+
 **Last Updated**: November 2025
-**Version**: 1.0
+**Version**: 2.0 (Updated with shadcn/ui integration)
 **Maintained By**: Astro Development Team
+
+**Related Issues**:
+- #44 — Migrar para shadcn/ui como biblioteca de componentes

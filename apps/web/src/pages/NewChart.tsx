@@ -3,7 +3,7 @@
  */
 
 import { useState, FormEvent, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { chartsService, BirthChartCreate } from '../services/charts';
 
 const TOKEN_KEY = 'astro_access_token';
@@ -191,7 +191,18 @@ export function NewChartPage() {
       {/* Header */}
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Novo Mapa Natal</h1>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            aria-label="Voltar ao Dashboard"
+          >
+            <img
+              src="/logo.png"
+              alt="Astro"
+              className="h-8 w-8"
+            />
+            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+          </Link>
           <button
             onClick={() => navigate('/dashboard')}
             className="text-sm text-muted-foreground hover:text-foreground"

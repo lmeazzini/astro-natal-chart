@@ -164,14 +164,27 @@ export function ChartDetailPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {chart.person_name}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {formatDateTime(chart.birth_datetime)} • {chart.city}
-                {chart.country && `, ${chart.country}`}
-              </p>
+            <div className="flex items-center gap-4">
+              <Link
+                to="/dashboard"
+                className="hover:opacity-80 transition-opacity flex-shrink-0"
+                aria-label="Voltar ao Dashboard"
+              >
+                <img
+                  src="/logo.png"
+                  alt="Astro"
+                  className="h-8 w-8"
+                />
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">
+                  {chart.person_name}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {formatDateTime(chart.birth_datetime)} • {chart.city}
+                  {chart.country && `, ${chart.country}`}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <button

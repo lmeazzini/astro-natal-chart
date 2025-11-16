@@ -2,8 +2,11 @@
  * User profile and settings page
  */
 
-import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useAuth } from '../contexts/AuthContext';
 import {
   userService,
@@ -12,63 +15,119 @@ import {
   OAuthConnection,
 } from '../services/users';
 
-type TabType = 'profile' | 'password' | 'security' | 'privacy';
+// shadcn/ui components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Form schemas
+const profileFormSchema = z.object({
+  full_name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+  bio: z.string().max(500, 'Bio deve ter no máximo 500 caracteres').optional(),
+  locale: z.string(),
+  timezone: z.string(),
+  profile_public: z.boolean(),
+});
+
+const passwordFormSchema = z.object({
+  current_password: z.string().min(1, 'Senha atual é obrigatória'),
+  new_password: z.string()
+    .min(8, 'Senha deve ter pelo menos 8 caracteres')
+    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+    .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
+    .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, 'Senha deve conter pelo menos um caractere especial'),
+  new_password_confirm: z.string().min(1, 'Confirmação de senha é obrigatória'),
+}).refine((data) => data.new_password === data.new_password_confirm, {
+  message: 'As senhas não coincidem',
+  path: ['new_password_confirm'],
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+
+// Available timezones
+const TIMEZONES = [
+  { value: 'America/Sao_Paulo', label: 'São Paulo (GMT-3)' },
+  { value: 'America/New_York', label: 'New York (GMT-5)' },
+  { value: 'Europe/London', label: 'London (GMT+0)' },
+  { value: 'Europe/Paris', label: 'Paris (GMT+1)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (GMT+9)' },
+  { value: 'Australia/Sydney', label: 'Sydney (GMT+11)' },
+];
+
+const LOCALES = [
+  { value: 'pt-BR', label: 'Português (Brasil)' },
+  { value: 'en-US', label: 'English (US)' },
+  { value: 'es-ES', label: 'Español' },
+];
 
 export function ProfilePage() {
   const navigate = useNavigate();
   const { user, setUser, logout, isLoading: authLoading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<TabType>('profile');
+  const [activeTab, setActiveTab] = useState<string>('profile');
   const [stats, setStats] = useState<UserStats | null>(null);
   const [activities, setActivities] = useState<UserActivity[]>([]);
-  const [oauthConnections, setOAuthConnections] = useState<OAuthConnection[]>(
-    []
-  );
+  const [oauthConnections, setOAuthConnections] = useState<OAuthConnection[]>([]);
+  const [dataLoading, setDataLoading] = useState(false);
 
-  // Profile form
-  const [profileData, setProfileData] = useState({
-    full_name: '',
-    bio: '',
-    locale: 'pt-BR',
-    timezone: '',
-    profile_public: false,
-  });
-  const [profileErrors, setProfileErrors] = useState<Record<string, string>>(
-    {}
-  );
+  // Form states
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState('');
   const [profileError, setProfileError] = useState('');
-
-  // Password form
-  const [passwordData, setPasswordData] = useState({
-    current_password: '',
-    new_password: '',
-    new_password_confirm: '',
-  });
-  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
-    {}
-  );
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Profile form
+  const profileForm = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      full_name: '',
+      bio: '',
+      locale: 'pt-BR',
+      timezone: 'America/Sao_Paulo',
+      profile_public: false,
+    },
+  });
+
+  // Password form
+  const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
+      current_password: '',
+      new_password: '',
+      new_password_confirm: '',
+    },
+  });
+
   // Load user data
   useEffect(() => {
     if (user) {
-      setProfileData({
+      profileForm.reset({
         full_name: user.full_name || '',
         bio: user.bio || '',
         locale: user.locale || 'pt-BR',
-        timezone: user.timezone || '',
+        timezone: user.timezone || 'America/Sao_Paulo',
         profile_public: user.profile_public || false,
       });
     }
-  }, [user]);
+  }, [user, profileForm]);
 
   // Load stats, activities, and OAuth connections
   useEffect(() => {
-    if (user && activeTab !== 'profile' && activeTab !== 'password') {
+    if (user && (activeTab === 'security' || activeTab === 'privacy')) {
       loadSecurityData();
     }
   }, [user, activeTab]);
@@ -77,6 +136,7 @@ export function ProfilePage() {
     const token = localStorage.getItem('astro_access_token');
     if (!token) return;
 
+    setDataLoading(true);
     try {
       const [statsData, activitiesData, oauthData] = await Promise.all([
         userService.getStats(token),
@@ -89,154 +149,90 @@ export function ProfilePage() {
       setOAuthConnections(oauthData);
     } catch (error) {
       console.error('Failed to load security data:', error);
+    } finally {
+      setDataLoading(false);
     }
-  }
-
-  // Profile validation
-  function validateProfile(): boolean {
-    const errors: Record<string, string> = {};
-
-    if (!profileData.full_name || profileData.full_name.length < 3) {
-      errors.full_name = 'Nome deve ter pelo menos 3 caracteres';
-    }
-
-    if (profileData.bio && profileData.bio.length > 500) {
-      errors.bio = 'Bio deve ter no máximo 500 caracteres';
-    }
-
-    setProfileErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
-
-  // Password validation
-  function validatePassword(): boolean {
-    const errors: Record<string, string> = {};
-
-    if (!passwordData.current_password) {
-      errors.current_password = 'Senha atual é obrigatória';
-    }
-
-    if (!passwordData.new_password) {
-      errors.new_password = 'Nova senha é obrigatória';
-    } else if (passwordData.new_password.length < 8) {
-      errors.new_password = 'Senha deve ter pelo menos 8 caracteres';
-    } else {
-      if (!/[A-Z]/.test(passwordData.new_password)) {
-        errors.new_password =
-          'Senha deve conter pelo menos uma letra maiúscula';
-      } else if (!/[a-z]/.test(passwordData.new_password)) {
-        errors.new_password =
-          'Senha deve conter pelo menos uma letra minúscula';
-      } else if (!/[0-9]/.test(passwordData.new_password)) {
-        errors.new_password = 'Senha deve conter pelo menos um número';
-      } else if (
-        !/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(passwordData.new_password)
-      ) {
-        errors.new_password =
-          'Senha deve conter pelo menos um caractere especial';
-      }
-    }
-
-    if (!passwordData.new_password_confirm) {
-      errors.new_password_confirm = 'Confirmação de senha é obrigatória';
-    } else if (passwordData.new_password !== passwordData.new_password_confirm) {
-      errors.new_password_confirm = 'As senhas não coincidem';
-    }
-
-    setPasswordErrors(errors);
-    return Object.keys(errors).length === 0;
   }
 
   // Handle profile submit
-  async function handleProfileSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function onProfileSubmit(data: ProfileFormValues) {
     setProfileError('');
     setProfileSuccess('');
-
-    if (!validateProfile()) return;
-
     setProfileLoading(true);
+
     try {
       const token = localStorage.getItem('astro_access_token');
-      if (!token) throw new Error('Não autenticado');
+      if (!token) throw new Error('Not authenticated');
 
-      const updatedUser = await userService.updateProfile(profileData, token);
+      const updatedUser = await userService.updateProfile(data, token);
       setUser(updatedUser);
       setProfileSuccess('Perfil atualizado com sucesso!');
+
+      setTimeout(() => setProfileSuccess(''), 5000);
     } catch (error) {
-      setProfileError(
-        error instanceof Error ? error.message : 'Erro ao atualizar perfil'
-      );
+      setProfileError(error instanceof Error ? error.message : 'Erro ao atualizar perfil');
     } finally {
       setProfileLoading(false);
     }
   }
 
-  // Handle password submit
-  async function handlePasswordSubmit(e: FormEvent) {
-    e.preventDefault();
+  // Handle password change
+  async function onPasswordSubmit(data: PasswordFormValues) {
     setPasswordError('');
     setPasswordSuccess('');
-
-    if (!validatePassword()) return;
-
     setPasswordLoading(true);
+
     try {
       const token = localStorage.getItem('astro_access_token');
-      if (!token) throw new Error('Não autenticado');
+      if (!token) throw new Error('Not authenticated');
 
-      await userService.changePassword(passwordData, token);
-      setPasswordSuccess('Senha alterada com sucesso!');
-      setPasswordData({
-        current_password: '',
-        new_password: '',
-        new_password_confirm: '',
-      });
-    } catch (error) {
-      setPasswordError(
-        error instanceof Error ? error.message : 'Erro ao alterar senha'
+      await userService.changePassword(
+        {
+          current_password: data.current_password,
+          new_password: data.new_password,
+          new_password_confirm: data.new_password_confirm,
+        },
+        token
       );
+
+      setPasswordSuccess('Senha alterada com sucesso!');
+      passwordForm.reset();
+
+      setTimeout(() => setPasswordSuccess(''), 5000);
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : 'Erro ao alterar senha');
     } finally {
       setPasswordLoading(false);
     }
   }
 
-  // Handle export data
+  // Handle data export
   async function handleExportData() {
     try {
       const token = localStorage.getItem('astro_access_token');
       if (!token) return;
 
       const data = await userService.exportData(token);
-
       const blob = new Blob([JSON.stringify(data, null, 2)], {
         type: 'application/json',
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `astro-data-${new Date().toISOString()}.json`;
+      a.download = `astro-data-${Date.now()}.json`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
       alert('Erro ao exportar dados');
     }
   }
 
-  // Handle delete account
+  // Handle account deletion
   async function handleDeleteAccount() {
-    const confirmation = prompt(
-      'Digite "DELETAR" em letras maiúsculas para confirmar a exclusão da sua conta:'
-    );
-    if (confirmation !== 'DELETAR') return;
-
-    if (
-      !confirm(
-        'Tem certeza? Esta ação excluirá sua conta em 30 dias. Você receberá um email de confirmação.'
-      )
-    ) {
-      return;
-    }
+    const password = prompt('Digite sua senha para confirmar a exclusão da conta:');
+    if (!password) return;
 
     try {
       const token = localStorage.getItem('astro_access_token');
@@ -246,26 +242,16 @@ export function ProfilePage() {
       logout();
       navigate('/');
     } catch (error) {
-      alert('Erro ao deletar conta');
+      alert('Erro ao excluir conta. Verifique sua senha.');
     }
   }
 
   // Handle disconnect OAuth
   async function handleDisconnectOAuth(provider: string) {
-    // Warn if disconnecting last provider
-    if (oauthConnections.length <= 1) {
-      const proceed = confirm(
-        'Este é seu último provedor OAuth. Certifique-se de ter uma senha configurada antes de desconectar. Deseja continuar?'
-      );
-      if (!proceed) return;
-    }
-
-    if (!confirm(`Deseja desconectar ${provider}?`)) return;
+    const token = localStorage.getItem('astro_access_token');
+    if (!token) return;
 
     try {
-      const token = localStorage.getItem('astro_access_token');
-      if (!token) return;
-
       await userService.disconnectOAuth(provider, token);
       setOAuthConnections(
         oauthConnections.filter((conn) => conn.provider !== provider)
@@ -273,6 +259,17 @@ export function ProfilePage() {
     } catch (error) {
       alert('Erro ao desconectar OAuth');
     }
+  }
+
+  // Format date
+  function formatDate(date: string | Date) {
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   if (authLoading) {
@@ -292,538 +289,535 @@ export function ProfilePage() {
       {/* Header */}
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Meu Perfil</h1>
-          <button
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            aria-label="Voltar ao Dashboard"
+          >
+            <img
+              src="/logo.png"
+              alt="Astro"
+              className="h-8 w-8"
+            />
+            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+          </Link>
+          <Button
+            variant="ghost"
             onClick={() => navigate('/dashboard')}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             ← Voltar ao Dashboard
-          </button>
+          </Button>
         </div>
       </nav>
 
       {/* Content */}
       <div className="max-w-6xl mx-auto py-8 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className="md:col-span-1">
-            <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  activeTab === 'profile'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-secondary'
-                }`}
-              >
-                Perfil
-              </button>
-              <button
-                onClick={() => setActiveTab('password')}
-                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  activeTab === 'password'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-secondary'
-                }`}
-              >
-                Senha
-              </button>
-              <button
-                onClick={() => setActiveTab('security')}
-                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  activeTab === 'security'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-secondary'
-                }`}
-              >
-                Segurança
-              </button>
-              <button
-                onClick={() => setActiveTab('privacy')}
-                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  activeTab === 'privacy'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-secondary'
-                }`}
-              >
-                Privacidade
-              </button>
-            </div>
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
+            <TabsTrigger value="profile">Perfil</TabsTrigger>
+            <TabsTrigger value="password">Senha</TabsTrigger>
+            <TabsTrigger value="security">Segurança</TabsTrigger>
+            <TabsTrigger value="privacy">Privacidade</TabsTrigger>
+          </TabsList>
 
-          {/* Main content */}
-          <div className="md:col-span-3">
-            {/* Profile Tab */}
-            {activeTab === 'profile' && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">
-                  Informações do Perfil
-                </h2>
-
+          {/* Profile Tab */}
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Informações do Perfil</CardTitle>
+                <CardDescription>
+                  Atualize suas informações pessoais e preferências
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 {profileSuccess && (
-                  <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-md">
-                    <p className="text-sm text-green-700 dark:text-green-400">
+                  <Alert className="mb-4">
+                    <AlertDescription className="text-green-600">
                       {profileSuccess}
-                    </p>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {profileError && (
-                  <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-                    <p className="text-sm text-destructive">{profileError}</p>
-                  </div>
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertDescription>{profileError}</AlertDescription>
+                  </Alert>
                 )}
 
-                <form onSubmit={handleProfileSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Nome Completo *
-                    </label>
-                    <input
-                      type="text"
-                      value={profileData.full_name}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          full_name: e.target.value,
-                        })
-                      }
-                      className={`w-full px-4 py-2 bg-background border ${
-                        profileErrors.full_name
-                          ? 'border-destructive'
-                          : 'border-input'
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+                <Form {...profileForm}>
+                  <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                    <FormField
+                      control={profileForm.control}
+                      name="full_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Completo *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Seu nome completo" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    {profileErrors.full_name && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {profileErrors.full_name}
-                      </p>
-                    )}
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={user.email}
-                      disabled
-                      className="w-full px-4 py-2 bg-muted border border-input rounded-md text-muted-foreground cursor-not-allowed"
+                    <FormField
+                      control={profileForm.control}
+                      name="bio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Bio</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Conte um pouco sobre você..."
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Máximo de 500 caracteres
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      O email não pode ser alterado
-                    </p>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      value={profileData.bio}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, bio: e.target.value })
-                      }
-                      rows={4}
-                      maxLength={500}
-                      className={`w-full px-4 py-2 bg-background border ${
-                        profileErrors.bio
-                          ? 'border-destructive'
-                          : 'border-input'
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                      placeholder="Conte um pouco sobre você..."
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={profileForm.control}
+                        name="locale"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Idioma</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um idioma" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {LOCALES.map((locale) => (
+                                  <SelectItem key={locale.value} value={locale.value}>
+                                    {locale.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={profileForm.control}
+                        name="timezone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fuso Horário</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione seu fuso horário" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {TIMEZONES.map((tz) => (
+                                  <SelectItem key={tz.value} value={tz.value}>
+                                    {tz.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={profileForm.control}
+                      name="profile_public"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              Perfil Público
+                            </FormLabel>
+                            <FormDescription>
+                              Permitir que outros usuários visualizem seu perfil
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {profileData.bio.length}/500 caracteres
-                    </p>
-                    {profileErrors.bio && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {profileErrors.bio}
-                      </p>
-                    )}
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Idioma
-                    </label>
-                    <select
-                      value={profileData.locale}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          locale: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="pt-BR">Português (Brasil)</option>
-                      <option value="en-US">English (US)</option>
-                      <option value="es-ES">Español</option>
-                    </select>
-                  </div>
+                    <Button type="submit" disabled={profileLoading}>
+                      {profileLoading ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Fuso Horário
-                    </label>
-                    <input
-                      type="text"
-                      value={profileData.timezone}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          timezone: e.target.value,
-                        })
-                      }
-                      placeholder="America/Sao_Paulo"
-                      className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Formato IANA (ex: America/Sao_Paulo)
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="profile_public"
-                      checked={profileData.profile_public}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          profile_public: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
-                    />
-                    <label
-                      htmlFor="profile_public"
-                      className="text-sm text-foreground cursor-pointer"
-                    >
-                      Tornar perfil público
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={profileLoading}
-                    className="w-full py-3 px-4 bg-primary text-primary-foreground font-medium rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                  >
-                    {profileLoading ? 'Salvando...' : 'Salvar Alterações'}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* Password Tab */}
-            {activeTab === 'password' && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">
-                  Alterar Senha
-                </h2>
-
+          {/* Password Tab */}
+          <TabsContent value="password">
+            <Card>
+              <CardHeader>
+                <CardTitle>Alterar Senha</CardTitle>
+                <CardDescription>
+                  Atualize sua senha para manter sua conta segura
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 {passwordSuccess && (
-                  <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-md">
-                    <p className="text-sm text-green-700 dark:text-green-400">
+                  <Alert className="mb-4">
+                    <AlertDescription className="text-green-600">
                       {passwordSuccess}
-                    </p>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {passwordError && (
-                  <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-                    <p className="text-sm text-destructive">{passwordError}</p>
-                  </div>
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertDescription>{passwordError}</AlertDescription>
+                  </Alert>
                 )}
 
-                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Senha Atual *
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.current_password}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          current_password: e.target.value,
-                        })
-                      }
-                      className={`w-full px-4 py-2 bg-background border ${
-                        passwordErrors.current_password
-                          ? 'border-destructive'
-                          : 'border-input'
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+                <Form {...passwordForm}>
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                    <FormField
+                      control={passwordForm.control}
+                      name="current_password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha Atual</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    {passwordErrors.current_password && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {passwordErrors.current_password}
-                      </p>
-                    )}
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Nova Senha *
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.new_password}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          new_password: e.target.value,
-                        })
-                      }
-                      className={`w-full px-4 py-2 bg-background border ${
-                        passwordErrors.new_password
-                          ? 'border-destructive'
-                          : 'border-input'
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+                    <FormField
+                      control={passwordForm.control}
+                      name="new_password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nova Senha</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    {passwordErrors.new_password && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {passwordErrors.new_password}
-                      </p>
-                    )}
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Confirmar Nova Senha *
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.new_password_confirm}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          new_password_confirm: e.target.value,
-                        })
-                      }
-                      className={`w-full px-4 py-2 bg-background border ${
-                        passwordErrors.new_password_confirm
-                          ? 'border-destructive'
-                          : 'border-input'
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+                    <FormField
+                      control={passwordForm.control}
+                      name="new_password_confirm"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirmar Nova Senha</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    {passwordErrors.new_password_confirm && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {passwordErrors.new_password_confirm}
-                      </p>
-                    )}
-                  </div>
 
-                  <div className="p-4 bg-muted/50 rounded-md">
-                    <p className="text-xs text-muted-foreground font-medium mb-2">
-                      A senha deve conter:
-                    </p>
-                    <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                      <li>Pelo menos 8 caracteres</li>
-                      <li>Uma letra maiúscula</li>
-                      <li>Uma letra minúscula</li>
-                      <li>Um número</li>
-                      <li>Um caractere especial (!@#$%^&*...)</li>
-                    </ul>
-                  </div>
+                    <Alert>
+                      <AlertDescription>
+                        <p className="font-medium mb-2">Requisitos da senha:</p>
+                        <ul className="text-xs space-y-1 list-disc list-inside">
+                          <li>Mínimo 8 caracteres</li>
+                          <li>Uma letra maiúscula</li>
+                          <li>Uma letra minúscula</li>
+                          <li>Um número</li>
+                          <li>Um caractere especial</li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
 
-                  <button
-                    type="submit"
-                    disabled={passwordLoading}
-                    className="w-full py-3 px-4 bg-primary text-primary-foreground font-medium rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                  >
-                    {passwordLoading ? 'Alterando...' : 'Alterar Senha'}
-                  </button>
-                </form>
+                    <Button type="submit" disabled={passwordLoading}>
+                      {passwordLoading ? 'Alterando...' : 'Alterar Senha'}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security">
+            <div className="space-y-6">
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {dataLoading ? (
+                  <>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <Skeleton className="h-4 w-20" />
+                      </CardHeader>
+                      <CardContent>
+                        <Skeleton className="h-8 w-16" />
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <Skeleton className="h-4 w-20" />
+                      </CardHeader>
+                      <CardContent>
+                        <Skeleton className="h-8 w-16" />
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <Skeleton className="h-4 w-20" />
+                      </CardHeader>
+                      <CardContent>
+                        <Skeleton className="h-8 w-16" />
+                      </CardContent>
+                    </Card>
+                  </>
+                ) : stats ? (
+                  <>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardDescription>Dias de Conta</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.account_age_days}</div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardDescription>Mapas Criados</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.total_charts}</div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardDescription>Membro Desde</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {new Date(user.created_at).toLocaleDateString('pt-BR', {
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </>
+                ) : null}
               </div>
-            )}
 
-            {/* Security Tab */}
-            {activeTab === 'security' && (
-              <div className="space-y-6">
-                {/* Stats */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-foreground mb-4">
-                    Estatísticas
-                  </h2>
-                  {stats ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Mapas Criados
-                        </p>
-                        <p className="text-2xl font-bold text-foreground">
-                          {stats.total_charts}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Idade da Conta
-                        </p>
-                        <p className="text-2xl font-bold text-foreground">
-                          {stats.account_age_days} dias
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Último Login
-                        </p>
-                        <p className="text-sm text-foreground">
-                          {stats.last_login_at
-                            ? new Date(stats.last_login_at).toLocaleString(
-                                'pt-BR'
-                              )
-                            : 'Nunca'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Última Atividade
-                        </p>
-                        <p className="text-sm text-foreground">
-                          {stats.last_activity_at
-                            ? new Date(stats.last_activity_at).toLocaleString(
-                                'pt-BR'
-                              )
-                            : 'Nunca'}
-                        </p>
-                      </div>
+              {/* OAuth Connections */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Conexões OAuth</CardTitle>
+                  <CardDescription>
+                    Gerencie suas conexões com provedores externos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {dataLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Carregando...
-                    </p>
-                  )}
-                </div>
-
-                {/* OAuth Connections */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-foreground mb-4">
-                    Conexões OAuth
-                  </h2>
-                  {oauthConnections.length > 0 ? (
-                    <div className="space-y-3">
+                  ) : oauthConnections.length > 0 ? (
+                    <div className="space-y-2">
                       {oauthConnections.map((conn) => (
                         <div
                           key={conn.provider}
-                          className="flex items-center justify-between p-3 border border-border rounded-md"
+                          className="flex items-center justify-between p-3 border rounded-lg"
                         >
-                          <div>
-                            <p className="font-medium text-foreground capitalize">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="secondary">
                               {conn.provider}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Conectado em{' '}
-                              {new Date(conn.connected_at).toLocaleDateString(
-                                'pt-BR'
-                              )}
-                            </p>
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              Conectado em {new Date(conn.connected_at).toLocaleDateString('pt-BR')}
+                            </span>
                           </div>
-                          <button
-                            onClick={() => handleDisconnectOAuth(conn.provider)}
-                            className="px-3 py-1 text-sm text-destructive hover:bg-destructive/10 border border-destructive/20 rounded-md transition-colors"
-                          >
-                            Desconectar
-                          </button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                disabled={oauthConnections.length === 1}
+                              >
+                                Desconectar
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Desconectar {conn.provider}?</DialogTitle>
+                                <DialogDescription>
+                                  {oauthConnections.length === 1
+                                    ? 'Este é seu último provedor OAuth. Certifique-se de ter uma senha configurada antes de desconectar.'
+                                    : 'Você poderá reconectar esta conta posteriormente.'}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="outline">Cancelar</Button>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => handleDisconnectOAuth(conn.provider)}
+                                >
+                                  Desconectar
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Nenhuma conexão OAuth
+                      Nenhuma conexão OAuth configurada
                     </p>
                   )}
-                </div>
+                </CardContent>
+              </Card>
 
-                {/* Activity Log */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-foreground mb-4">
-                    Atividades Recentes
-                  </h2>
-                  {activities.length > 0 ? (
+              {/* Activity Log */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Atividade Recente</CardTitle>
+                  <CardDescription>
+                    Últimas atividades em sua conta
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {dataLoading ? (
                     <div className="space-y-2">
-                      {activities.map((activity) => (
-                        <div
-                          key={activity.id}
-                          className="flex items-start justify-between p-3 border border-border rounded-md"
-                        >
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">
-                              {activity.action.replace(/_/g, ' ')}
-                            </p>
-                            {activity.resource_type && (
-                              <p className="text-xs text-muted-foreground">
-                                Tipo: {activity.resource_type}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(activity.created_at).toLocaleString(
-                                'pt-BR'
-                              )}
-                            </p>
-                            {activity.ip_address && (
-                              <p className="text-xs text-muted-foreground">
-                                IP: {activity.ip_address}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
                     </div>
+                  ) : activities.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ação</TableHead>
+                          <TableHead>IP</TableHead>
+                          <TableHead>Data</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {activities.map((activity) => (
+                          <TableRow key={activity.id}>
+                            <TableCell>
+                              <Badge variant={
+                                activity.action === 'login' ? 'default' :
+                                activity.action === 'logout' ? 'secondary' :
+                                'outline'
+                              }>
+                                {activity.action}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {activity.ip_address}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {formatDate(activity.created_at)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Nenhuma atividade registrada
+                      Nenhuma atividade recente
                     </p>
                   )}
-                </div>
-              </div>
-            )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-            {/* Privacy Tab */}
-            {activeTab === 'privacy' && (
-              <div className="space-y-6">
-                {/* Export Data */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-foreground mb-2">
-                    Exportar Dados
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Baixe todos os seus dados em formato JSON (LGPD/GDPR)
+          {/* Privacy Tab */}
+          <TabsContent value="privacy">
+            <div className="space-y-6">
+              {/* Data Export */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exportar Dados</CardTitle>
+                  <CardDescription>
+                    Baixe uma cópia de todos os seus dados (LGPD/GDPR)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Você pode exportar todos os seus dados pessoais a qualquer momento.
+                    O arquivo incluirá seu perfil, mapas natais e configurações.
                   </p>
-                  <button
-                    onClick={handleExportData}
-                    className="px-4 py-2 bg-secondary text-secondary-foreground font-medium rounded-md hover:opacity-90 transition-opacity"
-                  >
-                    Exportar Dados
-                  </button>
-                </div>
+                  <Button onClick={handleExportData} variant="outline">
+                    Exportar Meus Dados
+                  </Button>
+                </CardContent>
+              </Card>
 
-                {/* Delete Account */}
-                <div className="bg-card border border-destructive/20 rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-destructive mb-2">
-                    Zona de Perigo
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Deletar sua conta removerá todos os seus dados
-                    permanentemente após 30 dias. Esta ação não pode ser
-                    desfeita.
-                  </p>
-                  <button
-                    onClick={handleDeleteAccount}
-                    className="px-4 py-2 bg-destructive text-destructive-foreground font-medium rounded-md hover:opacity-90 transition-opacity"
-                  >
-                    Deletar Conta
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+              {/* Danger Zone */}
+              <Card className="border-destructive">
+                <CardHeader>
+                  <CardTitle className="text-destructive">Zona de Perigo</CardTitle>
+                  <CardDescription>
+                    Ações irreversíveis em sua conta
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Excluir Conta</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Uma vez excluída, sua conta não poderá ser recuperada. Todos os seus dados
+                        serão permanentemente removidos após 30 dias.
+                      </p>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="destructive">
+                            Excluir Minha Conta
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Tem certeza absoluta?</DialogTitle>
+                            <DialogDescription>
+                              Esta ação não pode ser desfeita. Isso excluirá permanentemente sua
+                              conta e removerá todos os seus dados de nossos servidores.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button variant="outline">Cancelar</Button>
+                            <Button
+                              variant="destructive"
+                              onClick={handleDeleteAccount}
+                            >
+                              Sim, excluir minha conta
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

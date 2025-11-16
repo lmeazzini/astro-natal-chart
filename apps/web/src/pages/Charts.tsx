@@ -87,7 +87,18 @@ export function ChartsPage() {
       {/* Header */}
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Meus Mapas Natais</h1>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            aria-label="Voltar ao Dashboard"
+          >
+            <img
+              src="/logo.png"
+              alt="Astro"
+              className="h-8 w-8"
+            />
+            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+          </Link>
           <div className="flex items-center gap-4">
             <Link
               to="/charts/new"

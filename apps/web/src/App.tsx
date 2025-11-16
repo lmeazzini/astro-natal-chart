@@ -321,9 +321,9 @@ function DashboardPage() {
             <div className="flex items-start gap-3">
               <span className="text-primary text-xl">🔬</span>
               <div className="flex-1">
-                <p className="font-medium">Cálculo do Temperamento</p>
+                <p className="font-medium">Cálculo de Temperamento Automatizado</p>
                 <p className="text-sm text-muted-foreground">
-                  Sistema dos 4 temperamentos baseado em 5 fatores da astrologia tradicional
+                  Sistema automatizado dos 4 temperamentos baseado em 5 fatores da astrologia tradicional (quente, frio, úmido, seco)
                 </p>
               </div>
               <Badge variant="outline">Em breve</Badge>

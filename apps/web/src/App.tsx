@@ -242,28 +242,60 @@ function DashboardPage() {
 
         <div className="mt-8 p-6 bg-card border border-border rounded-lg">
           <h3 className="text-xl font-semibold text-foreground mb-4">
-            Próximas Funcionalidades
+            Em Desenvolvimento
           </h3>
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             <li className="flex items-start gap-3">
-              <span className="text-primary">→</span>
-              <span className="text-muted-foreground">
-                Análise textual de dignidades essenciais
-              </span>
+              <span className="text-primary text-xl">🔬</span>
+              <div>
+                <span className="text-foreground font-medium">Cálculo do Temperamento</span>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Sistema dos 4 temperamentos baseado em 5 fatores da astrologia tradicional
+                </p>
+              </div>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-primary">→</span>
-              <span className="text-muted-foreground">
-                Exportação de mapas em PDF com LaTeX
-              </span>
+              <span className="text-primary text-xl">💳</span>
+              <div>
+                <span className="text-foreground font-medium">Sistema de Pagamento</span>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Planos profissionais com relatórios avançados e exportação PDF
+                </p>
+              </div>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-primary">→</span>
-              <span className="text-muted-foreground">
-                Trânsitos e progressões planetárias
-              </span>
+              <span className="text-primary text-xl">🌙</span>
+              <div>
+                <span className="text-foreground font-medium">Modo Escuro</span>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Dark mode completo para melhor experiência noturna
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-primary text-xl">📚</span>
+              <div>
+                <span className="text-foreground font-medium">Conteúdo Educacional</span>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Explicações sobre astrologia tradicional e precisão dos cálculos
+                </p>
+              </div>
             </li>
           </ul>
+
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              Veja todas as funcionalidades planejadas no nosso{' '}
+              <a
+                href="https://github.com/lmeazzini/astro-natal-chart/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                roadmap público →
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

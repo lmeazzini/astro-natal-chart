@@ -37,7 +37,7 @@ class BaseRepository(Generic[ModelType]):
         Returns:
             Entity instance or None if not found
         """
-        stmt = select(self.model).where(self.model.id == id)  # type: ignore[attr-defined]
+        stmt = select(self.model).where(self.model.id == id)  # type: ignore
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 

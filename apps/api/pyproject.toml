@@ -80,6 +80,7 @@ dev = [
     "mypy==1.7.1",
     "types-python-jose==3.3.4.20240106",
     "types-PyYAML==6.0.12.20240917",
+    "types-authlib>=1.6.5.20251005",
 ]
 
 [tool.ruff]

@@ -92,14 +92,14 @@ def convert_to_julian_day(dt: datetime, timezone: str, latitude: float, longitud
     dt_utc = dt_aware.astimezone(ZoneInfo("UTC"))
 
     # Calculate Julian Day
-    jd = swe.julday(
+    jd: float = swe.julday(  # type: ignore[no-any-return]
         dt_utc.year,
         dt_utc.month,
         dt_utc.day,
         dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0,
     )
 
-    return jd  # type: ignore[no-any-return]
+    return jd
 
 
 def get_sign_and_position(longitude: float) -> dict[str, Any]:

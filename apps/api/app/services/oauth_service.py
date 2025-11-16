@@ -164,20 +164,20 @@ class OAuthService:
     def extract_user_info_from_google(userinfo: dict[str, Any]) -> dict[str, str]:
         """Extract user information from Google OAuth response."""
         return {
-            "provider_user_id": str(userinfo.get("sub", "")),
-            "email": str(userinfo.get("email", "")),
-            "full_name": str(userinfo.get("name", "")),
-            "avatar_url": str(userinfo.get("picture", "")),
+            "provider_user_id": str(userinfo.get("sub") or ""),
+            "email": str(userinfo.get("email") or ""),
+            "full_name": str(userinfo.get("name") or ""),
+            "avatar_url": str(userinfo.get("picture") or ""),
         }
 
     @staticmethod
     def extract_user_info_from_github(userinfo: dict[str, Any]) -> dict[str, str]:
         """Extract user information from GitHub OAuth response."""
         return {
-            "provider_user_id": str(userinfo.get("id", "")),
-            "email": str(userinfo.get("email", "")),
-            "full_name": str(userinfo.get("name", "") or userinfo.get("login", "")),
-            "avatar_url": str(userinfo.get("avatar_url", "")),
+            "provider_user_id": str(userinfo.get("id") or ""),
+            "email": str(userinfo.get("email") or ""),
+            "full_name": str(userinfo.get("name") or userinfo.get("login") or ""),
+            "avatar_url": str(userinfo.get("avatar_url") or ""),
         }
 
     @staticmethod

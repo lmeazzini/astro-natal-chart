@@ -2,15 +2,13 @@
 Email service for sending transactional emails.
 """
 
-import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import aiosmtplib
+from loguru import logger
 
 from app.core.config import settings
-
-logger = logging.getLogger(__name__)
 
 
 class EmailService:

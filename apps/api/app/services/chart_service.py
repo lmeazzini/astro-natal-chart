@@ -2,10 +2,10 @@
 Birth Chart service for CRUD operations.
 """
 
-import logging
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.chart import BirthChart
@@ -13,8 +13,6 @@ from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import BirthChartCreate, BirthChartUpdate
 from app.services.astro_service import calculate_birth_chart
 from app.services.interpretation_service import InterpretationService
-
-logger = logging.getLogger(__name__)
 
 
 class ChartNotFoundError(Exception):

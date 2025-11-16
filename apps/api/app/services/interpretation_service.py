@@ -2,20 +2,18 @@
 Service for generating AI-powered astrological interpretations using OpenAI.
 """
 
-import logging
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 import yaml
+from loguru import logger
 from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.interpretation import ChartInterpretation
 from app.repositories.interpretation_repository import InterpretationRepository
-
-logger = logging.getLogger(__name__)
 
 # Classical 7 planets only (no modern planets)
 CLASSICAL_PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]

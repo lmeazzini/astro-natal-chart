@@ -2,11 +2,11 @@
 Chart interpretation endpoints for AI-generated astrological interpretations.
 """
 
-import logging
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
@@ -16,7 +16,6 @@ from app.services import chart_service
 from app.services.interpretation_service import InterpretationService
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
 
 
 @router.get(

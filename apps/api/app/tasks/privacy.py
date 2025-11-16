@@ -3,9 +3,9 @@ Privacy and LGPD compliance Celery tasks.
 """
 
 import asyncio
-import logging
 from datetime import datetime, timedelta
 
+from loguru import logger
 from sqlalchemy import delete, select
 
 from app.core.celery_app import celery_app
@@ -14,8 +14,6 @@ from app.models.chart import AuditLog, BirthChart
 from app.models.password_reset import PasswordResetToken
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
-
-logger = logging.getLogger(__name__)
 
 
 @celery_app.task(name="privacy.cleanup_deleted_users")

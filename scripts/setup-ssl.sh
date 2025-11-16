@@ -199,7 +199,6 @@ log_info "  2. Port 80 is open in firewall"
 log_info "  3. Domain is accessible: curl http://$DOMAIN"
 
 # Run certbot with timeout
-set +e  # Don't exit on error
 timeout 300 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \

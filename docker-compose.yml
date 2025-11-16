@@ -109,6 +109,31 @@ services:
     networks:
       - astro-network
 
+  # Database Backup Service (optional - uncomment to enable)
+  # db-backup:
+  #   image: prodrigestivill/postgres-backup-local:16
+  #   container_name: astro-db-backup
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_HOST: db
+  #     POSTGRES_DB: astro_dev
+  #     POSTGRES_USER: astro
+  #     POSTGRES_PASSWORD: dev_password
+  #     POSTGRES_EXTRA_OPTS: -Z9 --format=custom
+  #     BACKUP_DIR: /backups
+  #     SCHEDULE: "@daily"  # Daily at midnight, or use cron: "0 3 * * *" for 3 AM
+  #     BACKUP_KEEP_DAYS: 30
+  #     BACKUP_KEEP_WEEKS: 4
+  #     BACKUP_KEEP_MONTHS: 6
+  #     HEALTHCHECK_PORT: 8080
+  #   volumes:
+  #     - backup_data:/backups
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   networks:
+  #     - astro-network
+
   # Nginx Reverse Proxy (optional, for production-like setup)
   # nginx:
   #   image: nginx:alpine
@@ -129,6 +154,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  backup_data:
     driver: local
 
 networks:

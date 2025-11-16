@@ -2,7 +2,16 @@
  * Planet List component - displays all planets with their positions
  */
 
+import { useState } from 'react';
 import { getPlanetSymbol, getSignSymbol, formatDMS } from '../utils/astro';
+import {
+  Dignities,
+  getDignityBadge,
+  getDignityScore,
+  getScoreColorClass,
+  getDignityDetails,
+  getClassificationLabel,
+} from '../utils/dignities';
 
 export interface PlanetPosition {
   name: string;
@@ -15,6 +24,7 @@ export interface PlanetPosition {
   second: number;
   house: number;
   retrograde: boolean;
+  dignities?: Dignities;
 }
 
 interface PlanetListProps {
@@ -22,6 +32,8 @@ interface PlanetListProps {
   showOnlyClassical?: boolean;
   interpretations?: Record<string, string>;
 }
+
+type SortBy = 'position' | 'house' | 'dignity';
 
 // Classical 7 planets (no modern planets)
 const CLASSICAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
@@ -42,35 +54,153 @@ export function PlanetList({
   showOnlyClassical = false,
   interpretations,
 }: PlanetListProps) {
+  const [sortBy, setSortBy] = useState<SortBy>('position');
+  const [showDignityInfo, setShowDignityInfo] = useState(false);
+
   // Filter planets if showOnlyClassical is true
-  const displayPlanets = showOnlyClassical
+  let displayPlanets = showOnlyClassical
     ? planets.filter((p) => CLASSICAL_PLANETS.includes(p.name))
     : planets;
+
+  // Sort planets based on selected criteria
+  displayPlanets = [...displayPlanets].sort((a, b) => {
+    if (sortBy === 'dignity') {
+      const scoreA = getDignityScore(a.dignities);
+      const scoreB = getDignityScore(b.dignities);
+      return scoreB - scoreA; // Higher score first
+    }
+    if (sortBy === 'house') {
+      return a.house - b.house;
+    }
+    // Default: sort by position (longitude)
+    return a.longitude - b.longitude;
+  });
+  // Check if any planet has dignities (for showing dignity column)
+  const hasDignities = displayPlanets.some((p) => p.dignities !== undefined);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-left font-semibold text-foreground">
-              Planeta
-            </th>
-            <th className="px-4 py-3 text-left font-semibold text-foreground">
-              Signo
-            </th>
-            <th className="px-4 py-3 text-left font-semibold text-foreground">
-              Posição
-            </th>
-            <th className="px-4 py-3 text-center font-semibold text-foreground">
-              Casa
-            </th>
-            <th className="px-4 py-3 text-center font-semibold text-foreground">
-              Retrógrado
-            </th>
-            <th className="px-4 py-3 text-right font-semibold text-foreground">
-              Velocidade
-            </th>
-          </tr>
-        </thead>
+    <div className="space-y-4">
+      {/* Sorting Controls */}
+      {hasDignities && (
+        <div className="flex gap-2 items-center flex-wrap">
+          <span className="text-sm text-muted-foreground">Ordenar por:</span>
+          <button
+            onClick={() => setSortBy('position')}
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+              sortBy === 'position'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted hover:bg-muted/80'
+            }`}
+          >
+            Posição
+          </button>
+          <button
+            onClick={() => setSortBy('house')}
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+              sortBy === 'house'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted hover:bg-muted/80'
+            }`}
+          >
+            Casa
+          </button>
+          <button
+            onClick={() => setSortBy('dignity')}
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+              sortBy === 'dignity'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted hover:bg-muted/80'
+            }`}
+          >
+            💪 Força
+          </button>
+          <button
+            onClick={() => setShowDignityInfo(!showDignityInfo)}
+            className="ml-auto px-2 py-1.5 text-xs rounded-md bg-muted hover:bg-muted/80 transition-colors"
+            title="Informações sobre dignidades"
+          >
+            ℹ️ Info
+          </button>
+        </div>
+      )}
+
+      {/* Dignity Info Popover */}
+      {showDignityInfo && (
+        <div className="bg-muted/50 border border-border rounded-lg p-4 text-sm">
+          <h4 className="font-semibold text-foreground mb-2">Dignidades Essenciais</h4>
+          <p className="text-muted-foreground mb-3">
+            As dignidades essenciais mostram a força de um planeta em determinado signo,
+            baseadas na astrologia tradicional.
+          </p>
+          <dl className="space-y-2 text-xs">
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">👑 Domicílio:</dt>
+              <dd className="text-muted-foreground">Planeta no signo que rege (+5)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">🌟 Exaltação:</dt>
+              <dd className="text-muted-foreground">Ponto de maior força (+4)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">⬇️ Queda:</dt>
+              <dd className="text-muted-foreground">Oposto à exaltação (-4)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">⚠️ Detrimento:</dt>
+              <dd className="text-muted-foreground">Oposto ao domicílio (-5)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">🔥/🌙 Triplicidade:</dt>
+              <dd className="text-muted-foreground">Afinidade elemental (+3)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">📊 Termo:</dt>
+              <dd className="text-muted-foreground">Divisão de graus (+2)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">👤 Face:</dt>
+              <dd className="text-muted-foreground">Divisão de 10 graus (+1)</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold min-w-[100px]">🚶 Peregrino:</dt>
+              <dd className="text-muted-foreground">Sem dignidades (0)</dd>
+            </div>
+          </dl>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Score positivo indica planeta forte. Score negativo indica debilitação.
+          </p>
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-left font-semibold text-foreground">
+                Planeta
+              </th>
+              <th className="px-4 py-3 text-left font-semibold text-foreground">
+                Signo
+              </th>
+              <th className="px-4 py-3 text-left font-semibold text-foreground">
+                Posição
+              </th>
+              <th className="px-4 py-3 text-center font-semibold text-foreground">
+                Casa
+              </th>
+              {hasDignities && (
+                <th className="px-4 py-3 text-left font-semibold text-foreground">
+                  Dignidades
+                </th>
+              )}
+              <th className="px-4 py-3 text-center font-semibold text-foreground">
+                Retrógrado
+              </th>
+              <th className="px-4 py-3 text-right font-semibold text-foreground">
+                Velocidade
+              </th>
+            </tr>
+          </thead>
         <tbody>
           {displayPlanets.map((planet, index) => (
             <tr
@@ -115,6 +245,54 @@ export function PlanetList({
                 </span>
               </td>
 
+              {/* Dignities Badge */}
+              {hasDignities && (
+                <td className="px-4 py-3">
+                  {planet.dignities ? (
+                    <div className="flex flex-col gap-1">
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium ${
+                          getDignityBadge(planet.dignities).color
+                        }`}
+                        title={`Score: ${getDignityScore(planet.dignities)}`}
+                      >
+                        <span>{getDignityBadge(planet.dignities).icon}</span>
+                        <span>{getDignityBadge(planet.dignities).label}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={`text-xs font-semibold ${getScoreColorClass(
+                            getDignityScore(planet.dignities)
+                          )}`}
+                        >
+                          {getDignityScore(planet.dignities) > 0 ? '+' : ''}
+                          {getDignityScore(planet.dignities)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({getClassificationLabel(planet.dignities.classification)})
+                        </span>
+                      </div>
+                      {/* Detailed dignity list */}
+                      {getDignityDetails(planet.dignities).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {getDignityDetails(planet.dignities).map((detail, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-0.5 text-xs text-muted-foreground"
+                              title={`${detail.label}: ${detail.points > 0 ? '+' : ''}${detail.points}`}
+                            >
+                              {detail.icon}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </td>
+              )}
+
               {/* Retrograde Indicator */}
               <td className="px-4 py-3 text-center">
                 {planet.retrograde ? (
@@ -142,6 +320,7 @@ export function PlanetList({
           ))}
         </tbody>
       </table>
+      </div>
 
       {/* Summary */}
       <div className="mt-4 px-4 py-3 bg-muted/30 rounded-md text-sm text-muted-foreground">

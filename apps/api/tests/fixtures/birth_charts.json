@@ -1,0 +1,256 @@
+{
+  "charts": [
+    {
+      "name": "Steve Jobs",
+      "description": "Apple co-founder - Reference chart for testing",
+      "birth_datetime": "1955-02-24T19:15:00",
+      "birth_timezone": "America/Los_Angeles",
+      "latitude": 37.7749,
+      "longitude": -122.4194,
+      "city": "San Francisco",
+      "country": "USA",
+      "expected": {
+        "sun": {
+          "sign": "Pisces",
+          "degree_range": [5, 6],
+          "house": 10
+        },
+        "moon": {
+          "sign": "Aries",
+          "degree_range": [0, 2]
+        },
+        "ascendant": {
+          "sign": "Virgo",
+          "degree_range": [13, 15]
+        },
+        "mc": {
+          "sign": "Gemini",
+          "degree_range": [8, 10]
+        }
+      }
+    },
+    {
+      "name": "Albert Einstein",
+      "description": "Physicist - Famous chart for validation",
+      "birth_datetime": "1879-03-14T11:30:00",
+      "birth_timezone": "Europe/Berlin",
+      "latitude": 48.4011,
+      "longitude": 9.9876,
+      "city": "Ulm",
+      "country": "Germany",
+      "expected": {
+        "sun": {
+          "sign": "Pisces",
+          "degree_range": [23, 24]
+        },
+        "moon": {
+          "sign": "Sagittarius",
+          "degree_range": [14, 16]
+        },
+        "ascendant": {
+          "sign": "Cancer",
+          "degree_range": [13, 15]
+        }
+      }
+    },
+    {
+      "name": "Princess Diana",
+      "description": "British Royal - Public birth chart",
+      "birth_datetime": "1961-07-01T19:45:00",
+      "birth_timezone": "Europe/London",
+      "latitude": 52.5833,
+      "longitude": -1.3333,
+      "city": "Sandringham",
+      "country": "UK",
+      "expected": {
+        "sun": {
+          "sign": "Cancer",
+          "degree_range": [9, 10]
+        },
+        "moon": {
+          "sign": "Aquarius",
+          "degree_range": [24, 26]
+        },
+        "ascendant": {
+          "sign": "Sagittarius",
+          "degree_range": [16, 18]
+        }
+      }
+    },
+    {
+      "name": "John F. Kennedy",
+      "description": "US President - Historical reference chart",
+      "birth_datetime": "1917-05-29T15:00:00",
+      "birth_timezone": "America/New_York",
+      "latitude": 42.3601,
+      "longitude": -71.0589,
+      "city": "Brookline",
+      "country": "USA",
+      "expected": {
+        "sun": {
+          "sign": "Gemini",
+          "degree_range": [7, 9]
+        },
+        "moon": {
+          "sign": "Virgo",
+          "degree_range": [16, 18]
+        },
+        "ascendant": {
+          "sign": "Virgo",
+          "degree_range": [16, 18]
+        }
+      }
+    },
+    {
+      "name": "Mahatma Gandhi",
+      "description": "Indian leader - Well-documented chart",
+      "birth_datetime": "1869-10-02T07:12:00",
+      "birth_timezone": "Asia/Kolkata",
+      "latitude": 21.7644,
+      "longitude": 72.1519,
+      "city": "Porbandar",
+      "country": "India",
+      "expected": {
+        "sun": {
+          "sign": "Libra",
+          "degree_range": [8, 10]
+        },
+        "moon": {
+          "sign": "Leo",
+          "degree_range": [23, 25]
+        },
+        "ascendant": {
+          "sign": "Libra",
+          "degree_range": [16, 18]
+        }
+      }
+    },
+    {
+      "name": "Marilyn Monroe",
+      "description": "Actress - Famous Hollywood chart",
+      "birth_datetime": "1926-06-01T09:30:00",
+      "birth_timezone": "America/Los_Angeles",
+      "latitude": 34.0522,
+      "longitude": -118.2437,
+      "city": "Los Angeles",
+      "country": "USA",
+      "expected": {
+        "sun": {
+          "sign": "Gemini",
+          "degree_range": [10, 11]
+        },
+        "moon": {
+          "sign": "Aquarius",
+          "degree_range": [18, 20]
+        },
+        "ascendant": {
+          "sign": "Leo",
+          "degree_range": [12, 14]
+        }
+      }
+    },
+    {
+      "name": "Elvis Presley",
+      "description": "King of Rock - Public chart",
+      "birth_datetime": "1935-01-08T04:35:00",
+      "birth_timezone": "America/Chicago",
+      "latitude": 34.5965,
+      "longitude": -88.6883,
+      "city": "Tupelo",
+      "country": "USA",
+      "expected": {
+        "sun": {
+          "sign": "Capricorn",
+          "degree_range": [17, 18]
+        },
+        "moon": {
+          "sign": "Pisces",
+          "degree_range": [3, 5]
+        },
+        "ascendant": {
+          "sign": "Sagittarius",
+          "degree_range": [20, 22]
+        }
+      }
+    },
+    {
+      "name": "Nelson Mandela",
+      "description": "South African leader - Historical chart",
+      "birth_datetime": "1918-07-18T14:54:00",
+      "birth_timezone": "Africa/Johannesburg",
+      "latitude": -31.5497,
+      "longitude": 28.7378,
+      "city": "Mvezo",
+      "country": "South Africa",
+      "expected": {
+        "sun": {
+          "sign": "Cancer",
+          "degree_range": [25, 26]
+        },
+        "moon": {
+          "sign": "Scorpio",
+          "degree_range": [14, 16]
+        },
+        "ascendant": {
+          "sign": "Scorpio",
+          "degree_range": [15, 17]
+        }
+      }
+    },
+    {
+      "name": "Pablo Picasso",
+      "description": "Artist - Creative reference chart",
+      "birth_datetime": "1881-10-25T23:15:00",
+      "birth_timezone": "Europe/Madrid",
+      "latitude": 36.7213,
+      "longitude": -4.4214,
+      "city": "Málaga",
+      "country": "Spain",
+      "expected": {
+        "sun": {
+          "sign": "Scorpio",
+          "degree_range": [1, 3]
+        },
+        "moon": {
+          "sign": "Sagittarius",
+          "degree_range": [26, 28]
+        },
+        "ascendant": {
+          "sign": "Leo",
+          "degree_range": [12, 14]
+        }
+      }
+    },
+    {
+      "name": "Winston Churchill",
+      "description": "British PM - Leadership chart",
+      "birth_datetime": "1874-11-30T01:30:00",
+      "birth_timezone": "Europe/London",
+      "latitude": 51.8783,
+      "longitude": -1.3158,
+      "city": "Woodstock",
+      "country": "UK",
+      "expected": {
+        "sun": {
+          "sign": "Sagittarius",
+          "degree_range": [7, 9]
+        },
+        "moon": {
+          "sign": "Leo",
+          "degree_range": [28, 30]
+        },
+        "ascendant": {
+          "sign": "Virgo",
+          "degree_range": [28, 30]
+        }
+      }
+    }
+  ],
+  "notes": {
+    "source": "Birth times from AstroDatabank (Rodden Rating A/AA)",
+    "precision": "Expected values allow ±1° tolerance for rounding differences",
+    "validation": "Use these charts to validate calculation accuracy against Astro.com",
+    "house_systems": "Test with Placidus (default), Koch, Equal, Whole Sign",
+    "aspects": "Verify major aspects (conjunction, opposition, trine, square, sextile)"
+  }
+}

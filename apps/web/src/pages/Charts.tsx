@@ -106,7 +106,7 @@ export function ChartsPage() {
           >
             <img
               src="/logo.png"
-              alt="Astro"
+              alt="Real Astrology"
               className="h-8 w-8"
             />
             <h1 className="text-h3 font-display text-foreground">Meus Mapas Natais</h1>

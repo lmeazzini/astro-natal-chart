@@ -72,7 +72,7 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
             Consentimento e Privacidade
           </h1>
           <p className="text-muted-foreground">
-            Para usar o Astro App, você precisa aceitar nossos termos e
+            Para usar o Real Astrology, você precisa aceitar nossos termos e
             políticas
           </p>
         </div>

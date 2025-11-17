@@ -38,14 +38,14 @@ export function TermsPage() {
         <div className="prose prose-slate dark:prose-invert max-w-none bg-card border border-border rounded-lg p-8">
           <h2>1. Aceitação dos Termos</h2>
           <p>
-            Ao acessar e usar o Astro App ("Serviço", "Plataforma", "nós"),
+            Ao acessar e usar o Real Astrology ("Serviço", "Plataforma", "nós"),
             você ("Usuário", "você") concorda em estar vinculado a estes Termos
             de Uso. Se você não concordar com qualquer parte destes termos, não
             use nosso Serviço.
           </p>
 
           <h2>2. Descrição do Serviço</h2>
-          <p>O Astro App é uma plataforma digital que fornece:</p>
+          <p>O Real Astrology é uma plataforma digital que fornece:</p>
           <ul>
             <li>
               Cálculo de mapas natais usando dados astronômicos precisos (Swiss
@@ -102,7 +102,7 @@ export function TermsPage() {
 
           <h2>5. Propriedade Intelectual</h2>
           <p>
-            O código, design, algoritmos e conteúdo do Astro App são de nossa
+            O código, design, algoritmos e conteúdo do Real Astrology são de nossa
             propriedade. Você recebe uma licença limitada, não exclusiva e
             revogável para usar o Serviço.
           </p>

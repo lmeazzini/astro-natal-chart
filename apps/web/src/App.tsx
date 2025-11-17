@@ -68,10 +68,10 @@ function HomePage() {
           >
             <img
               src="/logo.png"
-              alt="Astro"
+              alt="Real Astrology"
               className="h-8 w-8"
             />
-            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
         </div>
       </nav>
@@ -79,7 +79,7 @@ function HomePage() {
       {/* Main Content */}
       <div className="flex items-center justify-center px-4 py-16">
         <div className="text-center max-w-4xl">
-          <h2 className="text-6xl font-bold text-foreground mb-4">Bem-vindo ao Astro</h2>
+          <h2 className="text-6xl font-bold text-foreground mb-4">Bem-vindo ao Real Astrology</h2>
         <p className="text-xl text-muted-foreground mb-8">
           Sistema de Mapas Natais com Astrologia Tradicional
         </p>
@@ -190,10 +190,10 @@ function DashboardPage() {
           >
             <img
               src="/logo.png"
-              alt="Astro"
+              alt="Real Astrology"
               className="h-8 w-8"
             />
-            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-4">
             <ThemeToggle />

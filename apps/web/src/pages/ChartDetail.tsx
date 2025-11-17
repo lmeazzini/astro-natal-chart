@@ -182,7 +182,7 @@ export function ChartDetailPage() {
               >
                 <img
                   src="/logo.png"
-                  alt="Astro"
+                  alt="Real Astrology"
                   className="h-8 w-8"
                 />
               </Link>

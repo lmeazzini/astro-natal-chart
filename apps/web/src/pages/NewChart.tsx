@@ -221,8 +221,8 @@ export function NewChartPage() {
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             aria-label="Voltar ao Dashboard"
           >
-            <img src="/logo.png" alt="Astro" className="h-8 w-8" />
-            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+            <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
+            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <Button
             variant="ghost"

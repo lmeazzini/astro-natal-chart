@@ -10,7 +10,9 @@ import { ThemeToggle } from '../components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Trash2, Plus, ArrowLeft } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { BigThreeBadge } from '@/components/ui/big-three-badge';
+import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -81,20 +83,25 @@ export function ChartsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando mapas...</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-shimmer mb-astro-md">
+            <Sparkles className="h-12 w-12 text-primary" />
+          </div>
+          <p className="text-body text-muted-foreground">Carregando mapas...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5">
       {/* Header */}
-      <nav className="bg-card border-b border-border">
+      <nav className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link
             to="/dashboard"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 hover:opacity-80 transition-all duration-200"
             aria-label="Voltar ao Dashboard"
           >
             <img
@@ -102,7 +109,7 @@ export function ChartsPage() {
               alt="Astro"
               className="h-8 w-8"
             />
-            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+            <h1 className="text-h3 font-display text-foreground">Meus Mapas Natais</h1>
           </Link>
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -134,38 +141,34 @@ export function ChartsPage() {
         )}
 
         {charts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🌟</div>
-            <h2 className="text-2xl font-semibold text-foreground mb-2">
-              Nenhum mapa natal ainda
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Crie seu primeiro mapa natal para começar sua jornada astrológica
-            </p>
-            <Button asChild size="lg">
-              <Link to="/charts/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Criar Meu Primeiro Mapa
-              </Link>
-            </Button>
+          <div className="animate-fade-in">
+            <EmptyState
+              icon={Sparkles}
+              title="Nenhum mapa natal ainda"
+              description="Crie seu primeiro mapa natal para começar sua jornada astrológica e descobrir os segredos do seu céu de nascimento"
+              action={{
+                label: 'Criar Meu Primeiro Mapa',
+                onClick: () => navigate('/charts/new'),
+              }}
+            />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
             {charts.map((chart) => (
-              <Card key={chart.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
+              <Card key={chart.id} className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-card/90 backdrop-blur-sm">
+                <CardHeader className="pb-3 border-b border-border/30">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle>{chart.person_name}</CardTitle>
+                      <CardTitle className="text-h4 font-display">{chart.person_name}</CardTitle>
                       {chart.gender && (
-                        <CardDescription>{chart.gender}</CardDescription>
+                        <CardDescription className="text-sm mt-1">{chart.gender}</CardDescription>
                       )}
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(chart.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 -mr-2 -mt-1"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -188,37 +191,14 @@ export function ChartsPage() {
                   </div>
 
                   {chart.chart_data && (
-                    <div className="pt-4 border-t border-border">
-                      <p className="text-xs text-muted-foreground mb-2">Big Three</p>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="text-center">
-                          <p className="text-muted-foreground mb-1">☉ Sol</p>
-                          <p className="font-medium text-foreground flex items-center justify-center gap-1">
-                            <span className="text-base">
-                              {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || '')}
-                            </span>
-                            {chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground mb-1">☽ Lua</p>
-                          <p className="font-medium text-foreground flex items-center justify-center gap-1">
-                            <span className="text-base">
-                              {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || '')}
-                            </span>
-                            {chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground mb-1">ASC</p>
-                          <p className="font-medium text-foreground flex items-center justify-center gap-1">
-                            <span className="text-base">
-                              {getSignSymbol(getSignFromLongitude(chart.chart_data.ascendant))}
-                            </span>
-                            {getSignFromLongitude(chart.chart_data.ascendant)}
-                          </p>
-                        </div>
-                      </div>
+                    <div className="pt-4 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground mb-3 font-medium">Big Three</p>
+                      <BigThreeBadge
+                        sunSign={chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
+                        moonSign={chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
+                        risingSign={getSignFromLongitude(chart.chart_data.ascendant)}
+                        variant="vertical"
+                      />
                     </div>
                   )}
 
@@ -232,9 +212,10 @@ export function ChartsPage() {
                 </CardContent>
 
                 <CardFooter>
-                  <Button asChild variant="secondary" className="w-full">
+                  <Button asChild className="w-full group">
                     <Link to={`/charts/${chart.id}`}>
-                      Ver Detalhes
+                      Ver Detalhes Completos
+                      <ArrowLeft className="ml-2 h-4 w-4 rotate-180 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
                 </CardFooter>

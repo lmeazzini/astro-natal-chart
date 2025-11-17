@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from sqlalchemy import ARRAY, DateTime, ForeignKey, Numeric, String, Text, func
+from sqlalchemy import ARRAY, DateTime, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -57,8 +57,19 @@ class BirthChart(Base):
     zodiac_type: Mapped[str] = mapped_column(String(20), default="tropical", nullable=False)
     node_type: Mapped[str] = mapped_column(String(20), default="true", nullable=False)
 
+    # Async processing status (for Celery background tasks)
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="processing",
+        nullable=False,
+        index=True,
+    )  # processing, completed, failed
+    progress: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # 0-100
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    task_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+
     # Calculated chart data (stored as JSONB for flexibility)
-    chart_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    chart_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     # Sharing and visibility
     visibility: Mapped[str] = mapped_column(String(20), default="private", nullable=False)

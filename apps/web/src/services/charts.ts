@@ -71,6 +71,9 @@ export interface BirthChart {
   house_system: string;
   zodiac_type: string;
   node_type: string;
+  status: string; // processing, completed, failed
+  progress: number; // 0-100
+  error_message: string | null;
   chart_data: {
     planets: PlanetPosition[];
     houses: HousePosition[];
@@ -83,7 +86,7 @@ export interface BirthChart {
     lord_of_nativity?: LordOfNativityData;
     temperament?: TemperamentData;
     calculation_timestamp: string;
-  };
+  } | null;
   visibility: string;
   share_uuid: string | null;
   created_at: string;
@@ -96,6 +99,14 @@ export interface BirthChartList {
   total: number;
   page: number;
   page_size: number;
+}
+
+export interface ChartStatus {
+  id: string;
+  status: string; // processing, completed, failed
+  progress: number; // 0-100
+  error_message: string | null;
+  task_id: string | null;
 }
 
 export const chartsService = {
@@ -125,6 +136,13 @@ export const chartsService = {
    */
   async getById(chartId: string, token: string): Promise<BirthChart> {
     return apiClient.get<BirthChart>(`/api/v1/charts/${chartId}`, token);
+  },
+
+  /**
+   * Get chart processing status (for polling)
+   */
+  async getStatus(chartId: string, token: string): Promise<ChartStatus> {
+    return apiClient.get<ChartStatus>(`/api/v1/charts/${chartId}/status`, token);
   },
 
   /**

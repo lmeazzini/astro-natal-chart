@@ -39,6 +39,36 @@ export function ChartDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Polling effect for processing charts
+  useEffect(() => {
+    if (!chart || chart.status !== 'processing') {
+      return; // Only poll if chart is processing
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (!token || !id) return;
+
+        const status = await chartsService.getStatus(id, token);
+
+        if (status.status === 'completed' || status.status === 'failed') {
+          // Reload full chart data when done
+          const chartData = await chartsService.getById(id, token);
+          setChart(chartData);
+          clearInterval(pollInterval);
+        } else {
+          // Update progress
+          setChart((prev) => prev ? { ...prev, progress: status.progress } : null);
+        }
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [chart, id]);
+
   async function loadChart() {
     try {
       const token = localStorage.getItem(TOKEN_KEY);
@@ -120,6 +150,49 @@ export function ChartDetailPage() {
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
           <p className="text-body text-muted-foreground">Carregando mapa natal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show processing state
+  if (chart && chart.status === 'processing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="inline-block animate-shimmer mb-astro-md">
+            <Sparkles className="h-12 w-12 text-primary" />
+          </div>
+          <h2 className="text-headline-3 font-display mb-astro-sm">Gerando seu Mapa Natal...</h2>
+          <p className="text-body text-muted-foreground mb-astro-md">
+            Estamos calculando as posições planetárias e gerando interpretações astrológicas.
+          </p>
+          <div className="w-full bg-muted rounded-full h-2 mb-astro-sm">
+            <div
+              className="bg-primary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${chart.progress}%` }}
+            />
+          </div>
+          <p className="text-caption text-muted-foreground">
+            {chart.progress}% completo
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show failed state
+  if (chart && chart.status === 'failed') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="text-headline-3 font-display mb-astro-sm text-destructive">
+            Erro ao Gerar Mapa
+          </h2>
+          <p className="text-body text-muted-foreground mb-astro-md">
+            {chart.error_message || 'Ocorreu um erro ao processar seu mapa natal.'}
+          </p>
+          <Button onClick={() => navigate('/charts')}>Voltar aos Mapas</Button>
         </div>
       </div>
     );

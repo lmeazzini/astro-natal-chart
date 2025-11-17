@@ -16,8 +16,10 @@ from app.schemas.chart import (
     BirthChartList,
     BirthChartRead,
     BirthChartUpdate,
+    ChartStatusResponse,
 )
 from app.services import chart_service
+from app.tasks.astro_tasks import generate_birth_chart_task
 
 router = APIRouter()
 
@@ -25,9 +27,9 @@ router = APIRouter()
 @router.post(
     "/",
     response_model=BirthChartRead,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create birth chart",
-    description="Calculate and save a new birth chart with complete astrological data.",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Create birth chart (async)",
+    description="Create a new birth chart. Calculations run in background. Poll /charts/{id}/status to check progress.",
 )
 @limiter.limit(RateLimits.CHART_CREATE)
 async def create_chart(
@@ -38,7 +40,19 @@ async def create_chart(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> BirthChartRead:
     """
-    Create a new birth chart.
+    Create a new birth chart with async processing.
+
+    **Async Flow:**
+    1. Creates initial chart record with status='processing'
+    2. Dispatches Celery task to calculate data in background
+    3. Returns HTTP 202 Accepted immediately
+    4. Client polls GET /charts/{id}/status to track progress
+
+    **Benefits:**
+    - Immediate response (no 20-30s wait)
+    - Non-blocking user experience
+    - Automatic retries on OpenAI failures
+    - Scalable via Celery workers
 
     Args:
         chart_data: Birth chart data
@@ -46,19 +60,24 @@ async def create_chart(
         db: Database session
 
     Returns:
-        Created birth chart with calculated astrological data
+        Created birth chart with status='processing' (no chart_data yet)
     """
     try:
-        chart = await chart_service.create_birth_chart(
+        # Create initial chart record (no calculations yet)
+        chart = await chart_service.create_birth_chart_async(
             db=db,
             user_id=UUID(str(current_user.id)),
             chart_data=chart_data,
         )
+
+        # Dispatch Celery task to process in background
+        generate_birth_chart_task.delay(str(chart.id))
+
         return chart  # type: ignore[return-value]
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error calculating birth chart: {str(e)}",
+            detail=f"Error creating birth chart: {str(e)}",
         ) from e
 
 
@@ -109,6 +128,61 @@ async def list_charts(
         page=page,
         page_size=page_size,
     )
+
+
+@router.get(
+    "/{chart_id}/status",
+    response_model=ChartStatusResponse,
+    summary="Get chart processing status",
+    description="Check processing status of a birth chart. Use for polling while chart is being generated.",
+)
+@limiter.limit(RateLimits.CHART_READ)
+async def get_chart_status(
+    request: Request,
+    response: Response,
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ChartStatusResponse:
+    """
+    Get birth chart processing status.
+
+    **Use for polling:**
+    - After creating a chart (HTTP 202), poll this endpoint every 2-3 seconds
+    - Check status: 'processing' → 'completed' or 'failed'
+    - When completed, fetch full chart via GET /charts/{id}
+
+    Args:
+        chart_id: Birth chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        Chart status information (status, progress, error_message)
+    """
+    try:
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+        )
+        return ChartStatusResponse(
+            id=chart.id,
+            status=chart.status,
+            progress=chart.progress,
+            error_message=chart.error_message,
+            task_id=chart.task_id,
+        )
+    except chart_service.ChartNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Birth chart not found",
+        ) from None
+    except chart_service.UnauthorizedAccessError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this birth chart",
+        ) from None
 
 
 @router.get(

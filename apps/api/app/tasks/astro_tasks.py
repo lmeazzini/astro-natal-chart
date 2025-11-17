@@ -1,0 +1,110 @@
+"""
+Astrological chart generation Celery tasks for async processing.
+"""
+
+import asyncio
+from typing import TYPE_CHECKING
+from uuid import UUID
+
+from loguru import logger
+
+from app.core.celery_app import celery_app
+
+if TYPE_CHECKING:
+    from celery import Task
+from app.core.database import AsyncSessionLocal
+from app.repositories.chart_repository import ChartRepository
+from app.services.astro_service import calculate_birth_chart
+from app.services.interpretation_service import InterpretationService
+
+
+@celery_app.task(bind=True, name="astro.generate_birth_chart", max_retries=3)
+def generate_birth_chart_task(self: "Task", chart_id: str) -> dict[str, str]:
+    """
+    Generate birth chart calculations and interpretations in background.
+
+    **Background Processing Benefits**:
+    - Immediate response (HTTP 202)
+    - Non-blocking user experience
+    - Automatic retries on OpenAI failures
+    - Scalable via Celery workers
+
+    Args:
+        chart_id: UUID string of the birth chart to process
+
+    Returns:
+        Dict with status and message
+    """
+    try:
+        # Store Celery task ID in the chart for tracking
+        return asyncio.run(_generate_birth_chart_async(str(self.request.id), chart_id))
+    except Exception as exc:
+        # Retry with exponential backoff: 60s, 120s, 240s
+        logger.error(f"Chart generation failed (attempt {self.request.retries + 1}): {exc}")
+        raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries)) from exc
+
+
+async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, str]:
+    """Async implementation of birth chart generation."""
+    async with AsyncSessionLocal() as db:
+        chart_repo = ChartRepository(db)
+
+        # Fetch the chart (should be in 'processing' status with minimal data)
+        chart = await chart_repo.get_by_id(UUID(chart_id))
+
+        if not chart:
+            logger.error(f"Chart {chart_id} not found")
+            return {"status": "failed", "message": "Chart not found"}
+
+        try:
+            # Update task_id
+            chart.task_id = task_id
+            await db.commit()
+
+            # Step 1: Calculate astrological data (fast ~100-200ms)
+            logger.info(f"Calculating chart data for {chart_id}")
+            chart.progress = 10
+            await db.commit()
+
+            calculated_data = calculate_birth_chart(
+                birth_datetime=chart.birth_datetime,
+                timezone=chart.birth_timezone,
+                latitude=float(chart.latitude),
+                longitude=float(chart.longitude),
+                house_system=chart.house_system,
+            )
+
+            # Step 2: Save calculated data
+            chart.chart_data = calculated_data
+            chart.progress = 30
+            await db.commit()
+            logger.info(f"Chart calculations completed for {chart_id}")
+
+            # Step 3: Generate AI interpretations (slow ~20-30 seconds)
+            logger.info(f"Generating interpretations for {chart_id}")
+            chart.progress = 50
+            await db.commit()
+
+            interpretation_service = InterpretationService(db)
+            await interpretation_service.generate_all_interpretations(
+                chart_id=UUID(chart_id),
+                chart_data=calculated_data,
+            )
+
+            # Step 4: Mark as completed
+            chart.status = "completed"
+            chart.progress = 100
+            chart.error_message = None
+            await db.commit()
+
+            logger.info(f"Chart {chart_id} generation completed successfully")
+            return {"status": "completed", "message": "Chart generated successfully"}
+
+        except Exception as e:
+            # Mark as failed
+            chart.status = "failed"
+            chart.error_message = str(e)
+            await db.commit()
+
+            logger.error(f"Chart {chart_id} generation failed: {e}")
+            raise  # Re-raise to trigger Celery retry

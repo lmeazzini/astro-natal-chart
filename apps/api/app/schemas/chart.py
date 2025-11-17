@@ -105,7 +105,13 @@ class BirthChartRead(BaseModel):
     house_system: str
     zodiac_type: str
     node_type: str
-    chart_data: dict[str, Any]
+    status: str = Field(
+        default="processing",
+        description="Processing status: processing, completed, failed",
+    )
+    progress: int = Field(default=0, ge=0, le=100, description="Processing progress (0-100)")
+    error_message: str | None = Field(None, description="Error message if status is failed")
+    chart_data: dict[str, Any] | None
     visibility: str
     share_uuid: UUID | None
     created_at: datetime
@@ -122,3 +128,13 @@ class BirthChartList(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class ChartStatusResponse(BaseModel):
+    """Schema for chart processing status response."""
+
+    id: UUID
+    status: str = Field(description="Processing status: processing, completed, failed")
+    progress: int = Field(ge=0, le=100, description="Processing progress (0-100)")
+    error_message: str | None = Field(None, description="Error message if status is failed")
+    task_id: str | None = Field(None, description="Celery task ID for tracking")

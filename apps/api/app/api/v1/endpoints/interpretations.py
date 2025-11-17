@@ -117,6 +117,13 @@ async def regenerate_chart_interpretations(
 
         interpretation_service = InterpretationService(db)
 
+        # Check if chart data is available (not still processing)
+        if not chart.chart_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Chart is still processing. Please wait until calculations are complete.",
+            )
+
         # Delete existing interpretations
         deleted_count = await interpretation_service.repository.delete_by_chart_id(chart_id)
         logger.info(f"Deleted {deleted_count} existing interpretations for chart {chart_id}")

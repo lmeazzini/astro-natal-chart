@@ -34,7 +34,9 @@ async def create_birth_chart(
     generate_interpretations: bool = True,
 ) -> BirthChart:
     """
-    Create a new birth chart with astrological calculations.
+    Create a new birth chart with astrological calculations (SYNCHRONOUS - for backwards compatibility).
+
+    **WARNING**: This is the old synchronous endpoint. New code should use create_birth_chart_async.
 
     Args:
         db: Database session
@@ -74,6 +76,8 @@ async def create_birth_chart(
         zodiac_type=chart_data.zodiac_type,
         node_type=chart_data.node_type,
         chart_data=calculated_data,
+        status="completed",  # Immediately completed since sync
+        progress=100,
         visibility="private",
     )
 
@@ -91,6 +95,58 @@ async def create_birth_chart(
         except Exception as e:
             # Log error but don't fail chart creation
             logger.error(f"Failed to generate interpretations for chart {created_chart.id}: {e}")
+
+    return created_chart
+
+
+async def create_birth_chart_async(
+    db: AsyncSession,
+    user_id: UUID,
+    chart_data: BirthChartCreate,
+) -> BirthChart:
+    """
+    Create a new birth chart for async processing (returns immediately, calculations run in background).
+
+    **Async Flow:**
+    1. Creates initial chart record with status='processing' (no chart_data yet)
+    2. Celery task will populate chart_data and interpretations
+    3. Client polls GET /charts/{id}/status to track progress
+
+    Args:
+        db: Database session
+        user_id: User ID creating the chart
+        chart_data: Birth chart data
+
+    Returns:
+        Created birth chart with status='processing' (no calculations yet)
+    """
+    chart_repo = ChartRepository(db)
+
+    # Create chart record WITHOUT calculations (will be done by Celery task)
+    chart = BirthChart(
+        id=uuid4(),
+        user_id=user_id,
+        person_name=chart_data.person_name,
+        gender=chart_data.gender,
+        birth_datetime=chart_data.birth_datetime,
+        birth_timezone=chart_data.birth_timezone,
+        latitude=chart_data.latitude,
+        longitude=chart_data.longitude,
+        city=chart_data.city,
+        country=chart_data.country,
+        notes=chart_data.notes,
+        tags=chart_data.tags or [],
+        house_system=chart_data.house_system,
+        zodiac_type=chart_data.zodiac_type,
+        node_type=chart_data.node_type,
+        chart_data=None,  # Will be populated by Celery task
+        status="processing",
+        progress=0,
+        visibility="private",
+    )
+
+    created_chart = await chart_repo.create(chart)
+    logger.info(f"Created chart {created_chart.id} for async processing")
 
     return created_chart
 

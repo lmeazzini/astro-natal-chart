@@ -1,5 +1,5 @@
 /**
- * New Birth Chart creation page
+ * New Birth Chart creation page - Multi-step form
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -15,7 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft, Loader2, MapPin } from 'lucide-react';
+import { ProgressIndicator } from '@/components/ui/progress-indicator';
+import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -46,8 +47,16 @@ const chartFormSchema = z.object({
 
 type ChartFormValues = z.infer<typeof chartFormSchema>;
 
+const STEPS = [
+  { number: 1, title: 'Informações Pessoais', description: 'Nome e gênero' },
+  { number: 2, title: 'Data e Hora', description: 'Nascimento' },
+  { number: 3, title: 'Local', description: 'Cidade e coordenadas' },
+  { number: 4, title: 'Revisão', description: 'Confirmar dados' },
+];
+
 export function NewChartPage() {
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
 
   const form = useForm<ChartFormValues>({
     resolver: zodResolver(chartFormSchema),
@@ -115,12 +124,10 @@ export function NewChartPage() {
   function handleCityInputChange(value: string) {
     form.setValue('city', value);
 
-    // Clear timeout if exists
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // Debounce search
     searchTimeoutRef.current = setTimeout(() => {
       searchLocation(value);
     }, 500);
@@ -154,7 +161,6 @@ export function NewChartPage() {
     }
   }
 
-  // Brazilian state capitals for quick selection
   const brazilianCities = [
     { name: 'São Paulo, SP', lat: -23.550520, lon: -46.633308 },
     { name: 'Rio de Janeiro, RJ', lat: -22.906847, lon: -43.172896 },
@@ -177,21 +183,45 @@ export function NewChartPage() {
     }
   }
 
+  async function validateStep(step: number): Promise<boolean> {
+    const fieldsToValidate: Record<number, (keyof ChartFormValues)[]> = {
+      1: ['person_name'],
+      2: ['birth_datetime', 'birth_timezone'],
+      3: ['city', 'latitude', 'longitude'],
+      4: [],
+    };
+
+    const fields = fieldsToValidate[step];
+    if (!fields || fields.length === 0) return true;
+
+    const result = await form.trigger(fields);
+    return result;
+  }
+
+  async function handleNext() {
+    const isValid = await validateStep(currentStep);
+    if (isValid && currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    }
+  }
+
+  function handlePrevious() {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       {/* Header */}
-      <nav className="bg-card border-b border-border">
+      <nav className="bg-card/80 backdrop-blur-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link
             to="/dashboard"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             aria-label="Voltar ao Dashboard"
           >
-            <img
-              src="/logo.png"
-              alt="Astro"
-              className="h-8 w-8"
-            />
+            <img src="/logo.png" alt="Astro" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">Astro</h1>
           </Link>
           <Button
@@ -206,37 +236,67 @@ export function NewChartPage() {
       </nav>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="max-w-4xl mx-auto py-12 px-4">
+        {/* Progress Indicators */}
+        <div className="flex justify-center items-center gap-4 mb-12">
+          {STEPS.map((step, index) => (
+            <div key={step.number} className="flex items-center gap-4">
+              <div className="flex flex-col items-center gap-2">
+                <ProgressIndicator
+                  step={step.number}
+                  completed={currentStep > step.number}
+                  active={currentStep === step.number}
+                />
+                <div className="text-center">
+                  <p className={`text-sm font-medium ${currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+              {index < STEPS.length - 1 && (
+                <div className={`h-0.5 w-12 hidden sm:block ${currentStep > step.number ? 'bg-primary' : 'bg-border'}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
         {generalError && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="mb-6 animate-slide-in-down">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{generalError}</AlertDescription>
           </Alert>
         )}
 
-        <Card>
+        <Card className="shadow-xl border-0 animate-fade-in">
           <CardHeader>
-            <CardTitle>Criar Novo Mapa Natal</CardTitle>
-            <CardDescription>
-              Preencha os dados abaixo para calcular um novo mapa natal
+            <CardTitle className="text-h2">
+              {STEPS[currentStep - 1].title}
+            </CardTitle>
+            <CardDescription className="text-base">
+              Passo {currentStep} de {STEPS.length} - {STEPS[currentStep - 1].description}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Person Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Informações da Pessoa</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Step 1: Personal Information */}
+                {currentStep === 1 && (
+                  <div className="space-y-6 animate-slide-in-up">
                     <FormField
                       control={form.control}
                       name="person_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Completo *</FormLabel>
+                          <FormLabel className="text-base">Nome Completo *</FormLabel>
                           <FormControl>
-                            <Input placeholder="João da Silva" {...field} />
+                            <Input
+                              placeholder="João da Silva"
+                              className="text-base"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -248,11 +308,11 @@ export function NewChartPage() {
                       name="gender"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Gênero</FormLabel>
+                          <FormLabel className="text-base">Gênero (Opcional)</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione" />
+                              <SelectTrigger className="text-base">
+                                <SelectValue placeholder="Selecione o gênero" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -266,22 +326,27 @@ export function NewChartPage() {
                       )}
                     />
                   </div>
-                </div>
+                )}
 
-                {/* Birth Date and Time */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Data e Hora de Nascimento</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Step 2: Birth Date and Time */}
+                {currentStep === 2 && (
+                  <div className="space-y-6 animate-slide-in-up">
                     <FormField
                       control={form.control}
                       name="birth_datetime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Data e Hora *</FormLabel>
+                          <FormLabel className="text-base">Data e Hora de Nascimento *</FormLabel>
                           <FormControl>
-                            <Input type="datetime-local" {...field} />
+                            <Input
+                              type="datetime-local"
+                              className="text-base"
+                              {...field}
+                            />
                           </FormControl>
+                          <p className="text-sm text-muted-foreground">
+                            Quanto mais precisa a hora, mais preciso será o mapa natal
+                          </p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -292,10 +357,10 @@ export function NewChartPage() {
                       name="birth_timezone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Fuso Horário</FormLabel>
+                          <FormLabel className="text-base">Fuso Horário</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="text-base">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -312,44 +377,52 @@ export function NewChartPage() {
                       )}
                     />
                   </div>
-                </div>
+                )}
 
-                {/* Birth Location */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Local de Nascimento</h3>
+                {/* Step 3: Birth Location */}
+                {currentStep === 3 && (
+                  <div className="space-y-6 animate-slide-in-up">
+                    {/* Quick City Select */}
+                    <div className="space-y-3">
+                      <label className="text-base font-medium">
+                        Selecione uma Capital Brasileira (Opcional)
+                      </label>
+                      <Select onValueChange={handleCitySelect}>
+                        <SelectTrigger className="text-base">
+                          <SelectValue placeholder="Escolha uma capital para preencher automaticamente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brazilianCities.map((city) => (
+                            <SelectItem key={city.name} value={city.name}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Quick City Select */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Cidade Rápida (Capitais Brasileiras)
-                    </label>
-                    <Select onValueChange={handleCitySelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma capital" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {brazilianCities.map((city) => (
-                          <SelectItem key={city.name} value={city.name}>
-                            {city.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-border" />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-card px-4 text-muted-foreground">ou busque qualquer cidade</span>
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* City with autocomplete */}
                     <FormField
                       control={form.control}
                       name="city"
                       render={({ field }) => (
-                        <FormItem className="relative">
-                          <FormLabel>Cidade *</FormLabel>
+                        <FormItem>
+                          <FormLabel className="text-base">Cidade *</FormLabel>
                           <FormControl>
                             <div className="relative" ref={suggestionRef}>
                               <Input
                                 {...field}
                                 placeholder="Digite o nome da cidade..."
+                                className="text-base"
                                 onChange={(e) => {
                                   field.onChange(e);
                                   handleCityInputChange(e.target.value);
@@ -369,25 +442,25 @@ export function NewChartPage() {
 
                               {/* Location Suggestions Dropdown */}
                               {showSuggestions && locationSuggestions.length > 0 && (
-                                <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-2 bg-card border border-border rounded-astro-md shadow-xl max-h-80 overflow-y-auto animate-slide-in-down">
                                   {locationSuggestions.map((location, index) => (
                                     <button
                                       key={index}
                                       type="button"
                                       onClick={() => selectLocation(location)}
-                                      className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                                      className="w-full text-left px-4 py-4 hover:bg-accent/40 transition-all duration-200 border-b border-border last:border-b-0 first:rounded-t-astro-md last:rounded-b-astro-md"
                                     >
-                                      <div className="flex items-start gap-2">
-                                        <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
-                                        <div className="flex-1">
-                                          <p className="text-sm font-medium text-foreground">
+                                      <div className="flex items-start gap-3">
+                                        <MapPin className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-semibold text-foreground truncate">
                                             {location.city || location.display_name.split(',')[0]}
                                           </p>
-                                          <p className="text-xs text-muted-foreground mt-0.5">
+                                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                             {location.display_name}
                                           </p>
-                                          <p className="text-xs text-muted-foreground mt-1">
-                                            📌 {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                          <p className="text-xs text-primary/80 mt-1.5 font-mono">
+                                            {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
                                           </p>
                                         </div>
                                       </div>
@@ -407,28 +480,136 @@ export function NewChartPage() {
                       name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>País</FormLabel>
+                          <FormLabel className="text-base">País</FormLabel>
                           <FormControl>
-                            <Input placeholder="Brasil" {...field} />
+                            <Input placeholder="Brasil" className="text-base" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="latitude"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base">Latitude *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.000001"
+                                placeholder="-23.550520"
+                                className="text-base font-mono"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="longitude"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base">Longitude *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.000001"
+                                placeholder="-46.633308"
+                                className="text-base font-mono"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <Alert className="border-primary/20 bg-primary/5">
+                      <AlertCircle className="h-4 w-4 text-primary" />
+                      <AlertDescription className="text-sm">
+                        <strong>Importante:</strong> As coordenadas são preenchidas automaticamente ao selecionar uma cidade.
+                        Para melhor precisão, use a busca ou ajuste manualmente.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+
+                {/* Step 4: Review */}
+                {currentStep === 4 && (
+                  <div className="space-y-6 animate-slide-in-up">
+                    <div className="rounded-astro-md bg-muted/30 p-6 space-y-4">
+                      <h3 className="text-h4 mb-4 flex items-center gap-2">
+                        <Check className="h-5 w-5 text-primary" />
+                        Confirme os dados do mapa natal
+                      </h3>
+
+                      <div className="grid gap-4">
+                        <div className="flex justify-between items-start py-3 border-b border-border">
+                          <span className="text-sm text-muted-foreground">Nome</span>
+                          <span className="text-sm font-semibold text-right">{form.getValues('person_name') || '-'}</span>
+                        </div>
+
+                        {form.getValues('gender') && (
+                          <div className="flex justify-between items-start py-3 border-b border-border">
+                            <span className="text-sm text-muted-foreground">Gênero</span>
+                            <span className="text-sm font-semibold">{form.getValues('gender')}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-start py-3 border-b border-border">
+                          <span className="text-sm text-muted-foreground">Data e Hora</span>
+                          <span className="text-sm font-semibold text-right font-mono">
+                            {form.getValues('birth_datetime')
+                              ? new Date(form.getValues('birth_datetime')).toLocaleString('pt-BR')
+                              : '-'
+                            }
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-start py-3 border-b border-border">
+                          <span className="text-sm text-muted-foreground">Fuso Horário</span>
+                          <span className="text-sm font-semibold">{form.getValues('birth_timezone')}</span>
+                        </div>
+
+                        <div className="flex justify-between items-start py-3 border-b border-border">
+                          <span className="text-sm text-muted-foreground">Cidade</span>
+                          <span className="text-sm font-semibold text-right">{form.getValues('city') || '-'}</span>
+                        </div>
+
+                        {form.getValues('country') && (
+                          <div className="flex justify-between items-start py-3 border-b border-border">
+                            <span className="text-sm text-muted-foreground">País</span>
+                            <span className="text-sm font-semibold">{form.getValues('country')}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-start py-3">
+                          <span className="text-sm text-muted-foreground">Coordenadas</span>
+                          <span className="text-xs font-mono text-primary">
+                            {form.getValues('latitude').toFixed(6)}, {form.getValues('longitude').toFixed(6)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     <FormField
                       control={form.control}
-                      name="latitude"
+                      name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Latitude *</FormLabel>
+                          <FormLabel className="text-base">Anotações (Opcional)</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              step="0.000001"
-                              placeholder="-23.550520"
+                            <Textarea
+                              placeholder="Adicione observações, contexto ou informações adicionais sobre este mapa..."
+                              rows={4}
+                              className="text-base resize-none"
                               {...field}
                             />
                           </FormControl>
@@ -436,72 +617,49 @@ export function NewChartPage() {
                         </FormItem>
                       )}
                     />
-
-                    <FormField
-                      control={form.control}
-                      name="longitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Longitude *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.000001"
-                              placeholder="-46.633308"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between items-center pt-6 border-t border-border">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={currentStep === 1}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+
+                  {currentStep < 4 ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      className="gap-2"
+                    >
+                      Próximo
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={form.formState.isSubmitting}
+                      className="gap-2 min-w-[200px]"
+                    >
+                      {form.formState.isSubmitting && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      )}
+                      {form.formState.isSubmitting ? 'Calculando...' : 'Criar Mapa Natal'}
+                      {!form.formState.isSubmitting && <Check className="h-4 w-4" />}
+                    </Button>
+                  )}
                 </div>
-
-                {/* Notes */}
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anotações</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Notas adicionais sobre este mapa..."
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={form.formState.isSubmitting}
-                >
-                  {form.formState.isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {form.formState.isSubmitting ? 'Calculando mapa natal...' : 'Criar Mapa Natal'}
-                </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
-
-        {/* Info Box */}
-        <Alert className="mt-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Dica:</strong> Para melhor precisão, use as coordenadas exatas do
-            local de nascimento. Você pode selecionar uma capital brasileira ou inserir
-            manualmente as coordenadas.
-          </AlertDescription>
-        </Alert>
       </div>
     </div>
   );

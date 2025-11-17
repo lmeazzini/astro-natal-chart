@@ -113,27 +113,66 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-6 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
-            <Logo size="lg" />
-          </Link>
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            Criar Conta
-          </h1>
-          <p className="text-muted-foreground">
-            Comece sua jornada astrológica
-          </p>
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Left Panel - Celestial Branding */}
+      <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-secondary via-secondary/90 to-primary/80 text-primary-foreground p-12 relative overflow-hidden">
+        {/* Decorative floating elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-24 right-20 w-40 h-40 rounded-full bg-white/10 animate-float" />
+          <div className="absolute bottom-20 left-16 w-28 h-28 rounded-full bg-white/5 animate-float" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute top-1/3 right-10 w-20 h-20 rounded-full bg-white/5 animate-float" style={{ animationDelay: '0.5s' }} />
         </div>
 
-        {/* Form Card */}
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Cadastro</CardTitle>
-            <CardDescription className="text-center">
-              Preencha os dados para criar sua conta
+        {/* Content */}
+        <div className="relative z-10 max-w-md text-center animate-fade-in">
+          <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
+            <Logo size="xl" />
+          </Link>
+          <h1 className="text-h1 text-white mb-astro-md">
+            Inicie sua jornada astrológica
+          </h1>
+          <p className="text-body text-white/90 mb-astro-xl">
+            Crie sua conta e descubra insights profundos sobre seu mapa natal com cálculos astronômicos de precisão profissional.
+          </p>
+          <div className="flex flex-col gap-3 text-white/80 text-sm text-left max-w-xs mx-auto">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Mapas natais ilimitados</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Visualização gráfica profissional</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>100% gratuito e seguro</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel - Form */}
+      <div className="flex items-center justify-center p-8 lg:p-12 bg-background animate-slide-in-up overflow-y-auto">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <Link to="/" className="inline-block mb-6 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
+              <Logo size="lg" />
+            </Link>
+          </div>
+
+          {/* Form Card */}
+          <Card className="border-0 shadow-lg">
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-h2 text-center">Criar Conta</CardTitle>
+            <CardDescription className="text-center text-base">
+              Comece sua jornada astrológica hoje
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -276,22 +315,23 @@ export function RegisterPage() {
             {/* OAuth Login Options */}
             {oauthProviders?.length > 0 && (
               <>
-                <div className="relative my-4">
+                <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <Separator />
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">
+                  <div className="relative flex justify-center text-sm font-medium">
+                    <span className="bg-card px-4 text-muted-foreground">
                       ou cadastre-se com
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="grid gap-3">
                   {oauthProviders?.map((provider) => (
                     <Button
                       key={provider.name}
                       variant="outline"
+                      size="lg"
                       className="w-full"
                       onClick={() => handleOAuthLogin(provider.name)}
                     >
@@ -334,12 +374,12 @@ export function RegisterPage() {
           </CardContent>
 
           {/* Login Link */}
-          <CardFooter>
+          <CardFooter className="flex-col space-y-4">
             <p className="w-full text-center text-sm text-muted-foreground">
               Já tem uma conta?{' '}
               <Link
                 to="/login"
-                className="text-primary hover:underline font-medium"
+                className="text-primary hover:underline font-semibold"
               >
                 Fazer login
               </Link>
@@ -348,18 +388,32 @@ export function RegisterPage() {
         </Card>
 
         {/* Password Requirements */}
-        <Alert className="mt-6">
+        <Alert className="mt-6 border-primary/20 bg-primary/5">
           <AlertDescription>
-            <p className="font-medium mb-2">A senha deve conter:</p>
-            <ul className="text-xs space-y-1 list-disc list-inside">
-              <li>Pelo menos 8 caracteres</li>
-              <li>Uma letra maiúscula</li>
-              <li>Uma letra minúscula</li>
-              <li>Um número</li>
-              <li>Um caractere especial (!@#$%^&*...)</li>
+            <p className="font-semibold mb-2 text-sm">Requisitos da senha:</p>
+            <ul className="text-xs space-y-1.5 text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Pelo menos 8 caracteres</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Letras maiúsculas e minúsculas</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Um número e um caractere especial</span>
+              </li>
             </ul>
           </AlertDescription>
         </Alert>
+      </div>
       </div>
     </div>
   );

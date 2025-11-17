@@ -6,6 +6,11 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
 import { getSignSymbol } from '../utils/astro';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Trash2, Plus, ArrowLeft } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -100,18 +105,21 @@ export function ChartsPage() {
             <h1 className="text-2xl font-bold text-foreground">Astro</h1>
           </Link>
           <div className="flex items-center gap-4">
-            <Link
-              to="/charts/new"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition"
-            >
-              + Novo Mapa
-            </Link>
-            <button
+            <ThemeToggle />
+            <Button asChild>
+              <Link to="/charts/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Mapa
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => navigate('/dashboard')}
-              className="text-sm text-muted-foreground hover:text-foreground"
             >
-              ← Dashboard
-            </button>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
           </div>
         </div>
       </nav>
@@ -119,9 +127,10 @@ export function ChartsPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto py-8 px-4">
         {error && (
-          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-            <p className="text-sm text-destructive">{error}</p>
-          </div>
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {charts.length === 0 ? (
@@ -133,103 +142,103 @@ export function ChartsPage() {
             <p className="text-muted-foreground mb-6">
               Crie seu primeiro mapa natal para começar sua jornada astrológica
             </p>
-            <Link
-              to="/charts/new"
-              className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition font-medium"
-            >
-              Criar Meu Primeiro Mapa
-            </Link>
+            <Button asChild size="lg">
+              <Link to="/charts/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Meu Primeiro Mapa
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {charts.map((chart) => (
-              <div
-                key={chart.id}
-                className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {chart.person_name}
-                    </h3>
-                    {chart.gender && (
-                      <p className="text-sm text-muted-foreground">{chart.gender}</p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleDelete(chart.id)}
-                    className="text-destructive hover:text-destructive/80 text-sm"
-                  >
-                    Excluir
-                  </button>
-                </div>
-
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>
-                    <strong>Nascimento:</strong>{' '}
-                    {formatDate(chart.birth_datetime)}
-                  </p>
-                  <p>
-                    <strong>Local:</strong> {chart.city}
-                    {chart.country && `, ${chart.country}`}
-                  </p>
-                  <p>
-                    <strong>Sistema:</strong> {chart.house_system}
-                  </p>
-                </div>
-
-                {chart.chart_data && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-2">Big Three</p>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="text-center">
-                        <p className="text-muted-foreground mb-1">☉ Sol</p>
-                        <p className="font-medium text-foreground flex items-center justify-center gap-1">
-                          <span className="text-base">
-                            {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || '')}
-                          </span>
-                          {chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-muted-foreground mb-1">☽ Lua</p>
-                        <p className="font-medium text-foreground flex items-center justify-center gap-1">
-                          <span className="text-base">
-                            {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || '')}
-                          </span>
-                          {chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-muted-foreground mb-1">ASC</p>
-                        <p className="font-medium text-foreground flex items-center justify-center gap-1">
-                          <span className="text-base">
-                            {getSignSymbol(getSignFromLongitude(chart.chart_data.ascendant))}
-                          </span>
-                          {getSignFromLongitude(chart.chart_data.ascendant)}
-                        </p>
-                      </div>
+              <Card key={chart.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle>{chart.person_name}</CardTitle>
+                      {chart.gender && (
+                        <CardDescription>{chart.gender}</CardDescription>
+                      )}
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(chart.id)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                )}
+                </CardHeader>
 
-                {chart.notes && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {chart.notes}
+                <CardContent className="space-y-4">
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <p>
+                      <strong className="text-foreground">Nascimento:</strong>{' '}
+                      {formatDate(chart.birth_datetime)}
+                    </p>
+                    <p>
+                      <strong className="text-foreground">Local:</strong> {chart.city}
+                      {chart.country && `, ${chart.country}`}
+                    </p>
+                    <p>
+                      <strong className="text-foreground">Sistema:</strong> {chart.house_system}
                     </p>
                   </div>
-                )}
 
-                <div className="mt-4">
-                  <Link
-                    to={`/charts/${chart.id}`}
-                    className="block w-full text-center py-2 px-4 bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition text-sm font-medium"
-                  >
-                    Ver Detalhes
-                  </Link>
-                </div>
-              </div>
+                  {chart.chart_data && (
+                    <div className="pt-4 border-t border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Big Three</p>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-center">
+                          <p className="text-muted-foreground mb-1">☉ Sol</p>
+                          <p className="font-medium text-foreground flex items-center justify-center gap-1">
+                            <span className="text-base">
+                              {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || '')}
+                            </span>
+                            {chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-muted-foreground mb-1">☽ Lua</p>
+                          <p className="font-medium text-foreground flex items-center justify-center gap-1">
+                            <span className="text-base">
+                              {getSignSymbol(chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || '')}
+                            </span>
+                            {chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-muted-foreground mb-1">ASC</p>
+                          <p className="font-medium text-foreground flex items-center justify-center gap-1">
+                            <span className="text-base">
+                              {getSignSymbol(getSignFromLongitude(chart.chart_data.ascendant))}
+                            </span>
+                            {getSignFromLongitude(chart.chart_data.ascendant)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {chart.notes && (
+                    <div className="pt-4 border-t border-border">
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {chart.notes}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter>
+                  <Button asChild variant="secondary" className="w-full">
+                    <Link to={`/charts/${chart.id}`}>
+                      Ver Detalhes
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         )}

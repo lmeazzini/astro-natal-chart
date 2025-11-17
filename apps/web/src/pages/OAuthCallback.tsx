@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { oauthService } from '../services/oauth';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 const REFRESH_TOKEN_KEY = 'astro_refresh_token';
@@ -59,18 +62,17 @@ export function OAuthCallbackPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="max-w-md w-full">
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-destructive mb-2">
-              Erro de Autenticação
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition"
-            >
-              Voltar para Login
-            </button>
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro de Autenticação</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button
+            onClick={() => navigate('/login')}
+            className="w-full mt-4"
+          >
+            Voltar para Login
+          </Button>
         </div>
       </div>
     );
@@ -79,7 +81,7 @@ export function OAuthCallbackPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
         <p className="text-muted-foreground">Processando autenticação...</p>
       </div>
     </div>

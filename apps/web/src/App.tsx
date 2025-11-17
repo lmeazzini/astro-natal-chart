@@ -15,6 +15,8 @@ import { PrivacyPage } from './pages/Privacy';
 import { CookiesPage } from './pages/Cookies';
 import { ConsentPage } from './pages/Consent';
 import { CookieBanner } from './components/CookieBanner';
+import { ThemeProvider } from './components/theme-provider';
+import { ThemeToggle } from './components/ThemeToggle';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -24,8 +26,9 @@ import { Badge } from '@/components/ui/badge';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -48,6 +51,7 @@ function App() {
         <CookieBanner />
       </BrowserRouter>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 
@@ -192,6 +196,7 @@ function DashboardPage() {
             <h1 className="text-2xl font-bold text-foreground">Astro</h1>
           </Link>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/profile">
                 Perfil
@@ -348,7 +353,7 @@ function DashboardPage() {
                   Dark mode completo para melhor experiência noturna
                 </p>
               </div>
-              <Badge variant="outline">Planejado</Badge>
+              <Badge>Implementado</Badge>
             </div>
 
             <div className="flex items-start gap-3">

@@ -5,6 +5,11 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface ConsentProps {
   onAccept?: () => void;
@@ -22,10 +27,10 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
 
   const [error, setError] = useState('');
 
-  const handleCheckboxChange = (type: 'terms' | 'privacy' | 'cookies') => {
+  const handleCheckboxChange = (type: 'terms' | 'privacy' | 'cookies', checked: boolean) => {
     setConsents((prev) => ({
       ...prev,
-      [type]: !prev[type],
+      [type]: checked,
     }));
     setError('');
   };
@@ -73,160 +78,164 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
         </div>
 
         {/* Consent Form */}
-        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
-          {error && (
-            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-              <p className="text-sm text-destructive">{error}</p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Termos de Consentimento</CardTitle>
+            <CardDescription>
+              Por favor, leia e aceite os documentos abaixo para continuar
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-6">
+              {/* Terms of Service */}
+              {requiredConsents.includes('terms') && (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="terms"
+                    checked={consents.terms}
+                    onCheckedChange={(checked) => handleCheckboxChange('terms', checked as boolean)}
+                  />
+                  <label htmlFor="terms" className="flex-1 text-sm cursor-pointer">
+                    <span className="font-medium text-foreground">
+                      Eu li e aceito os{' '}
+                      <Link
+                        to="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Termos de Uso
+                      </Link>{' '}
+                      <span className="text-destructive">*</span>
+                    </span>
+                    <p className="mt-1 text-muted-foreground">
+                      Concordo com as regras de uso da plataforma, incluindo
+                      responsabilidades e limitações de serviço.
+                    </p>
+                  </label>
+                </div>
+              )}
+
+              {/* Privacy Policy */}
+              {requiredConsents.includes('privacy') && (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="privacy"
+                    checked={consents.privacy}
+                    onCheckedChange={(checked) => handleCheckboxChange('privacy', checked as boolean)}
+                  />
+                  <label htmlFor="privacy" className="flex-1 text-sm cursor-pointer">
+                    <span className="font-medium text-foreground">
+                      Eu li e aceito a{' '}
+                      <Link
+                        to="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Política de Privacidade
+                      </Link>{' '}
+                      <span className="text-destructive">*</span>
+                    </span>
+                    <p className="mt-1 text-muted-foreground">
+                      Autorizo o processamento dos meus dados pessoais conforme
+                      LGPD/GDPR, incluindo dados de nascimento para cálculo de
+                      mapas natais.
+                    </p>
+                  </label>
+                </div>
+              )}
+
+              {/* Cookie Policy */}
+              {requiredConsents.includes('cookies') && (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="cookies"
+                    checked={consents.cookies}
+                    onCheckedChange={(checked) => handleCheckboxChange('cookies', checked as boolean)}
+                  />
+                  <label htmlFor="cookies" className="flex-1 text-sm cursor-pointer">
+                    <span className="font-medium text-foreground">
+                      Eu li e aceito a{' '}
+                      <Link
+                        to="/cookies"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Política de Cookies
+                      </Link>{' '}
+                      <span className="text-destructive">*</span>
+                    </span>
+                    <p className="mt-1 text-muted-foreground">
+                      Concordo com o uso de cookies essenciais, funcionais e
+                      analíticos para melhorar minha experiência.
+                    </p>
+                  </label>
+                </div>
+              )}
             </div>
-          )}
 
-          <div className="space-y-6">
-            {/* Terms of Service */}
-            {requiredConsents.includes('terms') && (
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={consents.terms}
-                  onChange={() => handleCheckboxChange('terms')}
-                  className="mt-1 h-5 w-5 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                />
-                <label htmlFor="terms" className="flex-1 text-sm cursor-pointer">
-                  <span className="font-medium text-foreground">
-                    Eu li e aceito os{' '}
-                    <Link
-                      to="/terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Termos de Uso
-                    </Link>{' '}
-                    <span className="text-destructive">*</span>
-                  </span>
-                  <p className="mt-1 text-muted-foreground">
-                    Concordo com as regras de uso da plataforma, incluindo
-                    responsabilidades e limitações de serviço.
-                  </p>
-                </label>
-              </div>
-            )}
+            {/* Info Box */}
+            <Alert className="mt-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+              <AlertDescription>
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  Seus Direitos LGPD/GDPR:
+                </h3>
+                <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+                  <li>✓ Acessar e exportar todos os seus dados</li>
+                  <li>✓ Corrigir informações incorretas</li>
+                  <li>✓ Solicitar exclusão da conta (direito ao esquecimento)</li>
+                  <li>✓ Revogar consentimento a qualquer momento</li>
+                </ul>
+                <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                  Todas essas opções estarão disponíveis em Configurações →
+                  Privacidade
+                </p>
+              </AlertDescription>
+            </Alert>
 
-            {/* Privacy Policy */}
-            {requiredConsents.includes('privacy') && (
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="privacy"
-                  checked={consents.privacy}
-                  onChange={() => handleCheckboxChange('privacy')}
-                  className="mt-1 h-5 w-5 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                />
-                <label htmlFor="privacy" className="flex-1 text-sm cursor-pointer">
-                  <span className="font-medium text-foreground">
-                    Eu li e aceito a{' '}
-                    <Link
-                      to="/privacy"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Política de Privacidade
-                    </Link>{' '}
-                    <span className="text-destructive">*</span>
-                  </span>
-                  <p className="mt-1 text-muted-foreground">
-                    Autorizo o processamento dos meus dados pessoais conforme
-                    LGPD/GDPR, incluindo dados de nascimento para cálculo de
-                    mapas natais.
-                  </p>
-                </label>
-              </div>
-            )}
-
-            {/* Cookie Policy */}
-            {requiredConsents.includes('cookies') && (
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="cookies"
-                  checked={consents.cookies}
-                  onChange={() => handleCheckboxChange('cookies')}
-                  className="mt-1 h-5 w-5 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                />
-                <label htmlFor="cookies" className="flex-1 text-sm cursor-pointer">
-                  <span className="font-medium text-foreground">
-                    Eu li e aceito a{' '}
-                    <Link
-                      to="/cookies"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Política de Cookies
-                    </Link>{' '}
-                    <span className="text-destructive">*</span>
-                  </span>
-                  <p className="mt-1 text-muted-foreground">
-                    Concordo com o uso de cookies essenciais, funcionais e
-                    analíticos para melhorar minha experiência.
-                  </p>
-                </label>
-              </div>
-            )}
-          </div>
-
-          {/* Info Box */}
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
-            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-              Seus Direitos LGPD/GDPR:
-            </h3>
-            <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-              <li>✓ Acessar e exportar todos os seus dados</li>
-              <li>✓ Corrigir informações incorretas</li>
-              <li>✓ Solicitar exclusão da conta (direito ao esquecimento)</li>
-              <li>✓ Revogar consentimento a qualquer momento</li>
-            </ul>
-            <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-              Todas essas opções estarão disponíveis em Configurações →
-              Privacidade
+            {/* Required notice */}
+            <p className="mt-6 text-xs text-muted-foreground text-center">
+              <span className="text-destructive">*</span> Campos obrigatórios
             </p>
-          </div>
 
-          {/* Required notice */}
-          <p className="mt-6 text-xs text-muted-foreground text-center">
-            <span className="text-destructive">*</span> Campos obrigatórios
-          </p>
+            {/* Buttons */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate(-1)}
+              >
+                Voltar
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleAccept}
+              >
+                Aceitar e Continuar
+              </Button>
+            </div>
 
-          {/* Buttons */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex-1 py-3 px-4 bg-background border border-input rounded-md hover:bg-secondary transition-colors font-medium"
-            >
-              Voltar
-            </button>
-            <button
-              type="button"
-              onClick={handleAccept}
-              className="flex-1 py-3 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-opacity font-medium"
-            >
-              Aceitar e Continuar
-            </button>
-          </div>
-
-          {/* Contact */}
-          <div className="mt-6 text-center text-xs text-muted-foreground">
-            Dúvidas?{' '}
-            <a
-              href="mailto:dpo@astro-app.com"
-              className="text-primary hover:underline"
-            >
-              dpo@astro-app.com
-            </a>
-          </div>
-        </div>
+            {/* Contact */}
+            <div className="mt-6 text-center text-xs text-muted-foreground">
+              Dúvidas?{' '}
+              <a
+                href="mailto:dpo@astro-app.com"
+                className="text-primary hover:underline"
+              >
+                dpo@astro-app.com
+              </a>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

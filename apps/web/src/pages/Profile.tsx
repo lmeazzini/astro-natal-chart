@@ -14,6 +14,7 @@ import {
   UserActivity,
   OAuthConnection,
 } from '../services/users';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -301,12 +302,15 @@ export function ProfilePage() {
             />
             <h1 className="text-2xl font-bold text-foreground">Astro</h1>
           </Link>
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/dashboard')}
-          >
-            ← Voltar ao Dashboard
-          </Button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+            >
+              ← Voltar ao Dashboard
+            </Button>
+          </div>
         </div>
       </nav>
 

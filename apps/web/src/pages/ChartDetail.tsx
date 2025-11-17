@@ -11,6 +11,9 @@ import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
 import { getSignSymbol } from '../utils/astro';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { Trash2, ArrowLeft } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -125,12 +128,11 @@ export function ChartDetailPage() {
             <p className="text-sm text-muted-foreground mb-4">
               {error || 'Mapa natal não encontrado'}
             </p>
-            <Link
-              to="/charts"
-              className="inline-block w-full text-center py-2 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition"
-            >
-              Voltar para Meus Mapas
-            </Link>
+            <Button asChild className="w-full">
+              <Link to="/charts">
+                Voltar para Meus Mapas
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -187,18 +189,22 @@ export function ChartDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button
+              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleDelete}
-                className="px-4 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
+                <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
-              </button>
-              <Link
-                to="/charts"
-                className="px-4 py-2 text-sm bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition"
-              >
-                ← Voltar
-              </Link>
+              </Button>
+              <Button asChild variant="secondary" size="sm">
+                <Link to="/charts">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Voltar
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

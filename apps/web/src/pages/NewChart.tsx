@@ -2,9 +2,20 @@
  * New Birth Chart creation page
  */
 
-import { useState, FormEvent, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { chartsService, BirthChartCreate } from '../services/charts';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, ArrowLeft, Loader2, MapPin } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -18,26 +29,44 @@ interface LocationSuggestion {
   country_code: string;
 }
 
+const chartFormSchema = z.object({
+  person_name: z.string().min(1, 'Nome é obrigatório'),
+  gender: z.string().optional(),
+  birth_datetime: z.string().min(1, 'Data e hora de nascimento são obrigatórias'),
+  birth_timezone: z.string().default('America/Sao_Paulo'),
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+  city: z.string().min(1, 'Cidade é obrigatória'),
+  country: z.string().optional(),
+  notes: z.string().optional(),
+  house_system: z.string().default('placidus'),
+  zodiac_type: z.string().default('tropical'),
+  node_type: z.string().default('true'),
+});
+
+type ChartFormValues = z.infer<typeof chartFormSchema>;
+
 export function NewChartPage() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState<BirthChartCreate>({
-    person_name: '',
-    gender: '',
-    birth_datetime: '',
-    birth_timezone: 'America/Sao_Paulo',
-    latitude: 0,
-    longitude: 0,
-    city: '',
-    country: '',
-    notes: '',
-    house_system: 'placidus',
-    zodiac_type: 'tropical',
-    node_type: 'true',
+  const form = useForm<ChartFormValues>({
+    resolver: zodResolver(chartFormSchema),
+    defaultValues: {
+      person_name: '',
+      gender: '',
+      birth_datetime: '',
+      birth_timezone: 'America/Sao_Paulo',
+      latitude: 0,
+      longitude: 0,
+      city: '',
+      country: '',
+      notes: '',
+      house_system: 'placidus',
+      zodiac_type: 'tropical',
+      node_type: 'true',
+    },
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -84,7 +113,7 @@ export function NewChartPage() {
   }
 
   function handleCityInputChange(value: string) {
-    setFormData({ ...formData, city: value });
+    form.setValue('city', value);
 
     // Clear timeout if exists
     if (searchTimeoutRef.current) {
@@ -98,49 +127,16 @@ export function NewChartPage() {
   }
 
   function selectLocation(location: LocationSuggestion) {
-    setFormData({
-      ...formData,
-      city: location.city || location.display_name.split(',')[0],
-      country: location.country,
-      latitude: location.latitude,
-      longitude: location.longitude,
-    });
+    form.setValue('city', location.city || location.display_name.split(',')[0]);
+    form.setValue('country', location.country);
+    form.setValue('latitude', location.latitude);
+    form.setValue('longitude', location.longitude);
     setShowSuggestions(false);
     setLocationSuggestions([]);
   }
 
-  function validateForm(): boolean {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.person_name) {
-      newErrors.person_name = 'Nome é obrigatório';
-    }
-
-    if (!formData.birth_datetime) {
-      newErrors.birth_datetime = 'Data e hora de nascimento são obrigatórias';
-    }
-
-    if (!formData.city) {
-      newErrors.city = 'Cidade é obrigatória';
-    }
-
-    if (formData.latitude === 0 && formData.longitude === 0) {
-      newErrors.location = 'Localização é obrigatória (latitude/longitude)';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function onSubmit(values: ChartFormValues) {
     setGeneralError('');
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
 
     try {
       const token = localStorage.getItem(TOKEN_KEY);
@@ -149,14 +145,12 @@ export function NewChartPage() {
         return;
       }
 
-      await chartsService.create(formData, token);
+      await chartsService.create(values as BirthChartCreate, token);
       navigate('/charts');
     } catch (error) {
       setGeneralError(
         error instanceof Error ? error.message : 'Erro ao criar mapa natal'
       );
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -173,16 +167,13 @@ export function NewChartPage() {
     { name: 'Porto Alegre, RS', lat: -30.034647, lon: -51.217659 },
   ];
 
-  function handleCitySelect(e: React.ChangeEvent<HTMLSelectElement>) {
-    const cityData = brazilianCities.find(c => c.name === e.target.value);
+  function handleCitySelect(value: string) {
+    const cityData = brazilianCities.find(c => c.name === value);
     if (cityData) {
-      setFormData({
-        ...formData,
-        city: cityData.name.split(',')[0],
-        country: 'Brasil',
-        latitude: cityData.lat,
-        longitude: cityData.lon,
-      });
+      form.setValue('city', cityData.name.split(',')[0]);
+      form.setValue('country', 'Brasil');
+      form.setValue('latitude', cityData.lat);
+      form.setValue('longitude', cityData.lon);
     }
   }
 
@@ -203,298 +194,314 @@ export function NewChartPage() {
             />
             <h1 className="text-2xl font-bold text-foreground">Astro</h1>
           </Link>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate('/dashboard')}
-            className="text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Voltar
-          </button>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
         </div>
       </nav>
 
       {/* Form */}
       <div className="max-w-4xl mx-auto py-8 px-4">
         {generalError && (
-          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-            <p className="text-sm text-destructive">{generalError}</p>
-          </div>
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{generalError}</AlertDescription>
+          </Alert>
         )}
 
-        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Person Information */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">
-                Informações da Pessoa
-              </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>Criar Novo Mapa Natal</CardTitle>
+            <CardDescription>
+              Preencha os dados abaixo para calcular um novo mapa natal
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Person Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Informações da Pessoa</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Nome Completo *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.person_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, person_name: e.target.value })
-                    }
-                    className={`w-full px-4 py-2 bg-background border ${
-                      errors.person_name ? 'border-destructive' : 'border-input'
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                    placeholder="João da Silva"
-                  />
-                  {errors.person_name && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {errors.person_name}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Gênero
-                  </label>
-                  <select
-                    value={formData.gender || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, gender: e.target.value })
-                    }
-                    className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Selecione</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                    <option value="Outro">Outro</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Birth Date and Time */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">
-                Data e Hora de Nascimento
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Data e Hora *
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.birth_datetime}
-                    onChange={(e) =>
-                      setFormData({ ...formData, birth_datetime: e.target.value })
-                    }
-                    className={`w-full px-4 py-2 bg-background border ${
-                      errors.birth_datetime ? 'border-destructive' : 'border-input'
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                  />
-                  {errors.birth_datetime && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {errors.birth_datetime}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Fuso Horário
-                  </label>
-                  <select
-                    value={formData.birth_timezone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, birth_timezone: e.target.value })
-                    }
-                    className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="America/Sao_Paulo">América/São Paulo (BRT)</option>
-                    <option value="America/Manaus">América/Manaus (AMT)</option>
-                    <option value="America/Fortaleza">América/Fortaleza (BRT)</option>
-                    <option value="America/Recife">América/Recife (BRT)</option>
-                    <option value="America/Bahia">América/Bahia (BRT)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Birth Location */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">
-                Local de Nascimento
-              </h2>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Cidade Rápida (Capitais Brasileiras)
-                </label>
-                <select
-                  onChange={handleCitySelect}
-                  className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Selecione uma capital</option>
-                  {brazilianCities.map((city) => (
-                    <option key={city.name} value={city.name}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative" ref={suggestionRef}>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Cidade *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.city || ''}
-                      onChange={(e) => handleCityInputChange(e.target.value)}
-                      onFocus={() => {
-                        if (locationSuggestions.length > 0) {
-                          setShowSuggestions(true);
-                        }
-                      }}
-                      className={`w-full px-4 py-2 bg-background border ${
-                        errors.city ? 'border-destructive' : 'border-input'
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-                      placeholder="Digite o nome da cidade..."
-                      autoComplete="off"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="person_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Completo *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="João da Silva" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    {searchingLocation && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      </div>
-                    )}
+
+                    <FormField
+                      control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gênero</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Masculino">Masculino</SelectItem>
+                              <SelectItem value="Feminino">Feminino</SelectItem>
+                              <SelectItem value="Outro">Outro</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Birth Date and Time */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Data e Hora de Nascimento</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="birth_datetime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data e Hora *</FormLabel>
+                          <FormControl>
+                            <Input type="datetime-local" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="birth_timezone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fuso Horário</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="America/Sao_Paulo">América/São Paulo (BRT)</SelectItem>
+                              <SelectItem value="America/Manaus">América/Manaus (AMT)</SelectItem>
+                              <SelectItem value="America/Fortaleza">América/Fortaleza (BRT)</SelectItem>
+                              <SelectItem value="America/Recife">América/Recife (BRT)</SelectItem>
+                              <SelectItem value="America/Bahia">América/Bahia (BRT)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Birth Location */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Local de Nascimento</h3>
+
+                  {/* Quick City Select */}
+                  <FormItem>
+                    <FormLabel>Cidade Rápida (Capitais Brasileiras)</FormLabel>
+                    <Select onValueChange={handleCitySelect}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma capital" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {brazilianCities.map((city) => (
+                          <SelectItem key={city.name} value={city.name}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* City with autocomplete */}
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <FormLabel>Cidade *</FormLabel>
+                          <FormControl>
+                            <div className="relative" ref={suggestionRef}>
+                              <Input
+                                {...field}
+                                placeholder="Digite o nome da cidade..."
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  handleCityInputChange(e.target.value);
+                                }}
+                                onFocus={() => {
+                                  if (locationSuggestions.length > 0) {
+                                    setShowSuggestions(true);
+                                  }
+                                }}
+                                autoComplete="off"
+                              />
+                              {searchingLocation && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                </div>
+                              )}
+
+                              {/* Location Suggestions Dropdown */}
+                              {showSuggestions && locationSuggestions.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                  {locationSuggestions.map((location, index) => (
+                                    <button
+                                      key={index}
+                                      type="button"
+                                      onClick={() => selectLocation(location)}
+                                      className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                                    >
+                                      <div className="flex items-start gap-2">
+                                        <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+                                        <div className="flex-1">
+                                          <p className="text-sm font-medium text-foreground">
+                                            {location.city || location.display_name.split(',')[0]}
+                                          </p>
+                                          <p className="text-xs text-muted-foreground mt-0.5">
+                                            {location.display_name}
+                                          </p>
+                                          <p className="text-xs text-muted-foreground mt-1">
+                                            📌 {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>País</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Brasil" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  {/* Location Suggestions Dropdown */}
-                  {showSuggestions && locationSuggestions.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {locationSuggestions.map((location, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => selectLocation(location)}
-                          className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
-                        >
-                          <div className="flex items-start gap-2">
-                            <span className="text-lg">📍</span>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-foreground">
-                                {location.city || location.display_name.split(',')[0]}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {location.display_name}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                📌 {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="latitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Latitude *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.000001"
+                              placeholder="-23.550520"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Longitude *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.000001"
+                              placeholder="-46.633308"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Anotações</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Notas adicionais sobre este mapa..."
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
 
-                  {errors.city && (
-                    <p className="mt-1 text-sm text-destructive">{errors.city}</p>
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    País
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.country || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
-                    }
-                    className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Brasil"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Latitude *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={formData.latitude}
-                    onChange={(e) =>
-                      setFormData({ ...formData, latitude: parseFloat(e.target.value) })
-                    }
-                    className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="-23.550520"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Longitude *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.000001"
-                    value={formData.longitude}
-                    onChange={(e) =>
-                      setFormData({ ...formData, longitude: parseFloat(e.target.value) })
-                    }
-                    className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="-46.633308"
-                  />
-                </div>
-              </div>
-
-              {errors.location && (
-                <p className="text-sm text-destructive">{errors.location}</p>
-              )}
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Anotações
-              </label>
-              <textarea
-                value={formData.notes || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                rows={3}
-                className="w-full px-4 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Notas adicionais sobre este mapa..."
-              />
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-4 bg-primary text-primary-foreground font-medium rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-            >
-              {isLoading ? 'Calculando mapa natal...' : 'Criar Mapa Natal'}
-            </button>
-          </form>
-        </div>
+                  {form.formState.isSubmitting ? 'Calculando mapa natal...' : 'Criar Mapa Natal'}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
 
         {/* Info Box */}
-        <div className="mt-6 p-4 bg-muted/50 rounded-md">
-          <p className="text-sm text-muted-foreground">
+        <Alert className="mt-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
             <strong>Dica:</strong> Para melhor precisão, use as coordenadas exatas do
             local de nascimento. Você pode selecionar uma capital brasileira ou inserir
             manualmente as coordenadas.
-          </p>
-        </div>
+          </AlertDescription>
+        </Alert>
       </div>
     </div>
   );

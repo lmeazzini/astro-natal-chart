@@ -84,6 +84,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
           OPENAI_API_KEY: sk-test-dummy-key-for-ci
+          ENABLE_EMAIL_DOMAIN_RESTRICTION: false
         run: |
           uv run pytest --cov=app --cov-report=xml
 

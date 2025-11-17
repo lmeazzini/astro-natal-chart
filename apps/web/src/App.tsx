@@ -14,11 +14,12 @@ import { TermsPage } from './pages/Terms';
 import { PrivacyPage } from './pages/Privacy';
 import { CookiesPage } from './pages/Cookies';
 import { ConsentPage } from './pages/Consent';
+import { LandingPage } from './pages/Landing';
 import { CookieBanner } from './components/CookieBanner';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/ThemeToggle';
 
-// shadcn/ui components
+// shadcn/ui components (used by DashboardPage)
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,7 +31,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -52,82 +53,6 @@ function App() {
       </BrowserRouter>
     </AuthProvider>
     </ThemeProvider>
-  );
-}
-
-function HomePage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-      {/* Header with Logo */}
-      <nav className="bg-card/50 backdrop-blur-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity w-fit"
-            aria-label="Página Inicial"
-          >
-            <img
-              src="/logo.png"
-              alt="Real Astrology"
-              className="h-8 w-8"
-            />
-            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
-          </Link>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <div className="flex items-center justify-center px-4 py-16">
-        <div className="text-center max-w-4xl">
-          <h2 className="text-6xl font-bold text-foreground mb-4">Bem-vindo ao Real Astrology</h2>
-        <p className="text-xl text-muted-foreground mb-8">
-          Sistema de Mapas Natais com Astrologia Tradicional
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Button asChild size="lg">
-            <Link to="/login">
-              Entrar
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/register">
-              Criar Conta
-            </Link>
-          </Button>
-        </div>
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl mb-2">✨</div>
-              <p className="font-medium text-foreground">Cálculos Precisos</p>
-              <p className="text-xs text-muted-foreground mt-1">Swiss Ephemeris JPL DE431</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl mb-2">📊</div>
-              <p className="font-medium text-foreground">Visualização Gráfica</p>
-              <p className="text-xs text-muted-foreground mt-1">Mapas natais profissionais</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl mb-2">📄</div>
-              <p className="font-medium text-foreground">Exportação PDF</p>
-              <p className="text-xs text-muted-foreground mt-1">Templates LaTeX personalizados</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl mb-2">🔒</div>
-              <p className="font-medium text-foreground">Segurança</p>
-              <p className="text-xs text-muted-foreground mt-1">Conforme LGPD/GDPR</p>
-            </CardContent>
-          </Card>
-        </div>
-        </div>
-      </div>
-    </div>
   );
 }
 

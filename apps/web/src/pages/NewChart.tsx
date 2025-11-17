@@ -161,28 +161,6 @@ export function NewChartPage() {
     }
   }
 
-  const brazilianCities = [
-    { name: 'São Paulo, SP', lat: -23.550520, lon: -46.633308 },
-    { name: 'Rio de Janeiro, RJ', lat: -22.906847, lon: -43.172896 },
-    { name: 'Brasília, DF', lat: -15.826691, lon: -47.921822 },
-    { name: 'Salvador, BA', lat: -12.971598, lon: -38.501297 },
-    { name: 'Fortaleza, CE', lat: -3.731862, lon: -38.526669 },
-    { name: 'Belo Horizonte, MG', lat: -19.916681, lon: -43.934493 },
-    { name: 'Curitiba, PR', lat: -25.428954, lon: -49.267137 },
-    { name: 'Recife, PE', lat: -8.047562, lon: -34.877001 },
-    { name: 'Porto Alegre, RS', lat: -30.034647, lon: -51.217659 },
-  ];
-
-  function handleCitySelect(value: string) {
-    const cityData = brazilianCities.find(c => c.name === value);
-    if (cityData) {
-      form.setValue('city', cityData.name.split(',')[0]);
-      form.setValue('country', 'Brasil');
-      form.setValue('latitude', cityData.lat);
-      form.setValue('longitude', cityData.lon);
-    }
-  }
-
   async function validateStep(step: number): Promise<boolean> {
     const fieldsToValidate: Record<number, (keyof ChartFormValues)[]> = {
       1: ['person_name'],
@@ -382,34 +360,6 @@ export function NewChartPage() {
                 {/* Step 3: Birth Location */}
                 {currentStep === 3 && (
                   <div className="space-y-6 animate-slide-in-up">
-                    {/* Quick City Select */}
-                    <div className="space-y-3">
-                      <label className="text-base font-medium">
-                        Selecione uma Capital Brasileira (Opcional)
-                      </label>
-                      <Select onValueChange={handleCitySelect}>
-                        <SelectTrigger className="text-base">
-                          <SelectValue placeholder="Escolha uma capital para preencher automaticamente" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {brazilianCities.map((city) => (
-                            <SelectItem key={city.name} value={city.name}>
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="bg-card px-4 text-muted-foreground">ou busque qualquer cidade</span>
-                      </div>
-                    </div>
-
                     {/* City with autocomplete */}
                     <FormField
                       control={form.control}

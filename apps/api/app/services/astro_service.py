@@ -8,7 +8,10 @@ from zoneinfo import ZoneInfo
 
 import swisseph as swe
 
-from app.astro.dignities import calculate_essential_dignities
+from app.astro.dignities import calculate_essential_dignities, find_lord_of_nativity, get_sign_ruler
+from app.astro.lunar_phase import calculate_lunar_phase
+from app.astro.solar_phase import calculate_solar_phase
+from app.astro.temperament import calculate_temperament
 from app.schemas.chart import AspectData, HousePosition, PlanetPosition
 
 # Set ephemeris path to None to use built-in Moshier ephemeris (lower precision but no files needed)
@@ -399,15 +402,25 @@ def calculate_birth_chart(
     # Calculate planet positions
     planets = calculate_planets(jd, house_cusps)
 
-    # Find Sun to calculate sect
+    # Find Sun and Moon for sect, lunar phase and solar phase
     sun_longitude = 0.0
+    sun_sign = ""
+    moon_longitude = 0.0
     for planet in planets:
         if planet.name == "Sun":
             sun_longitude = planet.longitude
-            break
+            sun_sign = planet.sign
+        elif planet.name == "Moon":
+            moon_longitude = planet.longitude
 
     # Calculate sect (day/night chart)
     sect = calculate_sect(ascendant, sun_longitude)
+
+    # Calculate lunar phase
+    lunar_phase = calculate_lunar_phase(sun_longitude, moon_longitude)
+
+    # Calculate solar phase
+    solar_phase = calculate_solar_phase(sun_sign)
 
     # Add essential dignities to each planet
     planets_with_dignities = []
@@ -422,6 +435,35 @@ def calculate_birth_chart(
     # Calculate aspects
     aspects = calculate_aspects(planets)
 
+    # Find Lord of Nativity (planet with highest essential dignity score)
+    lord_of_nativity = find_lord_of_nativity(planets_with_dignities)
+
+    # Calculate Temperament based on 5 traditional factors
+    # Get ascendant sign
+    ascendant_sign_data = get_sign_and_position(ascendant)
+    ascendant_sign = ascendant_sign_data["sign"]
+
+    # Get ascendant ruler and its sign
+    ascendant_ruler_name = get_sign_ruler(ascendant_sign)
+    ascendant_ruler_planet = next((p for p in planets if p.name == ascendant_ruler_name), None)
+    ascendant_ruler_sign = ascendant_ruler_planet.sign if ascendant_ruler_planet else ascendant_sign
+
+    # Get lord of nativity sign
+    lord_of_nativity_name = lord_of_nativity["planet"] if lord_of_nativity else "Sun"
+    lord_of_nativity_planet = next((p for p in planets if p.name == lord_of_nativity_name), None)
+    lord_of_nativity_sign = lord_of_nativity_planet.sign if lord_of_nativity_planet else "Aries"
+
+    temperament = calculate_temperament(
+        ascendant_sign=ascendant_sign,
+        ascendant_ruler_name=ascendant_ruler_name,
+        ascendant_ruler_sign=ascendant_ruler_sign,
+        sun_sign=sun_sign,
+        sun_longitude=sun_longitude,
+        moon_longitude=moon_longitude,
+        lord_of_nativity_name=lord_of_nativity_name,
+        lord_of_nativity_sign=lord_of_nativity_sign,
+    )
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -429,5 +471,9 @@ def calculate_birth_chart(
         "ascendant": ascendant,
         "midheaven": midheaven,
         "sect": sect,
+        "lunar_phase": lunar_phase,
+        "solar_phase": solar_phase,
+        "lord_of_nativity": lord_of_nativity,
+        "temperament": temperament,
         "calculation_timestamp": datetime.utcnow().isoformat(),
     }

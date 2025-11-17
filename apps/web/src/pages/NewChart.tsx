@@ -319,14 +319,14 @@ export function NewChartPage() {
                   <h3 className="text-lg font-semibold">Local de Nascimento</h3>
 
                   {/* Quick City Select */}
-                  <FormItem>
-                    <FormLabel>Cidade Rápida (Capitais Brasileiras)</FormLabel>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Cidade Rápida (Capitais Brasileiras)
+                    </label>
                     <Select onValueChange={handleCitySelect}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma capital" />
-                        </SelectTrigger>
-                      </FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma capital" />
+                      </SelectTrigger>
                       <SelectContent>
                         {brazilianCities.map((city) => (
                           <SelectItem key={city.name} value={city.name}>
@@ -335,7 +335,7 @@ export function NewChartPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </FormItem>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* City with autocomplete */}

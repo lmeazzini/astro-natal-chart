@@ -10,6 +10,10 @@ import { ChartWheel } from '../components/ChartWheel';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
+import { LunarPhase } from '../components/LunarPhase';
+import { SolarPhase } from '../components/SolarPhase';
+import { LordOfNativity } from '../components/LordOfNativity';
+import { TemperamentDisplay } from '../components/TemperamentDisplay';
 import { getSignSymbol } from '../utils/astro';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -349,6 +353,30 @@ export function ChartDetailPage() {
                 </div>
               </div>
 
+              {/* Lunar and Solar Phases */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {chart.chart_data.lunar_phase && (
+                  <LunarPhase lunarPhase={chart.chart_data.lunar_phase} />
+                )}
+                {chart.chart_data.solar_phase && (
+                  <SolarPhase solarPhase={chart.chart_data.solar_phase} />
+                )}
+              </div>
+
+              {/* Lord of Nativity */}
+              {chart.chart_data.lord_of_nativity && (
+                <div className="mb-8">
+                  <LordOfNativity lordOfNativity={chart.chart_data.lord_of_nativity} />
+                </div>
+              )}
+
+              {/* Temperament */}
+              {chart.chart_data.temperament && (
+                <div className="mb-8">
+                  <TemperamentDisplay temperament={chart.chart_data.temperament} />
+                </div>
+              )}
+
               <ChartWheel
                 planets={chart.chart_data.planets}
                 houses={chart.chart_data.houses}
@@ -368,6 +396,7 @@ export function ChartDetailPage() {
                 planets={chart.chart_data.planets}
                 showOnlyClassical={true}
                 interpretations={interpretations?.planets}
+                lordOfNativity={chart.chart_data.lord_of_nativity}
               />
             </div>
           )}

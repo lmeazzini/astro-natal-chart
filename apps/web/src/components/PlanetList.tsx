@@ -36,10 +36,19 @@ export interface PlanetPosition {
   dignities?: Dignities;
 }
 
+interface LordOfNativityData {
+  planet: string;
+  score: number;
+  sign: string;
+  house: number;
+  classification: string;
+}
+
 interface PlanetListProps {
   planets: PlanetPosition[];
   showOnlyClassical?: boolean;
   interpretations?: Record<string, string>;
+  lordOfNativity?: LordOfNativityData | null;
 }
 
 type SortBy = 'position' | 'house' | 'dignity';
@@ -62,6 +71,7 @@ export function PlanetList({
   planets,
   showOnlyClassical = false,
   interpretations,
+  lordOfNativity,
 }: PlanetListProps) {
   const [sortBy, setSortBy] = useState<SortBy>('position');
   const [showDignityInfo, setShowDignityInfo] = useState(false);
@@ -196,6 +206,15 @@ export function PlanetList({
                     <span className="font-medium text-foreground">
                       {planet.name}
                     </span>
+                    {lordOfNativity && lordOfNativity.planet === planet.name && (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
+                        title="Senhor da Natividade - maior dignidade essencial"
+                      >
+                        👑
+                      </Badge>
+                    )}
                   </div>
                 </TableCell>
 

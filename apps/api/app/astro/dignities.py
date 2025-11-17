@@ -342,16 +342,20 @@ def calculate_essential_dignities(
                 triplicity_ruler = "participant"
 
     # Term (Bound) - +2
-    term_ruler = get_planet_in_term(sign, degree)
-    if term_ruler == planet:
+    term_ruler_planet = get_planet_in_term(sign, degree)
+    term_ruler = None
+    if term_ruler_planet == planet:
         score += 2
         dignities.append("term")
+        term_ruler = planet
 
     # Face (Decan) - +1
-    face_ruler = get_planet_in_face(sign, degree)
-    if face_ruler == planet:
+    face_ruler_planet = get_planet_in_face(sign, degree)
+    face_ruler = None
+    if face_ruler_planet == planet:
         score += 1
         dignities.append("face")
+        face_ruler = planet
 
     # Classification
     if score >= 4:
@@ -386,3 +390,97 @@ def get_sign_ruler(sign: str) -> str | None:
         Planet name that rules the sign, or None if sign not found
     """
     return RULERSHIPS.get(sign)
+
+
+def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """
+    Find the Lord of Nativity - the planet with the highest essential dignity score.
+
+    The Lord of Nativity represents the dominant life force and vital energy
+    in the natal chart according to traditional astrology.
+
+    Args:
+        planets_with_dignities: List of planet dictionaries with dignity data
+
+    Returns:
+        Dictionary containing:
+        - planet: Name of the planet
+        - score: Total dignity score
+        - sign: Zodiac sign where planet is located
+        - house: House number
+        - dignities: Breakdown of dignity components
+        Or None if no planets have dignities
+
+    Tie-breaking priority (if multiple planets have same score):
+    1. Sun
+    2. Moon
+    3. Mercury
+    4. Venus
+    5. Mars
+    6. Jupiter
+    7. Saturn
+    """
+    # Priority order for tie-breaking
+    planet_priority = {
+        "Sun": 1,
+        "Moon": 2,
+        "Mercury": 3,
+        "Venus": 4,
+        "Mars": 5,
+        "Jupiter": 6,
+        "Saturn": 7,
+    }
+
+    # Filter only classical planets with dignities
+    classical_planets = [
+        p
+        for p in planets_with_dignities
+        if p.get("name") in planet_priority and p.get("dignities")
+    ]
+
+    if not classical_planets:
+        return None
+
+    # Find planet(s) with highest score
+    max_score = max(p["dignities"]["score"] for p in classical_planets)
+
+    # Get all planets with max score
+    top_planets = [p for p in classical_planets if p["dignities"]["score"] == max_score]
+
+    # If tie, use priority order (Sun > Moon > Mercury > Venus > Mars > Jupiter > Saturn)
+    if len(top_planets) > 1:
+        lord = min(top_planets, key=lambda p: planet_priority.get(p["name"], 999))
+    else:
+        lord = top_planets[0]
+
+    # Build detailed dignity breakdown for display
+    dignity_details = []
+    dign = lord["dignities"]
+
+    if dign.get("is_ruler"):
+        dignity_details.append({"type": "ruler", "label": "Domicílio", "points": 5, "icon": "👑"})
+    if dign.get("is_exalted"):
+        dignity_details.append({"type": "exalted", "label": "Exaltação", "points": 4, "icon": "🌟"})
+    if dign.get("is_detriment"):
+        dignity_details.append({"type": "detriment", "label": "Detrimento", "points": -5, "icon": "⚠️"})
+    if dign.get("is_fall"):
+        dignity_details.append({"type": "fall", "label": "Queda", "points": -4, "icon": "⬇️"})
+    if dign.get("triplicity_ruler"):
+        trip_type = dign["triplicity_ruler"]
+        trip_label = f"Triplicidade ({trip_type})"
+        dignity_details.append(
+            {"type": "triplicity", "label": trip_label, "points": 3, "icon": "🔥" if trip_type == "day" else "🌙"}
+        )
+    if dign.get("term_ruler"):
+        dignity_details.append({"type": "term", "label": "Termo", "points": 2, "icon": "📊"})
+    if dign.get("face_ruler"):
+        dignity_details.append({"type": "face", "label": "Face", "points": 1, "icon": "👤"})
+
+    return {
+        "planet": lord["name"],
+        "score": dign["score"],
+        "sign": lord["sign"],
+        "house": lord.get("house", 0),
+        "classification": dign.get("classification", "peregrine"),
+        "dignity_details": dignity_details,
+    }

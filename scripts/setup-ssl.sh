@@ -166,10 +166,10 @@ print_header "🚀 Step 3: Starting nginx (HTTP only)"
 log_info "Starting nginx to serve ACME challenge..."
 
 # Stop any existing containers
-docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+docker compose --env-file .env.prod -f docker-compose.prod.yml down 2>/dev/null || true
 
 # Start only nginx
-docker compose -f docker-compose.prod.yml up -d nginx
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d nginx
 
 # Wait for nginx to be ready
 log_info "Waiting for nginx to be ready..."
@@ -183,7 +183,7 @@ elif timeout 10 curl -f http://$DOMAIN/ > /dev/null 2>&1; then
 else
     log_error "Nginx is not responding on http://$DOMAIN"
     log_info "Check nginx logs:"
-    docker compose -f docker-compose.prod.yml logs nginx
+    docker compose --env-file .env.prod -f docker-compose.prod.yml logs nginx
     exit 1
 fi
 
@@ -199,7 +199,7 @@ log_info "  2. Port 80 is open in firewall"
 log_info "  3. Domain is accessible: curl http://$DOMAIN"
 
 # Run certbot with timeout
-timeout 300 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
+timeout 300 docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm --entrypoint certbot certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email "$EMAIL" \
@@ -225,7 +225,7 @@ if [ $CERTBOT_EXIT -eq 124 ]; then
     log_info "  1. Test from outside: curl http://$DOMAIN"
     log_info "  2. Check DNS: dig $DOMAIN"
     log_info "  3. Check firewall: sudo ufw status"
-    log_info "  4. Check nginx: docker compose -f docker-compose.prod.yml logs nginx"
+    log_info "  4. Check nginx: docker compose --env-file .env.prod -f docker-compose.prod.yml logs nginx"
 
     # Restore original config
     if [ -f "nginx/conf.d/astro.conf.backup" ]; then
@@ -261,7 +261,7 @@ log_success "Configuration updated"
 
 # Restart nginx with full configuration
 log_info "Restarting nginx with HTTPS enabled..."
-docker compose -f docker-compose.prod.yml restart nginx
+docker compose --env-file .env.prod -f docker-compose.prod.yml restart nginx
 
 sleep 3
 log_success "HTTPS enabled"
@@ -272,12 +272,12 @@ print_header "✅ Step 6: Verifying SSL certificate"
 log_info "Checking certificate validity..."
 
 # Check if certificate exists
-if docker compose -f docker-compose.prod.yml exec -T nginx test -f /etc/letsencrypt/live/$DOMAIN/fullchain.pem; then
+if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T nginx test -f /etc/letsencrypt/live/$DOMAIN/fullchain.pem; then
     log_success "Certificate files found"
 
     # Show certificate info
     log_info "Certificate details:"
-    docker compose -f docker-compose.prod.yml exec -T certbot certbot certificates 2>/dev/null | grep -A 10 "$DOMAIN" || true
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T certbot certbot certificates 2>/dev/null | grep -A 10 "$DOMAIN" || true
 else
     log_warning "Certificate files not found in expected location"
 fi
@@ -296,7 +296,7 @@ echo ""
 print_header "🔄 Step 7: Testing certificate renewal"
 log_info "Running dry-run renewal test..."
 
-if timeout 120 docker compose -f docker-compose.prod.yml run --rm certbot renew --dry-run 2>/dev/null; then
+if timeout 120 docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm --entrypoint certbot certbot renew --dry-run 2>/dev/null; then
     log_success "Renewal test passed! Auto-renewal is configured."
 else
     log_warning "Renewal test failed or timed out. Manual renewal may be needed."
@@ -335,7 +335,7 @@ echo "   - Set COOKIE_SECURE=true"
 echo "   - Set COOKIE_DOMAIN=$DOMAIN"
 echo ""
 echo "2. Start all services:"
-echo "   docker compose -f docker-compose.prod.yml up -d"
+echo "   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d"
 echo ""
 echo "3. Test your site:"
 echo "   - https://www.ssllabs.com/ssltest/analyze.html?d=$DOMAIN"

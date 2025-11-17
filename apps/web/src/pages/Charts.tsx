@@ -5,7 +5,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
-import { getSignSymbol } from '../utils/astro';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';

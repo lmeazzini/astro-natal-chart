@@ -444,7 +444,7 @@ def calculate_birth_chart(
     ascendant_sign = ascendant_sign_data["sign"]
 
     # Get ascendant ruler and its sign
-    ascendant_ruler_name = get_sign_ruler(ascendant_sign)
+    ascendant_ruler_name = get_sign_ruler(ascendant_sign) or "Sun"
     ascendant_ruler_planet = next((p for p in planets if p.name == ascendant_ruler_name), None)
     ascendant_ruler_sign = ascendant_ruler_planet.sign if ascendant_ruler_planet else ascendant_sign
 

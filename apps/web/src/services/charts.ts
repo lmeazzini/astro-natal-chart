@@ -73,6 +73,11 @@ export interface BirthChart {
     aspects: AspectData[];
     ascendant: number;
     midheaven: number;
+    sect?: string;
+    lunar_phase?: any;
+    solar_phase?: any;
+    lord_of_nativity?: any;
+    temperament?: any;
     calculation_timestamp: string;
   };
   visibility: string;

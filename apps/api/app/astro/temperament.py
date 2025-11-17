@@ -293,7 +293,7 @@ def calculate_temperament(
 
     solar_phase_name_pt = ""
     solar_phase_name_en = ""
-    for phase_num, (signs, name_pt, name_en) in phase_groups.items():
+    for _phase_num, (signs, name_pt, name_en) in phase_groups.items():
         if sun_sign in signs:
             solar_phase_name_pt = name_pt
             solar_phase_name_en = name_en

@@ -6,7 +6,7 @@ This module provides pytest fixtures and configuration for the test suite.
 
 import asyncio
 from collections.abc import AsyncGenerator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -21,7 +21,6 @@ from app.core.security import get_password_hash
 from app.main import app
 from app.models.chart import AuditLog, BirthChart
 from app.models.user import OAuthAccount, User
-
 
 # Create test database engine
 test_engine = create_async_engine(
@@ -153,8 +152,8 @@ async def test_user(db_session: AsyncSession) -> User:
         email_verified=True,
         is_active=True,
         is_superuser=False,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
     db_session.add(user)
     await db_session.commit()
@@ -188,8 +187,8 @@ async def test_user_factory(db_session: AsyncSession):
             email_verified=email_verified,
             is_active=is_active,
             is_superuser=is_superuser,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
             **kwargs,
         )
         db_session.add(user)
@@ -264,7 +263,7 @@ async def test_chart_factory(db_session: AsyncSession, test_chart_data: dict):
     async def _create_chart(
         user: User,
         person_name: str = "Test Person",
-        birth_datetime: datetime = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc),
+        birth_datetime: datetime = datetime(1990, 1, 1, 12, 0, tzinfo=UTC),
         birth_timezone: str = "America/Sao_Paulo",
         latitude: float = -23.5505,
         longitude: float = -46.6333,
@@ -286,8 +285,8 @@ async def test_chart_factory(db_session: AsyncSession, test_chart_data: dict):
             country=country,
             chart_data=chart_data or test_chart_data,
             house_system=house_system,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
             **kwargs,
         )
         db_session.add(chart)

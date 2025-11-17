@@ -3,6 +3,10 @@
  */
 
 import { apiClient } from './api';
+import type { LunarPhaseData } from '@/components/LunarPhase';
+import type { SolarPhaseData } from '@/components/SolarPhase';
+import type { LordOfNativityData } from '@/components/LordOfNativity';
+import type { TemperamentData } from '@/components/TemperamentDisplay';
 
 export interface BirthChartCreate {
   person_name: string;
@@ -74,10 +78,10 @@ export interface BirthChart {
     ascendant: number;
     midheaven: number;
     sect?: string;
-    lunar_phase?: any;
-    solar_phase?: any;
-    lord_of_nativity?: any;
-    temperament?: any;
+    lunar_phase?: LunarPhaseData;
+    solar_phase?: SolarPhaseData;
+    lord_of_nativity?: LordOfNativityData;
+    temperament?: TemperamentData;
     calculation_timestamp: string;
   };
   visibility: string;

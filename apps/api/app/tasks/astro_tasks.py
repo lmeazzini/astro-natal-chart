@@ -57,14 +57,16 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             return {"status": "failed", "message": "Chart not found"}
 
         try:
-            # Update task_id
+            # Update task_id and initial progress
             chart.task_id = task_id
-            await db.commit()
-
-            # Step 1: Calculate astrological data (fast ~100-200ms)
-            logger.info(f"Calculating chart data for {chart_id}")
             chart.progress = 10
             await db.commit()
+            logger.info(f"Starting chart generation for {chart_id}")
+
+            # Step 1: Calculate astrological data (fast ~100-200ms)
+            chart.progress = 20
+            await db.commit()
+            logger.info(f"Calculating planetary positions for {chart_id}")
 
             calculated_data = calculate_birth_chart(
                 birth_datetime=chart.birth_datetime,
@@ -81,14 +83,21 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             logger.info(f"Chart calculations completed for {chart_id}")
 
             # Step 3: Generate AI interpretations (slow ~20-30 seconds)
-            logger.info(f"Generating interpretations for {chart_id}")
-            chart.progress = 50
+            # This will progress from 40% to 90% incrementally
+            chart.progress = 40
             await db.commit()
+            logger.info(f"Preparing AI interpretations for {chart_id}")
+
+            # Create progress callback
+            async def update_progress(progress: int) -> None:
+                chart.progress = progress
+                await db.commit()
 
             interpretation_service = InterpretationService(db)
             await interpretation_service.generate_all_interpretations(
                 chart_id=UUID(chart_id),
                 chart_data=calculated_data,
+                progress_callback=update_progress,
             )
 
             # Step 4: Mark as completed

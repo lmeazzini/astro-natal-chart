@@ -3,7 +3,7 @@ Service for generating AI-powered astrological interpretations using OpenAI.
 """
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from uuid import UUID
 
 import yaml
@@ -229,6 +229,7 @@ class InterpretationService:
         self,
         chart_id: UUID,
         chart_data: dict[str, Any],
+        progress_callback: Callable[[int], Any] | None = None,
     ) -> list[ChartInterpretation]:
         """
         Generate all interpretations for a birth chart.
@@ -236,6 +237,7 @@ class InterpretationService:
         Args:
             chart_id: UUID of the birth chart
             chart_data: Complete chart data dictionary
+            progress_callback: Optional async callback for progress updates (40-90%)
 
         Returns:
             List of created interpretation instances
@@ -243,7 +245,15 @@ class InterpretationService:
         interpretations: list[ChartInterpretation] = []
         sect = chart_data.get("sect", "diurnal")
 
-        # Generate planet interpretations (classical 7 only)
+        # Count total items for progress calculation
+        planet_count = len([p for p in chart_data.get("planets", []) if p["name"] in CLASSICAL_PLANETS])
+        house_count = len(chart_data.get("houses", []))
+        aspect_count = len([a for a in chart_data.get("aspects", [])
+                           if a["planet1"] in CLASSICAL_PLANETS and a["planet2"] in CLASSICAL_PLANETS])
+        total_count = planet_count + house_count + aspect_count
+        current_item = 0
+
+        # Generate planet interpretations (classical 7 only) - Progress 50-65%
         for planet_data in chart_data.get("planets", []):
             planet_name = planet_data["name"]
             if planet_name not in CLASSICAL_PLANETS:
@@ -270,7 +280,13 @@ class InterpretationService:
                 interpretations.append(interp)
                 await self.repository.create(interp)
 
-        # Generate house interpretations
+            # Update progress (50-65%)
+            current_item += 1
+            if progress_callback and total_count > 0:
+                progress = 50 + int((current_item / total_count) * 40)
+                await progress_callback(min(progress, 90))
+
+        # Generate house interpretations - Progress 65-80%
         for house_data in chart_data.get("houses", []):
             house_num = house_data["house"]
             sign = house_data["sign"]
@@ -280,6 +296,7 @@ class InterpretationService:
 
             ruler = get_sign_ruler(sign)
             if not ruler:
+                current_item += 1
                 continue
 
             # Find ruler's dignities from planet data
@@ -309,7 +326,13 @@ class InterpretationService:
                 interpretations.append(interp)
                 await self.repository.create(interp)
 
-        # Generate aspect interpretations (classical planets only)
+            # Update progress
+            current_item += 1
+            if progress_callback and total_count > 0:
+                progress = 50 + int((current_item / total_count) * 40)
+                await progress_callback(min(progress, 90))
+
+        # Generate aspect interpretations (classical planets only) - Progress 80-90%
         for aspect_data in chart_data.get("aspects", []):
             planet1 = aspect_data["planet1"]
             planet2 = aspect_data["planet2"]
@@ -356,6 +379,12 @@ class InterpretationService:
                 )
                 interpretations.append(interp)
                 await self.repository.create(interp)
+
+            # Update progress
+            current_item += 1
+            if progress_callback and total_count > 0:
+                progress = 50 + int((current_item / total_count) * 40)
+                await progress_callback(min(progress, 90))
 
         logger.info(f"Generated {len(interpretations)} interpretations for chart {chart_id}")
         return interpretations

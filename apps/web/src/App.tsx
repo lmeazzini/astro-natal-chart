@@ -242,6 +242,60 @@ function DashboardPage() {
 
         <Card className="mt-8">
           <CardHeader>
+            <CardTitle>Funcionalidades Implementadas</CardTitle>
+            <CardDescription>
+              Recursos recentemente adicionados à plataforma
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">🌙</span>
+              <div className="flex-1">
+                <p className="font-medium">Modo Escuro</p>
+                <p className="text-sm text-muted-foreground">
+                  Dark mode completo para melhor experiência noturna
+                </p>
+              </div>
+              <Badge variant="default">Implementado</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">⚡</span>
+              <div className="flex-1">
+                <p className="font-medium">Processamento Assíncrono com Celery</p>
+                <p className="text-sm text-muted-foreground">
+                  Geração de mapas em background sem travar a interface (1-2 minutos)
+                </p>
+              </div>
+              <Badge variant="default">Implementado</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">🤖</span>
+              <div className="flex-1">
+                <p className="font-medium">Interpretações com IA (GPT-4o-mini)</p>
+                <p className="text-sm text-muted-foreground">
+                  Análises personalizadas de planetas, casas e aspectos usando OpenAI
+                </p>
+              </div>
+              <Badge variant="default">Implementado</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">📊</span>
+              <div className="flex-1">
+                <p className="font-medium">Progresso Incremental de Geração</p>
+                <p className="text-sm text-muted-foreground">
+                  Acompanhe em tempo real cada etapa do cálculo (10%, 20%, 30%... 100%)
+                </p>
+              </div>
+              <Badge variant="default">Implementado</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
             <CardTitle>Em Desenvolvimento</CardTitle>
             <CardDescription>
               Funcionalidades planejadas para as próximas versões
@@ -253,10 +307,32 @@ function DashboardPage() {
               <div className="flex-1">
                 <p className="font-medium">Cálculo de Temperamento Automatizado</p>
                 <p className="text-sm text-muted-foreground">
-                  Sistema automatizado dos 4 temperamentos baseado em 5 fatores da astrologia tradicional (quente, frio, úmido, seco)
+                  Sistema automatizado dos 4 temperamentos baseado em 5 fatores da astrologia tradicional
                 </p>
               </div>
               <Badge variant="outline">Em breve</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">📄</span>
+              <div className="flex-1">
+                <p className="font-medium">Exportação PDF</p>
+                <p className="text-sm text-muted-foreground">
+                  Gere relatórios completos em PDF com LaTeX para impressão profissional
+                </p>
+              </div>
+              <Badge variant="outline">Em breve</Badge>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="text-primary text-xl">🔐</span>
+              <div className="flex-1">
+                <p className="font-medium">Endpoints LGPD/GDPR</p>
+                <p className="text-sm text-muted-foreground">
+                  Acesso, exportação, retificação e exclusão de dados pessoais
+                </p>
+              </div>
+              <Badge variant="outline">Planejado</Badge>
             </div>
 
             <div className="flex items-start gap-3">
@@ -264,21 +340,10 @@ function DashboardPage() {
               <div className="flex-1">
                 <p className="font-medium">Sistema de Pagamento</p>
                 <p className="text-sm text-muted-foreground">
-                  Planos profissionais com relatórios avançados e exportação PDF
+                  Planos premium com relatórios avançados e análises detalhadas
                 </p>
               </div>
               <Badge variant="outline">Planejado</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">🌙</span>
-              <div className="flex-1">
-                <p className="font-medium">Modo Escuro</p>
-                <p className="text-sm text-muted-foreground">
-                  Dark mode completo para melhor experiência noturna
-                </p>
-              </div>
-              <Badge>Implementado</Badge>
             </div>
 
             <div className="flex items-start gap-3">

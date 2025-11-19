@@ -76,6 +76,32 @@ export function ChartWheelAstro({
 
       console.log('[ChartWheelAstro] Radix object:', radix);
 
+      // Draw all chart elements explicitly
+      console.log('[ChartWheelAstro] Drawing background...');
+      if (typeof radix.drawBg === 'function') {
+        radix.drawBg();
+      }
+
+      console.log('[ChartWheelAstro] Drawing universe (zodiac signs)...');
+      if (typeof radix.drawUniverse === 'function') {
+        radix.drawUniverse();
+      }
+
+      console.log('[ChartWheelAstro] Drawing points (planets)...');
+      if (typeof radix.drawPoints === 'function') {
+        radix.drawPoints();
+      }
+
+      console.log('[ChartWheelAstro] Drawing axis...');
+      if (typeof radix.drawAxis === 'function') {
+        radix.drawAxis();
+      }
+
+      console.log('[ChartWheelAstro] Drawing cusps (houses)...');
+      if (typeof radix.drawCusps === 'function') {
+        radix.drawCusps();
+      }
+
       // Add angular houses (As, Mc, Ic, Ds)
       if (Object.keys(pointsOfInterest).length > 0) {
         console.log('[ChartWheelAstro] Adding points of interest...');
@@ -83,7 +109,7 @@ export function ChartWheelAstro({
       }
 
       // Calculate and display aspects
-      console.log('[ChartWheelAstro] Calculating aspects...');
+      console.log('[ChartWheelAstro] Calculating and drawing aspects...');
       const aspectsResult = radix.aspects();
       console.log('[ChartWheelAstro] Aspects result:', aspectsResult);
 

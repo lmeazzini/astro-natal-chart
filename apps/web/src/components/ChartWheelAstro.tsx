@@ -8,6 +8,7 @@ import * as AstroChartLib from '@astrodraw/astrochart';
 import {
   convertToAstroChartFormat,
   extractPointsOfInterest,
+  calculateDynamicShift,
   type ChartData,
 } from '@/utils/astroChartAdapter';
 
@@ -69,12 +70,16 @@ export function ChartWheelAstro({
 
       console.log('[ChartWheelAstro] Creating chart instance...');
 
+      // Calculate dynamic shift to position Ascendant at 0° (top)
+      const dynamicShift = calculateDynamicShift(chartData);
+      console.log('[ChartWheelAstro] Ascendant longitude:', chartData.chart_info?.ascendant || chartData.houses[0]?.cusp);
+      console.log('[ChartWheelAstro] Calculated dynamic shift:', dynamicShift);
+
       // Create chart instance with custom settings
       const settings = {
-        // Position Ascendant at 0° (top of the circle)
-        // Default is 180° which puts Ascendant at the left (9 o'clock position)
-        // Setting to 90° puts Ascendant at the top (12 o'clock / 0° position)
-        SHIFT_IN_DEGREES: 90,
+        // Position Ascendant at 0° (top of the circle) using dynamic calculation
+        // This shift is calculated based on the actual Ascendant position in this chart
+        SHIFT_IN_DEGREES: dynamicShift,
 
         // Aspect configurations with colors
         ASPECTS: {

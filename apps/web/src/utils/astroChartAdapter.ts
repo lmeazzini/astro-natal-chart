@@ -137,3 +137,41 @@ export function extractPointsOfInterest(data: ChartData): AstroChartPointsOfInte
 
   return poi;
 }
+
+/**
+ * Calculate dynamic shift to position Ascendant at 0° (top of chart)
+ *
+ * AstroChart library positioning:
+ * - Default SHIFT_IN_DEGREES = 180° puts 0° at left (9 o'clock)
+ * - We want Ascendant at top (12 o'clock / 0° position)
+ * - Formula: shift = 90° - ascendant_longitude
+ *
+ * @param data Chart data containing ascendant position
+ * @returns Calculated shift in degrees
+ */
+export function calculateDynamicShift(data: ChartData): number {
+  // Get Ascendant position (longitude in degrees 0-360)
+  let ascendant = data.chart_info?.ascendant;
+
+  // Fallback: get from first house cusp
+  if (ascendant === undefined && data.houses.length >= 12) {
+    const sortedHouses = [...data.houses].sort((a, b) => {
+      const houseA = a.number || a.house || 0;
+      const houseB = b.number || b.house || 0;
+      return houseA - houseB;
+    });
+    ascendant = sortedHouses[0].cusp; // House 1 = Ascendant
+  }
+
+  // If still no ascendant, return default shift
+  if (ascendant === undefined) {
+    console.warn('[astroChartAdapter] No Ascendant found, using default shift 180°');
+    return 180;
+  }
+
+  // Calculate shift to position Ascendant at top (90° in AstroChart coordinate system)
+  // AstroChart rotates counter-clockwise, so we subtract ascendant from 90°
+  const shift = 90 - ascendant;
+
+  return shift;
+}

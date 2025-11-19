@@ -61,18 +61,18 @@ export function ChartWheelAstro({
 
       console.log('[ChartWheelAstro] Rendering radix chart...');
 
-      // Generate radix (natal) chart
-      chart.radix(astroData);
+      // Generate radix (natal) chart - returns radix object
+      const radix = chart.radix(astroData);
 
       // Add angular houses (As, Mc, Ic, Ds)
       if (Object.keys(pointsOfInterest).length > 0) {
         console.log('[ChartWheelAstro] Adding points of interest...');
-        chart.addPointsOfInterest(pointsOfInterest);
+        radix.addPointsOfInterest(pointsOfInterest);
       }
 
       // Calculate and display aspects
       console.log('[ChartWheelAstro] Calculating aspects...');
-      chart.aspects();
+      radix.aspects();
 
       console.log('[ChartWheelAstro] Chart rendered successfully!');
 

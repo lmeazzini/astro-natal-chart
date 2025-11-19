@@ -85,52 +85,15 @@ export function ChartWheelAstro({
       console.log('[ChartWheelAstro] Rendering radix chart...');
 
       // Generate radix (natal) chart - returns radix object
+      // The radix() method automatically draws: background, universe, points, axis, cusps
       const radix = chart.radix(astroData);
 
-      console.log('[ChartWheelAstro] Radix object:', radix);
+      console.log('[ChartWheelAstro] Radix chart created');
 
-      // Draw all chart elements explicitly
-      console.log('[ChartWheelAstro] Drawing background...');
-      if (typeof radix.drawBg === 'function') {
-        radix.drawBg();
-      }
-
-      console.log('[ChartWheelAstro] Drawing universe (zodiac signs)...');
-      if (typeof radix.drawUniverse === 'function') {
-        radix.drawUniverse();
-      }
-
-      console.log('[ChartWheelAstro] Drawing points (planets)...');
-      if (typeof radix.drawPoints === 'function') {
-        radix.drawPoints();
-      }
-
-      console.log('[ChartWheelAstro] Drawing axis...');
-      if (typeof radix.drawAxis === 'function') {
-        radix.drawAxis();
-      }
-
-      console.log('[ChartWheelAstro] Drawing cusps (houses)...');
-      if (typeof radix.drawCusps === 'function') {
-        radix.drawCusps();
-      }
-
-      // Add angular houses (As, Mc, Ic, Ds) - optional feature
-      if (Object.keys(pointsOfInterest).length > 0 && typeof radix.addPointsOfInterest === 'function') {
-        console.log('[ChartWheelAstro] Adding points of interest...');
-        try {
-          radix.addPointsOfInterest(pointsOfInterest);
-        } catch (poiError) {
-          console.warn('[ChartWheelAstro] Could not add points of interest:', poiError);
-        }
-      } else {
-        console.log('[ChartWheelAstro] Points of interest not supported or no POI data available');
-      }
-
-      // Calculate and display aspects
-      console.log('[ChartWheelAstro] Calculating and drawing aspects...');
-      const aspectsResult = radix.aspects();
-      console.log('[ChartWheelAstro] Aspects result:', aspectsResult);
+      // Calculate and display aspects (lines between planets)
+      console.log('[ChartWheelAstro] Calculating aspects...');
+      radix.aspects();
+      console.log('[ChartWheelAstro] Aspects calculated');
 
       console.log('[ChartWheelAstro] Chart rendered successfully!');
 

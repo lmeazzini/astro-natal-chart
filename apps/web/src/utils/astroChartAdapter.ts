@@ -139,12 +139,12 @@ export function extractPointsOfInterest(data: ChartData): AstroChartPointsOfInte
 }
 
 /**
- * Calculate dynamic shift to position Ascendant at 0° (top of chart)
+ * Calculate dynamic shift to position Ascendant at 9 o'clock (left of chart)
  *
  * AstroChart library positioning:
  * - Default SHIFT_IN_DEGREES = 180° puts 0° at left (9 o'clock)
- * - We want Ascendant at top (12 o'clock / 0° position)
- * - Formula: shift = 90° - ascendant_longitude
+ * - We want Ascendant at left (9 o'clock / 180° position)
+ * - Formula: shift = 180° - ascendant_longitude
  *
  * @param data Chart data containing ascendant position
  * @returns Calculated shift in degrees
@@ -169,9 +169,9 @@ export function calculateDynamicShift(data: ChartData): number {
     return 180;
   }
 
-  // Calculate shift to position Ascendant at top (90° in AstroChart coordinate system)
-  // AstroChart rotates counter-clockwise, so we subtract ascendant from 90°
-  const shift = 90 - ascendant;
+  // Calculate shift to position Ascendant at 9 o'clock (180° in AstroChart coordinate system)
+  // AstroChart rotates counter-clockwise, so we subtract ascendant from 180°
+  const shift = 180 - ascendant;
 
   return shift;
 }

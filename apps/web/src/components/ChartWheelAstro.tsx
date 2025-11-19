@@ -70,14 +70,14 @@ export function ChartWheelAstro({
 
       console.log('[ChartWheelAstro] Creating chart instance...');
 
-      // Calculate dynamic shift to position Ascendant at 0° (top)
+      // Calculate dynamic shift to position Ascendant at 9 o'clock (left)
       const dynamicShift = calculateDynamicShift(chartData);
       console.log('[ChartWheelAstro] Ascendant longitude:', chartData.chart_info?.ascendant || chartData.houses[0]?.cusp);
       console.log('[ChartWheelAstro] Calculated dynamic shift:', dynamicShift);
 
       // Create chart instance with custom settings
       const settings = {
-        // Position Ascendant at 0° (top of the circle) using dynamic calculation
+        // Position Ascendant at 9 o'clock (left of the circle) using dynamic calculation
         // This shift is calculated based on the actual Ascendant position in this chart
         SHIFT_IN_DEGREES: dynamicShift,
 

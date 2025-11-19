@@ -102,10 +102,16 @@ export function ChartWheelAstro({
         radix.drawCusps();
       }
 
-      // Add angular houses (As, Mc, Ic, Ds)
-      if (Object.keys(pointsOfInterest).length > 0) {
+      // Add angular houses (As, Mc, Ic, Ds) - optional feature
+      if (Object.keys(pointsOfInterest).length > 0 && typeof radix.addPointsOfInterest === 'function') {
         console.log('[ChartWheelAstro] Adding points of interest...');
-        radix.addPointsOfInterest(pointsOfInterest);
+        try {
+          radix.addPointsOfInterest(pointsOfInterest);
+        } catch (poiError) {
+          console.warn('[ChartWheelAstro] Could not add points of interest:', poiError);
+        }
+      } else {
+        console.log('[ChartWheelAstro] Points of interest not supported or no POI data available');
       }
 
       // Calculate and display aspects

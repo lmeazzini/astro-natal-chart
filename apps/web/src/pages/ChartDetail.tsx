@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
 import { interpretationsService, ChartInterpretations } from '../services/interpretations';
-import { ChartWheel } from '../components/ChartWheel';
+import { ChartWheelAstro } from '../components/ChartWheelAstro';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
@@ -441,16 +441,10 @@ export function ChartDetailPage() {
                 </div>
               )}
 
-              {/* Chart Wheel */}
+              {/* Chart Wheel - Professional visualization with AstroChart */}
               <div>
                 <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
-                <ChartWheel
-                  planets={chart.chart_data.planets}
-                  houses={chart.chart_data.houses}
-                  aspects={chart.chart_data.aspects}
-                  ascendant={chart.chart_data.ascendant}
-                  midheaven={chart.chart_data.midheaven}
-                />
+                <ChartWheelAstro chartData={chart.chart_data} />
               </div>
               </CardContent>
             </Card>

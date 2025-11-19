@@ -56,13 +56,25 @@ export function ChartWheelAstro({
 
       console.log('[ChartWheelAstro] Creating chart instance...');
 
-      // Create chart instance
-      const chart = new AstroChart(chartId, width, height);
+      // Create chart instance with aspect settings
+      const settings = {
+        ASPECTS: {
+          conjunction: { degree: 0, orbit: 10, color: '#5757e8' },
+          opposition: { degree: 180, orbit: 10, color: '#d20000' },
+          trine: { degree: 120, orbit: 8, color: '#27AE60' },
+          square: { degree: 90, orbit: 8, color: '#d20000' },
+          sextile: { degree: 60, orbit: 6, color: '#27AE60' },
+        },
+      };
+
+      const chart = new AstroChart(chartId, width, height, settings);
 
       console.log('[ChartWheelAstro] Rendering radix chart...');
 
       // Generate radix (natal) chart - returns radix object
       const radix = chart.radix(astroData);
+
+      console.log('[ChartWheelAstro] Radix object:', radix);
 
       // Add angular houses (As, Mc, Ic, Ds)
       if (Object.keys(pointsOfInterest).length > 0) {
@@ -72,7 +84,8 @@ export function ChartWheelAstro({
 
       // Calculate and display aspects
       console.log('[ChartWheelAstro] Calculating aspects...');
-      radix.aspects();
+      const aspectsResult = radix.aspects();
+      console.log('[ChartWheelAstro] Aspects result:', aspectsResult);
 
       console.log('[ChartWheelAstro] Chart rendered successfully!');
 

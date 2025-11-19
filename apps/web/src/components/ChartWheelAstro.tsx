@@ -69,8 +69,14 @@ export function ChartWheelAstro({
 
       console.log('[ChartWheelAstro] Creating chart instance...');
 
-      // Create chart instance with aspect settings
+      // Create chart instance with custom settings
       const settings = {
+        // Position Ascendant at 0° (top of the circle)
+        // Default is 180° which puts Ascendant at the left (9 o'clock position)
+        // Setting to 90° puts Ascendant at the top (12 o'clock / 0° position)
+        SHIFT_IN_DEGREES: 90,
+
+        // Aspect configurations with colors
         ASPECTS: {
           conjunction: { degree: 0, orbit: 10, color: '#5757e8' },
           opposition: { degree: 180, orbit: 10, color: '#d20000' },

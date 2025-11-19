@@ -24,6 +24,7 @@ export function ChartWheelAstro({
 }: ChartWheelAstroProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<any>(null);
+  const isRenderingRef = useRef<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,11 +33,23 @@ export function ChartWheelAstro({
       return;
     }
 
+    // Prevent duplicate renders
+    if (isRenderingRef.current) {
+      console.warn('[ChartWheelAstro] Already rendering, skipping...');
+      return;
+    }
+
+    isRenderingRef.current = true;
     console.log('[ChartWheelAstro] Initializing chart...');
     console.log('[ChartWheelAstro] chartData:', chartData);
 
+    // Clear any existing content
+    if (chartContainerRef.current) {
+      chartContainerRef.current.innerHTML = '';
+    }
+
     // Generate unique ID for the chart container
-    const chartId = `astrochart-${Date.now()}`;
+    const chartId = `astrochart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     chartContainerRef.current.id = chartId;
 
     try {
@@ -124,20 +137,31 @@ export function ChartWheelAstro({
       // Store reference for cleanup
       chartInstanceRef.current = chart;
       setError(null);
+      isRenderingRef.current = false;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error('[ChartWheelAstro] Error rendering chart:', err);
       setError(errorMessage);
+      isRenderingRef.current = false;
     }
 
     // Cleanup function
     return () => {
+      console.log('[ChartWheelAstro] Cleaning up...');
+      isRenderingRef.current = false;
       if (chartInstanceRef.current) {
         try {
-          chartInstanceRef.current.clear();
+          if (typeof chartInstanceRef.current.clear === 'function') {
+            chartInstanceRef.current.clear();
+          }
         } catch (err) {
           console.error('[ChartWheelAstro] Error clearing chart:', err);
         }
+        chartInstanceRef.current = null;
+      }
+      // Clear container content
+      if (chartContainerRef.current) {
+        chartContainerRef.current.innerHTML = '';
       }
     };
   }, [chartData, width, height]);

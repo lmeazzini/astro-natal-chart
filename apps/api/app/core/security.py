@@ -80,3 +80,49 @@ def decode_token(token: str) -> dict[str, Any] | None:
         return cast(dict[str, Any], payload) if payload else None
     except JWTError:
         return None
+
+
+def create_email_verification_token(email: str, user_id: str) -> str:
+    """
+    Create a JWT token for email verification (24h expiry).
+
+    Args:
+        email: User email address
+        user_id: User ID (UUID as string)
+
+    Returns:
+        Encoded JWT token for email verification
+    """
+    data = {
+        "sub": user_id,
+        "email": email,
+        "type": "email_verification",
+    }
+    expires_delta = timedelta(hours=24)
+    return create_access_token(data, expires_delta)
+
+
+def verify_email_verification_token(token: str) -> dict[str, Any] | None:
+    """
+    Verify and decode an email verification token.
+
+    Args:
+        token: JWT verification token
+
+    Returns:
+        Decoded payload with user_id and email, or None if invalid/expired
+    """
+    payload = decode_token(token)
+
+    if not payload:
+        return None
+
+    # Verify it's an email verification token
+    if payload.get("type") != "email_verification":
+        return None
+
+    # Check required fields
+    if "sub" not in payload or "email" not in payload:
+        return None
+
+    return payload

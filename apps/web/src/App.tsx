@@ -9,6 +9,7 @@ import { ChartDetailPage } from './pages/ChartDetail';
 import { OAuthCallbackPage } from './pages/OAuthCallback';
 import { ForgotPasswordPage } from './pages/ForgotPassword';
 import { ResetPasswordPage } from './pages/ResetPassword';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ProfilePage } from './pages/Profile';
 import { TermsPage } from './pages/Terms';
 import { PrivacyPage } from './pages/Privacy';
@@ -16,6 +17,7 @@ import { CookiesPage } from './pages/Cookies';
 import { ConsentPage } from './pages/Consent';
 import { LandingPage } from './pages/Landing';
 import { CookieBanner } from './components/CookieBanner';
+import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/ThemeToggle';
 
@@ -36,6 +38,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
@@ -138,6 +141,12 @@ function DashboardPage() {
       </nav>
 
       <div className="max-w-7xl mx-auto py-8 px-4">
+        {!user.email_verified && (
+          <div className="mb-6">
+            <EmailVerificationBanner />
+          </div>
+        )}
+
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard</h2>
           <p className="text-muted-foreground">

@@ -223,3 +223,72 @@ async def logout(
     # With JWT, logout is handled client-side
     # In the future, we could implement token blacklisting here
     pass
+
+
+@router.get(
+    "/verify-email/{token}",
+    response_model=UserRead,
+    summary="Verify email",
+    description="Verify user email address using verification token from email.",
+)
+async def verify_email(
+    token: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    """
+    Verify user email address.
+
+    Args:
+        token: Email verification JWT token from email link
+        db: Database session
+
+    Returns:
+        Verified user data
+
+    Raises:
+        HTTPException 400: If token is invalid or expired
+    """
+    try:
+        user = await auth_service.verify_email(db, token)
+        return user
+    except auth_service.AuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+
+
+@router.post(
+    "/resend-verification",
+    status_code=status.HTTP_200_OK,
+    summary="Resend verification email",
+    description="Resend email verification to current user.",
+)
+@limiter.limit(RateLimits.REGISTER)  # Same rate limit as registration
+async def resend_verification_email(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, str]:
+    """
+    Resend verification email to current user.
+
+    Args:
+        current_user: Current authenticated user from JWT token
+        db: Database session
+
+    Returns:
+        Success message
+
+    Raises:
+        HTTPException 400: If email already verified or sending fails
+    """
+    try:
+        await auth_service.resend_verification_email(db, current_user)
+        return {"message": "Verification email sent successfully"}
+    except auth_service.AuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e

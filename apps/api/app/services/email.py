@@ -362,3 +362,94 @@ class EmailService:
         """
 
         return await self.send_email(to_email, subject, html_body, text_body)
+
+    async def send_verification_email(
+        self,
+        to_email: str,
+        user_name: str,
+        verification_url: str,
+    ) -> bool:
+        """
+        Envia email de verificação de conta.
+
+        Args:
+            to_email: Email do destinatário
+            user_name: Nome do usuário
+            verification_url: URL para verificar email (com token)
+
+        Returns:
+            True se enviado com sucesso
+        """
+        subject = "Verifique seu Email - Astro App"
+
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{settings.FRONTEND_URL}/logo.png" alt="Astro" style="width: 80px; height: 80px;" />
+            </div>
+            <div style="background-color: #f4f4f4; border-radius: 10px; padding: 30px;">
+                <h1 style="color: #4F46E5; margin-top: 0;">Bem-vindo ao Astro App!</h1>
+
+                <p>Olá, <strong>{user_name}</strong>!</p>
+
+                <p>Obrigado por se cadastrar no Astro App. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.</p>
+
+                <p>Clique no botão abaixo para verificar seu email:</p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{verification_url}"
+                       style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                        Verificar Email
+                    </a>
+                </div>
+
+                <p style="color: #666; font-size: 14px;">
+                    <strong>Atenção:</strong> Este link expira em <strong>24 horas</strong>.
+                </p>
+
+                <p style="color: #666; font-size: 14px;">
+                    Se você não criou uma conta no Astro App, ignore este email.
+                </p>
+
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+                <p style="color: #999; font-size: 12px;">
+                    Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+                    <a href="{verification_url}" style="color: #4F46E5; word-break: break-all;">{verification_url}</a>
+                </p>
+
+                <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                    © 2025 Astro App. Todos os direitos reservados.<br>
+                    <a href="{settings.FRONTEND_URL}" style="color: #4F46E5;">realastrology.ai</a>
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+
+        text_body = f"""
+        Bem-vindo ao Astro App!
+
+        Olá, {user_name}!
+
+        Obrigado por se cadastrar no Astro App. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.
+
+        Para verificar seu email, acesse o link abaixo:
+        {verification_url}
+
+        Este link expira em 24 horas.
+
+        Se você não criou uma conta no Astro App, ignore este email.
+
+        ---
+        © 2025 Astro App
+        realastrology.ai
+        """
+
+        return await self.send_email(to_email, subject, html_body, text_body)

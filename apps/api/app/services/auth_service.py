@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.security import (
     create_access_token,
+    create_email_verification_token,
     get_password_hash,
     verify_password,
 )
@@ -73,6 +74,25 @@ async def register_user(
     )
 
     created_user = await user_repo.create(user)
+
+    # Send verification email
+    from app.services.email import EmailService
+
+    # Generate verification token
+    token = create_email_verification_token(created_user.email, str(created_user.id))
+    verification_url = f"{settings.FRONTEND_URL}/verify-email/{token}"
+
+    # Send email (don't fail registration if email fails)
+    try:
+        email_service = EmailService()
+        await email_service.send_verification_email(
+            to_email=created_user.email,
+            user_name=created_user.full_name,
+            verification_url=verification_url,
+        )
+    except Exception:
+        # Log but don't fail registration
+        pass
 
     # If user accepted terms, create consent record
     if user_data.accept_terms:
@@ -337,3 +357,86 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """
     user_repo = UserRepository(db)
     return await user_repo.get_by_email(email)
+
+
+async def verify_email(db: AsyncSession, token: str) -> User:
+    """
+    Verify user email using verification token.
+
+    Args:
+        db: Database session
+        token: Email verification JWT token
+
+    Returns:
+        Verified user instance
+
+    Raises:
+        AuthenticationError: If token is invalid or expired
+    """
+    from app.core.security import verify_email_verification_token
+
+    # Decode and validate token
+    payload = verify_email_verification_token(token)
+
+    if not payload:
+        raise AuthenticationError("Invalid or expired verification token")
+
+    # Extract user_id from token
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        raise AuthenticationError("Invalid token payload")
+
+    user_id = UUID(user_id_str)
+    user_repo = UserRepository(db)
+
+    # Get user
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        raise AuthenticationError("User not found")
+
+    # Check if already verified
+    if user.email_verified:
+        return user  # Already verified, no error
+
+    # Verify email
+    user.email_verified = True
+    await user_repo.update(user)
+
+    return user
+
+
+async def resend_verification_email(db: AsyncSession, user: User) -> None:
+    """
+    Resend email verification to user.
+
+    Args:
+        db: Database session
+        user: User instance
+
+    Raises:
+        AuthenticationError: If email already verified or sending fails
+    """
+    from app.core.config import settings
+    from app.core.security import create_email_verification_token
+    from app.services.email import EmailService
+
+    # Check if already verified
+    if user.email_verified:
+        raise AuthenticationError("Email already verified")
+
+    # Generate new verification token
+    token = create_email_verification_token(user.email, str(user.id))
+
+    # Build verification URL
+    verification_url = f"{settings.FRONTEND_URL}/verify-email/{token}"
+
+    # Send verification email
+    email_service = EmailService()
+    success = await email_service.send_verification_email(
+        to_email=user.email,
+        user_name=user.full_name,
+        verification_url=verification_url,
+    )
+
+    if not success:
+        raise AuthenticationError("Failed to send verification email")

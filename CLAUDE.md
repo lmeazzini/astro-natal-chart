@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **natal chart (birth chart) generation system** using traditional astrology. The application provides astronomical calculations (Swiss Ephemeris), professional chart visualization, and basic astrological interpretations. The project is LGPD/GDPR compliant and handles sensitive personal data (birth date/time/location).
 
-**Current Status**: MVP in progress (~78% complete). Core functionality is working: authentication, chart creation, calculations, and visualization. Email verification, password reset, and rate limiting implemented.
+**Current Status**: MVP in progress (~85% complete). Core functionality is working: authentication, chart creation, calculations, and visualization. Email verification, password reset, rate limiting, LGPD/GDPR compliance, profile management, and backup automation all implemented.
 
 **Tech Stack:**
 - **Monorepo**: Turborepo (npm workspaces)
@@ -562,6 +562,21 @@ logger.bind(user_id=user.id).info("Chart created")
 - **Rate limiting** (SlowAPI + Redis on all critical endpoints)
 - **Email service** (OAuth2 Gmail + SMTP fallback)
 - **Loguru structured logging** (JSON logs, request tracking, rotation)
+- **LGPD/GDPR compliance** (Issue #6)
+  - Privacy endpoints (export data, delete account, cancel deletion)
+  - User consent tracking (UserConsent model)
+  - Audit logs (5 year retention)
+  - Privacy tasks via Celery (auto cleanup after 30 days)
+- **Profile management** (Issue #12)
+  - View/edit profile (name, timezone, locale)
+  - Change password
+  - User statistics and activity log
+  - OAuth connections management
+  - Account deletion (soft + hard delete)
+- **Backup automation** (Issue #7)
+  - Professional backup script (PostgreSQL)
+  - 30-day retention, compression, S3 upload
+  - Integrity verification, healthcheck integration
 - Chart creation with geocoding (OpenCage API)
 - Astronomical calculations (planets, houses, aspects)
 - Chart visualization (SVG wheel with planets and aspects)
@@ -569,7 +584,7 @@ logger.bind(user_id=user.id).info("Chart created")
 - Dashboard and chart list
 - PostgreSQL persistence with soft deletes
 - Docker development environment
-- Privacy tasks (hard delete after 30 days via Celery)
+- Redis for caching and rate limiting
 - AI interpretations (OpenAI GPT-4o-mini) - optional
 - **Testing infrastructure** (~30% backend coverage, 24 auth tests)
 
@@ -578,15 +593,16 @@ logger.bind(user_id=user.id).info("Chart created")
 - Sect determination (day/night)
 - Lot of Fortune
 - PDF generation (LaTeX infrastructure exists but no tasks)
-- Higher test coverage (target: 70% backend, 60% frontend)
+- Higher test coverage (target: 70% backend, 60% frontend, current: ~30%)
 - Dark mode (see issue #35)
-- User privacy endpoints (access, export, rectification, deletion - see issues #36-39)
-- User profile management (edit name, timezone, avatar)
+- Avatar upload (profile management endpoints exist)
 - Solar phase calculation (see issue #34)
 - Logo integration (see issue #41)
-- Internationalization
+- Internationalization (i18n)
+- Cache logic for astro calculations (Redis configured but not used for caching yet)
 - Shared packages (`packages/shared-types/`, `packages/ui-components/`)
 - Public famous charts gallery (see issue #86)
+- Legal documents (Terms of Use, Privacy Policy)
 
 ## Documentation References
 

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **natal chart (birth chart) generation system** using traditional astrology. The application provides astronomical calculations (Swiss Ephemeris), professional chart visualization, and basic astrological interpretations. The project is LGPD/GDPR compliant and handles sensitive personal data (birth date/time/location).
 
-**Current Status**: MVP in progress (~60-70% complete). Core functionality is working: authentication, chart creation, calculations, and visualization.
+**Current Status**: MVP in progress (~78% complete). Core functionality is working: authentication, chart creation, calculations, and visualization. Email verification, password reset, and rate limiting implemented.
 
 **Tech Stack:**
 - **Monorepo**: Turborepo (npm workspaces)
@@ -451,30 +451,46 @@ export async function createChart(chartData: ChartCreate): Promise<Chart> {
 - **NEVER** commit `.env` files or secrets
 - **Password hashing:** bcrypt with cost factor 12
 - **Sensitive data:** Birth date/time/location are personal data (LGPD/GDPR)
-- **Audit logging:** Log all chart creations, deletions, user logins
-- **Soft deletes:** `deleted_at` timestamp, hard delete after 30 days
+- **Audit logging:** Log all chart creations, deletions, user logins (implemented)
+- **Soft deletes:** `deleted_at` timestamp, hard delete after 30 days (Celery task)
 - **CORS:** Configured in backend (`ALLOWED_ORIGINS`)
-- **Rate limiting:** TODO - implement before production
+- **Rate limiting:** ✅ IMPLEMENTED (SlowAPI + Redis)
+  - Configured in `app/core/rate_limit.py`
+  - Applied to all critical endpoints (auth, charts, password reset, geocoding)
+  - Can be disabled for testing via `RATE_LIMIT_ENABLED=false`
 
 ## Testing Guidelines
 
-**CURRENT STATUS**: Infrastructure exists but **NO TESTS ARE WRITTEN** (0% coverage)
+**CURRENT STATUS**: ~30% backend coverage, 0% frontend coverage
 
-**Backend test directories exist:**
-- `apps/api/tests/test_api/` - API endpoint tests (empty)
-- `apps/api/tests/test_astro/` - Calculation tests (empty)
-- `apps/api/tests/test_services/` - Service tests (empty)
+**Backend testing (pytest):**
+- `apps/api/tests/test_api/` - API endpoint tests
+  - ✅ `test_auth.py` - 24 tests (register, login, refresh, logout, email verification)
+  - TestRegister: 6 tests
+  - TestLogin: 5 tests
+  - TestRefreshToken: 4 tests
+  - TestGetCurrentUser: 4 tests
+  - TestLogout: 3 tests
+  - TestAuthenticationFlow: 2 tests
+- `apps/api/tests/test_astro/` - Calculation tests (empty - needs implementation)
+- `apps/api/tests/test_services/` - Service tests (empty - needs implementation)
+
+**Test configuration:**
+- Fixtures: `db_session`, `client`, `test_user`, `test_user_factory`, `test_chart_factory`
+- PostgreSQL + Redis in CI (GitHub Actions)
+- Rate limiting disabled in tests via `RATE_LIMIT_ENABLED=false` (set in conftest.py before imports)
+- Transaction rollback for fast test isolation
 
 **Frontend testing:**
 - Vitest configured in `package.json`
 - @testing-library/react installed
-- No test files written yet
+- No test files written yet (~0% coverage)
 
 **When writing tests:**
 - Backend: Use pytest fixtures for DB setup (transaction rollback)
 - Astrological calculations: Validate against known cases (compare with astro.com)
 - Frontend: Use Testing Library, avoid implementation details
-- Coverage target: 70% minimum
+- Coverage target: 70% minimum backend, 60% minimum frontend
 
 ## Docker Services
 
@@ -541,6 +557,11 @@ logger.bind(user_id=user.id).info("Chart created")
 
 **✅ WORKING:**
 - User registration and login (JWT + OAuth2: Google, GitHub, Facebook)
+- **Email verification** (JWT tokens, 24h expiration, automatic on registration)
+- **Password reset** (SHA256 tokens, 1h expiration, email with reset link)
+- **Rate limiting** (SlowAPI + Redis on all critical endpoints)
+- **Email service** (OAuth2 Gmail + SMTP fallback)
+- **Loguru structured logging** (JSON logs, request tracking, rotation)
 - Chart creation with geocoding (OpenCage API)
 - Astronomical calculations (planets, houses, aspects)
 - Chart visualization (SVG wheel with planets and aspects)
@@ -548,24 +569,24 @@ logger.bind(user_id=user.id).info("Chart created")
 - Dashboard and chart list
 - PostgreSQL persistence with soft deletes
 - Docker development environment
-- Loguru structured logging with request tracking
 - Privacy tasks (hard delete after 30 days via Celery)
 - AI interpretations (OpenAI GPT-4o-mini) - optional
+- **Testing infrastructure** (~30% backend coverage, 24 auth tests)
 
 **❌ NOT IMPLEMENTED YET:**
 - Essential dignities calculation
 - Sect determination (day/night)
 - Lot of Fortune
 - PDF generation (LaTeX infrastructure exists but no tasks)
-- Email functionality (service exists, needs SMTP config - see issue #40)
-- Rate limiting (TODO)
-- Any tests whatsoever (0% coverage)
+- Higher test coverage (target: 70% backend, 60% frontend)
 - Dark mode (see issue #35)
 - User privacy endpoints (access, export, rectification, deletion - see issues #36-39)
+- User profile management (edit name, timezone, avatar)
 - Solar phase calculation (see issue #34)
 - Logo integration (see issue #41)
 - Internationalization
 - Shared packages (`packages/shared-types/`, `packages/ui-components/`)
+- Public famous charts gallery (see issue #86)
 
 ## Documentation References
 

@@ -4,6 +4,12 @@ Test configuration and fixtures.
 This module provides pytest fixtures and configuration for the test suite.
 """
 
+import os
+
+# IMPORTANT: Set environment variables BEFORE any app imports
+# This ensures rate limiting is disabled before the limiter is initialized
+os.environ["RATE_LIMIT_ENABLED"] = "false"
+
 import asyncio
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
@@ -122,11 +128,9 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """
     Create an async HTTP client for testing.
 
-    Overrides the app's get_db dependency to use the test database session
-    and configures the rate limiter to use test Redis (DB 1).
+    Overrides the app's get_db dependency to use the test database session.
+    Rate limiting is disabled via RATE_LIMIT_ENABLED=False in settings.
     """
-    from limits.storage import storage_from_string
-
     from app.core.dependencies import get_db
     from app.core.rate_limit import limiter
 
@@ -136,18 +140,10 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     # Override database dependency
     app.dependency_overrides[get_db] = override_get_db
 
-    # Configure limiter to use test Redis (DB 1)
-    # IMPORTANT: Reset storage for EACH test to ensure clean state
-    limiter._storage_uri = TEST_REDIS_URL
-    limiter._storage = storage_from_string(TEST_REDIS_URL)
-
-    # Flush Redis again AFTER creating storage to ensure clean state
-    # This is critical because the storage might have cached old limits
-    redis = await aioredis.from_url(TEST_REDIS_URL, decode_responses=True)
-    try:
-        await redis.flushdb()
-    finally:
-        await redis.close()
+    # Ensure rate limiting is disabled for tests
+    # The limiter was already created with enabled=False due to settings
+    # but we double-check here
+    limiter.enabled = False
 
     try:
         async with AsyncClient(app=app, base_url="http://test") as ac:

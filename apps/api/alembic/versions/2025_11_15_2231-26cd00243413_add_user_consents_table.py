@@ -37,10 +37,17 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_user_consents_consent_type'), 'user_consents', ['consent_type'], unique=False)
     op.create_index(op.f('ix_user_consents_user_id'), 'user_consents', ['user_id'], unique=False)
-    op.drop_index('ix_chart_interpretations_chart_id', table_name='chart_interpretations')
-    op.drop_index('ix_chart_interpretations_id', table_name='chart_interpretations')
-    op.drop_index('ix_chart_interpretations_interpretation_type', table_name='chart_interpretations')
-    op.drop_table('chart_interpretations')
+
+    # Drop chart_interpretations table only if it exists (for existing databases)
+    # This table may not exist on fresh installs
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if 'chart_interpretations' in inspector.get_table_names():
+        op.drop_index('ix_chart_interpretations_chart_id', table_name='chart_interpretations', if_exists=True)
+        op.drop_index('ix_chart_interpretations_id', table_name='chart_interpretations', if_exists=True)
+        op.drop_index('ix_chart_interpretations_interpretation_type', table_name='chart_interpretations', if_exists=True)
+        op.drop_table('chart_interpretations')
+
     op.create_foreign_key(None, 'birth_charts', 'users', ['user_id'], ['id'], ondelete='CASCADE')
     op.create_foreign_key(None, 'oauth_accounts', 'users', ['user_id'], ['id'], ondelete='CASCADE')
     # ### end Alembic commands ###

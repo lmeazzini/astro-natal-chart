@@ -104,6 +104,9 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True  # Disable for testing
+
     # Cookie Security Settings
     COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
     COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies

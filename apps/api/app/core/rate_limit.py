@@ -5,6 +5,8 @@ This module provides rate limiting functionality for FastAPI endpoints
 using Redis as the storage backend.
 """
 
+from typing import Callable
+
 from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -42,6 +44,7 @@ limiter = Limiter(
     storage_uri=str(settings.REDIS_URL),
     default_limits=[],  # No default limits, set per-endpoint
     headers_enabled=True,  # Include X-RateLimit-* headers in responses
+    enabled=settings.RATE_LIMIT_ENABLED,  # Can be disabled for testing
 )
 
 

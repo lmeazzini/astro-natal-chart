@@ -2,11 +2,19 @@
 Tests for rate limiting functionality.
 """
 
+import os
+
 import pytest
 from fastapi import status
 from httpx import AsyncClient
 
 from app.main import app
+
+# Skip all tests in this module if rate limiting is disabled
+pytestmark = pytest.mark.skipif(
+    os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "false",
+    reason="Rate limiting is disabled in test environment",
+)
 
 
 @pytest.mark.asyncio

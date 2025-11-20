@@ -77,6 +77,9 @@ jobs:
         run: |
           uv run mypy app/
 
+      - name: Flush Redis before tests
+        run: redis-cli FLUSHALL
+
       - name: Run tests
         working-directory: ./apps/api
         env:

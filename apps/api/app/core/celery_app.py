@@ -12,7 +12,11 @@ celery_app = Celery(
     "astro_worker",
     broker=str(settings.REDIS_URL) if settings.REDIS_URL else "redis://localhost:6379/0",
     backend=str(settings.REDIS_URL) if settings.REDIS_URL else "redis://localhost:6379/0",
-    include=["app.tasks.privacy"],
+    include=[
+        "app.tasks.astro_tasks",
+        "app.tasks.pdf_tasks",
+        "app.tasks.privacy",
+    ],
 )
 
 # Configuration

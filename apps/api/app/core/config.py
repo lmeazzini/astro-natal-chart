@@ -86,6 +86,23 @@ class Settings(BaseSettings):
     OPENAI_MAX_TOKENS: int = 500
     OPENAI_TEMPERATURE: float = 0.7
 
+    # AWS S3 - PDF Storage
+    AWS_REGION: str = "us-east-1"
+    AWS_ACCESS_KEY_ID: str | None = None
+    AWS_SECRET_ACCESS_KEY: str | None = None
+    S3_BUCKET_NAME: str = "genesis-dev-559050210551"
+    S3_PREFIX: str = "birth-charts"  # Prefix for all S3 keys
+    S3_PRESIGNED_URL_EXPIRATION: int = 3600  # Presigned URL expiration (seconds)
+
+    @property
+    def s3_enabled(self) -> bool:
+        """Check if S3 is properly configured."""
+        return bool(
+            self.AWS_ACCESS_KEY_ID
+            and self.AWS_SECRET_ACCESS_KEY
+            and self.S3_BUCKET_NAME
+        )
+
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 

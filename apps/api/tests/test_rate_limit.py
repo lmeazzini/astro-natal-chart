@@ -9,79 +9,86 @@ from httpx import AsyncClient
 from app.main import app
 
 
-@pytest.mark.skip(reason="Rate limit state not properly isolated between tests")
 @pytest.mark.asyncio
-async def test_login_rate_limit():
+async def test_login_rate_limit(client: AsyncClient):
     """Test rate limiting on login endpoint (10 requests per minute)."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        # First 10 requests should succeed (401 for invalid credentials, but not rate limited)
-        for i in range(10):
-            response = await client.post(
-                "/api/v1/auth/login",
-                json={"email": f"test{i}@example.com", "password": "wrongpassword"},
-            )
-            # Should get 401 Unauthorized, not 429 (rate limit exceeded)
-            assert response.status_code in [
-                status.HTTP_401_UNAUTHORIZED,
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
-            ]
-
-        # 11th request should be rate limited
+    # First 10 requests should succeed (401 for invalid credentials, but not rate limited)
+    for i in range(10):
         response = await client.post(
             "/api/v1/auth/login",
-            json={"email": "test@example.com", "password": "wrongpassword"},
+            json={"email": f"test{i}@example.com", "password": "wrongpassword"},
         )
-        assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+        # Should get 401 Unauthorized, not 429 (rate limit exceeded)
+        assert response.status_code in [
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+        ]
 
-        # Check rate limit headers are present
-        assert "X-RateLimit-Limit" in response.headers
-        assert "X-RateLimit-Remaining" in response.headers
-        assert "Retry-After" in response.headers
+    # 11th request should be rate limited
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "wrongpassword"},
+    )
+    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+
+    # Check rate limit headers are present
+    assert "X-RateLimit-Limit" in response.headers
+    assert "X-RateLimit-Remaining" in response.headers
+    assert "Retry-After" in response.headers
 
 
-@pytest.mark.skip(reason="Rate limiting implementation needs refactoring for proper test support")
 @pytest.mark.asyncio
-async def test_register_rate_limit():
+async def test_register_rate_limit(client: AsyncClient):
     """Test rate limiting on register endpoint (5 requests per hour)."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        # First 5 requests
-        for i in range(5):
-            response = await client.post(
-                "/api/v1/auth/register",
-                json={
-                    "email": f"newuser{i}@example.com",
-                    "password": "ValidPassword123!",
-                    "full_name": f"Test User {i}",
-                },
-            )
-            # Should process (might succeed or fail due to DB, but not rate limited)
-            assert response.status_code != status.HTTP_429_TOO_MANY_REQUESTS
-
-        # 6th request should be rate limited
+    # First 5 requests
+    for i in range(5):
         response = await client.post(
             "/api/v1/auth/register",
             json={
-                "email": "newuser6@example.com",
+                "email": f"newuser{i}@example.com",
                 "password": "ValidPassword123!",
-                "full_name": "Test User 6",
+                "password_confirm": "ValidPassword123!",
+                "full_name": f"Test User {i}",
+                "accept_terms": True,
             },
         )
-        assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+        # Should process (might succeed or fail due to DB, but not rate limited)
+        assert response.status_code != status.HTTP_429_TOO_MANY_REQUESTS
+
+    # 6th request should be rate limited
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "newuser6@example.com",
+            "password": "ValidPassword123!",
+            "password_confirm": "ValidPassword123!",
+            "full_name": "Test User 6",
+            "accept_terms": True,
+        },
+    )
+    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
 
 
-@pytest.mark.skip(reason="Geocoding tests require OPENCAGE_API_KEY")
 @pytest.mark.asyncio
-async def test_geocoding_rate_limit():
+async def test_geocoding_rate_limit(client: AsyncClient):
     """Test rate limiting on geocoding search endpoint (60 requests per minute)."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        # First 60 requests should succeed
+    import respx
+    from httpx import Response
+
+    # Mock Nominatim API responses
+    with respx.mock:
+        respx.get("https://nominatim.openstreetmap.org/search").mock(
+            return_value=Response(200, json=[])
+        )
+
+        # First 60 requests should succeed (return 200)
         for i in range(60):
             response = await client.get(
                 "/api/v1/geocoding/search",
                 params={"q": f"City{i}", "limit": 1},
             )
-            # Should process (might return empty or error, but not rate limited)
-            assert response.status_code != status.HTTP_429_TOO_MANY_REQUESTS
+            # Should process (returns 200, but not rate limited)
+            assert response.status_code == status.HTTP_200_OK
 
         # 61st request should be rate limited
         response = await client.get(
@@ -91,34 +98,32 @@ async def test_geocoding_rate_limit():
         assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
 
 
-@pytest.mark.skip(reason="Rate limit state not properly isolated between tests")
 @pytest.mark.asyncio
-async def test_rate_limit_headers():
+async def test_rate_limit_headers(client: AsyncClient):
     """Test that rate limit response includes correct headers."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        # Make enough requests to trigger rate limit
-        for _ in range(11):  # Login limit is 10/minute
-            await client.post(
-                "/api/v1/auth/login",
-                json={"email": "test@example.com", "password": "wrongpassword"},
-            )
-
-        # This one should be rate limited
-        response = await client.post(
+    # Make enough requests to trigger rate limit
+    for _ in range(10):  # Login limit is 10/minute
+        await client.post(
             "/api/v1/auth/login",
             json={"email": "test@example.com", "password": "wrongpassword"},
         )
 
-        assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+    # This one should be rate limited (11th request)
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "wrongpassword"},
+    )
 
-        # Validate headers
-        assert "X-RateLimit-Limit" in response.headers
-        assert "X-RateLimit-Remaining" in response.headers
-        assert int(response.headers["X-RateLimit-Remaining"]) == 0
+    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
 
-        assert "Retry-After" in response.headers
-        retry_after = int(response.headers["Retry-After"])
-        assert 0 < retry_after <= 60  # Should be within 1 minute
+    # Validate headers
+    assert "X-RateLimit-Limit" in response.headers
+    assert "X-RateLimit-Remaining" in response.headers
+    assert int(response.headers["X-RateLimit-Remaining"]) == 0
+
+    assert "Retry-After" in response.headers
+    retry_after = int(response.headers["Retry-After"])
+    assert 0 < retry_after <= 60  # Should be within 1 minute
 
 
 @pytest.mark.skip(reason="Cannot properly test different IPs with AsyncClient")

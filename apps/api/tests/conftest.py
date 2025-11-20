@@ -90,23 +90,28 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     await connection.close()
 
 
+# Test Redis URL (use DB 1 instead of DB 0 for test isolation)
+TEST_REDIS_URL = str(settings.REDIS_URL).rsplit('/', 1)[0] + '/1'
+
+
 @pytest.fixture(autouse=True)
 async def reset_rate_limits():
-    """Reset rate limits before each test by clearing Redis."""
-    # Connect to Redis
-    redis = await aioredis.from_url(str(settings.REDIS_URL), decode_responses=True)
+    """
+    Reset rate limits before and after each test by clearing test Redis database.
+
+    Uses Redis DB 1 for test isolation (production uses DB 0).
+    """
+    # Connect to test Redis (DB 1)
+    redis = await aioredis.from_url(TEST_REDIS_URL, decode_responses=True)
 
     try:
-        # Clear all rate limit keys (they start with "LIMITER")
-        cursor = 0
-        while True:
-            cursor, keys = await redis.scan(cursor, match="LIMITER*", count=100)
-            if keys:
-                await redis.delete(*keys)
-            if cursor == 0:
-                break
+        # Clear all keys in test database before test
+        await redis.flushdb()
 
         yield
+
+        # Clear all keys in test database after test (cleanup)
+        await redis.flushdb()
 
     finally:
         await redis.close()
@@ -117,19 +122,32 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """
     Create an async HTTP client for testing.
 
-    Overrides the app's get_db dependency to use the test database session.
+    Overrides the app's get_db dependency to use the test database session
+    and configures the rate limiter to use test Redis (DB 1).
     """
+    from limits.storage import storage_from_string
+
     from app.core.dependencies import get_db
+    from app.core.rate_limit import limiter
 
     async def override_get_db():
         yield db_session
 
+    # Override database dependency
     app.dependency_overrides[get_db] = override_get_db
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
+    # Configure limiter to use test Redis (DB 1)
+    # Note: We don't restore this since all tests should use test Redis
+    if not hasattr(limiter, '_test_storage_configured'):
+        limiter._storage_uri = TEST_REDIS_URL
+        limiter._storage = storage_from_string(TEST_REDIS_URL)
+        limiter._test_storage_configured = True
 
-    app.dependency_overrides.clear()
+    try:
+        async with AsyncClient(app=app, base_url="http://test") as ac:
+            yield ac
+    finally:
+        app.dependency_overrides.clear()
 
 
 # ===== Factory Fixtures =====

@@ -2,10 +2,10 @@
 
 Análise completa do que está implementado e o que falta para lançar em produção.
 
-## 🎯 Status Geral: 85% Pronto
+## 🎯 Status Geral: 88% Pronto
 
 **Última Atualização**: 2025-11-20
-**Progresso desde última revisão**: +20% (issues #6, #12, #13, #25, #40, #75 implementadas + backup automático)
+**Progresso desde última revisão**: +23% (issues #6, #12, #13, #25, #40, #75 implementadas + backup automático + documentos legais)
 
 ---
 
@@ -92,9 +92,45 @@ Análise completa do que está implementado e o que falta para lançar em produ�
   - Pronto para cache de cálculos astrológicos
   - Celery broker e result backend
 
+### Documentos Legais
+- ✅ **Termos de Uso** (`docs/TERMS_OF_SERVICE.md`)
+  - Aceitação dos termos, descrição do serviço
+  - Cadastro e responsabilidades do usuário
+  - Uso aceitável, propriedade intelectual
+  - Privacidade e proteção de dados (LGPD/GDPR)
+  - Limitação de responsabilidade
+- ✅ **Política de Privacidade** (`docs/PRIVACY_POLICY.md`)
+  - LGPD Art. 13.709/2018 e GDPR Reg. UE 2016/679
+  - Controlador e DPO (Encarregado de Dados)
+  - Dados coletados, finalidades e bases legais
+  - Direitos do titular (acesso, retificação, exclusão, portabilidade)
+  - Compartilhamento, segurança e retenção de dados
+- ✅ **Política de Cookies** (`docs/COOKIE_POLICY.md`)
+  - Cookies essenciais, funcionais, analíticos
+  - Consentimento explícito
+  - Opt-out e gerenciamento de preferências
+
 ---
 
 ## ⚠️ CRÍTICO (Bloqueadores de Produção)
+
+### 1. 🔴 Disaster Recovery e Testes de Restore ⭐⭐⭐⭐⭐
+**Status**: ❌ NÃO IMPLEMENTADO
+**Issue**: #87
+
+**O que falta:**
+- [ ] Script de restore (`scripts/restore-db.sh`)
+- [ ] Testes automatizados de restore
+- [ ] Plano de disaster recovery documentado (`docs/DISASTER_RECOVERY.md`)
+- [ ] RTO/RPO definidos (Recovery Time/Point Objective)
+- [ ] Simulação de disaster recovery (drill trimestral)
+- [ ] Backup de volumes Docker (Redis data)
+
+**Risco**: Sem testes de restore, não temos garantia de que conseguimos recuperar dados em caso de desastre.
+
+**Tempo estimado**: 3-5 dias
+
+---
 
 ### 2. ✅ Verificação de Email ⭐⭐⭐⭐⭐
 **Status**: ✅ **IMPLEMENTADO**
@@ -195,14 +231,11 @@ Análise completa do que está implementado e o que falta para lançar em produ�
   - S3_BUCKET, S3_PREFIX (offsite backup)
   - HEALTHCHECK_URL (monitoring)
 
-**O que falta:**
-- [ ] Testes de restore automatizados (mensal)
-- [ ] Plano de disaster recovery documentado
-- [ ] Backup de volumes Docker (Redis data) - atualmente só PostgreSQL
-
 **Arquivos:**
-- `scripts/backup-db.sh` - Script principal
+- `scripts/backup-db.sh` - Script principal (256 linhas)
 - `docker-compose.yml` - Serviço db-backup (comentado, pronto para uso)
+
+**Nota**: Testes de restore e disaster recovery foram movidos para Issue #87 (item crítico separado).
 
 ---
 
@@ -332,16 +365,14 @@ Análise completa do que está implementado e o que falta para lançar em produ�
 ### Sprint 3 (Qualidade - EM ANDAMENTO) 🚧
 9. 🚧 Aumentar cobertura de testes (Issues #9, #10) - **EM PROGRESSO (30%)**
 10. ⏳ Cache de cálculos astrológicos - PENDENTE
-11. ⏳ Documentos legais (Termos, Privacidade) - PENDENTE
+11. ⏳ Disaster recovery e testes de restore (Issue #87) - **PENDENTE**
 12. ⏳ Monitoramento e alertas - PENDENTE
 
 ### Sprint 4 (Pré-lançamento - 1-2 semanas)
-13. ⏳ Testes de restore de backup (automatizados) - **1 dia**
-14. ⏳ Upload de avatar - **2 dias**
-15. ⏳ Testes E2E completos - **3 dias**
-16. ⏳ Documentação final - **2 dias**
-17. ⏳ Load testing (100 usuários) - **2 dias**
-18. ⏳ Simulação de disaster recovery - **2 dias**
+13. ⏳ Upload de avatar - **2 dias**
+14. ⏳ Testes E2E completos - **3 dias**
+15. ⏳ Documentação final - **2 dias**
+16. ⏳ Load testing (100 usuários) - **2 dias**
 
 **PROGRESSO**: 2 de 4 sprints concluídas (Sprints 1-2 ✅, Sprint 3 em andamento 🚧)
 **RESTANTE**: ~2-3 semanas até produção (reduzido de 3-4 semanas)
@@ -351,12 +382,13 @@ Análise completa do que está implementado e o que falta para lançar em produ�
 ## 🚀 Critérios de Lançamento (Go/No-Go)
 
 ### Obrigatórios (Go/No-Go)
-- [x] LGPD/GDPR 100% compliant ✅ (endpoints, consent, audit, privacy tasks)
+- [x] LGPD/GDPR 100% compliant ✅ (endpoints, consent, audit, privacy tasks, documentos legais)
 - [x] Verificação de email funcionando ✅
-- [x] Backup automático implementado ✅ (falta: testes de restore)
+- [x] Backup automático implementado ✅
+- [x] Documentos legais ✅ (Termos, Privacidade, Cookies)
 - [x] SSL/HTTPS ativo ✅
+- [ ] Disaster recovery testado (Issue #87)
 - [ ] Logs centralizados (Loguru ✅, falta: ELK Stack/CloudWatch)
-- [ ] Plano de disaster recovery documentado
 - [ ] Cobertura de testes >60% (atual: ~30%)
 - [ ] Load testing (100 usuários simultâneos)
 

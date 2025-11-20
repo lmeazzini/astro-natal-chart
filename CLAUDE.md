@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **natal chart (birth chart) generation system** using traditional astrology. The application provides astronomical calculations (Swiss Ephemeris), professional chart visualization, and basic astrological interpretations. The project is LGPD/GDPR compliant and handles sensitive personal data (birth date/time/location).
 
-**Current Status**: MVP in progress (~85% complete). Core functionality is working: authentication, chart creation, calculations, and visualization. Email verification, password reset, rate limiting, LGPD/GDPR compliance, profile management, and backup automation all implemented.
+**Current Status**: MVP in progress (~88% complete). Core functionality is working: authentication, chart creation, calculations, and visualization. Email verification, password reset, rate limiting, LGPD/GDPR compliance (with legal documents), profile management, and backup automation all implemented.
 
 **Tech Stack:**
 - **Monorepo**: Turborepo (npm workspaces)
@@ -577,6 +577,11 @@ logger.bind(user_id=user.id).info("Chart created")
   - Professional backup script (PostgreSQL)
   - 30-day retention, compression, S3 upload
   - Integrity verification, healthcheck integration
+- **Legal documents** (LGPD/GDPR compliant)
+  - Terms of Service (`docs/TERMS_OF_SERVICE.md`)
+  - Privacy Policy (`docs/PRIVACY_POLICY.md`)
+  - Cookie Policy (`docs/COOKIE_POLICY.md`)
+  - DPO contact, data retention policies
 - Chart creation with geocoding (OpenCage API)
 - Astronomical calculations (planets, houses, aspects)
 - Chart visualization (SVG wheel with planets and aspects)
@@ -589,6 +594,7 @@ logger.bind(user_id=user.id).info("Chart created")
 - **Testing infrastructure** (~30% backend coverage, 24 auth tests)
 
 **❌ NOT IMPLEMENTED YET:**
+- Disaster recovery tests and restore procedures (see issue #87)
 - Essential dignities calculation
 - Sect determination (day/night)
 - Lot of Fortune
@@ -602,7 +608,7 @@ logger.bind(user_id=user.id).info("Chart created")
 - Cache logic for astro calculations (Redis configured but not used for caching yet)
 - Shared packages (`packages/shared-types/`, `packages/ui-components/`)
 - Public famous charts gallery (see issue #86)
-- Legal documents (Terms of Use, Privacy Policy)
+- Blog with SEO optimization (planned)
 
 ## Documentation References
 

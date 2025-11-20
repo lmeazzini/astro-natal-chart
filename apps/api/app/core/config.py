@@ -71,8 +71,8 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
 
     # Email Domain Restriction
-    ENABLE_EMAIL_DOMAIN_RESTRICTION: bool = True
-    ALLOWED_EMAIL_DOMAINS: str = "realastrology"
+    ENABLE_EMAIL_DOMAIN_RESTRICTION: bool = False
+    ALLOWED_EMAIL_DOMAINS: str = ""  # Empty string allows all domains
 
     @property
     def allowed_email_domains_list(self) -> list[str]:

@@ -298,7 +298,6 @@ class TestDownloadPDFEndpoint:
     ):
         """Test download when PDF file doesn't exist on disk."""
         from datetime import UTC, datetime
-        from pathlib import Path
 
         chart = await test_chart_factory(user=test_user)
 

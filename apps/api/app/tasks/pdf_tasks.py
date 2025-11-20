@@ -18,6 +18,7 @@ from app.core.database import AsyncSessionLocal
 from app.models.chart import BirthChart
 from app.services.interpretation_service import InterpretationService
 from app.services.pdf_service import PDFService
+from app.services.s3_service import s3_service
 
 
 @celery_app.task(
@@ -220,10 +221,38 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
                 shutil.copy2(temp_pdf, pdf_path)
                 logger.info(f"PDF generated successfully: {pdf_path}")
 
-            # 7. Update database with PDF URL and timestamp
+            # 7. Upload PDF to S3 (if configured) or use local path
             from datetime import datetime
 
-            pdf_url = f"/media/pdfs/{pdf_path.name}"
+            s3_url = None
+            if s3_service.enabled:
+                # Generate filename with timestamp for S3
+                filename = f"full-report-{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.pdf"
+
+                # Upload to S3
+                s3_url = s3_service.upload_pdf(
+                    file_path=pdf_path,
+                    user_id=str(chart.user_id),
+                    chart_id=str(chart_id),
+                    filename=filename,
+                )
+
+                if s3_url:
+                    logger.info(f"PDF uploaded to S3: {s3_url}")
+
+                    # Clean up local file after successful upload
+                    try:
+                        pdf_path.unlink()
+                        logger.info(f"Cleaned up local PDF: {pdf_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to clean up local PDF: {e}")
+                else:
+                    logger.warning("S3 upload failed, falling back to local storage")
+
+            # Use S3 URL if available, otherwise use local path
+            pdf_url = s3_url or f"/media/pdfs/{pdf_path.name}"
+
+            # 8. Update database with PDF URL and timestamp
             chart.pdf_url = pdf_url
             chart.pdf_generated_at = datetime.now(UTC)
             await db.commit()

@@ -338,6 +338,192 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 - Redis as message broker and result backend
 - Scheduled via Celery Beat (periodic tasks)
 
+### AWS S3 Integration (PDF Storage)
+
+**Location:** `apps/api/app/services/s3_service.py`
+
+**Purpose:** Persistent, scalable storage for generated PDF birth chart reports.
+
+**Key Features:**
+- ✅ Upload PDFs to AWS S3 with organized folder structure
+- ✅ Generate presigned URLs for secure, temporary downloads (1 hour expiration)
+- ✅ Delete PDFs from S3
+- ✅ List all PDFs for a chart
+- ✅ Check if PDF exists in S3
+- ✅ **Dev mode**: Simulates S3 operations without AWS credentials (returns local paths)
+- ✅ Automatic fallback to local storage if S3 upload fails
+
+**S3 Key Structure:**
+```
+s3://{bucket}/{prefix}/{user_id}/{chart_id}/{filename}
+Example: s3://genesis-dev-559050210551/birth-charts/123e4567-e89b/456f-789a/full-report-20250120-153045.pdf
+```
+
+**Configuration (apps/api/.env):**
+```bash
+# AWS S3 - PDF Storage
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_aws_access_key_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
+S3_BUCKET_NAME=genesis-dev-559050210551
+S3_PREFIX=birth-charts
+S3_PRESIGNED_URL_EXPIRATION=3600  # 1 hour
+```
+
+**Dev Mode:** Leave `AWS_ACCESS_KEY_ID` empty to disable S3 and use local file storage.
+
+**Usage Examples:**
+
+```python
+from app.services.s3_service import s3_service
+
+# 1. Upload PDF from local file
+s3_url = s3_service.upload_pdf(
+    file_path="/tmp/chart.pdf",
+    user_id="123e4567-e89b-12d3-a456-426614174000",
+    chart_id="456f7890-e89b-12d3-a456-426614174001",
+    filename="full-report.pdf",  # Optional, auto-generated if not provided
+)
+# Returns: "s3://genesis-dev-559050210551/birth-charts/123e4567.../456f7890.../full-report.pdf"
+# or "file:///tmp/chart.pdf" in dev mode
+
+# 2. Upload PDF from bytes (in-memory)
+pdf_bytes = b"%PDF-1.4\n..."
+s3_url = s3_service.upload_pdf_from_bytes(
+    pdf_bytes=pdf_bytes,
+    user_id="123e4567-e89b-12d3-a456-426614174000",
+    chart_id="456f7890-e89b-12d3-a456-426614174001",
+    filename="full-report.pdf",
+)
+# Returns: "s3://..." or "memory://..." in dev mode
+
+# 3. Generate presigned URL for download (expires in 1 hour)
+download_url = s3_service.generate_presigned_url(
+    s3_url="s3://genesis-dev-559050210551/birth-charts/.../full-report.pdf",
+    expires_in=3600,  # Optional, defaults to S3_PRESIGNED_URL_EXPIRATION
+)
+# Returns: "https://genesis-dev-559050210551.s3.amazonaws.com/...?AWSAccessKeyId=...&Signature=..."
+# or None if S3 disabled or error occurred
+
+# 4. Delete PDF from S3
+success = s3_service.delete_pdf(
+    s3_url="s3://genesis-dev-559050210551/birth-charts/.../full-report.pdf"
+)
+# Returns: True if deleted, False if error
+
+# 5. List all PDFs for a chart
+pdf_urls = s3_service.list_pdfs_for_chart(
+    user_id="123e4567-e89b-12d3-a456-426614174000",
+    chart_id="456f7890-e89b-12d3-a456-426614174001",
+)
+# Returns: ["s3://...report1.pdf", "s3://...report2.pdf"]
+
+# 6. Check if PDF exists
+exists = s3_service.pdf_exists(
+    s3_url="s3://genesis-dev-559050210551/birth-charts/.../full-report.pdf"
+)
+# Returns: True if exists, False otherwise
+```
+
+**Integration with PDF Generation (Celery Task):**
+
+The S3Service is integrated into the PDF generation workflow in `app/tasks/pdf_tasks.py`:
+
+```python
+# In generate_chart_pdf_task():
+# 1. Generate PDF locally with LaTeX
+pdf_path = pdf_service.generate_pdf_path(chart_id)
+
+# 2. Compile PDF with pdflatex
+# ... (LaTeX compilation) ...
+
+# 3. Upload to S3 (if enabled)
+s3_url = None
+if s3_service.enabled:
+    filename = f"full-report-{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.pdf"
+    s3_url = s3_service.upload_pdf(
+        file_path=pdf_path,
+        user_id=str(chart.user_id),
+        chart_id=str(chart_id),
+        filename=filename,
+    )
+
+    if s3_url:
+        logger.info(f"PDF uploaded to S3: {s3_url}")
+        # Clean up local file after successful upload
+        pdf_path.unlink()
+    else:
+        logger.warning("S3 upload failed, falling back to local storage")
+
+# 4. Save URL to database (S3 or local)
+pdf_url = s3_url or f"/media/pdfs/{pdf_path.name}"
+chart.pdf_url = pdf_url
+chart.pdf_generated_at = datetime.now(UTC)
+await db.commit()
+```
+
+**API Endpoint Integration:**
+
+The `GET /api/v1/charts/{chart_id}/pdf-status` endpoint generates presigned URLs for S3 PDFs:
+
+```python
+from app.services.s3_service import s3_service
+from app.schemas.chart import PDFDownloadResponse
+
+@router.get("/{chart_id}/pdf-status", response_model=PDFDownloadResponse)
+async def get_pdf_status(
+    chart_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> PDFDownloadResponse:
+    # ... (fetch chart from database) ...
+
+    if chart.pdf_url.startswith("s3://"):
+        # Generate presigned URL for S3
+        download_url = s3_service.generate_presigned_url(
+            s3_url=chart.pdf_url,
+            expires_in=settings.S3_PRESIGNED_URL_EXPIRATION,
+        )
+        expires_in = settings.S3_PRESIGNED_URL_EXPIRATION
+    else:
+        # Local file path (dev mode)
+        download_url = chart.pdf_url
+        expires_in = None
+
+    return PDFDownloadResponse(
+        status="ready",
+        download_url=download_url,
+        expires_in=expires_in,
+        generated_at=chart.pdf_generated_at,
+        message="PDF is ready for download.",
+    )
+```
+
+**Security Considerations:**
+- **Private bucket**: S3 bucket is private, no public access
+- **Presigned URLs**: Temporary URLs with 1-hour expiration
+- **IAM policies**: Least-privilege access (PutObject, GetObject, DeleteObject only)
+- **Path traversal protection**: Filenames sanitized to prevent `../../` attacks
+- **User isolation**: PDFs organized by user_id to prevent cross-user access
+
+**Testing:**
+
+Comprehensive tests in `apps/api/tests/test_services/test_s3_service.py`:
+- ✅ Initialization with/without credentials
+- ✅ S3 key building and path traversal protection
+- ✅ Upload from file (success, file not found, client errors)
+- ✅ Upload from bytes (success, dev mode)
+- ✅ Presigned URL generation (success, invalid URLs, disabled mode)
+- ✅ Delete PDF (success, invalid URLs, dev mode)
+- ✅ List PDFs (success, empty results, disabled mode)
+- ✅ PDF existence checks (exists, not found, invalid URLs)
+
+**Cost Estimation:**
+- Storage: $0.023/GB/month (S3 Standard)
+- Requests: $0.005 per 1,000 PUT requests, $0.0004 per 1,000 GET requests
+- Data transfer: First 100GB/month free, then $0.09/GB
+- **Example**: 1,000 PDFs (2MB each, 2GB total) = ~$0.05/month storage + ~$0.01/month requests = **< $1/month**
+
 ### Environment Configuration
 
 **Backend** (`apps/api/.env`):

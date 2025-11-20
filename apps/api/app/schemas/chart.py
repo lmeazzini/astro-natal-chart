@@ -138,3 +138,24 @@ class ChartStatusResponse(BaseModel):
     progress: int = Field(ge=0, le=100, description="Processing progress (0-100)")
     error_message: str | None = Field(None, description="Error message if status is failed")
     task_id: str | None = Field(None, description="Celery task ID for tracking")
+
+
+class PDFDownloadResponse(BaseModel):
+    """Schema for PDF download/status response."""
+
+    status: str = Field(
+        description="PDF status: ready, generating, failed, not_found"
+    )
+    download_url: str | None = Field(
+        None,
+        description="Presigned S3 URL for download (expires in 1 hour) or local URL",
+    )
+    task_id: str | None = Field(None, description="Celery task ID if generating")
+    expires_in: int | None = Field(
+        None,
+        description="Seconds until download URL expires (for S3 presigned URLs)",
+    )
+    generated_at: datetime | None = Field(
+        None, description="Timestamp when PDF was generated"
+    )
+    message: str | None = Field(None, description="Human-readable status message")

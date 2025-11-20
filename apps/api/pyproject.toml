@@ -54,6 +54,8 @@ dependencies = [
     "google-auth>=2.43.0",
     "google-auth-oauthlib>=1.2.2",
     "google-api-python-client>=2.187.0",
+    "boto3>=1.35.0",
+    "botocore>=1.35.0",
 ]
 
 [build-system]

@@ -19,8 +19,10 @@ from app.schemas.chart import (
     BirthChartRead,
     BirthChartUpdate,
     ChartStatusResponse,
+    PDFDownloadResponse,
 )
 from app.services import chart_service
+from app.services.s3_service import s3_service
 from app.tasks.astro_tasks import generate_birth_chart_task
 from app.tasks.pdf_tasks import generate_chart_pdf_task
 
@@ -397,8 +399,9 @@ async def generate_chart_pdf(
 
 @router.get(
     "/{chart_id}/pdf-status",
-    summary="Get PDF generation status",
-    description="Check the status of PDF generation for a birth chart.",
+    response_model=PDFDownloadResponse,
+    summary="Get PDF generation status and download URL",
+    description="Check the status of PDF generation and get presigned download URL if ready.",
 )
 @limiter.limit(RateLimits.CHART_READ)
 async def get_pdf_status(
@@ -407,14 +410,19 @@ async def get_pdf_status(
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> dict[str, str | None]:
+) -> PDFDownloadResponse:
     """
-    Get PDF generation status for a birth chart.
+    Get PDF generation status and download URL for a birth chart.
 
-    **Polling workflow:**
+    **Workflow:**
     1. After calling POST /charts/{id}/generate-pdf, poll this endpoint
-    2. Check pdf_url field - if not null, PDF is ready
-    3. Once ready, use GET /charts/{id}/download-pdf to download
+    2. Check status field: 'ready', 'generating', 'failed', or 'not_found'
+    3. If status is 'ready', use download_url to download (expires in 1 hour for S3)
+
+    **S3 Integration:**
+    - If PDF is stored in S3, returns a presigned URL (valid for 1 hour)
+    - If PDF is stored locally, returns local file path
+    - Presigned URLs are regenerated on each request
 
     Args:
         chart_id: Birth chart UUID
@@ -422,8 +430,10 @@ async def get_pdf_status(
         db: Database session
 
     Returns:
-        PDF status information
+        PDF status with download URL and metadata
     """
+    from app.core.config import settings
+
     try:
         chart = await chart_service.get_chart_by_id(
             db=db,
@@ -431,21 +441,51 @@ async def get_pdf_status(
             user_id=UUID(str(current_user.id)),
         )
 
-        # Determine status based on pdf_url presence
-        if chart.pdf_url:
-            pdf_status = "completed"
-        elif chart.error_message and "PDF generation failed" in chart.error_message:
-            pdf_status = "failed"
-        else:
-            pdf_status = "processing"
+        # Check if PDF exists
+        if not chart.pdf_url:
+            # No PDF generated yet
+            if chart.error_message and "PDF generation failed" in chart.error_message:
+                return PDFDownloadResponse(
+                    status="failed",
+                    message=chart.error_message,
+                )
+            else:
+                return PDFDownloadResponse(
+                    status="generating",
+                    message="PDF generation is in progress. Please check back in a few moments.",
+                )
 
-        return {
-            "chart_id": str(chart_id),
-            "pdf_status": pdf_status,
-            "pdf_url": chart.pdf_url,
-            "pdf_generated_at": chart.pdf_generated_at.isoformat() if chart.pdf_generated_at else None,
-            "error_message": chart.error_message if pdf_status == "failed" else None,
-        }
+        # PDF exists - determine download URL
+        download_url = None
+        expires_in = None
+
+        if chart.pdf_url.startswith("s3://"):
+            # S3 URL - generate presigned URL
+            download_url = s3_service.generate_presigned_url(
+                s3_url=chart.pdf_url,
+                expires_in=settings.S3_PRESIGNED_URL_EXPIRATION,
+            )
+
+            if download_url:
+                expires_in = settings.S3_PRESIGNED_URL_EXPIRATION
+            else:
+                # Failed to generate presigned URL
+                return PDFDownloadResponse(
+                    status="failed",
+                    message="Failed to generate download URL. Please try again.",
+                    generated_at=chart.pdf_generated_at,
+                )
+        else:
+            # Local file path - return as-is
+            download_url = chart.pdf_url
+
+        return PDFDownloadResponse(
+            status="ready",
+            download_url=download_url,
+            expires_in=expires_in,
+            generated_at=chart.pdf_generated_at,
+            message="PDF is ready for download.",
+        )
 
     except chart_service.ChartNotFoundError:
         raise HTTPException(

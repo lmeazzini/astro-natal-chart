@@ -141,12 +141,12 @@ async def test_user(db_session: AsyncSession) -> User:
     Create a test user.
 
     Default credentials:
-    - email: test@realastrology.ai
+    - email: test@example.com
     - password: Test123!@#
     """
     user = User(
         id=uuid4(),
-        email="test@realastrology.ai",
+        email="test@example.com",
         password_hash=get_password_hash("Test123!@#"),
         full_name="Test User",
         email_verified=True,
@@ -171,7 +171,7 @@ async def test_user_factory(db_session: AsyncSession):
         user2 = await test_user_factory(email="user2@example.com", is_superuser=True)
     """
     async def _create_user(
-        email: str = "test@realastrology.ai",
+        email: str = "test@example.com",
         password: str = "Test123!@#",
         full_name: str = "Test User",
         email_verified: bool = True,

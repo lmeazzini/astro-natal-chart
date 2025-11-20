@@ -30,29 +30,6 @@ class UserCreate(UserBase):
         description="User must accept terms of service and privacy policy",
     )
 
-    @field_validator("email")
-    @classmethod
-    def validate_email_domain(cls, v: str) -> str:
-        """Validate email domain if restriction is enabled."""
-        from app.core.config import settings
-
-        if not settings.ENABLE_EMAIL_DOMAIN_RESTRICTION:
-            return v
-
-        # Extract domain from email
-        domain = v.split("@")[1] if "@" in v else ""
-
-        # Check if domain is in allowed list
-        if domain not in settings.allowed_email_domains_list:
-            allowed_domains_str = ", ".join(
-                f"@{d}" for d in settings.allowed_email_domains_list
-            )
-            raise ValueError(
-                f"Cadastro restrito. Apenas emails dos domínios autorizados são permitidos: {allowed_domains_str}"
-            )
-
-        return v
-
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, v: str) -> str:

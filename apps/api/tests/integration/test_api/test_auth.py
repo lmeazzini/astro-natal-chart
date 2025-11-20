@@ -19,7 +19,7 @@ class TestRegister:
         response = await client.post(
             "/api/v1/auth/register",
             json={
-                "email": "newuser@realastrology.ai",
+                "email": "newuser@example.com",
                 "password": "SecurePassword123!",
                 "password_confirm": "SecurePassword123!",
                 "full_name": "New User",
@@ -29,7 +29,7 @@ class TestRegister:
 
         assert response.status_code == 201
         data = response.json()
-        assert data["email"] == "newuser@realastrology.ai"
+        assert data["email"] == "newuser@example.com"
         assert data["full_name"] == "New User"
         assert "id" in data
         assert "password_hash" not in data  # Password should not be returned
@@ -38,7 +38,7 @@ class TestRegister:
 
         # Verify user was created in database
         user_repo = UserRepository(db_session)
-        user = await user_repo.get_by_email("newuser@realastrology.ai")
+        user = await user_repo.get_by_email("newuser@example.com")
         assert user is not None
         assert user.password_hash is not None
 
@@ -124,7 +124,7 @@ class TestLogin:
         response = await client.post(
             "/api/v1/auth/login",
             json={
-                "email": "test@realastrology.ai",
+                "email": "test@example.com",
                 "password": "Test123!@#",
             },
         )
@@ -173,7 +173,7 @@ class TestLogin:
     ):
         """Test login with inactive user fails."""
         inactive_user = await test_user_factory(
-            email="inactive@realastrology.ai",
+            email="inactive@example.com",
             password="Test123!@#",
             is_active=False,
         )
@@ -214,7 +214,7 @@ class TestRefreshToken:
         login_response = await client.post(
             "/api/v1/auth/login",
             json={
-                "email": "test@realastrology.ai",
+                "email": "test@example.com",
                 "password": "Test123!@#",
             },
         )
@@ -251,7 +251,7 @@ class TestRefreshToken:
         login_response = await client.post(
             "/api/v1/auth/login",
             json={
-                "email": "test@realastrology.ai",
+                "email": "test@example.com",
                 "password": "Test123!@#",
             },
         )
@@ -354,7 +354,7 @@ class TestAuthenticationFlow:
         register_response = await client.post(
             "/api/v1/auth/register",
             json={
-                "email": "flow@realastrology.ai",
+                "email": "flow@example.com",
                 "password": "FlowPassword123!",
                 "password_confirm": "FlowPassword123!",
                 "full_name": "Flow User",
@@ -367,7 +367,7 @@ class TestAuthenticationFlow:
         login_response = await client.post(
             "/api/v1/auth/login",
             json={
-                "email": "flow@realastrology.ai",
+                "email": "flow@example.com",
                 "password": "FlowPassword123!",
             },
         )
@@ -382,7 +382,7 @@ class TestAuthenticationFlow:
             headers={"Authorization": f"Bearer {access_token}"},
         )
         assert me_response.status_code == 200
-        assert me_response.json()["email"] == "flow@realastrology.ai"
+        assert me_response.json()["email"] == "flow@example.com"
 
         # 4. Refresh token
         refresh_response = await client.post(
@@ -415,7 +415,7 @@ class TestAuthenticationFlow:
         await client.post(
             "/api/v1/auth/register",
             json={
-                "email": "user1@realastrology.ai",
+                "email": "user1@example.com",
                 "password": "Password123!",
                 "password_confirm": "Password123!",
                 "full_name": "User One",
@@ -427,7 +427,7 @@ class TestAuthenticationFlow:
         await client.post(
             "/api/v1/auth/register",
             json={
-                "email": "user2@realastrology.ai",
+                "email": "user2@example.com",
                 "password": "Password123!",
                 "password_confirm": "Password123!",
                 "full_name": "User Two",
@@ -438,14 +438,14 @@ class TestAuthenticationFlow:
         # Login as user 1
         login1 = await client.post(
             "/api/v1/auth/login",
-            json={"email": "user1@realastrology.ai", "password": "Password123!"},
+            json={"email": "user1@example.com", "password": "Password123!"},
         )
         token1 = login1.json()["access_token"]
 
         # Login as user 2
         login2 = await client.post(
             "/api/v1/auth/login",
-            json={"email": "user2@realastrology.ai", "password": "Password123!"},
+            json={"email": "user2@example.com", "password": "Password123!"},
         )
         token2 = login2.json()["access_token"]
 
@@ -454,10 +454,10 @@ class TestAuthenticationFlow:
             "/api/v1/auth/me",
             headers={"Authorization": f"Bearer {token1}"},
         )
-        assert me1.json()["email"] == "user1@realastrology.ai"
+        assert me1.json()["email"] == "user1@example.com"
 
         me2 = await client.get(
             "/api/v1/auth/me",
             headers={"Authorization": f"Bearer {token2}"},
         )
-        assert me2.json()["email"] == "user2@realastrology.ai"
+        assert me2.json()["email"] == "user2@example.com"

@@ -5,7 +5,6 @@ This module provides rate limiting functionality for FastAPI endpoints
 using Redis as the storage backend.
 """
 
-from typing import Callable
 
 from fastapi import Request
 from slowapi import Limiter

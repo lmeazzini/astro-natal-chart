@@ -10,23 +10,27 @@ import os
 # This ensures rate limiting is disabled before the limiter is initialized
 os.environ["RATE_LIMIT_ENABLED"] = "false"
 
-import asyncio
-from collections.abc import AsyncGenerator
-from datetime import UTC, datetime
-from uuid import uuid4
+import asyncio  # noqa: E402
+from collections.abc import AsyncGenerator  # noqa: E402
+from datetime import UTC, datetime  # noqa: E402
+from uuid import uuid4  # noqa: E402
 
-import pytest
-from httpx import AsyncClient
-from redis import asyncio as aioredis
-from sqlalchemy import delete
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+import pytest  # noqa: E402
+from httpx import AsyncClient  # noqa: E402
+from redis import asyncio as aioredis  # noqa: E402
+from sqlalchemy import delete  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-from app.core.config import settings
-from app.core.database import Base
-from app.core.security import get_password_hash
-from app.main import app
-from app.models.chart import AuditLog, BirthChart
-from app.models.user import OAuthAccount, User
+from app.core.config import settings  # noqa: E402
+from app.core.database import Base  # noqa: E402
+from app.core.security import get_password_hash  # noqa: E402
+from app.main import app  # noqa: E402
+from app.models.chart import AuditLog, BirthChart  # noqa: E402
+from app.models.user import OAuthAccount, User  # noqa: E402
 
 # Create test database engine
 test_engine = create_async_engine(

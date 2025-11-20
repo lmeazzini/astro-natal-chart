@@ -70,6 +70,12 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str = "noreply@real-astrology.com"
     SMTP_USE_TLS: bool = True
 
+    # Email (OAuth2 - Gmail API)
+    GMAIL_CLIENT_ID: str | None = None
+    GMAIL_CLIENT_SECRET: str | None = None
+    GMAIL_REFRESH_TOKEN: str | None = None
+    GMAIL_TOKEN_URI: str = "https://oauth2.googleapis.com/token"
+
     # Geocoding
     OPENCAGE_API_KEY: str | None = None
     NOMINATIM_USER_AGENT: str = "real-astrology/1.0"

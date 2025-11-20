@@ -24,7 +24,7 @@
 }
 
 % Graphics path
-\graphicspath{ {{- '{' -}} ./media/pdfs/ {{- '}' -}} }
+\graphicspath{ {{ '{' }} ./media/pdfs/ {{ '}' }} }
 
 % Hyperref setup
 \hypersetup{
@@ -47,13 +47,13 @@
 \renewcommand{\footrulewidth}{0.4pt}
 
 % Load custom macros
-\input{report_templates/macros.tex}
+\input{macros.tex}
 
 % Document starts
 \begin{document}
 
 % Include front page
-\input{report_templates/frontpage.tex}
+{% include 'frontpage.tex' %}
 
 % Table of contents
 \tableofcontents
@@ -64,15 +64,15 @@
 % ============================================================
 \chartsection{Informações do Mapa}
 
-\chartinfo{{- '{' -}}%
+\chartinfo{{ '{' }}%
   {{ person_name }}%
-{{- '}' -}}{{- '{' -}}%
+{{ '}' }}{{ '{' }}%
   {{ birth_datetime }}%
-{{- '}' -}}{{- '{' -}}%
+{{ '}' }}{{ '{' }}%
   {{ location }}%
-{{- '}' -}}{{- '{' -}}%
+{{ '}' }}{{ '{' }}%
   {{ coordinates }}%
-{{- '}' -}}
+{{ '}' }}
 
 \vspace{0.5cm}
 
@@ -81,7 +81,7 @@
   \item \textbf{Tipo de Zodíaco:} {{ zodiac_type }}
   \item \textbf{Ascendente:} {{ ascendant }}
   \item \textbf{Meio do Céu (MC):} {{ midheaven }}
-</itemize}
+\end{itemize}
 
 \newpage
 
@@ -123,11 +123,11 @@
 
 {% for planet in planets %}
 {% if planet.interpretation %}
-\chartsubsection{\planetname{ {{- planet.name -}} }{ {{- planet.symbol -}} } em {{ planet.sign }} - Casa {{ planet.house }}}
+\chartsubsection{\planetname{ {{ planet.name }} }{ {{ planet.symbol }} } em {{ planet.sign }} - Casa {{ planet.house }}}
 
-\interpretation{{- '{' -}}%
+\interpretation{{ '{' }}%
 {{ planet.interpretation }}
-{{- '}' -}}
+{{ '}' }}
 {% endif %}
 {% endfor %}
 
@@ -171,11 +171,11 @@ Casa {{ house.number }} & {{ house.sign }} & {{ house.degree }}° \\
 
 {% for house in houses %}
 {% if house.interpretation %}
-\chartsubsection{\housename{ {{- house.number -}} } - {{ house.sign }}}
+\chartsubsection{\housename{ {{ house.number }} } - {{ house.sign }}}
 
-\interpretation{{- '{' -}}%
+\interpretation{{ '{' }}%
 {{ house.interpretation }}
-{{- '}' -}}
+{{ '}' }}
 {% endif %}
 {% endfor %}
 
@@ -219,11 +219,11 @@ Casa {{ house.number }} & {{ house.sign }} & {{ house.degree }}° \\
 
 {% for aspect in aspects %}
 {% if aspect.interpretation %}
-\chartsubsection{\aspectname{ {{- aspect.planet1 -}} }{ {{- aspect.aspect -}} }{ {{- aspect.planet2 -}} }}
+\chartsubsection{\aspectname{ {{ aspect.planet1 }} }{ {{ aspect.aspect }} }{ {{ aspect.planet2 }} }}
 
-\interpretation{{- '{' -}}%
+\interpretation{{ '{' }}%
 {{ aspect.interpretation }}
-{{- '}' -}}
+{{ '}' }}
 {% endif %}
 {% endfor %}
 

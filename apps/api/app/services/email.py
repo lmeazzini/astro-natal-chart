@@ -2,10 +2,15 @@
 Email service for sending transactional emails.
 """
 
+import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import aiosmtplib
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build  # type: ignore[import-untyped]
+from googleapiclient.errors import HttpError  # type: ignore[import-untyped]
 from loguru import logger
 
 from app.core.config import settings
@@ -16,6 +21,14 @@ class EmailService:
 
     def __init__(self) -> None:
         """Inicializa o serviço de email."""
+        # Check if OAuth2 is configured
+        self.oauth_enabled = bool(
+            settings.GMAIL_CLIENT_ID
+            and settings.GMAIL_CLIENT_SECRET
+            and settings.GMAIL_REFRESH_TOKEN
+        )
+
+        # Check if SMTP is configured (fallback)
         self.smtp_enabled = bool(
             settings.SMTP_HOST
             and settings.SMTP_PORT
@@ -23,10 +36,26 @@ class EmailService:
             and settings.SMTP_PASSWORD
         )
 
-        if not self.smtp_enabled:
+        if self.oauth_enabled:
+            logger.info("EmailService: Using OAuth2 (Gmail API)")
+            self._init_oauth()
+        elif self.smtp_enabled:
+            logger.info("EmailService: Using SMTP")
+        else:
             logger.warning(
-                "SMTP não configurado. Emails serão apenas logados (modo desenvolvimento)."
+                "Email não configurado. Emails serão apenas logados (modo desenvolvimento)."
             )
+
+    def _init_oauth(self) -> None:
+        """Initialize OAuth2 credentials."""
+        self.credentials = Credentials(
+            token=None,
+            refresh_token=settings.GMAIL_REFRESH_TOKEN,
+            token_uri=settings.GMAIL_TOKEN_URI,
+            client_id=settings.GMAIL_CLIENT_ID,
+            client_secret=settings.GMAIL_CLIENT_SECRET,
+            scopes=["https://www.googleapis.com/auth/gmail.send"],
+        )
 
     async def send_email(
         self,
@@ -36,7 +65,7 @@ class EmailService:
         text_body: str | None = None,
     ) -> bool:
         """
-        Envia email genérico.
+        Envia email usando o método configurado (OAuth2 ou SMTP).
 
         Args:
             to_email: Email do destinatário
@@ -47,8 +76,8 @@ class EmailService:
         Returns:
             True se enviado com sucesso, False caso contrário
         """
-        if not self.smtp_enabled:
-            # Modo desenvolvimento: apenas log
+        # Dev mode: just log
+        if not self.oauth_enabled and not self.smtp_enabled:
             logger.info(
                 f"[DEV MODE] Email para {to_email}\n"
                 f"Assunto: {subject}\n"
@@ -56,6 +85,89 @@ class EmailService:
             )
             return True
 
+        # Use OAuth2 if available
+        if self.oauth_enabled:
+            return await self.send_email_oauth(to_email, subject, html_body, text_body)
+
+        # Fallback to SMTP
+        return await self.send_email_smtp(to_email, subject, html_body, text_body)
+
+    async def send_email_oauth(
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        text_body: str | None = None,
+    ) -> bool:
+        """
+        Envia email usando OAuth2 (Gmail API).
+
+        Args:
+            to_email: Email do destinatário
+            subject: Assunto do email
+            html_body: Corpo do email em HTML
+            text_body: Corpo do email em texto plano (opcional)
+
+        Returns:
+            True se enviado com sucesso, False caso contrário
+        """
+        try:
+            # Refresh token if needed (synchronous, but fast)
+            if not self.credentials.valid:
+                self.credentials.refresh(Request())
+
+            # Build Gmail service
+            service = build('gmail', 'v1', credentials=self.credentials)
+
+            # Create message
+            message = MIMEMultipart("alternative")
+            message["From"] = settings.SMTP_FROM_EMAIL
+            message["To"] = to_email
+            message["Subject"] = subject
+
+            # Add text and HTML parts
+            if text_body:
+                message.attach(MIMEText(text_body, "plain"))
+            message.attach(MIMEText(html_body, "html"))
+
+            # Encode message
+            raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+            # Send via Gmail API
+            service.users().messages().send(
+                userId='me',
+                body={'raw': raw}
+            ).execute()
+
+            logger.info(f"Email enviado com sucesso via OAuth2 para {to_email}")
+            return True
+
+        except HttpError as e:
+            logger.error(f"Gmail API error ao enviar email para {to_email}: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Erro ao enviar email via OAuth2 para {to_email}: {e}")
+            return False
+
+    async def send_email_smtp(
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        text_body: str | None = None,
+    ) -> bool:
+        """
+        Envia email usando SMTP (método legado).
+
+        Args:
+            to_email: Email do destinatário
+            subject: Assunto do email
+            html_body: Corpo do email em HTML
+            text_body: Corpo do email em texto plano (opcional)
+
+        Returns:
+            True se enviado com sucesso, False caso contrário
+        """
         try:
             # Criar mensagem
             message = MIMEMultipart("alternative")
@@ -82,11 +194,11 @@ class EmailService:
                 use_tls=settings.SMTP_USE_TLS,
             )
 
-            logger.info(f"Email enviado com sucesso para {to_email}")
+            logger.info(f"Email enviado com sucesso via SMTP para {to_email}")
             return True
 
         except Exception as e:
-            logger.error(f"Erro ao enviar email para {to_email}: {e}")
+            logger.error(f"Erro ao enviar email via SMTP para {to_email}: {e}")
             return False
 
     async def send_password_reset_email(

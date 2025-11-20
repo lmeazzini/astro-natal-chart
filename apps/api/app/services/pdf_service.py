@@ -26,17 +26,18 @@ LATEX_SPECIAL_CHARS = {
 }
 
 # Planet symbols mapping
+# Note: Using text instead of Unicode symbols for LaTeX compatibility
 PLANET_SYMBOLS = {
-    'Sun': '☉',
-    'Moon': '☽',
-    'Mercury': '☿',
-    'Venus': '♀',
-    'Mars': '♂',
-    'Jupiter': '♃',
-    'Saturn': '♄',
-    'Uranus': '♅',
-    'Neptune': '♆',
-    'Pluto': '♇',
+    'Sun': '',
+    'Moon': '',
+    'Mercury': '',
+    'Venus': '',
+    'Mars': '',
+    'Jupiter': '',
+    'Saturn': '',
+    'Uranus': '',
+    'Neptune': '',
+    'Pluto': '',
 }
 
 # Sign symbols mapping

@@ -2,8 +2,9 @@
 Service for generating AI-powered astrological interpretations using OpenAI.
 """
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 from uuid import UUID
 
 import yaml

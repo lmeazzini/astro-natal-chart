@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as AstroChartLib from '@astrodraw/astrochart';
+import type { Chart as AstroChart } from '@astrodraw/astrochart';
 import {
   convertToAstroChartFormat,
   extractPointsOfInterest,
@@ -24,12 +25,15 @@ export function ChartWheelAstro({
   height = 600,
 }: ChartWheelAstroProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartInstanceRef = useRef<any>(null);
+  const chartInstanceRef = useRef<AstroChart | null>(null);
   const isRenderingRef = useRef<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!chartContainerRef.current || !chartData) {
+    // Capture ref value for cleanup function
+    const container = chartContainerRef.current;
+
+    if (!container || !chartData) {
       console.warn('[ChartWheelAstro] Container or chartData not available');
       return;
     }
@@ -45,13 +49,13 @@ export function ChartWheelAstro({
     console.log('[ChartWheelAstro] chartData:', chartData);
 
     // Clear any existing content
-    if (chartContainerRef.current) {
-      chartContainerRef.current.innerHTML = '';
+    if (container) {
+      container.innerHTML = '';
     }
 
     // Generate unique ID for the chart container
     const chartId = `astrochart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    chartContainerRef.current.id = chartId;
+    container.id = chartId;
 
     try {
       // Convert our data format to AstroChart format
@@ -62,9 +66,10 @@ export function ChartWheelAstro({
       console.log('[ChartWheelAstro] Points of interest:', pointsOfInterest);
 
       // Access the Chart class correctly based on the library export
-      const AstroChart = (AstroChartLib as any).Chart || (AstroChartLib as any).default?.Chart;
+      type AstroChartModule = typeof AstroChartLib & { Chart?: typeof AstroChart; default?: { Chart?: typeof AstroChart } };
+      const AstroChartClass = (AstroChartLib as AstroChartModule).Chart || (AstroChartLib as AstroChartModule).default?.Chart;
 
-      if (!AstroChart) {
+      if (!AstroChartClass) {
         throw new Error('AstroChart library not loaded correctly');
       }
 
@@ -91,7 +96,7 @@ export function ChartWheelAstro({
         },
       };
 
-      const chart = new AstroChart(chartId, width, height, settings);
+      const chart = new AstroChartClass(chartId, width, height, settings);
 
       console.log('[ChartWheelAstro] Rendering radix chart...');
 
@@ -133,9 +138,9 @@ export function ChartWheelAstro({
         }
         chartInstanceRef.current = null;
       }
-      // Clear container content
-      if (chartContainerRef.current) {
-        chartContainerRef.current.innerHTML = '';
+      // Clear container content using captured ref value
+      if (container) {
+        container.innerHTML = '';
       }
     };
   }, [chartData, width, height]);

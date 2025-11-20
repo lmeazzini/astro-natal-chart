@@ -21,6 +21,12 @@ declare module '@astrodraw/astrochart' {
     [key: string]: [number] | undefined;
   }
 
+  export interface AspectConfig {
+    degree: number;
+    orbit: number;
+    color: string;
+  }
+
   export interface ChartSettings {
     COLORS_SIGNS?: string[];
     COLORS_ASPECTS?: Record<string, string>;
@@ -28,7 +34,9 @@ declare module '@astrodraw/astrochart' {
     COLOR_AXIS_FONT?: string;
     STROKE_ONLY?: boolean;
     CUSPS_STROKE?: number;
-    [key: string]: any;
+    SHIFT_IN_DEGREES?: number;
+    ASPECTS?: Record<string, AspectConfig>;
+    [key: string]: string | number | boolean | string[] | Record<string, string | AspectConfig> | undefined;
   }
 
   export class Chart {

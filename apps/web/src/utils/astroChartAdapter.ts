@@ -16,8 +16,12 @@ export interface PlanetData {
 export interface HouseData {
   number?: number;
   house?: number;
-  cusp: number;
+  cusp?: number;
+  longitude?: number;
   sign?: string;
+  degree?: number;
+  minute?: number;
+  second?: number;
 }
 
 export interface ChartData {
@@ -91,7 +95,7 @@ export function convertToAstroChartFormat(data: ChartData): AstroChartData {
     return houseA - houseB;
   });
 
-  const cusps = sortedHouses.map((house) => house.cusp);
+  const cusps = sortedHouses.map((house) => house.cusp ?? house.longitude ?? 0);
 
   return {
     planets,
@@ -129,10 +133,10 @@ export function extractPointsOfInterest(data: ChartData): AstroChartPointsOfInte
       return houseA - houseB;
     });
 
-    poi.As = [sortedHouses[0].cusp]; // House 1 = Ascendant
-    poi.Ic = [sortedHouses[3].cusp]; // House 4 = IC
-    poi.Ds = [sortedHouses[6].cusp]; // House 7 = Descendant
-    poi.Mc = [sortedHouses[9].cusp]; // House 10 = MC
+    poi.As = [sortedHouses[0].cusp ?? sortedHouses[0].longitude ?? 0]; // House 1 = Ascendant
+    poi.Ic = [sortedHouses[3].cusp ?? sortedHouses[3].longitude ?? 0]; // House 4 = IC
+    poi.Ds = [sortedHouses[6].cusp ?? sortedHouses[6].longitude ?? 0]; // House 7 = Descendant
+    poi.Mc = [sortedHouses[9].cusp ?? sortedHouses[9].longitude ?? 0]; // House 10 = MC
   }
 
   return poi;

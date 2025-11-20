@@ -5,8 +5,7 @@ This service provides secure, persistent storage for generated PDF files
 using Amazon S3, with support for presigned URLs for temporary access.
 """
 
-import os
-from datetime import datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import BinaryIO
 
@@ -32,7 +31,7 @@ class S3Service:
         enabled: Whether S3 is configured and enabled
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize S3 client with configuration from settings."""
         self.bucket_name = settings.S3_BUCKET_NAME
         self.prefix = settings.S3_PREFIX
@@ -126,7 +125,7 @@ class S3Service:
                     "Metadata": {
                         "user_id": str(user_id),
                         "chart_id": str(chart_id),
-                        "uploaded_at": datetime.utcnow().isoformat(),
+                        "uploaded_at": datetime.now(UTC).isoformat(),
                     },
                 },
             )
@@ -174,7 +173,7 @@ class S3Service:
                 Metadata={
                     "user_id": str(user_id),
                     "chart_id": str(chart_id),
-                    "uploaded_at": datetime.utcnow().isoformat(),
+                    "uploaded_at": datetime.now(UTC).isoformat(),
                 },
             )
 

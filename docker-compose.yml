@@ -45,6 +45,7 @@ services:
     command: sh -c ". /app/.venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-exclude '.venv/*'"
     volumes:
       - ./apps/api:/app
+      - ./apps/api/media:/app/media  # PDF storage
       - /app/__pycache__  # Prevent pycache from being mounted
       - /app/.venv  # Prevent venv from being watched
     ports:
@@ -74,6 +75,7 @@ services:
     command: sh -c ". /app/.venv/bin/activate && celery -A app.core.celery_app worker --loglevel=info"
     volumes:
       - ./apps/api:/app
+      - ./apps/api/media:/app/media  # PDF storage
       - /app/__pycache__  # Prevent pycache from being mounted
       - /app/.venv  # Prevent venv from being watched
     env_file:

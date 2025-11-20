@@ -1,0 +1,242 @@
+\documentclass[12pt,a4paper]{article}
+
+% Required packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[portuguese]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% Page geometry
+\geometry{
+  a4paper,
+  left=2.5cm,
+  right=2.5cm,
+  top=3cm,
+  bottom=3cm
+}
+
+% Graphics path
+\graphicspath{{ "{{" }}./media/pdfs/{{ "}}" }}
+
+% Hyperref setup
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  pdftitle={Mapa Natal - {{ person_name }}},
+  pdfauthor={Real Astrology},
+  pdfsubject={Natal Chart Report}
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Mapa Natal - {{ person_name }}}
+\fancyhead[R]{\small {{ birth_date }}}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\fancyfoot[R]{\small Real Astrology}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Load custom macros
+\input{report_templates/macros.tex}
+
+% Document starts
+\begin{document}
+
+% Include front page
+\input{report_templates/frontpage.tex}
+
+% Table of contents
+\tableofcontents
+\newpage
+
+% ============================================================
+% CHART INFORMATION SECTION
+% ============================================================
+\chartsection{Informações do Mapa}
+
+\chartinfo{%
+  {{ person_name }}%
+}{%
+  {{ birth_datetime }}%
+}{%
+  {{ location }}%
+}{%
+  {{ coordinates }}%
+}
+
+\vspace{0.5cm}
+
+\begin{itemize}
+  \item \textbf{Sistema de Casas:} {{ house_system }}
+  \item \textbf{Tipo de Zodíaco:} {{ zodiac_type }}
+  \item \textbf{Ascendente:} {{ ascendant }}
+  \item \textbf{Meio do Céu (MC):} {{ midheaven }}
+</itemize}
+
+\newpage
+
+% ============================================================
+% PLANETS SECTION
+% ============================================================
+\chartsection{Planetas}
+
+\chartsubsection{Posições Planetárias}
+
+\begin{longtable}{llllll}
+\toprule
+\textbf{Planeta} & \textbf{Signo} & \textbf{Grau} & \textbf{Casa} & \textbf{Dignidade} & \textbf{Retrógrado} \\
+\midrule
+\endfirsthead
+
+\multicolumn{6}{c}%
+{\tablename\ \thetable\ -- \textit{Continuação}} \\
+\toprule
+\textbf{Planeta} & \textbf{Signo} & \textbf{Grau} & \textbf{Casa} & \textbf{Dignidade} & \textbf{Retrógrado} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{6}{r}{\textit{Continua na próxima página}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+{% for planet in planets %}
+{{ planet.name }} & {{ planet.sign }} & {{ planet.degree }}° & Casa {{ planet.house }} & {{ planet.dignity }} & {{ planet.retrograde }} \\
+{% endfor %}
+\end{longtable}
+
+\newpage
+
+\chartsubsection{Interpretações Planetárias}
+
+{% for planet in planets %}
+{% if planet.interpretation %}
+\chartsubsection{\planetname{{ "{" }}{{ planet.name }}{{ "}{" }}{{ planet.symbol }}{{ "}" }} em {{ planet.sign }} - Casa {{ planet.house }}}
+
+\interpretation{%
+{{ planet.interpretation }}
+}
+{% endif %}
+{% endfor %}
+
+\newpage
+
+% ============================================================
+% HOUSES SECTION
+% ============================================================
+\chartsection{Casas}
+
+\chartsubsection{Cúspides das Casas}
+
+\begin{longtable}{lll}
+\toprule
+\textbf{Casa} & \textbf{Signo} & \textbf{Grau} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{c}%
+{\tablename\ \thetable\ -- \textit{Continuação}} \\
+\toprule
+\textbf{Casa} & \textbf{Signo} & \textbf{Grau} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{3}{r}{\textit{Continua na próxima página}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+{% for house in houses %}
+Casa {{ house.number }} & {{ house.sign }} & {{ house.degree }}° \\
+{% endfor %}
+\end{longtable}
+
+\newpage
+
+\chartsubsection{Interpretações das Casas}
+
+{% for house in houses %}
+{% if house.interpretation %}
+\chartsubsection{\housename{{ "{" }}{{ house.number }}{{ "}" }} - {{ house.sign }}}
+
+\interpretation{%
+{{ house.interpretation }}
+}
+{% endif %}
+{% endfor %}
+
+\newpage
+
+% ============================================================
+% ASPECTS SECTION
+% ============================================================
+\chartsection{Aspectos}
+
+\chartsubsection{Aspectos Principais}
+
+\begin{longtable}{llll}
+\toprule
+\textbf{Planeta 1} & \textbf{Aspecto} & \textbf{Planeta 2} & \textbf{Orbe} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{c}%
+{\tablename\ \thetable\ -- \textit{Continuação}} \\
+\toprule
+\textbf{Planeta 1} & \textbf{Aspecto} & \textbf{Planeta 2} & \textbf{Orbe} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{4}{r}{\textit{Continua na próxima página}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+{% for aspect in aspects %}
+{{ aspect.planet1 }} & {{ aspect.aspect }} & {{ aspect.planet2 }} & {{ aspect.orb }}° \\
+{% endfor %}
+\end{longtable}
+
+\newpage
+
+\chartsubsection{Interpretações dos Aspectos}
+
+{% for aspect in aspects %}
+{% if aspect.interpretation %}
+\chartsubsection{\aspectname{{ "{" }}{{ aspect.planet1 }}{{ "}{" }}{{ aspect.aspect }}{{ "}{" }}{{ aspect.planet2 }}{{ "}" }}}
+
+\interpretation{%
+{{ aspect.interpretation }}
+}
+{% endif %}
+{% endfor %}
+
+% ============================================================
+% FOOTER
+% ============================================================
+\newpage
+\vspace*{\fill}
+\begin{center}
+  \large\textbf{Real Astrology}\\[0.3cm]
+  \normalsize Astrologia Tradicional\\[0.5cm]
+  \small Relatório gerado em {{ generation_date }}
+\end{center}
+\vspace*{\fill}
+
+\end{document}

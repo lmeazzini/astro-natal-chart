@@ -71,6 +71,13 @@ class BirthChart(Base):
     # Calculated chart data (stored as JSONB for flexibility)
     chart_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
+    # PDF export
+    pdf_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    pdf_generated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     # Sharing and visibility
     visibility: Mapped[str] = mapped_column(String(20), default="private", nullable=False)
     share_uuid: Mapped[UUID | None] = mapped_column(

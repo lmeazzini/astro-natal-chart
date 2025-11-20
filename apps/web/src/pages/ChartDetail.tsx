@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
 import { interpretationsService, ChartInterpretations } from '../services/interpretations';
+import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
+import type { PDFStatus } from '../types/pdf';
 import { ChartWheelAstro } from '../components/ChartWheelAstro';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
@@ -20,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { Trash2, ArrowLeft, Sparkles } from 'lucide-react';
+import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2 } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -32,6 +34,10 @@ export function ChartDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [interpretations, setInterpretations] = useState<ChartInterpretations | null>(null);
+
+  // PDF export state
+  const [pdfStatus, setPdfStatus] = useState<PDFStatus>('idle');
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     loadChart();
@@ -117,6 +123,63 @@ export function ChartDetailPage() {
       navigate('/charts');
     } catch (err) {
       alert('Erro ao excluir mapa');
+    }
+  }
+
+  async function handleExportPDF() {
+    if (!id || !chart) return;
+
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setPdfStatus('processing');
+      setPdfError(null);
+
+      // Step 1: Trigger PDF generation
+      await generateChartPDF(id, token);
+
+      // Step 2: Poll for completion
+      const pollInterval = setInterval(async () => {
+        try {
+          const status = await getPDFStatus(id, token);
+
+          if (status.pdf_status === 'completed') {
+            clearInterval(pollInterval);
+            setPdfStatus('completed');
+
+            // Step 3: Auto-download
+            await downloadChartPDF(id, token, chart.person_name);
+
+            // Reset to idle after download
+            setTimeout(() => setPdfStatus('idle'), 2000);
+          } else if (status.pdf_status === 'failed') {
+            clearInterval(pollInterval);
+            setPdfStatus('failed');
+            setPdfError(status.error_message || 'Erro ao gerar PDF');
+          }
+        } catch (err) {
+          clearInterval(pollInterval);
+          setPdfStatus('failed');
+          setPdfError(err instanceof Error ? err.message : 'Erro ao verificar status do PDF');
+        }
+      }, 2000); // Poll every 2 seconds
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (pdfStatus === 'processing') {
+          setPdfStatus('failed');
+          setPdfError('Tempo limite excedido ao gerar PDF');
+        }
+      }, 300000); // 5 minutes
+
+    } catch (err) {
+      setPdfStatus('failed');
+      setPdfError(err instanceof Error ? err.message : 'Erro ao iniciar geração de PDF');
     }
   }
 
@@ -271,6 +334,38 @@ export function ChartDetailPage() {
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
+
+              {/* PDF Export Button */}
+              <Button
+                variant={pdfStatus === 'completed' ? 'default' : 'outline'}
+                size="sm"
+                onClick={handleExportPDF}
+                disabled={pdfStatus === 'processing'}
+                className={pdfStatus === 'failed' ? 'border-destructive text-destructive' : ''}
+              >
+                {pdfStatus === 'processing' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Gerando PDF...
+                  </>
+                ) : pdfStatus === 'completed' ? (
+                  <>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    PDF Pronto!
+                  </>
+                ) : pdfStatus === 'failed' ? (
+                  <>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Tentar Novamente
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Exportar PDF
+                  </>
+                )}
+              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"

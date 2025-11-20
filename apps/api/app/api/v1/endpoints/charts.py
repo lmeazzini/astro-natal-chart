@@ -2,10 +2,12 @@
 Birth chart endpoints for creating and managing natal charts.
 """
 
+from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
@@ -20,6 +22,7 @@ from app.schemas.chart import (
 )
 from app.services import chart_service
 from app.tasks.astro_tasks import generate_birth_chart_task
+from app.tasks.pdf_tasks import generate_chart_pdf_task
 
 router = APIRouter()
 
@@ -305,6 +308,219 @@ async def delete_chart(
             user_id=UUID(str(current_user.id)),
             soft_delete=not hard_delete,
         )
+    except chart_service.ChartNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Birth chart not found",
+        ) from None
+    except chart_service.UnauthorizedAccessError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this birth chart",
+        ) from None
+
+
+# ============================================================
+# PDF EXPORT ENDPOINTS
+# ============================================================
+
+@router.post(
+    "/{chart_id}/generate-pdf",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Generate PDF report",
+    description="Generate a PDF report for the birth chart. Processing happens in background.",
+)
+@limiter.limit(RateLimits.CHART_CREATE)
+async def generate_chart_pdf(
+    request: Request,
+    response: Response,
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, str]:
+    """
+    Generate PDF report for a birth chart (async).
+
+    **Async Flow:**
+    1. Verifies chart exists and user has access
+    2. Dispatches Celery task to generate PDF in background
+    3. Returns HTTP 202 Accepted immediately
+    4. Client polls GET /charts/{id}/pdf-status to track progress
+
+    **Auto-generates interpretations:**
+    - If chart lacks AI interpretations, they will be generated automatically
+    - This ensures complete PDF reports with all sections
+
+    Args:
+        chart_id: Birth chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        Message with task status
+    """
+    try:
+        # Verify chart exists and user has access
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+        )
+
+        # Verify chart has calculated data
+        if not chart.chart_data or chart.status != 'completed':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Chart must be fully calculated before generating PDF. Wait for chart calculations to complete.",
+            )
+
+        # Dispatch Celery task to generate PDF in background
+        task = generate_chart_pdf_task.delay(str(chart_id))
+
+        return {
+            "message": "PDF generation started",
+            "chart_id": str(chart_id),
+            "task_id": task.id,
+        }
+
+    except chart_service.ChartNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Birth chart not found",
+        ) from None
+    except chart_service.UnauthorizedAccessError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this birth chart",
+        ) from None
+
+
+@router.get(
+    "/{chart_id}/pdf-status",
+    summary="Get PDF generation status",
+    description="Check the status of PDF generation for a birth chart.",
+)
+@limiter.limit(RateLimits.CHART_READ)
+async def get_pdf_status(
+    request: Request,
+    response: Response,
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, str | None]:
+    """
+    Get PDF generation status for a birth chart.
+
+    **Polling workflow:**
+    1. After calling POST /charts/{id}/generate-pdf, poll this endpoint
+    2. Check pdf_url field - if not null, PDF is ready
+    3. Once ready, use GET /charts/{id}/download-pdf to download
+
+    Args:
+        chart_id: Birth chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        PDF status information
+    """
+    try:
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+        )
+
+        # Determine status based on pdf_url presence
+        if chart.pdf_url:
+            pdf_status = "completed"
+        elif chart.error_message and "PDF generation failed" in chart.error_message:
+            pdf_status = "failed"
+        else:
+            pdf_status = "processing"
+
+        return {
+            "chart_id": str(chart_id),
+            "pdf_status": pdf_status,
+            "pdf_url": chart.pdf_url,
+            "pdf_generated_at": chart.pdf_generated_at.isoformat() if chart.pdf_generated_at else None,
+            "error_message": chart.error_message if pdf_status == "failed" else None,
+        }
+
+    except chart_service.ChartNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Birth chart not found",
+        ) from None
+    except chart_service.UnauthorizedAccessError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this birth chart",
+        ) from None
+
+
+@router.get(
+    "/{chart_id}/download-pdf",
+    response_class=FileResponse,
+    summary="Download PDF report",
+    description="Download the generated PDF report for a birth chart.",
+)
+@limiter.limit(RateLimits.CHART_READ)
+async def download_chart_pdf(
+    request: Request,
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> FileResponse:
+    """
+    Download PDF report for a birth chart.
+
+    **Prerequisites:**
+    1. Chart must be fully calculated (status='completed')
+    2. PDF must have been generated (call POST /charts/{id}/generate-pdf first)
+    3. PDF generation must be complete (poll /charts/{id}/pdf-status)
+
+    Args:
+        chart_id: Birth chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        PDF file download
+    """
+    try:
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+        )
+
+        # Check if PDF exists
+        if not chart.pdf_url:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="PDF not generated yet. Call POST /charts/{id}/generate-pdf first.",
+            )
+
+        # Construct file path
+        media_dir = Path(__file__).parent.parent.parent.parent / "media"
+        pdf_path = media_dir / "pdfs" / chart.pdf_url.split('/')[-1]
+
+        # Verify file exists on disk
+        if not pdf_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="PDF file not found on server. It may have been deleted or generation failed.",
+            )
+
+        # Return file for download
+        filename = f"natal_chart_{chart.person_name}_{chart_id}.pdf".replace(" ", "_")
+        return FileResponse(
+            path=str(pdf_path),
+            media_type="application/pdf",
+            filename=filename,
+        )
+
     except chart_service.ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

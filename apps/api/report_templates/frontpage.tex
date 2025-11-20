@@ -1,0 +1,55 @@
+% Front page template for Natal Chart Reports
+% Uses Jinja2 variables: {{ person_name }}, {{ birth_date }}, {{ birth_time }}, {{ location }}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  % Title
+  {\Huge\bfseries\color{primary}Mapa Natal\\[0.5cm]}
+
+  \vspace{1cm}
+
+  % Person name
+  {\LARGE\bfseries {{ person_name }}\\[2cm]}
+
+  \vspace{1cm}
+
+  % Chart wheel image (if provided)
+  {% if chart_image_path %}
+  \includegraphics[width=0.6\textwidth]{{ "{" }}{{ chart_image_path }}{{ "}" }}\\[2cm]
+  {% endif %}
+
+  \vspace{1cm}
+
+  % Birth information box
+  \begin{tcolorbox}[
+    colback=primary!10,
+    colframe=primary,
+    arc=3mm,
+    boxrule=1.5pt,
+    width=0.8\textwidth,
+    center
+  ]
+    \begin{center}
+      \large
+      \textbf{Data:} {{ birth_date }}\\[0.3cm]
+      \textbf{Hora:} {{ birth_time }}\\[0.3cm]
+      \textbf{Local:} {{ location }}\\[0.3cm]
+      \textbf{Coordenadas:} {{ coordinates }}
+    \end{center}
+  \end{tcolorbox}
+
+  \vfill
+
+  % Footer with generation date
+  {\small Relatório gerado em {{ generation_date }}}\\[0.2cm]
+  {\small\color{textlight}Real Astrology - Astrologia Tradicional}
+
+\end{titlepage}
+
+% Add blank page for better printing
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage

@@ -54,6 +54,7 @@ dependencies = [
 
     # PDF Generation
     "Jinja2==3.1.2",
+    "cairosvg==2.7.1",
 
     # Utilities
     "python-dateutil==2.8.2",
@@ -122,6 +123,7 @@ module = [
     "celery",
     "authlib",
     "aiosmtplib",
+    "cairosvg",
 ]
 ignore_missing_imports = true
 

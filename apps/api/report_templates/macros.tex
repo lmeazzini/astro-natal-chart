@@ -1,0 +1,109 @@
+% LaTeX Macros for Natal Chart Reports
+% Defines custom commands and formatting styles
+
+% Color definitions (extracted from TailwindCSS theme)
+\definecolor{primary}{RGB}{59, 130, 246}      % blue-500
+\definecolor{secondary}{RGB}{139, 92, 246}    % violet-500
+\definecolor{accent}{RGB}{236, 72, 153}       % pink-500
+\definecolor{textdark}{RGB}{31, 41, 55}       % gray-800
+\definecolor{textlight}{RGB}{107, 114, 128}   % gray-500
+\definecolor{border}{RGB}{229, 231, 235}      % gray-200
+
+% Section formatting
+\newcommand{\chartsection}[1]{%
+  \section*{\color{primary}\Large #1}%
+  \addcontentsline{toc}{section}{#1}%
+  \vspace{0.3cm}%
+}
+
+% Subsection formatting
+\newcommand{\chartsubsection}[1]{%
+  \subsection*{\color{secondary}\large #1}%
+  \vspace{0.2cm}%
+}
+
+% Planet name with symbol
+\newcommand{\planetname}[2]{%
+  \textbf{\color{primary}#1} \textit{(#2)}%
+}
+
+% House number formatting
+\newcommand{\housename}[1]{%
+  \textbf{\color{secondary}Casa #1}%
+}
+
+% Aspect formatting
+\newcommand{\aspectname}[3]{%
+  \textbf{\color{accent}#1 #2 #3}%
+}
+
+% Dignity formatting with colored badges
+\newcommand{\dignity}[2]{%
+  \textcolor{#1}{\textbf{#2}}%
+}
+
+% Interpretation text box
+\newcommand{\interpretation}[1]{%
+  \begin{tcolorbox}[
+    colback=gray!5,
+    colframe=primary,
+    arc=2mm,
+    boxrule=0.5pt,
+    left=5pt,
+    right=5pt,
+    top=5pt,
+    bottom=5pt
+  ]
+  #1
+  \end{tcolorbox}
+  \vspace{0.3cm}
+}
+
+% Chart info box (for birth data)
+\newcommand{\chartinfo}[4]{%
+  \begin{tcolorbox}[
+    colback=primary!10,
+    colframe=primary,
+    arc=3mm,
+    boxrule=1pt,
+    title={\Large\textbf{Dados do Mapa}},
+    fonttitle=\bfseries\color{white},
+    coltitle=black,
+    colbacktitle=primary
+  ]
+  \textbf{Nome:} #1 \\
+  \textbf{Data e Hora:} #2 \\
+  \textbf{Local:} #3 \\
+  \textbf{Coordenadas:} #4
+  \end{tcolorbox}
+}
+
+% Zodiac sign symbols (using UTF-8)
+\newcommand{\aries}{♈}
+\newcommand{\taurus}{♉}
+\newcommand{\gemini}{♊}
+\newcommand{\cancer}{♋}
+\newcommand{\leo}{♌}
+\newcommand{\virgo}{♍}
+\newcommand{\libra}{♎}
+\newcommand{\scorpio}{♏}
+\newcommand{\sagittarius}{♐}
+\newcommand{\capricorn}{♑}
+\newcommand{\aquarius}{♒}
+\newcommand{\pisces}{♓}
+
+% Planet symbols (using UTF-8)
+\newcommand{\sun}{☉}
+\newcommand{\moon}{☽}
+\newcommand{\mercury}{☿}
+\newcommand{\venus}{♀}
+\newcommand{\mars}{♂}
+\newcommand{\jupiter}{♃}
+\newcommand{\saturn}{♄}
+
+% Aspect symbols
+\newcommand{\conjunction}{☌}
+\newcommand{\opposition}{☍}
+\newcommand{\trine}{△}
+\newcommand{\square}{□}
+\newcommand{\sextile}{⚹}

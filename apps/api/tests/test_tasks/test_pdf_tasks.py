@@ -3,7 +3,6 @@ Tests for PDF generation Celery tasks.
 """
 
 from datetime import UTC, datetime
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -180,7 +179,7 @@ class TestGeneratePDFAsync:
         with (
             patch(
                 "app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine
-            ) as mock_create_engine,
+            ),
             patch(
                 "app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local
             ),

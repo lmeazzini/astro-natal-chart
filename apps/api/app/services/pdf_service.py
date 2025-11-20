@@ -2,8 +2,6 @@
 Service for generating PDF reports from natal chart data.
 """
 
-import re
-from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import Any

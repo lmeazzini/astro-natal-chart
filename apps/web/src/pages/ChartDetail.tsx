@@ -37,7 +37,7 @@ export function ChartDetailPage() {
 
   // PDF export state
   const [pdfStatus, setPdfStatus] = useState<PDFStatus>('idle');
-  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [_pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     loadChart();

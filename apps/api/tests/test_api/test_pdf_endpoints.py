@@ -2,14 +2,13 @@
 Tests for PDF generation endpoints.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.chart import BirthChart
 from app.models.user import User
 
 
@@ -232,7 +231,6 @@ class TestDownloadPDFEndpoint:
     ):
         """Test successful PDF download."""
         from datetime import UTC, datetime
-        from pathlib import Path
 
         chart = await test_chart_factory(user=test_user)
 

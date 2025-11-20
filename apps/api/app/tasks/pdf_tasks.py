@@ -4,6 +4,7 @@ Celery tasks for PDF generation.
 
 import subprocess
 import tempfile
+from datetime import UTC
 from pathlib import Path
 from uuid import UUID
 
@@ -67,7 +68,7 @@ def generate_chart_pdf_task(self: celery_app.Task, chart_id_str: str) -> dict[st
     except Exception as exc:
         logger.error(f"PDF generation failed for chart {chart_id}: {exc}")
         # Retry task with exponential backoff
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
@@ -81,7 +82,8 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
         Dictionary with pdf_url and status
     """
     # Create fresh async engine to avoid event loop issues in Celery workers
-    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
     from app.core.config import settings
 
     engine = create_async_engine(
@@ -208,11 +210,11 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
                 logger.info(f"PDF generated successfully: {pdf_path}")
 
             # 7. Update database with PDF URL and timestamp
-            from datetime import datetime, timezone
+            from datetime import datetime
 
             pdf_url = f"/media/pdfs/{pdf_path.name}"
             chart.pdf_url = pdf_url
-            chart.pdf_generated_at = datetime.now(timezone.utc)
+            chart.pdf_generated_at = datetime.now(UTC)
             await db.commit()
 
             logger.info(f"PDF generation complete for chart {chart_id}: {pdf_url}")

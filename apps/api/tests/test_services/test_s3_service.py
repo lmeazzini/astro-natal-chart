@@ -2,8 +2,7 @@
 Tests for S3Service - AWS S3 integration for PDF storage.
 """
 
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest

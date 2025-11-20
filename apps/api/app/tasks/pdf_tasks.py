@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.celery_app import celery_app
-from app.core.database import async_session_maker
+from app.core.database import AsyncSessionLocal
 from app.models.chart import BirthChart
 from app.services.interpretation_service import InterpretationService
 from app.services.pdf_service import PDFService
@@ -78,7 +78,7 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
     """
     pdf_service = PDFService()
 
-    async with async_session_maker() as db:
+    async with AsyncSessionLocal() as db:
         # 1. Fetch chart from database
         logger.info(f"Fetching chart {chart_id} from database")
         stmt = select(BirthChart).where(BirthChart.id == chart_id)
@@ -208,7 +208,7 @@ async def _mark_pdf_failed(chart_id: UUID, error_message: str) -> None:
         chart_id: Chart UUID
         error_message: Error message
     """
-    async with async_session_maker() as db:
+    async with AsyncSessionLocal() as db:
         stmt = select(BirthChart).where(BirthChart.id == chart_id)
         result = await db.execute(stmt)
         chart = result.scalar_one_or_none()

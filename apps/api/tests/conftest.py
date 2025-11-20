@@ -137,11 +137,17 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     app.dependency_overrides[get_db] = override_get_db
 
     # Configure limiter to use test Redis (DB 1)
-    # Note: We don't restore this since all tests should use test Redis
-    if not hasattr(limiter, '_test_storage_configured'):
-        limiter._storage_uri = TEST_REDIS_URL
-        limiter._storage = storage_from_string(TEST_REDIS_URL)
-        limiter._test_storage_configured = True
+    # IMPORTANT: Reset storage for EACH test to ensure clean state
+    limiter._storage_uri = TEST_REDIS_URL
+    limiter._storage = storage_from_string(TEST_REDIS_URL)
+
+    # Flush Redis again AFTER creating storage to ensure clean state
+    # This is critical because the storage might have cached old limits
+    redis = await aioredis.from_url(TEST_REDIS_URL, decode_responses=True)
+    try:
+        await redis.flushdb()
+    finally:
+        await redis.close()
 
     try:
         async with AsyncClient(app=app, base_url="http://test") as ac:

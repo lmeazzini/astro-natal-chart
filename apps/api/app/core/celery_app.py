@@ -40,4 +40,9 @@ celery_app.conf.beat_schedule = {
         "task": "privacy.cleanup_deleted_users",
         "schedule": crontab(hour=3, minute=0),  # 3h AM diariamente
     },
+    # Limpar tokens de reset de senha expirados (24h+)
+    "cleanup-expired-password-reset-tokens-daily": {
+        "task": "privacy.cleanup_expired_password_reset_tokens",
+        "schedule": crontab(hour=4, minute=0),  # 4h AM diariamente
+    },
 }

@@ -5,6 +5,7 @@ Service for password reset functionality.
 import hashlib
 import secrets
 from datetime import datetime, timedelta
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,7 @@ from app.core.config import settings
 from app.core.security import get_password_hash
 from app.models.password_reset import PasswordResetToken
 from app.models.user import User
+from app.repositories.audit_repository import AuditRepository
 from app.services.email import EmailService
 
 
@@ -74,6 +76,16 @@ class PasswordResetService:
 
         db.add(reset_token)
         await db.commit()
+
+        # Audit log: password reset request
+        audit_repo = AuditRepository(db)
+        await audit_repo.create_log(
+            user_id=UUID(str(user.id)),
+            action="password_reset_request",
+            resource_type="user",
+            resource_id=UUID(str(user.id)),
+            extra_data={"email": user.email},
+        )
 
         # Construir URL de reset
         reset_url = f"{settings.FRONTEND_URL}/reset-password?token={raw_token}"
@@ -157,11 +169,22 @@ class PasswordResetService:
 
         # Atualizar senha
         user.password_hash = get_password_hash(new_password)
+        user.password_changed_at = datetime.utcnow()  # Invalidate existing JWT tokens
 
         # Marcar token como usado
         reset_token.used = True
 
         await db.commit()
+
+        # Audit log: password changed
+        audit_repo = AuditRepository(db)
+        await audit_repo.create_log(
+            user_id=UUID(str(user.id)),
+            action="password_changed",
+            resource_type="user",
+            resource_id=UUID(str(user.id)),
+            extra_data={"email": user.email, "method": "password_reset"},
+        )
 
         # Enviar email de confirmação
         await self.email_service.send_password_changed_email(

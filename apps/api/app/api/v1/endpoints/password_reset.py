@@ -2,12 +2,11 @@
 Password reset endpoints.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.rate_limit import RateLimits, limiter
 from app.schemas.auth import (
     PasswordResetConfirm,
     PasswordResetRequest,
@@ -16,7 +15,6 @@ from app.schemas.auth import (
 from app.services.password_reset import PasswordResetService
 
 router = APIRouter(prefix="/password-reset", tags=["Password Reset"])
-limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post(
@@ -30,10 +28,13 @@ limiter = Limiter(key_func=get_remote_address)
     **Nota de segurança**: Sempre retorna sucesso mesmo se o email não existir
     para não revelar informações sobre usuários cadastrados.
 
-    **Rate limit**: 3 requisições por minuto por IP.
+    **Rate limit**: 3 requisições por hora por IP.
     """,
 )
+@limiter.limit(RateLimits.PASSWORD_RESET_REQUEST)
 async def request_password_reset(
+    http_request: Request,
+    http_response: Response,
     request: PasswordResetRequest,
     db: AsyncSession = Depends(get_db),
 ) -> PasswordResetResponse:
@@ -61,10 +62,13 @@ async def request_password_reset(
 
     Valida o token, atualiza a senha e invalida o token.
 
-    **Rate limit**: 5 requisições por minuto por IP.
+    **Rate limit**: 5 requisições por hora por IP.
     """,
 )
+@limiter.limit(RateLimits.PASSWORD_RESET_CONFIRM)
 async def confirm_password_reset(
+    http_request: Request,
+    http_response: Response,
     request: PasswordResetConfirm,
     db: AsyncSession = Depends(get_db),
 ) -> PasswordResetResponse:

@@ -117,3 +117,35 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
 
         logger.info(f"Hard delete completed: {stats}")
         return stats
+
+
+@celery_app.task(name="privacy.cleanup_expired_password_reset_tokens")
+def cleanup_expired_password_reset_tokens() -> dict[str, int]:
+    """
+    Remove tokens de reset de senha expirados (mais de 24h).
+
+    **Security**: Tokens antigos não devem permanecer no banco indefinidamente.
+
+    **Processo**:
+    1. Encontra tokens criados há mais de 24 horas
+    2. Remove tokens expirados do banco
+
+    **Agendamento**: Executar diariamente às 4h.
+
+    Returns:
+        Dict com número de tokens removidos
+    """
+    return asyncio.run(_cleanup_expired_password_reset_tokens_async())
+
+
+async def _cleanup_expired_password_reset_tokens_async() -> dict[str, int]:
+    """Versão async da tarefa de limpeza de tokens."""
+    async with AsyncSessionLocal() as db:
+        from app.services.password_reset import PasswordResetService
+
+        service = PasswordResetService()
+        tokens_deleted = await service.cleanup_expired_tokens(db)
+
+        logger.info(f"Cleaned up {tokens_deleted} expired password reset tokens")
+
+        return {"tokens_deleted": tokens_deleted}

@@ -2,6 +2,8 @@
 Authentication schemas for login, tokens, OAuth2.
 """
 
+from typing import Any
+
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
@@ -68,6 +70,12 @@ class PasswordResetConfirm(BaseModel):
         max_length=128,
         description="Nova senha (mínimo 8 caracteres)",
     )
+    password_confirm: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Confirmação da nova senha",
+    )
 
     @field_validator("new_password")
     @classmethod
@@ -83,11 +91,20 @@ class PasswordResetConfirm(BaseModel):
             raise ValueError("Senha deve conter pelo menos um número")
         return v
 
+    @field_validator("password_confirm")
+    @classmethod
+    def passwords_match(cls, v: str, info: Any) -> str:
+        """Valida que as senhas coincidem."""
+        if "new_password" in info.data and v != info.data["new_password"]:
+            raise ValueError("As senhas não coincidem")
+        return v
+
     class Config:
         json_schema_extra = {
             "example": {
                 "token": "a1b2c3d4e5f6...",
                 "new_password": "NewSecurePassword123!",
+                "password_confirm": "NewSecurePassword123!",
             }
         }
 

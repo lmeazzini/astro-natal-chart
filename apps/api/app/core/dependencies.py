@@ -71,6 +71,23 @@ async def get_current_user(
             detail="Inactive user",
         )
 
+    # Check if token was issued before password change (JWT invalidation)
+    if user.password_changed_at is not None:
+        token_issued_at = payload.get("iat")
+        if token_issued_at is not None:
+            # Convert timestamps to comparable format
+            from datetime import UTC, datetime
+
+            token_issued_datetime = datetime.fromtimestamp(token_issued_at, tz=UTC)
+
+            # If token was issued before password change, reject it
+            if token_issued_datetime < user.password_changed_at:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token invalidated due to password change",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
     return user
 
 

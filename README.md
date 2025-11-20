@@ -218,6 +218,74 @@ O sistema gera automaticamente interpretações astrológicas usando OpenAI GPT-
 **Desabilitar interpretações IA:**
 Se não configurar a chave OpenAI, os mapas serão criados normalmente, mas sem as interpretações textuais.
 
+### Configuração do AWS S3 (Armazenamento de PDFs)
+
+O sistema pode armazenar os PDFs gerados de mapas natais no AWS S3 para persistência e escalabilidade. Por padrão, PDFs são salvos localmente (modo desenvolvimento).
+
+1. **Criar conta AWS** (se não tiver): Acesse [aws.amazon.com](https://aws.amazon.com)
+
+2. **Criar bucket S3**:
+   - Acesse o console S3: [s3.console.aws.amazon.com](https://s3.console.aws.amazon.com)
+   - Clique em "Create bucket"
+   - Nome sugerido: `seu-app-pdfs-dev` (desenvolvimento) ou `seu-app-pdfs-prod` (produção)
+   - Região: escolha a mais próxima (ex: `us-east-1`, `sa-east-1`)
+   - **Importante**: Mantenha o bucket **privado** (não público)
+
+3. **Criar usuário IAM**:
+   - Acesse IAM: [console.aws.amazon.com/iam](https://console.aws.amazon.com/iam)
+   - Users → Add user
+   - Nome: `astro-pdf-uploader`
+   - Access type: Programmatic access
+   - Anexe a política customizada:
+     ```json
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Effect": "Allow",
+           "Action": [
+             "s3:PutObject",
+             "s3:GetObject",
+             "s3:DeleteObject",
+             "s3:ListBucket"
+           ],
+           "Resource": [
+             "arn:aws:s3:::seu-bucket-name/*",
+             "arn:aws:s3:::seu-bucket-name"
+           ]
+         }
+       ]
+     }
+     ```
+   - Copie as credenciais: **Access Key ID** e **Secret Access Key**
+
+4. **Adicionar ao .env** (backend):
+   ```bash
+   AWS_REGION=us-east-1
+   AWS_ACCESS_KEY_ID=AKIAYEKP5HT3XXXXXXX
+   AWS_SECRET_ACCESS_KEY=HVxGhIuj/u0mn+XXXXXXXXXXXXXXXXX
+   S3_BUCKET_NAME=seu-bucket-name
+   S3_PREFIX=birth-charts
+   S3_PRESIGNED_URL_EXPIRATION=3600  # 1 hora (em segundos)
+   ```
+
+   **⚠️ SEGURANÇA**: Nunca commit credenciais AWS no git!
+
+5. **Custo estimado** (região us-east-1):
+   - Armazenamento: $0.023/GB/mês
+   - 1000 PDFs (2MB cada) = 2GB = **< $1/mês**
+   - AWS Free Tier: 5GB grátis por 12 meses
+
+**Como funciona:**
+- PDFs são gerados localmente com LaTeX
+- Upload automático para S3 após geração bem-sucedida
+- Arquivo local é deletado após upload (economia de espaço)
+- API retorna URLs presignadas (válidas por 1h) para download seguro
+- Fallback para armazenamento local se S3 falhar
+
+**Desabilitar S3:**
+Deixe as variáveis `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` vazias. PDFs serão salvos em `/media/pdfs/` (local).
+
 ### Restrição de Domínio de Email
 
 O sistema permite restringir o cadastro de novos usuários apenas a domínios de email específicos. Esta funcionalidade é útil para controlar o acesso à aplicação.

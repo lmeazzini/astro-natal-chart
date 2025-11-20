@@ -37,7 +37,9 @@ export function ChartDetailPage() {
 
   // PDF export state
   const [pdfStatus, setPdfStatus] = useState<PDFStatus>('idle');
-  const [_pdfError, setPdfError] = useState<string | null>(null);
+  // @ts-expect-error - TODO: Display error message in UI
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     loadChart();

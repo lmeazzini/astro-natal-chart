@@ -117,6 +117,43 @@ cd ../..
 npm run dev
 ```
 
+### Política de Restart dos Containers Docker
+
+Todos os containers Docker possuem a política `restart: unless-stopped` configurada, o que significa:
+
+**Comportamento de Restart Automático:**
+- ✅ **Restart após crash**: Se um container falhar ou crashar, ele será automaticamente reiniciado
+- ✅ **Restart após reinicialização do sistema**: Os containers reiniciam automaticamente quando o Docker daemon ou o sistema operacional reiniciar
+- ✅ **Restart após reinicialização do Docker daemon**: Se o serviço Docker for reiniciado, os containers voltam automaticamente
+- ❌ **NÃO restart após stop explícito**: Se você parar um container manualmente com `docker stop` ou `docker-compose stop`, ele NÃO será reiniciado automaticamente
+
+**Serviços com restart automático:**
+- `astro-db` (PostgreSQL)
+- `astro-redis` (Redis)
+- `astro-api` (FastAPI Backend)
+- `astro-celery` (Celery Worker)
+- `astro-web` (React Frontend)
+
+**Comandos úteis:**
+```bash
+# Ver status de todos os containers
+docker ps -a --filter "name=astro-"
+
+# Parar um serviço específico (NÃO reinicia automaticamente)
+docker-compose stop web
+
+# Reiniciar um serviço manualmente
+docker-compose restart web
+
+# Parar todos os serviços (NÃO reiniciam automaticamente)
+docker-compose stop
+
+# Iniciar todos os serviços
+docker-compose up -d
+```
+
+**Nota:** Esta política garante alta disponibilidade em produção, mantendo os serviços rodando mesmo após falhas temporárias ou reinicializações do sistema.
+
 ## Scripts Disponíveis
 
 ```bash

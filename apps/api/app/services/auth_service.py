@@ -5,6 +5,7 @@ Authentication service for user registration, login, and token management.
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -401,6 +402,22 @@ async def verify_email(db: AsyncSession, token: str) -> User:
     # Verify email
     user.email_verified = True
     await user_repo.update(user)
+
+    # Send welcome email after successful verification
+    from app.services.email import EmailService
+
+    email_service = EmailService()
+    try:
+        await email_service.send_welcome_email(
+            to_email=user.email,
+            user_name=user.full_name or "Usuário",
+        )
+    except Exception as e:
+        # Log error but don't fail verification if email fails
+        logger.error(
+            f"Failed to send welcome email after verification: {e}",
+            extra={"user_id": str(user.id), "email": user.email}
+        )
 
     return user
 

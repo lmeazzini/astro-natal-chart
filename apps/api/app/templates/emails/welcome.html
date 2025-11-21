@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-vindo ao Real Astrology</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      color: #2B2B38;
+      background-color: #FAFAFF;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #4A5FC1 0%, #C8A2C8 100%);
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      color: white;
+      font-size: 32px;
+      margin: 0 0 8px 0;
+      font-weight: 600;
+    }
+    .header p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      margin: 0;
+    }
+    .content {
+      padding: 40px 24px;
+    }
+    .greeting {
+      font-size: 20px;
+      color: #2B2B38;
+      margin-bottom: 24px;
+    }
+    .text {
+      font-size: 15px;
+      color: #6B7280;
+      margin-bottom: 16px;
+    }
+    .cta-button {
+      display: inline-block;
+      background: #4A5FC1;
+      color: white;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 24px 0;
+      box-shadow: 0 4px 12px rgba(74, 95, 193, 0.2);
+    }
+    .features {
+      background: #F7F7FC;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+    .feature-item {
+      display: flex;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+    .feature-icon {
+      font-size: 24px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    .feature-text h3 {
+      font-size: 16px;
+      color: #2B2B38;
+      margin: 0 0 4px 0;
+      font-weight: 600;
+    }
+    .feature-text p {
+      font-size: 14px;
+      color: #6B7280;
+      margin: 0;
+    }
+    .footer {
+      background: #F7F7FC;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #6B7280;
+    }
+    .footer a {
+      color: #4A5FC1;
+      text-decoration: none;
+    }
+    .divider {
+      height: 1px;
+      background: #D8DAE5;
+      margin: 24px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header with gradient -->
+    <div class="header">
+      <h1>✨ Bem-vindo ao Real Astrology</h1>
+      <p>Autoconhecimento com precisão astrológica</p>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+      <div class="greeting">
+        Olá, {{ user_name }}! 👋
+      </div>
+
+      <p class="text">
+        É um prazer ter você conosco! Estamos muito felizes que você tenha escolhido o
+        <strong>Real Astrology</strong> para explorar seu mapa natal.
+      </p>
+
+      <p class="text">
+        A astrologia tradicional é uma ferramenta poderosa de autoconhecimento, e estamos
+        aqui para tornar essa jornada precisa, acessível e transformadora.
+      </p>
+
+      <div class="divider"></div>
+
+      <h2 style="font-family: 'Playfair Display', Georgia, serif; color: #4A5FC1; font-size: 24px; margin-bottom: 16px;">
+        🌟 Comece sua jornada agora
+      </h2>
+
+      <p class="text">
+        Crie seu primeiro mapa natal em menos de 2 minutos. Você vai precisar apenas de:
+      </p>
+
+      <ul style="color: #6B7280; font-size: 15px; line-height: 1.8; margin-left: 20px;">
+        <li>Data de nascimento</li>
+        <li>Hora exata de nascimento (se souber)</li>
+        <li>Cidade onde nasceu</li>
+      </ul>
+
+      <center>
+        <a href="{{ dashboard_url }}/charts/new" class="cta-button">
+          Criar Meu Primeiro Mapa 🚀
+        </a>
+      </center>
+
+      <div class="divider"></div>
+
+      <!-- Features -->
+      <h2 style="font-family: 'Playfair Display', Georgia, serif; color: #2B2B38; font-size: 22px; margin-bottom: 16px;">
+        O que você pode fazer
+      </h2>
+
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-icon">🪐</div>
+          <div class="feature-text">
+            <h3>Cálculos Precisos</h3>
+            <p>Posições planetárias calculadas com Swiss Ephemeris (precisão de arco-segundo)</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">🎨</div>
+          <div class="feature-text">
+            <h3>Visualização Profissional</h3>
+            <p>Mapa natal interativo com todos os planetas, casas e aspectos</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">🤖</div>
+          <div class="feature-text">
+            <h3>Interpretações com IA</h3>
+            <p>Análises personalizadas geradas por inteligência artificial</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">📄</div>
+          <div class="feature-text">
+            <h3>Relatórios em PDF</h3>
+            <p>Exporte seu mapa completo em formato profissional</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Help section -->
+      <p class="text">
+        <strong>Precisa de ajuda?</strong><br>
+        Estamos aqui para apoiar sua jornada. Entre em contato:
+        <a href="mailto:{{ support_email }}" style="color: #4A5FC1; text-decoration: none;">{{ support_email }}</a>
+      </p>
+
+      <p class="text" style="margin-top: 24px;">
+        Que sua jornada de autoconhecimento seja transformadora! ✨
+      </p>
+
+      <p class="text">
+        Com carinho,<br>
+        <strong>Equipe Real Astrology</strong>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        Este email foi enviado para <strong>{{ user_email }}</strong><br>
+        porque você criou uma conta no Real Astrology.
+      </p>
+      <p style="margin-top: 16px;">
+        <a href="{{ dashboard_url }}">Acessar Painel</a> •
+        <a href="{{ settings_url }}">Configurações</a>
+      </p>
+      <p style="margin-top: 16px; color: #9CA3AF; font-size: 12px;">
+        Real Astrology © {{ current_year }}. Todos os direitos reservados.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

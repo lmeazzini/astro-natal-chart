@@ -4,15 +4,18 @@ Email service for sending transactional emails.
 
 import asyncio
 import base64
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from functools import partial
+from pathlib import Path
 
 import aiosmtplib
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build  # type: ignore[import-untyped]
 from googleapiclient.errors import HttpError  # type: ignore[import-untyped]
+from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 
 from app.core.config import settings
@@ -47,6 +50,10 @@ class EmailService:
             logger.warning(
                 "Email não configurado. Emails serão apenas logados (modo desenvolvimento)."
             )
+
+        # Setup Jinja2 for email templates
+        template_dir = Path(__file__).parent.parent / "templates" / "emails"
+        self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
 
     def _init_oauth(self) -> None:
         """Initialize OAuth2 credentials."""
@@ -473,3 +480,58 @@ class EmailService:
         """
 
         return await self.send_email(to_email, subject, html_body, text_body)
+
+    async def send_welcome_email(
+        self,
+        to_email: str,
+        user_name: str,
+    ) -> bool:
+        """
+        Envia email de boas-vindas após confirmação de email.
+
+        Args:
+            to_email: Email do destinatário
+            user_name: Nome do usuário
+
+        Returns:
+            True se enviado com sucesso, False caso contrário
+        """
+        # Prepare template context
+        context = {
+            "user_name": user_name or "Usuário",
+            "user_email": to_email,
+            "dashboard_url": settings.FRONTEND_URL,
+            "settings_url": f"{settings.FRONTEND_URL}/settings",
+            "support_email": getattr(settings, "SUPPORT_EMAIL", "support@realastrology.ai"),
+            "current_year": datetime.now().year,
+        }
+
+        # Render templates
+        html_template = self.jinja_env.get_template("welcome.html")
+        text_template = self.jinja_env.get_template("welcome.txt")
+
+        html_body = html_template.render(**context)
+        text_body = text_template.render(**context)
+
+        # Send email
+        subject = "✨ Bem-vindo ao Real Astrology!"
+
+        success = await self.send_email(
+            to_email=to_email,
+            subject=subject,
+            html_body=html_body,
+            text_body=text_body,
+        )
+
+        if success:
+            logger.info(
+                "Welcome email sent successfully",
+                extra={"to_email": to_email}
+            )
+        else:
+            logger.error(
+                "Failed to send welcome email",
+                extra={"to_email": to_email}
+            )
+
+        return success

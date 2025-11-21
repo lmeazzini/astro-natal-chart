@@ -1,0 +1,58 @@
+Bem-vindo ao Real Astrology! ✨
+
+Olá, {{ user_name }}!
+
+É um prazer ter você conosco! Estamos muito felizes que você tenha escolhido o Real Astrology para explorar seu mapa natal.
+
+A astrologia tradicional é uma ferramenta poderosa de autoconhecimento, e estamos aqui para tornar essa jornada precisa, acessível e transformadora.
+
+========================
+
+🌟 COMECE SUA JORNADA AGORA
+
+Crie seu primeiro mapa natal em menos de 2 minutos. Você vai precisar apenas de:
+
+- Data de nascimento
+- Hora exata de nascimento (se souber)
+- Cidade onde nasceu
+
+👉 Criar Meu Primeiro Mapa: {{ dashboard_url }}/charts/new
+
+========================
+
+O QUE VOCÊ PODE FAZER
+
+🪐 Cálculos Precisos
+   Posições planetárias calculadas com Swiss Ephemeris (precisão de arco-segundo)
+
+🎨 Visualização Profissional
+   Mapa natal interativo com todos os planetas, casas e aspectos
+
+🤖 Interpretações com IA
+   Análises personalizadas geradas por inteligência artificial
+
+📄 Relatórios em PDF
+   Exporte seu mapa completo em formato profissional
+
+========================
+
+PRECISA DE AJUDA?
+
+Estamos aqui para apoiar sua jornada.
+Entre em contato: {{ support_email }}
+
+========================
+
+Que sua jornada de autoconhecimento seja transformadora! ✨
+
+Com carinho,
+Equipe Real Astrology
+
+---
+
+Este email foi enviado para {{ user_email }} porque você criou uma conta no Real Astrology.
+
+Acessar Painel: {{ dashboard_url }}
+Configurações: {{ settings_url }}
+
+Real Astrology © {{ current_year }}. Todos os direitos reservados.

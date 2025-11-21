@@ -20,10 +20,11 @@ RUN apt-get update && apt-get install -y \
     libcairo2-dev \
     libpango1.0-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && mv /root/.local/bin/uv /usr/local/bin/uv \
+    && mv /root/.local/bin/uvx /usr/local/bin/uvx
 
-# Add UV to PATH
-ENV PATH="/root/.local/bin:$PATH"
+# UV is now in /usr/local/bin which is in PATH by default
 
 # Set working directory
 WORKDIR /app
@@ -39,15 +40,8 @@ RUN uv sync --frozen --no-dev
 # Copy application code
 COPY . .
 
-# Copy and set entrypoint
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 # Expose port
 EXPOSE 8000
-
-# Set entrypoint
-ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Development stage
 FROM base as development
@@ -60,8 +54,10 @@ CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "800
 # Production stage
 FROM base as production
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Create non-root user and fix permissions
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    chmod -R 755 /app
 USER appuser
 
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

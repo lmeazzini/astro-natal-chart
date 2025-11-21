@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
@@ -19,6 +20,7 @@ import { EducationalBanner } from '@/components/EducationalBanner';
 const TOKEN_KEY = 'astro_access_token';
 
 export function ChartsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [charts, setCharts] = useState<BirthChart[]>([]);
@@ -41,14 +43,14 @@ export function ChartsPage() {
       const response = await chartsService.list(token);
       setCharts(response.charts);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar mapas');
+      setError(err instanceof Error ? err.message : t('dashboard.deleteError'));
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleDelete(chartId: string) {
-    if (!confirm('Tem certeza que deseja excluir este mapa natal?')) {
+    if (!confirm(t('dashboard.confirmDelete'))) {
       return;
     }
 
@@ -59,7 +61,7 @@ export function ChartsPage() {
       await chartsService.delete(chartId, token);
       setCharts(charts.filter((c) => c.id !== chartId));
     } catch (err) {
-      alert('Erro ao excluir mapa');
+      alert(t('dashboard.deleteError'));
     }
   }
 
@@ -80,7 +82,7 @@ export function ChartsPage() {
           <div className="inline-block animate-shimmer mb-astro-md">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <p className="text-body text-muted-foreground">Carregando mapas...</p>
+          <p className="text-body text-muted-foreground">{t('dashboard.loading', { defaultValue: 'Carregando mapas...' })}</p>
         </div>
       </div>
     );
@@ -94,14 +96,14 @@ export function ChartsPage() {
           <Link
             to="/dashboard"
             className="flex items-center gap-2 hover:opacity-80 transition-all duration-200"
-            aria-label="Voltar ao Dashboard"
+            aria-label={t('common.back')}
           >
             <img
               src="/logo.png"
               alt="Real Astrology"
               className="h-8 w-8"
             />
-            <h1 className="text-h3 font-display text-foreground">Meus Mapas Natais</h1>
+            <h1 className="text-h3 font-display text-foreground">{t('dashboard.title')}</h1>
           </Link>
           <div className="flex items-center gap-4">
             <LanguageSelector />
@@ -109,7 +111,7 @@ export function ChartsPage() {
             <Button asChild>
               <Link to="/charts/new">
                 <Plus className="mr-2 h-4 w-4" />
-                Novo Mapa
+                {t('dashboard.newChart')}
               </Link>
             </Button>
             <Button
@@ -118,7 +120,7 @@ export function ChartsPage() {
               onClick={() => navigate('/dashboard')}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Dashboard
+              {t('nav.dashboard')}
             </Button>
           </div>
         </div>
@@ -128,18 +130,8 @@ export function ChartsPage() {
       <div className="max-w-7xl mx-auto py-8 px-4">
         {/* Educational Banner */}
         <EducationalBanner
-          title="💡 Você sabia?"
-          description={
-            <>
-              Nossa plataforma utiliza <strong>Astrologia Tradicional</strong> com cálculos de{' '}
-              <strong>Swiss Ephemeris</strong> (precisão &lt; 1 arcsecond). Diferentemente da astrologia moderna,
-              focamos em <strong>dignidades essenciais</strong>, <strong>análise de seita</strong> e{' '}
-              <strong>temperamento</strong> - técnicas validadas por séculos de prática.{' '}
-              <Link to="/about/methodology" className="underline hover:text-primary transition-colors">
-                Saiba mais sobre nossa metodologia →
-              </Link>
-            </>
-          }
+          title={t('educationalBanner.title')}
+          description={t('educationalBanner.description')}
           dismissible={true}
           storageKey="educational-banner-charts"
           className="mb-6"
@@ -156,10 +148,10 @@ export function ChartsPage() {
           <div className="animate-fade-in">
             <EmptyState
               icon={Sparkles}
-              title="Nenhum mapa natal ainda"
-              description="Crie seu primeiro mapa natal para começar sua jornada astrológica e descobrir os segredos do seu céu de nascimento"
+              title={t('dashboard.noCharts')}
+              description={t('dashboard.noChartsSubtitle')}
               action={{
-                label: 'Criar Meu Primeiro Mapa',
+                label: t('dashboard.createFirst', { defaultValue: 'Criar Meu Primeiro Mapa' }),
                 onClick: () => navigate('/charts/new'),
               }}
             />
@@ -190,21 +182,21 @@ export function ChartsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p>
-                      <strong className="text-foreground">Nascimento:</strong>{' '}
+                      <strong className="text-foreground">{t('chartDetail.birthDateTime')}:</strong>{' '}
                       {formatBirthDateTime(chart.birth_datetime, chart.birth_timezone || 'UTC', false)}
                     </p>
                     <p>
-                      <strong className="text-foreground">Local:</strong> {chart.city}
+                      <strong className="text-foreground">{t('chartDetail.location')}:</strong> {chart.city}
                       {chart.country && `, ${chart.country}`}
                     </p>
                     <p>
-                      <strong className="text-foreground">Sistema:</strong> {chart.house_system}
+                      <strong className="text-foreground">{t('newChart.houseSystem')}:</strong> {chart.house_system}
                     </p>
                   </div>
 
                   {chart.chart_data && (
                     <div className="pt-4 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground mb-3 font-medium">Big Three</p>
+                      <p className="text-xs text-muted-foreground mb-3 font-medium">{t('chartDetail.bigThree')}</p>
                       <BigThreeBadge
                         sunSign={chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
                         moonSign={chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
@@ -226,7 +218,7 @@ export function ChartsPage() {
                 <CardFooter>
                   <Button asChild className="w-full group">
                     <Link to={`/charts/${chart.id}`}>
-                      Ver Detalhes Completos
+                      {t('dashboard.viewChart')}
                       <ArrowLeft className="ml-2 h-4 w-4 rotate-180 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>

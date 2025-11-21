@@ -6,6 +6,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -55,6 +57,8 @@ export function LandingPage() {
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSelector />
+            <ThemeToggle />
             <Button asChild variant="ghost" size="sm">
               <Link to="/login">{t('pages.landing.login', { defaultValue: 'Entrar' })}</Link>
             </Button>

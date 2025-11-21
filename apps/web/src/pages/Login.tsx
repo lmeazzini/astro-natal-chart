@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { oauthService, OAuthProvider } from '../services/oauth';
 import { Logo } from '../components/Logo';
+import { LanguageSelector } from '../components/LanguageSelector';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -87,7 +89,13 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 relative">
+      {/* Floating Controls */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <LanguageSelector />
+        <ThemeToggle />
+      </div>
+
       {/* Left Panel - Celestial Branding */}
       <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-primary via-primary/90 to-secondary/80 text-primary-foreground p-12 relative overflow-hidden">
         {/* Decorative floating elements */}

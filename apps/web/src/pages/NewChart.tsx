@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check } from 'lucide-react';
 
 const TOKEN_KEY = 'astro_access_token';
@@ -218,14 +220,18 @@ export function NewChartPage() {
             <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('common.back')}
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageSelector />
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('common.back')}
+            </Button>
+          </div>
         </div>
       </nav>
 

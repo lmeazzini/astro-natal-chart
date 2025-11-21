@@ -23,8 +23,10 @@ export interface PasswordChange {
 export interface UserStats {
   total_charts: number;
   account_age_days: number;
-  last_login_at: string | null;
-  last_activity_at: string | null;
+  last_chart_created_at: string | null;
+  email_verified: boolean;
+  has_oauth_connections: boolean;
+  oauth_providers: string[];
 }
 
 export interface UserActivity {

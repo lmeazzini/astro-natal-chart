@@ -12,6 +12,9 @@ set -o pipefail  # Exit on pipe failure
 # Configuration
 # ============================================================================
 
+# Script directory (for calling Python services)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Backup directory (will be created if doesn't exist)
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/astro-db}"
 
@@ -111,25 +114,42 @@ verify_backup() {
 upload_to_s3() {
     local backup_path="$1"
 
-    if [ -z "$S3_BUCKET" ]; then
-        log "S3 upload skipped (S3_BUCKET not configured)"
+    if [ -z "$BACKUP_S3_BUCKET" ]; then
+        log "S3 upload skipped (BACKUP_S3_BUCKET not configured)"
         return 0
     fi
 
-    log "Uploading backup to S3..."
+    log "Uploading backup to S3 using BackupS3Service..."
 
-    if command -v aws >/dev/null 2>&1; then
-        local s3_path="s3://${S3_BUCKET}/${S3_PREFIX}/${DATE_ONLY}/${BACKUP_FILE}"
+    # Call Python BackupS3Service with retry and integrity verification
+    local result
+    result=$(cd "${SCRIPT_DIR}/.." && uv run python -c "
+import sys
+from pathlib import Path
+from app.services.backup_s3_service import backup_s3_service
 
-        if aws s3 cp "$backup_path" "$s3_path"; then
-            log "Backup uploaded to S3: $s3_path ✓"
-            return 0
-        else
-            error "Failed to upload backup to S3"
-            return 1
-        fi
+try:
+    s3_url = backup_s3_service.upload_backup(Path('$backup_path'))
+    if s3_url:
+        print(f'SUCCESS:{s3_url}')
+        sys.exit(0)
+    else:
+        print('FAILED:Upload returned None')
+        sys.exit(1)
+except Exception as e:
+    print(f'ERROR:{e}')
+    sys.exit(1)
+" 2>&1)
+
+    local exit_code=$?
+
+    if [ $exit_code -eq 0 ]; then
+        local s3_url=$(echo "$result" | grep '^SUCCESS:' | cut -d: -f2-)
+        log "Backup uploaded to S3: $s3_url ✓"
+        log "Uploaded with retry logic (3 attempts) and MD5 verification"
+        return 0
     else
-        error "AWS CLI not installed, cannot upload to S3"
+        error "S3 upload failed: $result"
         return 1
     fi
 }

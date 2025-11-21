@@ -12,6 +12,9 @@ set -o pipefail  # Exit on pipe failure
 # Configuration
 # ============================================================================
 
+# Script directory (for calling Python services)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Database configuration (from environment or defaults)
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
@@ -49,13 +52,14 @@ Usage: $0 <backup_file> [options]
 Restore PostgreSQL database from backup file.
 
 Arguments:
-    backup_file         Path to backup file (*.sql.gz)
+    backup_file         Path to backup file (*.sql.gz) or S3 URL
 
 Options:
     --no-stop           Don't stop application services
     --no-confirm        Skip confirmation prompt (dangerous!)
     --download-s3       Download latest backup from S3 first
     --list-backups      List available local backups
+    --list-s3           List backups available in S3
     --help              Show this help message
 
 Environment Variables:
@@ -66,6 +70,7 @@ Environment Variables:
     DB_PASSWORD         Database password
     POSTGRES_USER       PostgreSQL admin user (default: postgres)
     BACKUP_DIR          Backup directory (default: /var/backups/astro-db)
+    BACKUP_S3_BUCKET    S3 bucket for backups (for --download-s3 and --list-s3)
 
 Examples:
     # Restore from local backup
@@ -119,46 +124,81 @@ list_backups() {
 }
 
 download_from_s3() {
-    local s3_bucket="${BACKUP_S3_BUCKET:-}"
-    local s3_prefix="${BACKUP_S3_PREFIX:-backups}"
+    local s3_url="$1"
 
-    if [ -z "$s3_bucket" ]; then
-        error "S3_BUCKET not configured"
+    if [ -z "$BACKUP_S3_BUCKET" ]; then
+        error "BACKUP_S3_BUCKET not configured"
         exit 1
     fi
 
-    if ! command -v aws >/dev/null 2>&1; then
-        error "AWS CLI not installed"
-        exit 1
-    fi
+    log "Downloading backup from S3 using BackupS3Service..."
 
-    log "Downloading latest backup from S3..."
+    # Get filename from S3 URL
+    local filename=$(basename "$s3_url" .gz).gz
 
-    # List backups in S3
-    local latest=$(aws s3 ls "s3://${s3_bucket}/${s3_prefix}/" --recursive | \
-        grep "astro_backup_.*\.sql\.gz$" | \
-        sort -r | \
-        head -1 | \
-        awk '{print $4}')
-
-    if [ -z "$latest" ]; then
-        error "No backups found in S3"
-        exit 1
-    fi
-
-    local filename=$(basename "$latest")
-    local local_path="$BACKUP_DIR/$filename"
-
-    log "Downloading: $filename"
+    # Ensure backup directory exists
     mkdir -p "$BACKUP_DIR"
 
-    if aws s3 cp "s3://${s3_bucket}/${latest}" "$local_path"; then
-        log "Downloaded successfully: $local_path"
+    local local_path="$BACKUP_DIR/$filename"
+
+    # Call Python BackupS3Service for download
+    local result
+    result=$(cd "${SCRIPT_DIR}/.." && uv run python -c "
+import sys
+from pathlib import Path
+from app.services.backup_s3_service import backup_s3_service
+
+try:
+    success = backup_s3_service.download_backup('$s3_url', Path('$local_path'))
+    if success:
+        print('SUCCESS')
+        sys.exit(0)
+    else:
+        print('FAILED:Download returned False')
+        sys.exit(1)
+except Exception as e:
+    print(f'ERROR:{e}')
+    sys.exit(1)
+" 2>&1)
+
+    local exit_code=$?
+
+    if [ $exit_code -eq 0 ]; then
+        log "Downloaded successfully: $local_path ✓"
         echo "$local_path"
+        return 0
     else
-        error "Failed to download backup from S3"
+        error "S3 download failed: $result"
         exit 1
     fi
+}
+
+list_s3_backups() {
+    if [ -z "$BACKUP_S3_BUCKET" ]; then
+        error "BACKUP_S3_BUCKET not configured"
+        exit 1
+    fi
+
+    log "Listing backups from S3..."
+
+    # Call Python BackupS3Service to list backups
+    cd "${SCRIPT_DIR}/.." && uv run python -c "
+from app.services.backup_s3_service import backup_s3_service
+
+backups = backup_s3_service.list_backups(30)
+
+if not backups:
+    print('No backups found in S3')
+    exit(0)
+
+print(f'Found {len(backups)} backups in S3:\\n')
+print(f'{'Date':<12} {'Size':<10} {'Filename':<40} {'S3 URL':<50}')
+print('-' * 115)
+
+for backup in backups:
+    size_mb = backup['size'] / (1024 * 1024)
+    print(f\"{backup['date']:<12} {size_mb:>8.2f}MB {backup['filename']:<40} {backup['url']:<50}\")
+"
 }
 
 stop_application() {
@@ -366,8 +406,20 @@ main() {
             --list-backups)
                 list_backups
                 ;;
+            --list-s3)
+                list_s3_backups
+                exit 0
+                ;;
             --download-s3)
-                backup_file=$(download_from_s3)
+                # If S3 URL provided as next argument, use it; otherwise get latest
+                if [ $# -gt 1 ] && [[ "$2" == s3://* ]]; then
+                    backup_file=$(download_from_s3 "$2")
+                    shift
+                else
+                    # Download latest backup (need to implement get_latest_s3_backup)
+                    error "--download-s3 requires an S3 URL. Use --list-s3 to see available backups."
+                    exit 1
+                fi
                 ;;
             --no-stop)
                 STOP_SERVICES=false

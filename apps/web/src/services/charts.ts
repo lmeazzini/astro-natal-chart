@@ -55,6 +55,20 @@ export interface AspectData {
   applying: boolean;
 }
 
+export interface ArabicPart {
+  longitude: number;
+  sign: string;
+  degree: number;
+  house: number;
+}
+
+export interface ArabicParts {
+  fortune: ArabicPart;
+  spirit: ArabicPart;
+  eros: ArabicPart;
+  necessity: ArabicPart;
+}
+
 export interface BirthChart {
   id: string;
   user_id: string;
@@ -85,6 +99,7 @@ export interface BirthChart {
     solar_phase?: SolarPhaseData;
     lord_of_nativity?: LordOfNativityData;
     temperament?: TemperamentData;
+    arabic_parts?: ArabicParts;
     calculation_timestamp: string;
   } | null;
   visibility: string;

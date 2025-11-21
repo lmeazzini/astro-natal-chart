@@ -29,20 +29,24 @@
 \usepackage{lastpage}
 
 % TikZ libraries for effects
-\tcbuselibrary{skins,shadows}
+\tcbuselibrary{skins}
 \usetikzlibrary{fadings,patterns,shadows}
 
 % Page geometry (following 8px grid system)
+{% raw %}
 \geometry{
   a4paper,
-  left=3cm,      % ~80px margin for desktop
+  left=3cm,
   right=3cm,
   top=3.5cm,
   bottom=3cm
 }
+{% endraw %}
 
 % Graphics path
-\graphicspath{ {{ '{' }} ./media/ {{ '}' }} }
+{% raw %}
+\graphicspath{{./media/}}
+{% endraw %}
 
 % ============================================================
 % TYPOGRAPHY SETTINGS — Astro Essence
@@ -55,14 +59,14 @@
 \setstretch{1.6}
 
 % Hyperref setup with Astro Essence colors
-\hypersetup{
+\hypersetup{{ '{' }}
   colorlinks=true,
-  linkcolor=primary,    % Using primary color for links
+  linkcolor=primary,
   urlcolor=primary,
-  pdftitle={Mapa Natal - {{ person_name }}},
-  pdfauthor={Real Astrology},
-  pdfsubject={Relatório de Mapa Natal - Astrologia Tradicional}
-}
+  pdftitle={{ '{' }}Mapa Natal - {{ person_name }}{{ '}' }},
+  pdfauthor={{ '{' }}Real Astrology{{ '}' }},
+  pdfsubject={{ '{' }}Relatório de Mapa Natal - Astrologia Tradicional{{ '}' }}
+{{ '}' }}
 
 % ============================================================
 % HEADER & FOOTER — Premium Style
@@ -85,8 +89,10 @@
 \renewcommand{\footrulewidth}{1pt}
 
 % Custom header/footer lines with border color
+{% raw %}
 \renewcommand{\headrule}{{\color{border}\hrule width\headwidth height\headrulewidth\vskip-\headrulewidth}}
 \renewcommand{\footrule}{{\color{border}\vskip-\footruleskip\vskip-\footrulewidth\hrule width\headwidth height\footrulewidth\vskip\footruleskip}}
+{% endraw %}
 
 % Load custom macros
 \input{macros.tex}
@@ -94,7 +100,6 @@
 % Document starts
 \begin{document}
 
-% Include front page
 {% include 'frontpage.tex' %}
 
 % Table of contents
@@ -106,15 +111,7 @@
 % ============================================================
 \chartsection{Informações do Mapa}
 
-\chartinfo{{ '{' }}%
-  {{ person_name }}%
-{{ '}' }}{{ '{' }}%
-  {{ birth_datetime }}%
-{{ '}' }}{{ '{' }}%
-  {{ location }}%
-{{ '}' }}{{ '{' }}%
-  {{ coordinates }}%
-{{ '}' }}
+\chartinfo{{ '{' }}{{ person_name }}{{ '}' }}{{ '{' }}{{ birth_datetime }}{{ '}' }}{{ '{' }}{{ location }}{{ '}' }}{{ '{' }}{{ coordinates }}{{ '}' }}
 
 \vspace{0.5cm}
 
@@ -135,10 +132,12 @@
 \chartsubsection{Posições Planetárias}
 
 % Table with Astro Essence styling
-\renewcommand{\arraystretch}{1.5} % Better spacing
-\arrayrulecolor{border} % Use border color for rules
+{% raw %}
+\renewcommand{\arraystretch}{1.5}
+\arrayrulecolor{border}
 
 \begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}r>{\sffamily}c>{\sffamily}l>{\sffamily}c}
+{% endraw %}
 \toprule
 \rowcolor{primary!10}
 \textbf{\color{textdark}Planeta} &
@@ -150,7 +149,7 @@
 \midrule
 \endfirsthead
 
-\multicolumn{6}{c}%
+\multicolumn{6}{c}
 {\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
 \toprule
 \rowcolor{primary!10}
@@ -183,7 +182,7 @@
 {% endfor %}
 \end{longtable}
 
-\renewcommand{\arraystretch}{1.0} % Reset spacing
+\renewcommand{\arraystretch}{1.0}
 
 \newpage
 
@@ -191,11 +190,9 @@
 
 {% for planet in planets %}
 {% if planet.interpretation %}
-\chartsubsection{\planetname{ {{ planet.name }} }{ {{ planet.symbol }} } em {{ planet.sign }} - Casa {{ planet.house }}}
+\chartsubsection{\planetname{{ '{' }}{{ planet.name }}{{ '}' }}{{ '{' }}{{ planet.symbol }}{{ '}' }} em {{ planet.sign }} - Casa {{ planet.house }}}
 
-\interpretation{{ '{' }}%
-{{ planet.interpretation }}
-{{ '}' }}
+\interpretation{{ '{' }}{{ planet.interpretation }}{{ '}' }}
 {% endif %}
 {% endfor %}
 
@@ -209,10 +206,12 @@
 \chartsubsection{Cúspides das Casas}
 
 % Table with Astro Essence styling
-\renewcommand{\arraystretch}{1.5} % Better spacing
-\arrayrulecolor{border} % Use border color for rules
+{% raw %}
+\renewcommand{\arraystretch}{1.5}
+\arrayrulecolor{border}
 
 \begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}r}
+{% endraw %}
 \toprule
 \rowcolor{primary!10}
 \textbf{\color{textdark}Casa} &
@@ -221,7 +220,7 @@
 \midrule
 \endfirsthead
 
-\multicolumn{3}{c}%
+\multicolumn{3}{c}
 {\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
 \toprule
 \rowcolor{primary!10}
@@ -248,7 +247,7 @@
 {% endfor %}
 \end{longtable}
 
-\renewcommand{\arraystretch}{1.0} % Reset spacing
+\renewcommand{\arraystretch}{1.0}
 
 \newpage
 
@@ -256,11 +255,9 @@
 
 {% for house in houses %}
 {% if house.interpretation %}
-\chartsubsection{\housename{ {{ house.number }} } - {{ house.sign }}}
+\chartsubsection{{ '{' }}\housename{{ '{' }}{{ house.number }}{{ '}' }} - {{ house.sign }}{{ '}' }}
 
-\interpretation{{ '{' }}%
-{{ house.interpretation }}
-{{ '}' }}
+\interpretation{{ '{' }}{{ house.interpretation }}{{ '}' }}
 {% endif %}
 {% endfor %}
 
@@ -274,10 +271,12 @@
 \chartsubsection{Aspectos Principais}
 
 % Table with Astro Essence styling
-\renewcommand{\arraystretch}{1.5} % Better spacing
-\arrayrulecolor{border} % Use border color for rules
+{% raw %}
+\renewcommand{\arraystretch}{1.5}
+\arrayrulecolor{border}
 
 \begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}l>{\sffamily}r}
+{% endraw %}
 \toprule
 \rowcolor{primary!10}
 \textbf{\color{textdark}Planeta 1} &
@@ -287,7 +286,7 @@
 \midrule
 \endfirsthead
 
-\multicolumn{4}{c}%
+\multicolumn{4}{c}
 {\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
 \toprule
 \rowcolor{primary!10}
@@ -316,7 +315,7 @@
 {% endfor %}
 \end{longtable}
 
-\renewcommand{\arraystretch}{1.0} % Reset spacing
+\renewcommand{\arraystretch}{1.0}
 
 \newpage
 
@@ -324,11 +323,9 @@
 
 {% for aspect in aspects %}
 {% if aspect.interpretation %}
-\chartsubsection{\aspectname{ {{ aspect.planet1 }} }{ {{ aspect.aspect }} }{ {{ aspect.planet2 }} }}
+\chartsubsection{{ '{' }}\aspectname{{ '{' }}{{ aspect.planet1 }}{{ '}' }}{{ '{' }}{{ aspect.aspect }}{{ '}' }}{{ '{' }}{{ aspect.planet2 }}{{ '}' }}{{ '}' }}
 
-\interpretation{{ '{' }}%
-{{ aspect.interpretation }}
-{{ '}' }}
+\interpretation{{ '{' }}{{ aspect.interpretation }}{{ '}' }}
 {% endif %}
 {% endfor %}
 

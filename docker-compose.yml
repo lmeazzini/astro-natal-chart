@@ -3,6 +3,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: astro-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: astro_dev
       POSTGRES_USER: astro
@@ -23,6 +24,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: astro-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -42,6 +44,7 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: astro-api
+    restart: unless-stopped
     command: sh -c ". /app/.venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-exclude '.venv/*'"
     volumes:
       - ./apps/api:/app
@@ -72,6 +75,7 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: astro-celery
+    restart: unless-stopped
     command: sh -c ". /app/.venv/bin/activate && celery -A app.core.celery_app worker --loglevel=info"
     volumes:
       - ./apps/api:/app
@@ -98,6 +102,7 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: astro-web
+    restart: unless-stopped
     command: npm run dev
     volumes:
       - ./apps/web:/app

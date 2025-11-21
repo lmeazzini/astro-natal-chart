@@ -4,11 +4,10 @@ Regional formatting utilities for dates, times, and numbers.
 Provides locale-aware formatting based on the current request context.
 """
 
-from datetime import date, datetime
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-if TYPE_CHECKING:
-    from decimal import Decimal
+from datetime import date, datetime
+from decimal import Decimal
 
 # Date format patterns by locale
 DATE_FORMATS = {
@@ -209,7 +208,7 @@ def format_datetime(
 
 
 def format_number(
-    value: float | int | "Decimal",
+    value: float | int | Decimal,
     decimals: int = 2,
     locale: str | None = None,
 ) -> str:
@@ -242,7 +241,7 @@ def format_number(
 
 
 def format_currency(
-    value: float | int | "Decimal",
+    value: float | int | Decimal,
     currency: str = "BRL",
     locale: str | None = None,
 ) -> str:

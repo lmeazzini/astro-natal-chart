@@ -17,6 +17,7 @@ import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
 import { getSignSymbol } from '../utils/astro';
+import { formatBirthDateTime } from '@/utils/datetime';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -186,16 +187,6 @@ export function ChartDetailPage() {
     }
   }
 
-  function formatDateTime(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
 
   function getAscendantSign(): string {
     if (!chart?.chart_data) return '';
@@ -330,7 +321,7 @@ export function ChartDetailPage() {
                   {chart.person_name}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {formatDateTime(chart.birth_datetime)} • {chart.city}
+                  {formatBirthDateTime(chart.birth_datetime, chart.birth_timezone || 'UTC', true)} • {chart.city}
                   {chart.country && `, ${chart.country}`}
                 </p>
               </div>

@@ -3,17 +3,83 @@ Loguru logging configuration for the application.
 
 Provides structured logging with:
 - Colorized console output in development
-- JSON structured logs in production
+- JSON structured logs in production with structlog processors
 - Automatic log rotation
 - Context binding for request_id and user_id
+- Integration with Loki + Grafana for observability
 """
 
 import sys
+from collections.abc import MutableMapping
 from pathlib import Path
+from typing import Any
 
+import structlog
 from loguru import logger
 
 from app.core.config import settings
+
+
+def add_request_context_processor(
+    logger_instance: Any, method_name: str, event_dict: MutableMapping[str, Any]
+) -> MutableMapping[str, Any]:
+    """
+    Structlog processor to add request context to log entries.
+
+    This integrates with app.core.context to inject request_id, user_id,
+    and other context variables into every log message.
+    """
+    try:
+        from app.core.context import get_request_context
+
+        context = get_request_context()
+        if context:
+            # Add context fields to log entry
+            event_dict.update(
+                {
+                    "request_id": context.get("request_id"),
+                    "user_id": context.get("user_id"),
+                    "path": context.get("path"),
+                    "method": context.get("method"),
+                    "client_ip": context.get("client_ip"),
+                }
+            )
+    except ImportError:
+        # Context module not available yet (during startup)
+        pass
+
+    return event_dict
+
+
+def configure_structlog() -> None:
+    """
+    Configure structlog processors for enhanced structured logging.
+
+    This adds additional processing capabilities on top of loguru,
+    including request context injection and standardized formatting.
+    """
+    # Select renderer based on environment
+    renderer: Any = (
+        structlog.dev.ConsoleRenderer() if settings.DEBUG else structlog.processors.JSONRenderer()
+    )
+
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.stdlib.add_logger_name,
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            add_request_context_processor,
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.UnicodeDecoder(),
+            renderer,
+        ],
+        wrapper_class=structlog.stdlib.BoundLogger,
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
 
 
 def configure_logging() -> None:
@@ -70,6 +136,9 @@ def configure_logging() -> None:
             backtrace=True,
             diagnose=False,
         )
+
+    # Configure structlog processors for enhanced structured logging
+    configure_structlog()
 
     logger.info(
         "Logging configured",

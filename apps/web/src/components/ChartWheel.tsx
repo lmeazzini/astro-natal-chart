@@ -1,7 +1,8 @@
 /**
- * Chart Wheel component - circular birth chart visualization
+ * Chart Wheel component - circular birth chart visualization with animations
  */
 
+import { motion } from 'framer-motion';
 import {
   getPlanetSymbol,
   getSignSymbol,
@@ -11,6 +12,7 @@ import {
   isMajorAspect,
   ZODIAC_SIGNS,
 } from '../utils/astro';
+import { spring, staggerDelay, motionSafe, fadeIn } from '../config/animations';
 import type { PlanetPosition } from './PlanetList';
 import type { HousePosition } from './HouseTable';
 import type { AspectData } from './AspectGrid';
@@ -57,9 +59,14 @@ export function ChartWheel({
       const symbolPos = polarToCartesian(center, center, (outerRadius + signRadius) / 2, midAngle);
 
       return (
-        <g key={sign}>
+        <motion.g
+          key={sign}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: staggerDelay(index, 0.03), duration: 0.3 }}
+        >
           {/* Sign boundary line */}
-          <line
+          <motion.line
             x1={startOuter.x}
             y1={startOuter.y}
             x2={startSign.x}
@@ -67,19 +74,28 @@ export function ChartWheel({
             stroke="currentColor"
             strokeWidth="1"
             className="text-border opacity-50"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: staggerDelay(index, 0.02), duration: 0.2 }}
           />
 
           {/* Sign symbol */}
-          <text
+          <motion.text
             x={symbolPos.x}
             y={symbolPos.y}
             textAnchor="middle"
             dominantBaseline="central"
             className="text-foreground text-xl font-semibold"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{
+              delay: staggerDelay(index, 0.03) + 0.1,
+              ...spring.bouncy
+            }}
           >
             {getSignSymbol(sign)}
-          </text>
-        </g>
+          </motion.text>
+        </motion.g>
       );
     });
   }
@@ -135,14 +151,24 @@ export function ChartWheel({
    * Draw planets
    */
   function renderPlanets() {
-    return planets.map((planet) => {
+    return planets.map((planet, index) => {
       const angle = longitudeToAngle(planet.longitude);
       const pos = polarToCartesian(center, center, planetRadius, angle);
 
       return (
-        <g key={planet.name}>
+        <motion.g
+          key={planet.name}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            delay: staggerDelay(index, 0.08) + 0.5,
+            ...spring.bouncy
+          }}
+          whileHover={{ scale: 1.2 }}
+          className="cursor-pointer"
+        >
           {/* Planet symbol */}
-          <text
+          <motion.text
             x={pos.x}
             y={pos.y}
             textAnchor="middle"
@@ -151,22 +177,28 @@ export function ChartWheel({
             style={{
               filter: 'drop-shadow(0 0 2px white) drop-shadow(0 0 4px white)',
             }}
+            whileHover={{
+              filter: 'drop-shadow(0 0 4px white) drop-shadow(0 0 8px white)',
+            }}
           >
             {getPlanetSymbol(planet.name)}
-          </text>
+          </motion.text>
 
           {/* Retrograde indicator */}
           {planet.retrograde && (
-            <text
+            <motion.text
               x={pos.x + 15}
               y={pos.y - 12}
               textAnchor="middle"
               className="text-[10px] font-bold text-destructive"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: staggerDelay(index, 0.08) + 0.6 }}
             >
               R
-            </text>
+            </motion.text>
           )}
-        </g>
+        </motion.g>
       );
     });
   }
@@ -194,7 +226,7 @@ export function ChartWheel({
       const opacity = aspect.orb <= 2 ? 0.8 : aspect.orb <= 4 ? 0.5 : 0.3;
 
       return (
-        <line
+        <motion.line
           key={`${aspect.planet1}-${aspect.planet2}-${aspect.aspect}-${index}`}
           x1={pos1.x}
           y1={pos1.y}
@@ -204,6 +236,12 @@ export function ChartWheel({
           strokeWidth={aspect.orb <= 1 ? '2' : '1'}
           strokeOpacity={opacity}
           strokeDasharray={aspect.applying ? '0' : '4 2'}
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{
+            pathLength: { delay: staggerDelay(index, 0.05) + 0.3, duration: 0.8 },
+            opacity: { delay: staggerDelay(index, 0.05) + 0.3, duration: 0.3 }
+          }}
         />
       );
     });
@@ -276,23 +314,34 @@ export function ChartWheel({
   }
 
   return (
-    <div className="flex justify-center p-4">
-      <svg
+    <motion.div
+      className="flex justify-center p-4"
+      initial="hidden"
+      animate="visible"
+      variants={motionSafe(fadeIn)}
+    >
+      <motion.svg
         viewBox={`0 0 ${size} ${size}`}
         className="w-full max-w-2xl h-auto"
         style={{ maxHeight: '600px' }}
+        initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
+        animate={{ rotate: 0, scale: 1, opacity: 1 }}
+        transition={{ ...spring.gentle, duration: 1 }}
       >
         {/* Background */}
-        <circle
+        <motion.circle
           cx={center}
           cy={center}
           r={outerRadius}
           fill="currentColor"
           className="text-background"
+          initial={{ r: 0 }}
+          animate={{ r: outerRadius }}
+          transition={{ duration: 0.5 }}
         />
 
         {/* Outer circle */}
-        <circle
+        <motion.circle
           cx={center}
           cy={center}
           r={outerRadius}
@@ -300,10 +349,13 @@ export function ChartWheel({
           stroke="currentColor"
           strokeWidth="2"
           className="text-border"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
         />
 
         {/* Sign circle */}
-        <circle
+        <motion.circle
           cx={center}
           cy={center}
           r={signRadius}
@@ -311,10 +363,13 @@ export function ChartWheel({
           stroke="currentColor"
           strokeWidth="1"
           className="text-border opacity-50"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, delay: 0.15 }}
         />
 
         {/* House circle */}
-        <circle
+        <motion.circle
           cx={center}
           cy={center}
           r={houseRadius}
@@ -322,10 +377,13 @@ export function ChartWheel({
           stroke="currentColor"
           strokeWidth="1"
           className="text-border opacity-50"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         />
 
         {/* Inner circle */}
-        <circle
+        <motion.circle
           cx={center}
           cy={center}
           r={innerRadius}
@@ -333,6 +391,9 @@ export function ChartWheel({
           stroke="currentColor"
           strokeWidth="1"
           className="text-muted/20 stroke-border opacity-50"
+          initial={{ r: 0 }}
+          animate={{ r: innerRadius }}
+          transition={{ duration: 0.5, delay: 0.25 }}
         />
 
         {/* Render elements in layers */}
@@ -342,7 +403,7 @@ export function ChartWheel({
         {renderAscendant()}
         {renderMidheaven()}
         {renderPlanets()}
-      </svg>
-    </div>
+      </motion.svg>
+    </motion.div>
   );
 }

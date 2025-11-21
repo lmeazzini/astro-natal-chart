@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getPlanetSymbol, getSignSymbol, formatDMS } from '../utils/astro';
 import {
   Dignities,
@@ -12,9 +13,10 @@ import {
   getDignityDetails,
   getClassificationLabel,
 } from '../utils/dignities';
+import { staggerContainer, staggerItem } from '@/config/animations';
 
 // shadcn/ui components
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -194,29 +196,55 @@ export function PlanetList({
               <TableHead className="text-right">Velocidade</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {displayPlanets.map((planet) => (
-              <TableRow key={planet.name}>
-                {/* Planet Name with Symbol */}
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl" title={planet.name}>
-                      {getPlanetSymbol(planet.name)}
-                    </span>
-                    <span className="font-medium text-foreground">
-                      {planet.name}
-                    </span>
-                    {lordOfNativity && lordOfNativity.planet === planet.name && (
-                      <Badge
-                        variant="outline"
-                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
-                        title="Senhor da Natividade - maior dignidade essencial"
-                      >
-                        👑
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
+          <motion.tbody
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+            className="[&_tr]:border-b"
+          >
+            <AnimatePresence mode="popLayout">
+              {displayPlanets.map((planet, index) => (
+                <motion.tr
+                  key={planet.name}
+                  variants={staggerItem}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  layout
+                  layoutId={planet.name}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="border-b transition-colors hover:bg-muted/50"
+                >
+                  {/* Planet Name with Symbol */}
+                  <TableCell>
+                    <motion.div
+                      className="flex items-center gap-2"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <span className="text-2xl" title={planet.name}>
+                        {getPlanetSymbol(planet.name)}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {planet.name}
+                      </span>
+                      {lordOfNativity && lordOfNativity.planet === planet.name && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, delay: 0.5 }}
+                        >
+                          <Badge
+                            variant="outline"
+                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
+                            title="Senhor da Natividade - maior dignidade essencial"
+                          >
+                            👑
+                          </Badge>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </TableCell>
 
                 {/* Sign with Symbol */}
                 <TableCell>
@@ -313,9 +341,10 @@ export function PlanetList({
                     {planet.speed.toFixed(4)}°/dia
                   </span>
                 </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </motion.tbody>
         </Table>
       </div>
 

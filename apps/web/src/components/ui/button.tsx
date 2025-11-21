@@ -1,7 +1,8 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-
+import { motion } from "framer-motion"
+import { buttonHover, buttonTap } from "@/config/animations"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -51,12 +52,38 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      )
+    }
+
+    const {
+      onDrag: _onDrag,
+      onDragEnd: _onDragEnd,
+      onDragEnter: _onDragEnter,
+      onDragExit: _onDragExit,
+      onDragLeave: _onDragLeave,
+      onDragOver: _onDragOver,
+      onDragStart: _onDragStart,
+      onDrop: _onDrop,
+      onAnimationStart: _onAnimationStart,
+      onAnimationEnd: _onAnimationEnd,
+      onAnimationIteration: _onAnimationIteration,
+      ...motionProps
+    } = props;
+
     return (
-      <Comp
+      <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        {...props}
+        whileHover={props.disabled ? undefined : buttonHover}
+        whileTap={props.disabled ? undefined : buttonTap}
+        {...motionProps}
       />
     )
   }

@@ -457,9 +457,15 @@ export function ChartDetailPage() {
                       ☉
                     </span>
                     <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Sua essência
-                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                          Sua essência
+                        </p>
+                        <InfoTooltip
+                          content="O Sol representa sua identidade central, propósito de vida e vitalidade. É o núcleo da sua personalidade consciente."
+                          side="top"
+                        />
+                      </div>
                       <p className="text-lg font-semibold text-foreground">
                         Sol em {getSignSymbol(sunSign)} {sunSign}
                       </p>
@@ -477,9 +483,15 @@ export function ChartDetailPage() {
                       ☽
                     </span>
                     <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Suas emoções
-                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                          Suas emoções
+                        </p>
+                        <InfoTooltip
+                          content="A Lua representa suas emoções, necessidades instintivas e reações inconscientes. Revela como você se sente seguro e confortável."
+                          side="top"
+                        />
+                      </div>
                       <p className="text-lg font-semibold text-foreground">
                         Lua em {getSignSymbol(moonSign)} {moonSign}
                       </p>
@@ -497,9 +509,15 @@ export function ChartDetailPage() {
                       ASC
                     </span>
                     <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Sua aparência
-                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                          Sua aparência
+                        </p>
+                        <InfoTooltip
+                          content="O Ascendente é o signo que estava nascendo no horizonte leste no momento do seu nascimento. Representa sua máscara social e primeira impressão."
+                          side="top"
+                        />
+                      </div>
                       <p className="text-lg font-semibold text-foreground">
                         {getSignSymbol(ascSign)} {ascSign}
                       </p>
@@ -550,7 +568,13 @@ export function ChartDetailPage() {
             {chart.chart_data && (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-h3 font-display">Posições Planetárias</CardTitle>
+                  <CardTitle className="text-h3 font-display flex items-center gap-2">
+                    Posições Planetárias
+                    <InfoTooltip
+                      content="Posições exatas dos planetas calculadas com Swiss Ephemeris (precisão < 1 arcsecond). Inclui longitude, latitude, velocidade e estado retrógrado."
+                      side="right"
+                    />
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <PlanetList
@@ -569,7 +593,13 @@ export function ChartDetailPage() {
             {chart.chart_data && (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-h3 font-display">Casas Astrológicas</CardTitle>
+                  <CardTitle className="text-h3 font-display flex items-center gap-2">
+                    Casas Astrológicas
+                    <InfoTooltip
+                      content={`As 12 casas dividem o céu em setores que representam áreas da vida. Sistema utilizado: ${chart.house_system}. Cada casa tem uma cúspide (início) e um regente planetário.`}
+                      side="right"
+                    />
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <HouseTable
@@ -586,7 +616,13 @@ export function ChartDetailPage() {
             {chart.chart_data && (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-h3 font-display">Aspectos Planetários</CardTitle>
+                  <CardTitle className="text-h3 font-display flex items-center gap-2">
+                    Aspectos Planetários
+                    <InfoTooltip
+                      content="Aspectos são ângulos geométricos entre planetas que revelam como eles interagem. Detectamos aspectos maiores (conjunção, oposição, trígono, quadratura, sextil) e menores (quincunx, semisextil, etc.) com orbes configuráveis."
+                      side="right"
+                    />
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <AspectGrid

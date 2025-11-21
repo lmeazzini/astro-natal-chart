@@ -92,6 +92,146 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Why Astro Section - Educational Content */}
+      <section className="py-16 lg:py-24 bg-card/30">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
+              Por que Astro?
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
+              Nossa plataforma combina o melhor da <strong>Astrologia Tradicional</strong> com{' '}
+              <strong>precisão astronômica de ponta</strong>, oferecendo cálculos confiáveis e interpretações autênticas.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {/* Feature 1: Traditional Astrology */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader>
+                <div className="w-12 h-12 bg-primary/10 rounded-astro-md flex items-center justify-center mb-4">
+                  <Book className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl mb-3">Astrologia Tradicional</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Utilizamos técnicas clássicas da <strong>Astrologia Helenística</strong> e <strong>Medieval</strong>:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Dignidades Essenciais</strong>: Domicílio, Exaltação, Triplicidade</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Análise de Seita</strong>: Planetas diurnos e noturnos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Temperamento</strong>: Análise dos 4 elementos e qualidades</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Senhor da Natividade</strong>: Identificação do planeta regente</span>
+                  </li>
+                </ul>
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground italic">
+                    <strong>Diferencial:</strong> Ao contrário da astrologia moderna psicológica, focamos em técnicas preditivas e objetivas validadas por séculos de prática.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Feature 2: Swiss Ephemeris Precision */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader>
+                <div className="w-12 h-12 bg-primary/10 rounded-astro-md flex items-center justify-center mb-4">
+                  <Satellite className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl mb-3">Precisão Swiss Ephemeris</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Utilizamos o <strong>Swiss Ephemeris</strong> com efemérides <strong>JPL DE431</strong> da NASA:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>&lt; 1 arcsecond de erro</strong>: Precisão astronômica profissional</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Validação NASA/JPL</strong>: Mesmas efemérides de missões espaciais</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Cobertura de 13.000 anos</strong>: Cálculos históricos e futuros confiáveis</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Ajustes relativísticos</strong>: Inclui correções de Relatividade Geral</span>
+                  </li>
+                </ul>
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground italic">
+                    <strong>Por que importa?</strong> Diferenças de minutos na hora de nascimento podem alterar casas e aspectos. Nossa precisão garante cálculos confiáveis mesmo para horários aproximados.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Feature 3: Open Source & Transparency */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader>
+                <div className="w-12 h-12 bg-primary/10 rounded-astro-md flex items-center justify-center mb-4">
+                  <FileCheck className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl mb-3">Código Aberto & Transparência</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Projeto <strong>open source</strong> com metodologia transparente e verificável:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Código auditável</strong>: Qualquer um pode verificar nossos cálculos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Metodologia documentada</strong>: Explicamos cada técnica utilizada</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Sem "caixas-pretas"</strong>: Algoritmos claros e científicos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span><strong>Comunidade ativa</strong>: Contribuições de astrólogos e desenvolvedores</span>
+                  </li>
+                </ul>
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground italic">
+                    <strong>Nosso compromisso:</strong> Nenhum algoritmo secreto ou "fórmula mágica". Tudo é baseado em textos clássicos e cálculos astronômicos verificáveis.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <Button asChild variant="outline" size="lg">
+              <Link to="/about/methodology">
+                Saiba Mais Sobre Nossa Metodologia
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works Section */}
       <section className="py-16 lg:py-24 bg-muted/20">
         <div className="max-w-7xl mx-auto px-4">

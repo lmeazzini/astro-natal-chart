@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,6 +19,7 @@ interface ConsentProps {
 
 export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 'cookies'] }: ConsentProps = {}) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [consents, setConsents] = useState({
     terms: false,
@@ -40,7 +42,7 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
     const missingConsents = requiredConsents.filter((type) => !consents[type]);
 
     if (missingConsents.length > 0) {
-      setError('Você deve aceitar todos os termos obrigatórios para continuar');
+      setError(t('pages.consent.missingConsents', { defaultValue: 'Você deve aceitar todos os termos obrigatórios para continuar' }));
       return;
     }
 
@@ -69,20 +71,19 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Consentimento e Privacidade
+            {t('pages.consent.title', { defaultValue: 'Consentimento e Privacidade' })}
           </h1>
           <p className="text-muted-foreground">
-            Para usar o Real Astrology, você precisa aceitar nossos termos e
-            políticas
+            {t('pages.consent.subtitle', { defaultValue: 'Para usar o Real Astrology, você precisa aceitar nossos termos e políticas' })}
           </p>
         </div>
 
         {/* Consent Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Termos de Consentimento</CardTitle>
+            <CardTitle>{t('pages.consent.formTitle', { defaultValue: 'Termos de Consentimento' })}</CardTitle>
             <CardDescription>
-              Por favor, leia e aceite os documentos abaixo para continuar
+              {t('pages.consent.formDescription', { defaultValue: 'Por favor, leia e aceite os documentos abaixo para continuar' })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -104,20 +105,19 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
                   />
                   <label htmlFor="terms" className="flex-1 text-sm cursor-pointer">
                     <span className="font-medium text-foreground">
-                      Eu li e aceito os{' '}
+                      {t('pages.consent.terms.label', { defaultValue: 'Eu li e aceito os' })}{' '}
                       <Link
                         to="/terms"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        Termos de Uso
+                        {t('pages.consent.terms.link', { defaultValue: 'Termos de Uso' })}
                       </Link>{' '}
                       <span className="text-destructive">*</span>
                     </span>
                     <p className="mt-1 text-muted-foreground">
-                      Concordo com as regras de uso da plataforma, incluindo
-                      responsabilidades e limitações de serviço.
+                      {t('pages.consent.terms.description', { defaultValue: 'Concordo com as regras de uso da plataforma, incluindo responsabilidades e limitações de serviço.' })}
                     </p>
                   </label>
                 </div>
@@ -133,21 +133,19 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
                   />
                   <label htmlFor="privacy" className="flex-1 text-sm cursor-pointer">
                     <span className="font-medium text-foreground">
-                      Eu li e aceito a{' '}
+                      {t('pages.consent.privacy.label', { defaultValue: 'Eu li e aceito a' })}{' '}
                       <Link
                         to="/privacy"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        Política de Privacidade
+                        {t('pages.consent.privacy.link', { defaultValue: 'Política de Privacidade' })}
                       </Link>{' '}
                       <span className="text-destructive">*</span>
                     </span>
                     <p className="mt-1 text-muted-foreground">
-                      Autorizo o processamento dos meus dados pessoais conforme
-                      LGPD/GDPR, incluindo dados de nascimento para cálculo de
-                      mapas natais.
+                      {t('pages.consent.privacy.description', { defaultValue: 'Autorizo o processamento dos meus dados pessoais conforme LGPD/GDPR, incluindo dados de nascimento para cálculo de mapas natais.' })}
                     </p>
                   </label>
                 </div>
@@ -163,20 +161,19 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
                   />
                   <label htmlFor="cookies" className="flex-1 text-sm cursor-pointer">
                     <span className="font-medium text-foreground">
-                      Eu li e aceito a{' '}
+                      {t('pages.consent.cookies.label', { defaultValue: 'Eu li e aceito a' })}{' '}
                       <Link
                         to="/cookies"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        Política de Cookies
+                        {t('pages.consent.cookies.link', { defaultValue: 'Política de Cookies' })}
                       </Link>{' '}
                       <span className="text-destructive">*</span>
                     </span>
                     <p className="mt-1 text-muted-foreground">
-                      Concordo com o uso de cookies essenciais, funcionais e
-                      analíticos para melhorar minha experiência.
+                      {t('pages.consent.cookies.description', { defaultValue: 'Concordo com o uso de cookies essenciais, funcionais e analíticos para melhorar minha experiência.' })}
                     </p>
                   </label>
                 </div>
@@ -187,24 +184,23 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
             <Alert className="mt-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
               <AlertDescription>
                 <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                  Seus Direitos LGPD/GDPR:
+                  {t('pages.consent.rights.title', { defaultValue: 'Seus Direitos LGPD/GDPR:' })}
                 </h3>
                 <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                  <li>✓ Acessar e exportar todos os seus dados</li>
-                  <li>✓ Corrigir informações incorretas</li>
-                  <li>✓ Solicitar exclusão da conta (direito ao esquecimento)</li>
-                  <li>✓ Revogar consentimento a qualquer momento</li>
+                  <li>{t('pages.consent.rights.access', { defaultValue: '✓ Acessar e exportar todos os seus dados' })}</li>
+                  <li>{t('pages.consent.rights.correct', { defaultValue: '✓ Corrigir informações incorretas' })}</li>
+                  <li>{t('pages.consent.rights.delete', { defaultValue: '✓ Solicitar exclusão da conta (direito ao esquecimento)' })}</li>
+                  <li>{t('pages.consent.rights.revoke', { defaultValue: '✓ Revogar consentimento a qualquer momento' })}</li>
                 </ul>
                 <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-                  Todas essas opções estarão disponíveis em Configurações →
-                  Privacidade
+                  {t('pages.consent.rights.location', { defaultValue: 'Todas essas opções estarão disponíveis em Configurações → Privacidade' })}
                 </p>
               </AlertDescription>
             </Alert>
 
             {/* Required notice */}
             <p className="mt-6 text-xs text-muted-foreground text-center">
-              <span className="text-destructive">*</span> Campos obrigatórios
+              <span className="text-destructive">*</span> {t('pages.consent.requiredFields', { defaultValue: 'Campos obrigatórios' })}
             </p>
 
             {/* Buttons */}
@@ -214,19 +210,19 @@ export function ConsentPage({ onAccept, requiredConsents = ['terms', 'privacy', 
                 className="flex-1"
                 onClick={() => navigate(-1)}
               >
-                Voltar
+                {t('pages.consent.back', { defaultValue: 'Voltar' })}
               </Button>
               <Button
                 className="flex-1"
                 onClick={handleAccept}
               >
-                Aceitar e Continuar
+                {t('pages.consent.acceptAndContinue', { defaultValue: 'Aceitar e Continuar' })}
               </Button>
             </div>
 
             {/* Contact */}
             <div className="mt-6 text-center text-xs text-muted-foreground">
-              Dúvidas?{' '}
+              {t('pages.consent.questions', { defaultValue: 'Dúvidas?' })}{' '}
               <a
                 href="mailto:dpo@astro-app.com"
                 className="text-primary hover:underline"

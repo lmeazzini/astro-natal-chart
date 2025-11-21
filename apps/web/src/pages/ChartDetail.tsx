@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
 import { interpretationsService, ChartInterpretations } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
@@ -21,6 +22,7 @@ import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,6 +32,7 @@ import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2 } from 'lucide-react';
 const TOKEN_KEY = 'astro_access_token';
 
 export function ChartDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -89,14 +92,14 @@ export function ChartDetailPage() {
       }
 
       if (!id) {
-        setError('ID do mapa natal não fornecido');
+        setError(t('chartDetail.errors.noId', { defaultValue: 'Birth chart ID not provided' }));
         return;
       }
 
       const chartData = await chartsService.getById(id, token);
       setChart(chartData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar mapa natal');
+      setError(err instanceof Error ? err.message : t('chartDetail.errors.loadError', { defaultValue: 'Error loading birth chart' }));
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +119,7 @@ export function ChartDetailPage() {
   }
 
   async function handleDelete() {
-    if (!confirm('Tem certeza que deseja excluir este mapa natal?')) {
+    if (!confirm(t('dashboard.confirmDelete'))) {
       return;
     }
 
@@ -127,7 +130,7 @@ export function ChartDetailPage() {
       await chartsService.delete(id, token);
       navigate('/charts');
     } catch (err) {
-      alert('Erro ao excluir mapa');
+      alert(t('dashboard.deleteError'));
     }
   }
 
@@ -164,13 +167,13 @@ export function ChartDetailPage() {
           } else if (status.status === 'failed') {
             clearInterval(pollInterval);
             setPdfStatus('failed');
-            setPdfError(status.message || 'Erro ao gerar PDF');
+            setPdfError(status.message || t('chartDetail.pdf.generateError', { defaultValue: 'Error generating PDF' }));
           }
           // If status is 'generating', continue polling
         } catch (err) {
           clearInterval(pollInterval);
           setPdfStatus('failed');
-          setPdfError(err instanceof Error ? err.message : 'Erro ao verificar status do PDF');
+          setPdfError(err instanceof Error ? err.message : t('chartDetail.pdf.statusError', { defaultValue: 'Error checking PDF status' }));
         }
       }, 2000); // Poll every 2 seconds
 
@@ -179,13 +182,13 @@ export function ChartDetailPage() {
         clearInterval(pollInterval);
         if (pdfStatus === 'generating') {
           setPdfStatus('failed');
-          setPdfError('Tempo limite excedido ao gerar PDF');
+          setPdfError(t('chartDetail.pdf.timeout', { defaultValue: 'PDF generation timed out' }));
         }
       }, 300000); // 5 minutes
 
     } catch (err) {
       setPdfStatus('failed');
-      setPdfError(err instanceof Error ? err.message : 'Erro ao iniciar geração de PDF');
+      setPdfError(err instanceof Error ? err.message : t('chartDetail.pdf.startError', { defaultValue: 'Error starting PDF generation' }));
     }
   }
 
@@ -208,7 +211,7 @@ export function ChartDetailPage() {
           <div className="inline-block animate-shimmer mb-astro-md">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <p className="text-body text-muted-foreground">Carregando mapa natal...</p>
+          <p className="text-body text-muted-foreground">{t('chartDetail.loading', { defaultValue: 'Loading birth chart...' })}</p>
         </div>
       </div>
     );
@@ -222,9 +225,9 @@ export function ChartDetailPage() {
           <div className="inline-block animate-shimmer mb-astro-md">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <h2 className="text-headline-3 font-display mb-astro-sm">Gerando seu Mapa Natal...</h2>
+          <h2 className="text-headline-3 font-display mb-astro-sm">{t('chartDetail.generating', { defaultValue: 'Generating your Birth Chart...' })}</h2>
           <p className="text-body text-muted-foreground mb-astro-md">
-            Estamos calculando as posições planetárias e gerando interpretações astrológicas.
+            {t('chartDetail.generatingDesc', { defaultValue: 'We are calculating planetary positions and generating astrological interpretations.' })}
           </p>
           <div className="w-full bg-muted rounded-full h-2 mb-astro-sm">
             <div
@@ -233,7 +236,7 @@ export function ChartDetailPage() {
             />
           </div>
           <p className="text-caption text-muted-foreground">
-            {chart.progress}% completo
+            {chart.progress}% {t('chartDetail.complete', { defaultValue: 'complete' })}
           </p>
         </div>
       </div>
@@ -246,12 +249,12 @@ export function ChartDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5 flex items-center justify-center">
         <div className="text-center max-w-md">
           <h2 className="text-headline-3 font-display mb-astro-sm text-destructive">
-            Erro ao Gerar Mapa
+            {t('chartDetail.errors.generateFailed', { defaultValue: 'Error Generating Chart' })}
           </h2>
           <p className="text-body text-muted-foreground mb-astro-md">
-            {chart.error_message || 'Ocorreu um erro ao processar seu mapa natal.'}
+            {chart.error_message || t('chartDetail.errors.processError', { defaultValue: 'An error occurred while processing your birth chart.' })}
           </p>
-          <Button onClick={() => navigate('/charts')}>Voltar aos Mapas</Button>
+          <Button onClick={() => navigate('/charts')}>{t('chartDetail.backToCharts', { defaultValue: 'Back to Charts' })}</Button>
         </div>
       </div>
     );
@@ -263,14 +266,14 @@ export function ChartDetailPage() {
         <div className="max-w-md w-full animate-fade-in">
           <div className="bg-destructive/10 border border-destructive/20 rounded-astro-lg p-6">
             <h2 className="text-lg font-semibold text-destructive mb-2">
-              Erro
+              {t('common.error')}
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              {error || 'Mapa natal não encontrado'}
+              {error || t('chartDetail.errors.notFound', { defaultValue: 'Birth chart not found' })}
             </p>
             <Button asChild className="w-full">
               <Link to="/charts">
-                Voltar para Meus Mapas
+                {t('chartDetail.backToMyCharts', { defaultValue: 'Back to My Charts' })}
               </Link>
             </Button>
           </div>
@@ -310,7 +313,7 @@ export function ChartDetailPage() {
               <Link
                 to="/dashboard"
                 className="hover:opacity-80 transition-all duration-200 flex-shrink-0"
-                aria-label="Voltar ao Dashboard"
+                aria-label={t('common.back')}
               >
                 <img
                   src="/logo.png"
@@ -329,6 +332,7 @@ export function ChartDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <LanguageSelector />
               <ThemeToggle />
 
               {/* PDF Export Button */}
@@ -342,22 +346,22 @@ export function ChartDetailPage() {
                 {pdfStatus === 'generating' ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando PDF...
+                    {t('chartDetail.generatingPDF')}
                   </>
                 ) : pdfStatus === 'ready' ? (
                   <>
                     <FileDown className="mr-2 h-4 w-4" />
-                    PDF Baixado!
+                    {t('chartDetail.pdf.downloaded', { defaultValue: 'PDF Downloaded!' })}
                   </>
                 ) : pdfStatus === 'failed' ? (
                   <>
                     <FileDown className="mr-2 h-4 w-4" />
-                    Tentar Novamente
+                    {t('chartDetail.pdf.retry', { defaultValue: 'Try Again' })}
                   </>
                 ) : (
                   <>
                     <FileDown className="mr-2 h-4 w-4" />
-                    Exportar PDF
+                    {t('chartDetail.pdf.export', { defaultValue: 'Export PDF' })}
                   </>
                 )}
               </Button>
@@ -369,12 +373,12 @@ export function ChartDetailPage() {
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
+                {t('common.delete')}
               </Button>
               <Button asChild variant="secondary" size="sm">
                 <Link to="/charts">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar
+                  {t('common.back')}
                 </Link>
               </Button>
             </div>
@@ -388,7 +392,7 @@ export function ChartDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">Ascendente</p>
+              <p className="text-sm text-muted-foreground mb-2 font-medium">{t('chartDetail.ascendant')}</p>
               <p className="text-h3 font-display text-foreground flex items-center gap-2">
                 {getSignSymbol(ascSign)} {ascSign} {ascDegree}°
               </p>
@@ -396,7 +400,7 @@ export function ChartDetailPage() {
           </Card>
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">Sistema de Casas</p>
+              <p className="text-sm text-muted-foreground mb-2 font-medium">{t('newChart.houseSystem')}</p>
               <p className="text-h3 font-display text-foreground capitalize">
                 {chart.house_system}
               </p>
@@ -404,7 +408,7 @@ export function ChartDetailPage() {
           </Card>
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">Tipo de Zodíaco</p>
+              <p className="text-sm text-muted-foreground mb-2 font-medium">{t('newChart.zodiacType')}</p>
               <p className="text-h3 font-display text-foreground capitalize">
                 {chart.zodiac_type}
               </p>
@@ -415,16 +419,16 @@ export function ChartDetailPage() {
         {/* Tabs */}
         <Tabs defaultValue="visual" className="w-full">
           <TabsList className="w-full justify-start mb-6">
-            <TabsTrigger value="visual">Visualização</TabsTrigger>
+            <TabsTrigger value="visual">{t('chartDetail.tabs.visual')}</TabsTrigger>
             <TabsTrigger value="planets">
-              Planetas ({chart.chart_data?.planets.length || 0})
+              {t('chartDetail.tabs.planets')} ({chart.chart_data?.planets.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="houses">Casas (12)</TabsTrigger>
+            <TabsTrigger value="houses">{t('chartDetail.tabs.houses')} (12)</TabsTrigger>
             <TabsTrigger value="aspects">
-              Aspectos ({chart.chart_data?.aspects.length || 0})
+              {t('chartDetail.tabs.aspects')} ({chart.chart_data?.aspects.length || 0})
             </TabsTrigger>
             <TabsTrigger value="arabic-parts">
-              Partes Árabes (4)
+              {t('chartDetail.tabs.arabicParts')} (4)
             </TabsTrigger>
           </TabsList>
 
@@ -433,13 +437,13 @@ export function ChartDetailPage() {
             {chart.chart_data && (
             <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-h3 font-display">Mapa Natal</CardTitle>
-                <CardDescription>Visualização completa do seu céu de nascimento</CardDescription>
+                <CardTitle className="text-h3 font-display">{t('chartDetail.birthChart', { defaultValue: 'Birth Chart' })}</CardTitle>
+                <CardDescription>{t('chartDetail.birthChartDesc', { defaultValue: 'Complete visualization of your birth sky' })}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
                 {/* Big Three Summary */}
                 <div>
-                  <h3 className="text-h4 font-display mb-4">Essência Astrológica</h3>
+                  <h3 className="text-h4 font-display mb-4">{t('chartDetail.astroEssence', { defaultValue: 'Astrological Essence' })}</h3>
                   <BigThreeBadge
                     sunSign={sunSign}
                     moonSign={moonSign}
@@ -453,68 +457,68 @@ export function ChartDetailPage() {
                 {/* Sun */}
                 <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl" title="Sol">
+                    <span className="text-3xl" title={t('chartDetail.sun')}>
                       ☉
                     </span>
                     <div>
                       <div className="flex items-center gap-1">
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Sua essência
+                          {t('chartDetail.bigThree.yourEssence', { defaultValue: 'Your essence' })}
                         </p>
                         <InfoTooltip
-                          content="O Sol representa sua identidade central, propósito de vida e vitalidade. É o núcleo da sua personalidade consciente."
+                          content={t('chartDetail.bigThree.sunTooltip', { defaultValue: 'The Sun represents your core identity, life purpose and vitality. It is the nucleus of your conscious personality.' })}
                           side="top"
                         />
                       </div>
                       <p className="text-lg font-semibold text-foreground">
-                        Sol em {getSignSymbol(sunSign)} {sunSign}
+                        {t('chartDetail.sun')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(sunSign)} {sunSign}
                       </p>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Identidade e propósito de vida
+                    {t('chartDetail.bigThree.sunDesc', { defaultValue: 'Identity and life purpose' })}
                   </p>
                 </div>
 
                 {/* Moon */}
                 <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl" title="Lua">
+                    <span className="text-3xl" title={t('chartDetail.moon')}>
                       ☽
                     </span>
                     <div>
                       <div className="flex items-center gap-1">
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Suas emoções
+                          {t('chartDetail.bigThree.yourEmotions', { defaultValue: 'Your emotions' })}
                         </p>
                         <InfoTooltip
-                          content="A Lua representa suas emoções, necessidades instintivas e reações inconscientes. Revela como você se sente seguro e confortável."
+                          content={t('chartDetail.bigThree.moonTooltip', { defaultValue: 'The Moon represents your emotions, instinctive needs and unconscious reactions. It reveals how you feel safe and comfortable.' })}
                           side="top"
                         />
                       </div>
                       <p className="text-lg font-semibold text-foreground">
-                        Lua em {getSignSymbol(moonSign)} {moonSign}
+                        {t('chartDetail.moon')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(moonSign)} {moonSign}
                       </p>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Mundo emocional e necessidades
+                    {t('chartDetail.bigThree.moonDesc', { defaultValue: 'Emotional world and needs' })}
                   </p>
                 </div>
 
                 {/* Ascendant */}
                 <div className="bg-gradient-to-br from-green-500/10 to-teal-500/10 border border-green-500/20 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl font-bold text-primary" title="Ascendente">
+                    <span className="text-3xl font-bold text-primary" title={t('chartDetail.ascendant')}>
                       ASC
                     </span>
                     <div>
                       <div className="flex items-center gap-1">
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Sua aparência
+                          {t('chartDetail.bigThree.yourAppearance', { defaultValue: 'Your appearance' })}
                         </p>
                         <InfoTooltip
-                          content="O Ascendente é o signo que estava nascendo no horizonte leste no momento do seu nascimento. Representa sua máscara social e primeira impressão."
+                          content={t('chartDetail.bigThree.ascTooltip', { defaultValue: 'The Ascendant is the sign that was rising on the eastern horizon at your birth. It represents your social mask and first impression.' })}
                           side="top"
                         />
                       </div>
@@ -524,7 +528,7 @@ export function ChartDetailPage() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Como os outros te veem
+                    {t('chartDetail.bigThree.ascDesc', { defaultValue: 'How others see you' })}
                   </p>
                 </div>
               </div>
@@ -555,7 +559,7 @@ export function ChartDetailPage() {
 
               {/* Chart Wheel - Professional visualization with AstroChart */}
               <div>
-                <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
+                <h3 className="text-h4 font-display mb-4">{t('chartDetail.chartWheel', { defaultValue: 'Birth Chart Wheel' })}</h3>
                 <ChartWheelAstro chartData={chart.chart_data} />
               </div>
               </CardContent>
@@ -569,9 +573,9 @@ export function ChartDetailPage() {
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
-                    Posições Planetárias
+                    {t('chartDetail.planetPositions', { defaultValue: 'Planetary Positions' })}
                     <InfoTooltip
-                      content="Posições exatas dos planetas calculadas com Swiss Ephemeris (precisão < 1 arcsecond). Inclui longitude, latitude, velocidade e estado retrógrado."
+                      content={t('chartDetail.planetPositionsTooltip', { defaultValue: 'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.' })}
                       side="right"
                     />
                   </CardTitle>
@@ -594,9 +598,9 @@ export function ChartDetailPage() {
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
-                    Casas Astrológicas
+                    {t('chartDetail.astroHouses', { defaultValue: 'Astrological Houses' })}
                     <InfoTooltip
-                      content={`As 12 casas dividem o céu em setores que representam áreas da vida. Sistema utilizado: ${chart.house_system}. Cada casa tem uma cúspide (início) e um regente planetário.`}
+                      content={t('chartDetail.astroHousesTooltip', { defaultValue: 'The 12 houses divide the sky into sectors representing life areas. System used: {{system}}. Each house has a cusp (beginning) and a planetary ruler.', system: chart.house_system })}
                       side="right"
                     />
                   </CardTitle>
@@ -617,9 +621,9 @@ export function ChartDetailPage() {
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
-                    Aspectos Planetários
+                    {t('chartDetail.planetaryAspects', { defaultValue: 'Planetary Aspects' })}
                     <InfoTooltip
-                      content="Aspectos são ângulos geométricos entre planetas que revelam como eles interagem. Detectamos aspectos maiores (conjunção, oposição, trígono, quadratura, sextil) e menores (quincunx, semisextil, etc.) com orbes configuráveis."
+                      content={t('chartDetail.planetaryAspectsTooltip', { defaultValue: 'Aspects are geometric angles between planets that reveal how they interact. We detect major aspects (conjunction, opposition, trine, square, sextile) and minor (quincunx, semisextile, etc.) with configurable orbs.' })}
                       side="right"
                     />
                   </CardTitle>
@@ -640,54 +644,49 @@ export function ChartDetailPage() {
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
-                    Partes Árabes (Lotes)
+                    {t('chartDetail.arabicPartsLots', { defaultValue: 'Arabic Parts (Lots)' })}
                     <InfoTooltip
-                      content="Partes Árabes (ou Lotes) são pontos calculados matematicamente a partir de posições planetárias. Revelam temas específicos da vida segundo a tradição helenística."
+                      content={t('chartDetail.arabicPartsTooltip', { defaultValue: 'Arabic Parts (or Lots) are mathematically calculated points from planetary positions. They reveal specific life themes according to Hellenistic tradition.' })}
                       side="right"
                     />
                   </CardTitle>
                   <CardDescription>
-                    Pontos sensitivos da tradição astrológica helenística
+                    {t('chartDetail.arabicPartsDesc', { defaultValue: 'Sensitive points from Hellenistic astrological tradition' })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ArabicPartsTable parts={chart.chart_data.arabic_parts} />
 
-                  {/* Seção Educacional */}
+                  {/* Educational Section */}
                   <div className="mt-8 p-6 bg-muted/50 rounded-lg space-y-4">
                     <h4 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      📚 Sobre as Partes Árabes
+                      📚 {t('chartDetail.arabicParts.aboutTitle', { defaultValue: 'About Arabic Parts' })}
                     </h4>
 
                     <div className="space-y-3 text-sm text-muted-foreground">
                       <p>
-                        <strong className="text-foreground">O que são:</strong> As Partes Árabes (também chamadas de "Lotes"
-                        na tradição helenística) são pontos calculados matematicamente a partir da posição de planetas e ângulos.
-                        Funcionam como "planetas virtuais", revelando temas específicos da vida.
+                        <strong className="text-foreground">{t('chartDetail.arabicParts.whatAre', { defaultValue: 'What they are:' })}</strong> {t('chartDetail.arabicParts.whatAreDesc', { defaultValue: 'Arabic Parts (also called "Lots" in Hellenistic tradition) are mathematically calculated points from planetary and angular positions. They function as "virtual planets", revealing specific life themes.' })}
                       </p>
 
                       <p>
-                        <strong className="text-foreground">Fórmula geral:</strong> Parte = Ascendente + Planeta1 - Planeta2 (todos em graus de 0-360).
-                        As fórmulas diferem entre mapas diurnos (☀️ Sol acima do horizonte) e noturnos (🌙 Sol abaixo do horizonte).
+                        <strong className="text-foreground">{t('chartDetail.arabicParts.formula', { defaultValue: 'General formula:' })}</strong> {t('chartDetail.arabicParts.formulaDesc', { defaultValue: 'Part = Ascendant + Planet1 - Planet2 (all in degrees 0-360). Formulas differ between day charts (☀️ Sun above horizon) and night charts (🌙 Sun below horizon).' })}
                       </p>
 
                       <p>
-                        <strong className="text-foreground">Importância:</strong> A casa onde cai uma Parte e os aspectos que ela recebe
-                        de planetas natais são significativos. O Lote da Fortuna é especialmente importante - astrólogos medievais
-                        o tratavam com a mesma importância que o Ascendente.
+                        <strong className="text-foreground">{t('chartDetail.arabicParts.importance', { defaultValue: 'Importance:' })}</strong> {t('chartDetail.arabicParts.importanceDesc', { defaultValue: 'The house where a Part falls and the aspects it receives from natal planets are significant. The Lot of Fortune is especially important - medieval astrologers treated it with the same importance as the Ascendant.' })}
                       </p>
 
                       <p>
-                        <strong className="text-foreground">Origem:</strong> Desenvolvidas na astrologia helenística (Grécia/Roma, 100 a.C. - 600 d.C.)
-                        e expandidas por astrólogos árabes medievais (700-1400 d.C.). Existem centenas de Partes catalogadas,
-                        mas as 4 apresentadas aqui são as mais fundamentais.
+                        <strong className="text-foreground">{t('chartDetail.arabicParts.origin', { defaultValue: 'Origin:' })}</strong> {t('chartDetail.arabicParts.originDesc', { defaultValue: 'Developed in Hellenistic astrology (Greece/Rome, 100 BC - 600 AD) and expanded by medieval Arab astrologers (700-1400 AD). There are hundreds of cataloged Parts, but the 4 presented here are the most fundamental.' })}
                       </p>
 
                       <div className="pt-4 border-t border-border">
                         <p className="text-xs italic">
-                          <strong>Nota técnica:</strong> O seu mapa é {chart.chart_data.sect === 'diurnal' ? 'diurno' : 'noturno'}
-                          ({chart.chart_data.sect === 'diurnal' ? 'Sol acima do horizonte' : 'Sol abaixo do horizonte'}),
-                          portanto as fórmulas utilizadas seguem as regras de seita da tradição helenística.
+                          <strong>{t('chartDetail.arabicParts.technicalNote', { defaultValue: 'Technical note:' })}</strong> {t('chartDetail.arabicParts.technicalNoteDesc', {
+                            defaultValue: 'Your chart is {{sect}} ({{sectDesc}}), so the formulas used follow the sect rules of Hellenistic tradition.',
+                            sect: chart.chart_data.sect === 'diurnal' ? t('chartDetail.diurnal', { defaultValue: 'diurnal' }) : t('chartDetail.nocturnal', { defaultValue: 'nocturnal' }),
+                            sectDesc: chart.chart_data.sect === 'diurnal' ? t('chartDetail.sunAbove', { defaultValue: 'Sun above horizon' }) : t('chartDetail.sunBelow', { defaultValue: 'Sun below horizon' })
+                          })}
                         </p>
                       </div>
                     </div>
@@ -697,9 +696,9 @@ export function ChartDetailPage() {
             ) : (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardContent className="pt-6 text-center text-muted-foreground">
-                  <p>Partes Árabes não disponíveis para este mapa.</p>
+                  <p>{t('chartDetail.arabicParts.notAvailable', { defaultValue: 'Arabic Parts not available for this chart.' })}</p>
                   <p className="text-sm mt-2">
-                    As Partes serão calculadas automaticamente em mapas criados ou atualizados após esta funcionalidade.
+                    {t('chartDetail.arabicParts.willBeCalculated', { defaultValue: 'Parts will be automatically calculated for charts created or updated after this feature.' })}
                   </p>
                 </CardContent>
               </Card>
@@ -711,7 +710,7 @@ export function ChartDetailPage() {
         {chart.notes && (
           <Card className="mt-6 border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-h4 font-display">Anotações</CardTitle>
+              <CardTitle className="text-h4 font-display">{t('chartDetail.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-body text-muted-foreground whitespace-pre-wrap">

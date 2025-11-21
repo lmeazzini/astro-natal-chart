@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { oauthService } from '../services/oauth';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ const REFRESH_TOKEN_KEY = 'astro_refresh_token';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { setUser } = useAuth();
   const [error, setError] = useState('');
 
@@ -29,7 +31,7 @@ export function OAuthCallbackPage() {
       const tokens = oauthService.parseCallbackParams();
 
       if (!tokens || !tokens.access_token || !tokens.refresh_token) {
-        setError('Falha na autenticação OAuth. Tokens não encontrados.');
+        setError(t('pages.oauthCallback.tokensNotFound', { defaultValue: 'Falha na autenticação OAuth. Tokens não encontrados.' }));
         return;
       }
 
@@ -45,7 +47,7 @@ export function OAuthCallbackPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao buscar dados do usuário');
+        throw new Error(t('pages.oauthCallback.userFetchFailed', { defaultValue: 'Falha ao buscar dados do usuário' }));
       }
 
       const userData = await response.json();
@@ -54,7 +56,7 @@ export function OAuthCallbackPage() {
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao processar autenticação OAuth');
+      setError(err instanceof Error ? err.message : t('pages.oauthCallback.genericError', { defaultValue: 'Erro ao processar autenticação OAuth' }));
     }
   }
 
@@ -64,14 +66,14 @@ export function OAuthCallbackPage() {
         <div className="max-w-md w-full">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro de Autenticação</AlertTitle>
+            <AlertTitle>{t('pages.oauthCallback.errorTitle', { defaultValue: 'Erro de Autenticação' })}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
           <Button
             onClick={() => navigate('/login')}
             className="w-full mt-4"
           >
-            Voltar para Login
+            {t('pages.oauthCallback.backToLogin', { defaultValue: 'Voltar para Login' })}
           </Button>
         </div>
       </div>
@@ -82,7 +84,7 @@ export function OAuthCallbackPage() {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-muted-foreground">Processando autenticação...</p>
+        <p className="text-muted-foreground">{t('pages.oauthCallback.processing', { defaultValue: 'Processando autenticação...' })}</p>
       </div>
     </div>
   );

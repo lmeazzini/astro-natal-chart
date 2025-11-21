@@ -3,6 +3,7 @@
  * Displays calculated Arabic Parts (Lots) in traditional astrology
  */
 
+import { useTranslation } from 'react-i18next';
 import { getSignSymbol } from '@/utils/astro';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip } from '@/components/InfoTooltip';
@@ -25,65 +26,61 @@ interface ArabicPartsTableProps {
   parts: ArabicParts;
 }
 
-interface PartInfo {
-  key: keyof ArabicParts;
-  name: string;
-  nameEn: string;
-  symbol: string;
-  description: string;
-  color: string;
-  tooltipContent: string;
-}
-
-const PARTS_INFO: PartInfo[] = [
-  {
-    key: 'fortune',
-    name: 'Lote da Fortuna',
-    nameEn: 'Part of Fortune',
-    symbol: '⊗',
-    description: 'Corpo, saúde, riqueza material',
-    color: 'from-amber-500/10 to-yellow-500/10 border-amber-500/20',
-    tooltipContent: 'A mais importante das Partes Árabes. Representa o corpo físico, a saúde vital e a riqueza material que "vem até nós". Na tradição helenística, é calculada a partir do Sol, Lua e Ascendente.',
-  },
-  {
-    key: 'spirit',
-    name: 'Lote do Espírito',
-    nameEn: 'Part of Spirit',
-    symbol: '☉',
-    description: 'Mente, ação, iniciativas',
-    color: 'from-blue-500/10 to-cyan-500/10 border-blue-500/20',
-    tooltipContent: 'Complementar ao Lote da Fortuna. Representa a mente, o intelecto e aquilo que "fazemos acontecer" através de nossas ações conscientes. É a fórmula inversa da Fortuna.',
-  },
-  {
-    key: 'eros',
-    name: 'Lote de Eros',
-    nameEn: 'Part of Eros',
-    symbol: '♥',
-    description: 'Amor, desejo, paixão',
-    color: 'from-pink-500/10 to-rose-500/10 border-pink-500/20',
-    tooltipContent: 'Representa o amor romântico, o desejo erótico e a paixão. Complementa a análise de Vênus, revelando como experimentamos o amor e a atração.',
-  },
-  {
-    key: 'necessity',
-    name: 'Lote da Necessidade',
-    nameEn: 'Part of Necessity',
-    symbol: '⚯',
-    description: 'Restrições, karma, destino',
-    color: 'from-gray-500/10 to-slate-500/10 border-gray-500/20',
-    tooltipContent: 'Representa as restrições inevitáveis, o karma e as lições de vida. Indica áreas onde enfrentamos dificuldades necessárias para nosso desenvolvimento.',
-  },
-];
-
 function formatDegree(degree: number): string {
   return degree.toFixed(2);
 }
 
 export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
+
+  // Translated parts info
+  const getPartsInfo = () => [
+    {
+      key: 'fortune' as const,
+      name: t('components.arabicParts.fortune', { defaultValue: 'Lote da Fortuna' }),
+      nameEn: 'Part of Fortune',
+      symbol: '⊗',
+      description: t('components.arabicParts.fortuneDesc', { defaultValue: 'Corpo, saúde, riqueza material' }),
+      color: 'from-amber-500/10 to-yellow-500/10 border-amber-500/20',
+      tooltipContent: t('components.arabicParts.fortuneTooltip', { defaultValue: 'A mais importante das Partes Árabes. Representa o corpo físico, a saúde vital e a riqueza material que "vem até nós". Na tradição helenística, é calculada a partir do Sol, Lua e Ascendente.' }),
+    },
+    {
+      key: 'spirit' as const,
+      name: t('components.arabicParts.spirit', { defaultValue: 'Lote do Espírito' }),
+      nameEn: 'Part of Spirit',
+      symbol: '☉',
+      description: t('components.arabicParts.spiritDesc', { defaultValue: 'Mente, ação, iniciativas' }),
+      color: 'from-blue-500/10 to-cyan-500/10 border-blue-500/20',
+      tooltipContent: t('components.arabicParts.spiritTooltip', { defaultValue: 'Complementar ao Lote da Fortuna. Representa a mente, o intelecto e aquilo que "fazemos acontecer" através de nossas ações conscientes. É a fórmula inversa da Fortuna.' }),
+    },
+    {
+      key: 'eros' as const,
+      name: t('components.arabicParts.eros', { defaultValue: 'Lote de Eros' }),
+      nameEn: 'Part of Eros',
+      symbol: '♥',
+      description: t('components.arabicParts.erosDesc', { defaultValue: 'Amor, desejo, paixão' }),
+      color: 'from-pink-500/10 to-rose-500/10 border-pink-500/20',
+      tooltipContent: t('components.arabicParts.erosTooltip', { defaultValue: 'Representa o amor romântico, o desejo erótico e a paixão. Complementa a análise de Vênus, revelando como experimentamos o amor e a atração.' }),
+    },
+    {
+      key: 'necessity' as const,
+      name: t('components.arabicParts.necessity', { defaultValue: 'Lote da Necessidade' }),
+      nameEn: 'Part of Necessity',
+      symbol: '⚯',
+      description: t('components.arabicParts.necessityDesc', { defaultValue: 'Restrições, karma, destino' }),
+      color: 'from-gray-500/10 to-slate-500/10 border-gray-500/20',
+      tooltipContent: t('components.arabicParts.necessityTooltip', { defaultValue: 'Representa as restrições inevitáveis, o karma e as lições de vida. Indica áreas onde enfrentamos dificuldades necessárias para nosso desenvolvimento.' }),
+    },
+  ];
+
+  const partsInfo = getPartsInfo();
+
   return (
     <div className="space-y-4">
       {/* Grid de Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {PARTS_INFO.map((info) => {
+        {partsInfo.map((info) => {
           const part = parts[info.key];
 
           return (
@@ -97,7 +94,7 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="text-lg font-semibold text-foreground">
-                          {info.name}
+                          {isEn ? info.nameEn : info.name}
                         </h4>
                         <InfoTooltip
                           content={info.tooltipContent}
@@ -105,7 +102,7 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
                         />
                       </div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                        {info.nameEn}
+                        {isEn ? info.name : info.nameEn}
                       </p>
                     </div>
                   </div>
@@ -113,16 +110,16 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Posição:</span>
+                    <span className="text-sm text-muted-foreground">{t('components.arabicParts.position', { defaultValue: 'Posição' })}:</span>
                     <span className="text-sm font-medium text-foreground">
                       {formatDegree(part.degree)}° {getSignSymbol(part.sign)} {part.sign}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Casa:</span>
+                    <span className="text-sm text-muted-foreground">{t('components.arabicParts.house', { defaultValue: 'Casa' })}:</span>
                     <span className="text-sm font-medium text-foreground">
-                      Casa {part.house}
+                      {t('components.arabicParts.houseNumber', { defaultValue: 'Casa {{num}}', num: part.house })}
                     </span>
                   </div>
 
@@ -146,30 +143,30 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-2 px-2 text-sm font-semibold text-muted-foreground">
-                    Parte
+                    {t('components.arabicParts.part', { defaultValue: 'Parte' })}
                   </th>
                   <th className="text-center py-2 px-2 text-sm font-semibold text-muted-foreground">
-                    Símbolo
+                    {t('components.arabicParts.symbol', { defaultValue: 'Símbolo' })}
                   </th>
                   <th className="text-left py-2 px-2 text-sm font-semibold text-muted-foreground">
-                    Posição
+                    {t('components.arabicParts.position', { defaultValue: 'Posição' })}
                   </th>
                   <th className="text-left py-2 px-2 text-sm font-semibold text-muted-foreground">
-                    Signo
+                    {t('components.arabicParts.sign', { defaultValue: 'Signo' })}
                   </th>
                   <th className="text-center py-2 px-2 text-sm font-semibold text-muted-foreground">
-                    Casa
+                    {t('components.arabicParts.house', { defaultValue: 'Casa' })}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {PARTS_INFO.map((info) => {
+                {partsInfo.map((info) => {
                   const part = parts[info.key];
 
                   return (
                     <tr key={info.key} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                       <td className="py-3 px-2 text-sm font-medium text-foreground">
-                        {info.name}
+                        {isEn ? info.nameEn : info.name}
                       </td>
                       <td className="py-3 px-2 text-center text-2xl">
                         {info.symbol}

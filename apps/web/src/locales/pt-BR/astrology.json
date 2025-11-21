@@ -1,0 +1,172 @@
+{
+  "chart": {
+    "birthChart": "Mapa Natal",
+    "natalChart": "Mapa Natal",
+    "chart": "Mapa"
+  },
+  "planets": {
+    "Sun": "Sol",
+    "Moon": "Lua",
+    "Mercury": "Mercúrio",
+    "Venus": "Vênus",
+    "Mars": "Marte",
+    "Jupiter": "Júpiter",
+    "Saturn": "Saturno",
+    "Uranus": "Urano",
+    "Neptune": "Netuno",
+    "Pluto": "Plutão",
+    "NorthNode": "Nodo Norte",
+    "SouthNode": "Nodo Sul",
+    "Chiron": "Quíron"
+  },
+  "signs": {
+    "Aries": "Áries",
+    "Taurus": "Touro",
+    "Gemini": "Gêmeos",
+    "Cancer": "Câncer",
+    "Leo": "Leão",
+    "Virgo": "Virgem",
+    "Libra": "Libra",
+    "Scorpio": "Escorpião",
+    "Sagittarius": "Sagitário",
+    "Capricorn": "Capricórnio",
+    "Aquarius": "Aquário",
+    "Pisces": "Peixes"
+  },
+  "houses": {
+    "house": "Casa",
+    "houses": "Casas",
+    "house_1": "Casa 1",
+    "house_2": "Casa 2",
+    "house_3": "Casa 3",
+    "house_4": "Casa 4",
+    "house_5": "Casa 5",
+    "house_6": "Casa 6",
+    "house_7": "Casa 7",
+    "house_8": "Casa 8",
+    "house_9": "Casa 9",
+    "house_10": "Casa 10",
+    "house_11": "Casa 11",
+    "house_12": "Casa 12"
+  },
+  "aspects": {
+    "conjunction": "Conjunção",
+    "opposition": "Oposição",
+    "trine": "Trígono",
+    "square": "Quadratura",
+    "sextile": "Sextil",
+    "quincunx": "Quincunce",
+    "semisextile": "Semissextil",
+    "semisquare": "Semiquadratura",
+    "sesquiquadrate": "Sesquiquadratura",
+    "applying": "Aplicativo",
+    "separating": "Separativo"
+  },
+  "angles": {
+    "ascendant": "Ascendente",
+    "descendant": "Descendente",
+    "midheaven": "Meio do Céu",
+    "mc": "MC",
+    "imumCoeli": "Fundo do Céu",
+    "ic": "IC"
+  },
+  "dignities": {
+    "dignity": "Dignidade",
+    "dignities": "Dignidades",
+    "domicile": "Domicílio",
+    "exaltation": "Exaltação",
+    "triplicity": "Triplicidade",
+    "term": "Termo",
+    "face": "Face",
+    "detriment": "Exílio",
+    "fall": "Queda",
+    "peregrine": "Peregrino"
+  },
+  "sect": {
+    "sect": "Seita",
+    "diurnal": "Diurna",
+    "nocturnal": "Noturna",
+    "daySect": "Seita Diurna",
+    "nightSect": "Seita Noturna",
+    "inSect": "Em Seita",
+    "outOfSect": "Fora de Seita"
+  },
+  "lunarPhase": {
+    "title": "Fase Lunar",
+    "newMoon": "Lua Nova",
+    "waxingCrescent": "Lua Crescente",
+    "firstQuarter": "Quarto Crescente",
+    "waxingGibbous": "Lua Gibosa Crescente",
+    "fullMoon": "Lua Cheia",
+    "waningGibbous": "Lua Gibosa Minguante",
+    "lastQuarter": "Quarto Minguante",
+    "waningCrescent": "Lua Minguante",
+    "description": "Fase da Lua no momento do nascimento"
+  },
+  "solarPhase": {
+    "title": "Fase Solar",
+    "description": "Posição do Sol em relação ao horizonte"
+  },
+  "lordOfNativity": {
+    "title": "Senhor da Natividade",
+    "description": "Planeta com maior dignidade essencial no mapa"
+  },
+  "temperament": {
+    "title": "Temperamento",
+    "hot": "Quente",
+    "cold": "Frio",
+    "wet": "Úmido",
+    "dry": "Seco",
+    "choleric": "Colérico",
+    "sanguine": "Sanguíneo",
+    "phlegmatic": "Fleumático",
+    "melancholic": "Melancólico",
+    "description": "Temperamento predominante segundo os quatro elementos"
+  },
+  "arabicParts": {
+    "title": "Partes Árabes",
+    "subtitle": "Lotes da tradição helenística",
+    "fortune": "Lote da Fortuna",
+    "spirit": "Lote do Espírito",
+    "eros": "Lote de Eros",
+    "necessity": "Lote da Necessidade",
+    "fortuneDesc": "Corpo, saúde, riqueza material",
+    "spiritDesc": "Mente, ação, iniciativas",
+    "erosDesc": "Amor, desejo, paixão",
+    "necessityDesc": "Restrições, karma, destino"
+  },
+  "houseSystems": {
+    "placidus": "Placidus",
+    "koch": "Koch",
+    "equal": "Casas Iguais",
+    "wholeSign": "Signo Inteiro",
+    "campanus": "Campanus",
+    "regiomontanus": "Regiomontanus"
+  },
+  "zodiacTypes": {
+    "tropical": "Tropical",
+    "sidereal": "Sideral"
+  },
+  "nodeTypes": {
+    "trueNode": "Nodo Verdadeiro",
+    "meanNode": "Nodo Médio"
+  },
+  "status": {
+    "retrograde": "Retrógrado",
+    "direct": "Direto",
+    "stationary": "Estacionário"
+  },
+  "general": {
+    "degree": "Grau",
+    "degrees": "Graus",
+    "minute": "Minuto",
+    "minutes": "Minutos",
+    "second": "Segundo",
+    "seconds": "Segundos",
+    "orb": "Orbe",
+    "longitude": "Longitude",
+    "latitude": "Latitude",
+    "speed": "Velocidade",
+    "position": "Posição"
+  }
+}

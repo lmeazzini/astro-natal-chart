@@ -1,0 +1,172 @@
+{
+  "chart": {
+    "birthChart": "Birth Chart",
+    "natalChart": "Natal Chart",
+    "chart": "Chart"
+  },
+  "planets": {
+    "Sun": "Sun",
+    "Moon": "Moon",
+    "Mercury": "Mercury",
+    "Venus": "Venus",
+    "Mars": "Mars",
+    "Jupiter": "Jupiter",
+    "Saturn": "Saturn",
+    "Uranus": "Uranus",
+    "Neptune": "Neptune",
+    "Pluto": "Pluto",
+    "NorthNode": "North Node",
+    "SouthNode": "South Node",
+    "Chiron": "Chiron"
+  },
+  "signs": {
+    "Aries": "Aries",
+    "Taurus": "Taurus",
+    "Gemini": "Gemini",
+    "Cancer": "Cancer",
+    "Leo": "Leo",
+    "Virgo": "Virgo",
+    "Libra": "Libra",
+    "Scorpio": "Scorpio",
+    "Sagittarius": "Sagittarius",
+    "Capricorn": "Capricorn",
+    "Aquarius": "Aquarius",
+    "Pisces": "Pisces"
+  },
+  "houses": {
+    "house": "House",
+    "houses": "Houses",
+    "house_1": "House 1",
+    "house_2": "House 2",
+    "house_3": "House 3",
+    "house_4": "House 4",
+    "house_5": "House 5",
+    "house_6": "House 6",
+    "house_7": "House 7",
+    "house_8": "House 8",
+    "house_9": "House 9",
+    "house_10": "House 10",
+    "house_11": "House 11",
+    "house_12": "House 12"
+  },
+  "aspects": {
+    "conjunction": "Conjunction",
+    "opposition": "Opposition",
+    "trine": "Trine",
+    "square": "Square",
+    "sextile": "Sextile",
+    "quincunx": "Quincunx",
+    "semisextile": "Semisextile",
+    "semisquare": "Semisquare",
+    "sesquiquadrate": "Sesquiquadrate",
+    "applying": "Applying",
+    "separating": "Separating"
+  },
+  "angles": {
+    "ascendant": "Ascendant",
+    "descendant": "Descendant",
+    "midheaven": "Midheaven",
+    "mc": "MC",
+    "imumCoeli": "Imum Coeli",
+    "ic": "IC"
+  },
+  "dignities": {
+    "dignity": "Dignity",
+    "dignities": "Dignities",
+    "domicile": "Domicile",
+    "exaltation": "Exaltation",
+    "triplicity": "Triplicity",
+    "term": "Term",
+    "face": "Face",
+    "detriment": "Detriment",
+    "fall": "Fall",
+    "peregrine": "Peregrine"
+  },
+  "sect": {
+    "sect": "Sect",
+    "diurnal": "Diurnal",
+    "nocturnal": "Nocturnal",
+    "daySect": "Day Sect",
+    "nightSect": "Night Sect",
+    "inSect": "In Sect",
+    "outOfSect": "Out of Sect"
+  },
+  "lunarPhase": {
+    "title": "Lunar Phase",
+    "newMoon": "New Moon",
+    "waxingCrescent": "Waxing Crescent",
+    "firstQuarter": "First Quarter",
+    "waxingGibbous": "Waxing Gibbous",
+    "fullMoon": "Full Moon",
+    "waningGibbous": "Waning Gibbous",
+    "lastQuarter": "Last Quarter",
+    "waningCrescent": "Waning Crescent",
+    "description": "Moon phase at the time of birth"
+  },
+  "solarPhase": {
+    "title": "Solar Phase",
+    "description": "Sun's position relative to the horizon"
+  },
+  "lordOfNativity": {
+    "title": "Lord of Nativity",
+    "description": "Planet with greatest essential dignity in the chart"
+  },
+  "temperament": {
+    "title": "Temperament",
+    "hot": "Hot",
+    "cold": "Cold",
+    "wet": "Wet",
+    "dry": "Dry",
+    "choleric": "Choleric",
+    "sanguine": "Sanguine",
+    "phlegmatic": "Phlegmatic",
+    "melancholic": "Melancholic",
+    "description": "Predominant temperament according to the four elements"
+  },
+  "arabicParts": {
+    "title": "Arabic Parts",
+    "subtitle": "Lots from Hellenistic tradition",
+    "fortune": "Part of Fortune",
+    "spirit": "Part of Spirit",
+    "eros": "Part of Eros",
+    "necessity": "Part of Necessity",
+    "fortuneDesc": "Body, health, material wealth",
+    "spiritDesc": "Mind, action, initiatives",
+    "erosDesc": "Love, desire, passion",
+    "necessityDesc": "Restrictions, karma, destiny"
+  },
+  "houseSystems": {
+    "placidus": "Placidus",
+    "koch": "Koch",
+    "equal": "Equal Houses",
+    "wholeSign": "Whole Sign",
+    "campanus": "Campanus",
+    "regiomontanus": "Regiomontanus"
+  },
+  "zodiacTypes": {
+    "tropical": "Tropical",
+    "sidereal": "Sidereal"
+  },
+  "nodeTypes": {
+    "trueNode": "True Node",
+    "meanNode": "Mean Node"
+  },
+  "status": {
+    "retrograde": "Retrograde",
+    "direct": "Direct",
+    "stationary": "Stationary"
+  },
+  "general": {
+    "degree": "Degree",
+    "degrees": "Degrees",
+    "minute": "Minute",
+    "minutes": "Minutes",
+    "second": "Second",
+    "seconds": "Seconds",
+    "orb": "Orb",
+    "longitude": "Longitude",
+    "latitude": "Latitude",
+    "speed": "Speed",
+    "position": "Position"
+  }
+}

@@ -16,6 +16,7 @@ import { LunarPhase } from '../components/LunarPhase';
 import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
+import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
@@ -422,6 +423,9 @@ export function ChartDetailPage() {
             <TabsTrigger value="aspects">
               Aspectos ({chart.chart_data?.aspects.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="arabic-parts">
+              Partes Árabes (4)
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab Content: Visual */}
@@ -625,6 +629,78 @@ export function ChartDetailPage() {
                     aspects={chart.chart_data.aspects}
                     interpretations={interpretations?.aspects}
                   />
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Tab Content: Arabic Parts */}
+          <TabsContent value="arabic-parts" className="mt-0">
+            {chart.chart_data?.arabic_parts ? (
+              <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-h3 font-display flex items-center gap-2">
+                    Partes Árabes (Lotes)
+                    <InfoTooltip
+                      content="Partes Árabes (ou Lotes) são pontos calculados matematicamente a partir de posições planetárias. Revelam temas específicos da vida segundo a tradição helenística."
+                      side="right"
+                    />
+                  </CardTitle>
+                  <CardDescription>
+                    Pontos sensitivos da tradição astrológica helenística
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ArabicPartsTable parts={chart.chart_data.arabic_parts} />
+
+                  {/* Seção Educacional */}
+                  <div className="mt-8 p-6 bg-muted/50 rounded-lg space-y-4">
+                    <h4 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      📚 Sobre as Partes Árabes
+                    </h4>
+
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <p>
+                        <strong className="text-foreground">O que são:</strong> As Partes Árabes (também chamadas de "Lotes"
+                        na tradição helenística) são pontos calculados matematicamente a partir da posição de planetas e ângulos.
+                        Funcionam como "planetas virtuais", revelando temas específicos da vida.
+                      </p>
+
+                      <p>
+                        <strong className="text-foreground">Fórmula geral:</strong> Parte = Ascendente + Planeta1 - Planeta2 (todos em graus de 0-360).
+                        As fórmulas diferem entre mapas diurnos (☀️ Sol acima do horizonte) e noturnos (🌙 Sol abaixo do horizonte).
+                      </p>
+
+                      <p>
+                        <strong className="text-foreground">Importância:</strong> A casa onde cai uma Parte e os aspectos que ela recebe
+                        de planetas natais são significativos. O Lote da Fortuna é especialmente importante - astrólogos medievais
+                        o tratavam com a mesma importância que o Ascendente.
+                      </p>
+
+                      <p>
+                        <strong className="text-foreground">Origem:</strong> Desenvolvidas na astrologia helenística (Grécia/Roma, 100 a.C. - 600 d.C.)
+                        e expandidas por astrólogos árabes medievais (700-1400 d.C.). Existem centenas de Partes catalogadas,
+                        mas as 4 apresentadas aqui são as mais fundamentais.
+                      </p>
+
+                      <div className="pt-4 border-t border-border">
+                        <p className="text-xs italic">
+                          <strong>Nota técnica:</strong> O seu mapa é {chart.chart_data.sect === 'diurnal' ? 'diurno' : 'noturno'}
+                          ({chart.chart_data.sect === 'diurnal' ? 'Sol acima do horizonte' : 'Sol abaixo do horizonte'}),
+                          portanto as fórmulas utilizadas seguem as regras de seita da tradição helenística.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  <p>Partes Árabes não disponíveis para este mapa.</p>
+                  <p className="text-sm mt-2">
+                    As Partes serão calculadas automaticamente em mapas criados ou atualizados após esta funcionalidade.
+                  </p>
                 </CardContent>
               </Card>
             )}

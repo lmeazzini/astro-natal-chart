@@ -12,6 +12,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import close_db, init_db
+from app.core.i18n.locale_middleware import LocaleMiddleware
 from app.core.logging_config import configure_logging, intercept_uvicorn_logs
 from app.core.middleware import RequestLoggingMiddleware
 from app.core.rate_limit import limiter
@@ -41,6 +42,9 @@ app.add_middleware(RequestLoggingMiddleware)
 
 # Security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
+
+# Locale middleware (extracts locale from Accept-Language header)
+app.add_middleware(LocaleMiddleware)
 
 # CORS middleware
 app.add_middleware(

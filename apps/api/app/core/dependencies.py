@@ -10,6 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.i18n import translate as _
+from app.core.i18n.messages import AuthMessages
 from app.core.security import decode_token
 from app.models.user import User
 
@@ -41,7 +43,7 @@ async def get_current_user(
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail=_(AuthMessages.INVALID_TOKEN),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -50,7 +52,7 @@ async def get_current_user(
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
+            detail=_(AuthMessages.INVALID_TOKEN_PAYLOAD),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -61,14 +63,14 @@ async def get_current_user(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail=_(AuthMessages.USER_NOT_FOUND),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user",
+            detail=_(AuthMessages.USER_INACTIVE),
         )
 
     # Check if token was issued before password change (JWT invalidation)
@@ -84,7 +86,7 @@ async def get_current_user(
             if token_issued_datetime < user.password_changed_at:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token invalidated due to password change",
+                    detail=_(AuthMessages.TOKEN_INVALIDATED),
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
@@ -124,6 +126,6 @@ async def get_current_superuser(
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough privileges",
+            detail=_(AuthMessages.NOT_ENOUGH_PRIVILEGES),
         )
     return current_user

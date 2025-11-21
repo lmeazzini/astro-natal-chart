@@ -5,19 +5,48 @@
  * - System timestamps (created_at, updated_at) in user's local timezone
  * - Birth datetimes preserved in original timezone
  * - Relative time formatting (e.g., "há 2 horas")
+ * - Locale-aware formatting based on i18n language setting
  */
 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 import 'dayjs/locale/pt-br';
+import 'dayjs/locale/en';
+import i18n from '../i18n';
 
 // Configure dayjs plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
-dayjs.locale('pt-br');
+dayjs.extend(localizedFormat);
+
+/**
+ * Get current locale from i18n settings
+ * Maps i18n locale to dayjs locale
+ */
+function getDayjsLocale(): string {
+  const lang = i18n.language;
+  if (lang?.startsWith('pt')) {
+    return 'pt-br';
+  }
+  return 'en';
+}
+
+/**
+ * Set dayjs locale based on current i18n language
+ */
+export function updateDayjsLocale(): void {
+  dayjs.locale(getDayjsLocale());
+}
+
+// Initialize locale
+updateDayjsLocale();
+
+// Listen for i18n language changes
+i18n.on('languageChanged', updateDayjsLocale);
 
 /**
  * Get user's timezone from browser
@@ -29,27 +58,41 @@ export function getUserTimezone(): string {
 }
 
 /**
+ * Get locale-specific date format
+ */
+function getDateFormat(includeTime: boolean): string {
+  const locale = getDayjsLocale();
+  if (locale === 'pt-br') {
+    return includeTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY';
+  }
+  return includeTime ? 'MM/DD/YYYY h:mm A' : 'MM/DD/YYYY';
+}
+
+/**
  * Format system timestamp (created_at, updated_at) to local timezone
  *
  * Converts UTC timestamp to user's local timezone with absolute formatting.
+ * Uses locale-aware date format (DD/MM/YYYY for pt-BR, MM/DD/YYYY for en-US).
  *
  * @param {string} isoString - ISO 8601 datetime string in UTC
  * @param {boolean} includeTime - Whether to include time (default: true)
- * @returns {string} Formatted date (e.g., "15/03/2025 14:30" or "15/03/2025")
+ * @returns {string} Formatted date (e.g., "15/03/2025 14:30" or "03/15/2025 2:30 PM")
  *
  * @example
+ * // pt-BR locale:
  * formatLocalDateTime("2025-03-15T17:30:00Z")
  * // => "15/03/2025 14:30" (if user is in America/Sao_Paulo, UTC-3)
  *
- * formatLocalDateTime("2025-03-15T17:30:00Z", false)
- * // => "15/03/2025"
+ * // en-US locale:
+ * formatLocalDateTime("2025-03-15T17:30:00Z")
+ * // => "03/15/2025 2:30 PM"
  */
 export function formatLocalDateTime(
   isoString: string,
   includeTime = true
 ): string {
   const userTz = getUserTimezone();
-  const format = includeTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY';
+  const format = getDateFormat(includeTime);
   return dayjs(isoString).tz(userTz).format(format);
 }
 
@@ -92,6 +135,7 @@ export function formatRelativeTime(
  *
  * Birth times should NOT be converted to user's timezone.
  * They represent a specific moment in a specific location.
+ * Uses locale-aware date format.
  *
  * @param {string} isoString - ISO 8601 datetime string (with timezone)
  * @param {string} birthTimezone - Original birth timezone (IANA name)
@@ -99,20 +143,21 @@ export function formatRelativeTime(
  * @returns {string} Formatted birth datetime
  *
  * @example
+ * // pt-BR locale:
  * formatBirthDateTime("1990-03-15T14:30:00-03:00", "America/Sao_Paulo")
  * // => "15/03/1990 14:30 (America/Sao_Paulo)"
  *
- * formatBirthDateTime("1990-03-15T14:30:00-03:00", "America/Sao_Paulo", false)
- * // => "15/03/1990 14:30"
+ * // en-US locale:
+ * formatBirthDateTime("1990-03-15T14:30:00-03:00", "America/Sao_Paulo")
+ * // => "03/15/1990 2:30 PM (America/Sao_Paulo)"
  */
 export function formatBirthDateTime(
   isoString: string,
   birthTimezone: string,
   includeTimezone = true
 ): string {
-  const formatted = dayjs(isoString)
-    .tz(birthTimezone)
-    .format('DD/MM/YYYY HH:mm');
+  const format = getDateFormat(true);
+  const formatted = dayjs(isoString).tz(birthTimezone).format(format);
 
   if (includeTimezone) {
     return `${formatted} (${birthTimezone})`;
@@ -257,4 +302,108 @@ export function getTimezoneAbbr(timezone: string): string {
   const parts = formatter.formatToParts(now);
   const tzPart = parts.find((part) => part.type === 'timeZoneName');
   return tzPart?.value || timezone;
+}
+
+// =============================================================================
+// Number Formatting Utilities
+// =============================================================================
+
+/**
+ * Get current locale code for Intl APIs
+ */
+function getIntlLocale(): string {
+  const lang = i18n.language;
+  if (lang?.startsWith('pt')) {
+    return 'pt-BR';
+  }
+  return 'en-US';
+}
+
+/**
+ * Format a number according to current locale
+ *
+ * @param {number} value - Number to format
+ * @param {number} decimals - Number of decimal places (default: 2)
+ * @returns {string} Formatted number (e.g., "1.234,56" for pt-BR, "1,234.56" for en-US)
+ *
+ * @example
+ * // pt-BR locale:
+ * formatNumber(1234.56) // => "1.234,56"
+ *
+ * // en-US locale:
+ * formatNumber(1234.56) // => "1,234.56"
+ */
+export function formatNumber(value: number, decimals = 2): string {
+  return new Intl.NumberFormat(getIntlLocale(), {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value);
+}
+
+/**
+ * Format a currency value according to current locale
+ *
+ * @param {number} value - Amount to format
+ * @param {string} currency - Currency code (default: BRL for pt-BR, USD for en-US)
+ * @returns {string} Formatted currency (e.g., "R$ 1.234,56" for pt-BR, "$1,234.56" for en-US)
+ *
+ * @example
+ * // pt-BR locale:
+ * formatCurrency(1234.56) // => "R$ 1.234,56"
+ *
+ * // en-US locale:
+ * formatCurrency(1234.56) // => "$1,234.56"
+ */
+export function formatCurrency(
+  value: number,
+  currency?: string
+): string {
+  const locale = getIntlLocale();
+  const currencyCode = currency || (locale === 'pt-BR' ? 'BRL' : 'USD');
+
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(value);
+}
+
+/**
+ * Format a percentage value
+ *
+ * @param {number} value - Value between 0 and 1 (e.g., 0.85 for 85%)
+ * @param {number} decimals - Number of decimal places (default: 1)
+ * @returns {string} Formatted percentage (e.g., "85,0%" for pt-BR, "85.0%" for en-US)
+ *
+ * @example
+ * // pt-BR locale:
+ * formatPercentage(0.856) // => "85,6%"
+ *
+ * // en-US locale:
+ * formatPercentage(0.856) // => "85.6%"
+ */
+export function formatPercentage(value: number, decimals = 1): string {
+  return new Intl.NumberFormat(getIntlLocale(), {
+    style: 'percent',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value);
+}
+
+/**
+ * Format a degree value (for astrological positions)
+ *
+ * @param {number} value - Degree value
+ * @param {number} decimals - Number of decimal places (default: 1)
+ * @returns {string} Formatted degree (e.g., "15,3°" for pt-BR, "15.3°" for en-US)
+ *
+ * @example
+ * // pt-BR locale:
+ * formatDegree(15.345) // => "15,3°"
+ *
+ * // en-US locale:
+ * formatDegree(15.345) // => "15.3°"
+ */
+export function formatDegree(value: number, decimals = 1): string {
+  const formatted = formatNumber(value, decimals);
+  return `${formatted}°`;
 }

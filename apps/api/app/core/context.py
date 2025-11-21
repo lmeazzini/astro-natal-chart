@@ -87,3 +87,23 @@ def get_user_id() -> str | None:
         User ID if available, None otherwise
     """
     return get_request_context().get("user_id")
+
+
+def set_locale(locale: str) -> None:
+    """
+    Set the current locale in context.
+
+    Args:
+        locale: The locale string (e.g., "pt-BR", "en-US")
+    """
+    set_request_context(locale=locale)
+
+
+def get_locale() -> str | None:
+    """
+    Get current locale from context.
+
+    Returns:
+        Locale string if available, None otherwise
+    """
+    return get_request_context().get("locale")

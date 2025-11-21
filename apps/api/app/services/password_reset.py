@@ -11,6 +11,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.i18n import translate as _
+from app.core.i18n.messages import AuthMessages, PasswordMessages
 from app.core.security import get_password_hash
 from app.models.password_reset import PasswordResetToken
 from app.models.user import User
@@ -58,7 +60,7 @@ class PasswordResetService:
         # Se usuário não existe, retorna sucesso (não revelar)
         if not user:
             return {
-                "message": "Se o email existir, você receberá instruções de recuperação",
+                "message": _(PasswordMessages.RESET_EMAIL_SENT),
                 "success": True,
             }
 
@@ -99,7 +101,7 @@ class PasswordResetService:
         )
 
         return {
-            "message": "Se o email existir, você receberá instruções de recuperação",
+            "message": _(PasswordMessages.RESET_EMAIL_SENT),
             "success": True,
         }
 
@@ -158,14 +160,14 @@ class PasswordResetService:
         # Validar token
         reset_token = await self.validate_reset_token(db, raw_token)
         if not reset_token:
-            raise ValueError("Token inválido ou expirado")
+            raise ValueError(_(PasswordMessages.INVALID_RESET_TOKEN))
 
         # Buscar usuário
         result = await db.execute(select(User).where(User.id == reset_token.user_id))
         user = result.scalar_one_or_none()
 
         if not user:
-            raise ValueError("Usuário não encontrado")
+            raise ValueError(_(AuthMessages.USER_NOT_FOUND))
 
         # Atualizar senha
         user.password_hash = get_password_hash(new_password)
@@ -193,7 +195,7 @@ class PasswordResetService:
         )
 
         return {
-            "message": "Senha alterada com sucesso",
+            "message": _(PasswordMessages.PASSWORD_CHANGED),
             "success": True,
         }
 

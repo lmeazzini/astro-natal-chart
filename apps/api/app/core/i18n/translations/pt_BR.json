@@ -1,0 +1,62 @@
+{
+  "auth": {
+    "user_already_exists": "Usuário com email {email} já existe",
+    "invalid_credentials": "Email ou senha inválidos",
+    "user_not_found": "Usuário não encontrado",
+    "user_inactive": "Conta de usuário inativa",
+    "invalid_token": "Token de autenticação inválido ou expirado",
+    "invalid_token_type": "Tipo de token inválido",
+    "invalid_token_payload": "Payload do token inválido",
+    "token_expired": "Token expirado",
+    "token_invalidated": "Token invalidado devido à alteração de senha",
+    "email_already_verified": "Email já verificado",
+    "verification_sent": "Email de verificação enviado com sucesso",
+    "verification_failed": "Falha ao enviar email de verificação",
+    "invalid_verification_token": "Token de verificação inválido ou expirado",
+    "not_enough_privileges": "Privilégios insuficientes"
+  },
+  "password": {
+    "reset_email_sent": "Se o email existir, você receberá instruções de recuperação",
+    "invalid_reset_token": "Token de redefinição inválido ou expirado",
+    "password_changed": "Senha alterada com sucesso",
+    "too_short": "Senha deve ter no mínimo 8 caracteres",
+    "missing_uppercase": "Senha deve conter pelo menos uma letra maiúscula",
+    "missing_lowercase": "Senha deve conter pelo menos uma letra minúscula",
+    "missing_digit": "Senha deve conter pelo menos um número",
+    "missing_special": "Senha deve conter pelo menos um caractere especial",
+    "passwords_dont_match": "As senhas não coincidem"
+  },
+  "validation": {
+    "required_field": "Campo obrigatório",
+    "invalid_email": "Email inválido",
+    "must_accept_terms": "Você deve aceitar os termos de uso e política de privacidade",
+    "invalid_date": "Data inválida",
+    "invalid_time": "Hora inválida",
+    "invalid_location": "Localização inválida"
+  },
+  "chart": {
+    "not_found": "Mapa natal não encontrado",
+    "created": "Mapa natal criado com sucesso",
+    "updated": "Mapa natal atualizado com sucesso",
+    "deleted": "Mapa natal excluído com sucesso",
+    "calculation_error": "Erro ao calcular mapa natal",
+    "pdf_generating": "PDF em geração. Aguarde alguns instantes.",
+    "pdf_ready": "PDF pronto para download",
+    "pdf_failed": "Falha ao gerar PDF"
+  },
+  "user": {
+    "profile_updated": "Perfil atualizado com sucesso",
+    "avatar_uploaded": "Avatar enviado com sucesso",
+    "account_deleted": "Conta agendada para exclusão",
+    "deletion_cancelled": "Exclusão de conta cancelada",
+    "data_exported": "Dados exportados com sucesso"
+  },
+  "common": {
+    "internal_error": "Erro interno do servidor",
+    "not_found": "Recurso não encontrado",
+    "forbidden": "Acesso negado",
+    "bad_request": "Requisição inválida",
+    "success": "Operação realizada com sucesso",
+    "rate_limit_exceeded": "Limite de requisições excedido. Tente novamente em alguns minutos."
+  }
+}

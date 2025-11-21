@@ -140,12 +140,11 @@ class TestPDFStatusEndpoint:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["chart_id"] == str(chart.id)
-        # Endpoint returns "processing" when no pdf_url and no error
-        assert data["pdf_status"] == "processing"
-        assert data["pdf_url"] is None
-        assert data["pdf_generated_at"] is None
-        assert data["error_message"] is None
+        # Endpoint returns "generating" when no pdf_url and no error
+        assert data["status"] == "generating"
+        assert data["download_url"] is None
+        assert data["generated_at"] is None
+        assert "in progress" in data["message"].lower()
 
     async def test_pdf_status_completed(
         self,
@@ -172,9 +171,10 @@ class TestPDFStatusEndpoint:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["pdf_status"] == "completed"
-        assert data["pdf_url"] == f"/media/pdfs/chart_{chart.id}.pdf"
-        assert data["pdf_generated_at"] is not None
+        assert data["status"] == "ready"
+        assert data["download_url"] == f"/media/pdfs/chart_{chart.id}.pdf"
+        assert data["generated_at"] is not None
+        assert "ready for download" in data["message"].lower()
 
     async def test_pdf_status_failed(
         self,
@@ -198,8 +198,8 @@ class TestPDFStatusEndpoint:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["pdf_status"] == "failed"
-        assert "LaTeX compilation error" in data["error_message"]
+        assert data["status"] == "failed"
+        assert "LaTeX compilation error" in data["message"]
 
     async def test_pdf_status_unauthorized(
         self,

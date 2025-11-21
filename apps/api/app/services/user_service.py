@@ -111,6 +111,9 @@ async def get_stats(
     """
     Get user statistics.
 
+    Counts ONLY active charts (excludes soft-deleted).
+    Returns user statistics including OAuth connections.
+
     Args:
         db: Database session
         user: Current user
@@ -119,21 +122,44 @@ async def get_stats(
         User statistics
     """
     # Count total charts (exclude soft-deleted)
-    stmt = select(func.count()).select_from(BirthChart).where(
+    count_stmt = select(func.count()).select_from(BirthChart).where(
         BirthChart.user_id == user.id,
         BirthChart.deleted_at.is_(None),
     )
-    result = await db.execute(stmt)
-    total_charts = result.scalar_one()
+    count_result = await db.execute(count_stmt)
+    total_charts = count_result.scalar_one()
+
+    # Get last chart created timestamp
+    last_chart_stmt = (
+        select(BirthChart.created_at)
+        .where(
+            BirthChart.user_id == user.id,
+            BirthChart.deleted_at.is_(None),
+        )
+        .order_by(BirthChart.created_at.desc())
+        .limit(1)
+    )
+    last_chart_result = await db.execute(last_chart_stmt)
+    last_chart_created_at = last_chart_result.scalar_one_or_none()
 
     # Calculate account age
     account_age_days = (datetime.now(UTC) - user.created_at).days
 
+    # Get OAuth connections
+    user_repo = UserRepository(db)
+    user_with_oauth = await user_repo.get_with_oauth_accounts(UUID(str(user.id)))
+
+    oauth_providers = []
+    if user_with_oauth and user_with_oauth.oauth_accounts:
+        oauth_providers = [account.provider for account in user_with_oauth.oauth_accounts]
+
     return UserStats(
         total_charts=total_charts,
         account_age_days=account_age_days,
-        last_login_at=user.last_login_at,
-        last_activity_at=user.last_activity_at,
+        last_chart_created_at=last_chart_created_at,
+        email_verified=user.email_verified,
+        has_oauth_connections=len(oauth_providers) > 0,
+        oauth_providers=oauth_providers,
     )
 
 

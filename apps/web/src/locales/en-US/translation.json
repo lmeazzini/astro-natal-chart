@@ -575,5 +575,54 @@
       "interpretation": "Interpretation",
       "note": "Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 factors of the natal chart: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase and Lord of the Nativity, following medieval astrology tradition."
     }
+  },
+  "pages": {
+    "landing": {
+      "homeLabel": "Home",
+      "login": "Login",
+      "createAccount": "Sign Up"
+    },
+    "oauthCallback": {
+      "tokensNotFound": "OAuth authentication failed. Tokens not found.",
+      "userFetchFailed": "Failed to fetch user data",
+      "genericError": "Error processing OAuth authentication",
+      "errorTitle": "Authentication Error",
+      "backToLogin": "Back to Login",
+      "processing": "Processing authentication..."
+    },
+    "consent": {
+      "title": "Consent and Privacy",
+      "subtitle": "To use Real Astrology, you need to accept our terms and policies",
+      "formTitle": "Consent Terms",
+      "formDescription": "Please read and accept the documents below to continue",
+      "missingConsents": "You must accept all required terms to continue",
+      "terms": {
+        "label": "I have read and accept the",
+        "link": "Terms of Service",
+        "description": "I agree to the platform usage rules, including responsibilities and service limitations."
+      },
+      "privacy": {
+        "label": "I have read and accept the",
+        "link": "Privacy Policy",
+        "description": "I authorize the processing of my personal data under LGPD/GDPR, including birth data for natal chart calculations."
+      },
+      "cookies": {
+        "label": "I have read and accept the",
+        "link": "Cookie Policy",
+        "description": "I agree to the use of essential, functional and analytical cookies to improve my experience."
+      },
+      "rights": {
+        "title": "Your LGPD/GDPR Rights:",
+        "access": "✓ Access and export all your data",
+        "correct": "✓ Correct inaccurate information",
+        "delete": "✓ Request account deletion (right to be forgotten)",
+        "revoke": "✓ Revoke consent at any time",
+        "location": "All these options will be available in Settings → Privacy"
+      },
+      "requiredFields": "Required fields",
+      "back": "Back",
+      "acceptAndContinue": "Accept and Continue",
+      "questions": "Questions?"
+    }
   }
 }

@@ -575,5 +575,54 @@
       "interpretation": "Interpretação",
       "note": "O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval."
     }
+  },
+  "pages": {
+    "landing": {
+      "homeLabel": "Página Inicial",
+      "login": "Entrar",
+      "createAccount": "Criar Conta"
+    },
+    "oauthCallback": {
+      "tokensNotFound": "Falha na autenticação OAuth. Tokens não encontrados.",
+      "userFetchFailed": "Falha ao buscar dados do usuário",
+      "genericError": "Erro ao processar autenticação OAuth",
+      "errorTitle": "Erro de Autenticação",
+      "backToLogin": "Voltar para Login",
+      "processing": "Processando autenticação..."
+    },
+    "consent": {
+      "title": "Consentimento e Privacidade",
+      "subtitle": "Para usar o Real Astrology, você precisa aceitar nossos termos e políticas",
+      "formTitle": "Termos de Consentimento",
+      "formDescription": "Por favor, leia e aceite os documentos abaixo para continuar",
+      "missingConsents": "Você deve aceitar todos os termos obrigatórios para continuar",
+      "terms": {
+        "label": "Eu li e aceito os",
+        "link": "Termos de Uso",
+        "description": "Concordo com as regras de uso da plataforma, incluindo responsabilidades e limitações de serviço."
+      },
+      "privacy": {
+        "label": "Eu li e aceito a",
+        "link": "Política de Privacidade",
+        "description": "Autorizo o processamento dos meus dados pessoais conforme LGPD/GDPR, incluindo dados de nascimento para cálculo de mapas natais."
+      },
+      "cookies": {
+        "label": "Eu li e aceito a",
+        "link": "Política de Cookies",
+        "description": "Concordo com o uso de cookies essenciais, funcionais e analíticos para melhorar minha experiência."
+      },
+      "rights": {
+        "title": "Seus Direitos LGPD/GDPR:",
+        "access": "✓ Acessar e exportar todos os seus dados",
+        "correct": "✓ Corrigir informações incorretas",
+        "delete": "✓ Solicitar exclusão da conta (direito ao esquecimento)",
+        "revoke": "✓ Revogar consentimento a qualquer momento",
+        "location": "Todas essas opções estarão disponíveis em Configurações → Privacidade"
+      },
+      "requiredFields": "Campos obrigatórios",
+      "back": "Voltar",
+      "acceptAndContinue": "Aceitar e Continuar",
+      "questions": "Dúvidas?"
+    }
   }
 }

@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { oauthService, OAuthProvider } from '../services/oauth';
 import { Logo } from '../components/Logo';
@@ -20,17 +21,21 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 
-// Form validation schema
-const loginFormSchema = z.object({
-  email: z.string().min(1, 'Email é obrigatório').email('Email inválido'),
-  password: z.string().min(1, 'Senha é obrigatória'),
-});
-
-type LoginFormValues = z.infer<typeof loginFormSchema>;
+type LoginFormValues = {
+  email: string;
+  password: string;
+};
 
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
+
+  // Form validation schema (must be inside component to access t())
+  const loginFormSchema = z.object({
+    email: z.string().min(1, t('validation.required')).email(t('validation.email')),
+    password: z.string().min(1, t('validation.required')),
+  });
 
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
@@ -74,7 +79,7 @@ export function LoginPage() {
       navigate('/dashboard');
     } catch (error) {
       setGeneralError(
-        error instanceof Error ? error.message : 'Erro ao fazer login'
+        error instanceof Error ? error.message : t('auth.login.error')
       );
     } finally {
       setIsLoading(false);
@@ -94,20 +99,20 @@ export function LoginPage() {
 
         {/* Content */}
         <div className="relative z-10 max-w-md text-center animate-fade-in">
-          <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
+          <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity" aria-label={t('common.back')}>
             <Logo size="xl" />
           </Link>
           <h1 className="text-h1 text-white mb-astro-md">
-            Bem-vindo de volta
+            {t('auth.login.title')}
           </h1>
           <p className="text-body text-white/90 mb-astro-xl">
-            Entre para acessar seus mapas natais e continuar sua jornada astrológica com precisão e insights profundos.
+            {t('auth.login.subtitle')}
           </p>
           <div className="inline-flex items-center gap-2 text-white/80 text-sm">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            Cálculos astronômicos precisos • Swiss Ephemeris
+            {t('educationalBanner.description')}
           </div>
         </div>
       </div>
@@ -117,7 +122,7 @@ export function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <Link to="/" className="inline-block mb-6 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
+            <Link to="/" className="inline-block mb-6 hover:opacity-80 transition-opacity" aria-label={t('common.back')}>
               <Logo size="lg" />
             </Link>
           </div>
@@ -125,9 +130,9 @@ export function LoginPage() {
           {/* Form Card */}
           <Card className="border-0 shadow-lg">
           <CardHeader className="space-y-2">
-            <CardTitle className="text-h2 text-center">Fazer Login</CardTitle>
+            <CardTitle className="text-h2 text-center">{t('auth.login.title')}</CardTitle>
             <CardDescription className="text-center text-base">
-              Acesse sua conta e continue explorando
+              {t('auth.login.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -145,11 +150,11 @@ export function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('auth.login.email')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="seu@email.com"
+                          placeholder={t('auth.login.email')}
                           autoComplete="email"
                           {...field}
                         />
@@ -165,7 +170,7 @@ export function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha</FormLabel>
+                      <FormLabel>{t('auth.login.password')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -181,7 +186,7 @@ export function LoginPage() {
                             size="icon"
                             className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
-                            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                            aria-label={showPassword ? t('common.hide') : t('common.show')}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -202,7 +207,7 @@ export function LoginPage() {
                     to="/forgot-password"
                     className="text-sm text-primary hover:underline"
                   >
-                    Esqueceu a senha?
+                    {t('auth.login.forgotPassword')}
                   </Link>
                 </div>
 
@@ -212,7 +217,7 @@ export function LoginPage() {
                   className="w-full"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Entrando...' : 'Entrar'}
+                  {isLoading ? t('common.loading') : t('auth.login.submit')}
                 </Button>
               </form>
             </Form>
@@ -226,7 +231,7 @@ export function LoginPage() {
                   </div>
                   <div className="relative flex justify-center text-sm font-medium">
                     <span className="bg-card px-4 text-muted-foreground">
-                      ou continue com
+                      {t('auth.login.orContinueWith')}
                     </span>
                   </div>
                 </div>
@@ -270,7 +275,7 @@ export function LoginPage() {
                           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                         </svg>
                       )}
-                      Continuar com {provider.display_name}
+                      {t('auth.login.orContinueWith')} {provider.display_name}
                     </Button>
                   ))}
                 </div>
@@ -281,12 +286,12 @@ export function LoginPage() {
           {/* Register Link */}
           <CardFooter className="flex-col space-y-4">
             <p className="w-full text-center text-sm text-muted-foreground">
-              Não tem uma conta?{' '}
+              {t('auth.login.noAccount')}{' '}
               <Link
                 to="/register"
                 className="text-primary hover:underline font-semibold"
               >
-                Criar conta gratuita
+                {t('auth.login.registerLink')}
               </Link>
             </p>
           </CardFooter>
@@ -294,13 +299,13 @@ export function LoginPage() {
 
         {/* Additional Info */}
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Ao entrar, você concorda com nossos{' '}
+          {t('auth.login.termsAgreement', { defaultValue: 'Ao entrar, você concorda com nossos' })}{' '}
           <Link to="/terms" className="text-primary hover:underline">
-            Termos de Uso
+            {t('auth.register.termsOfService')}
           </Link>
-          {' '}e{' '}
+          {' '}{t('common.and')}{' '}
           <Link to="/privacy" className="text-primary hover:underline">
-            Política de Privacidade
+            {t('auth.register.privacyPolicy')}
           </Link>
         </p>
       </div>

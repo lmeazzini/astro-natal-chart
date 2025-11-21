@@ -17,7 +17,9 @@
     "yes": "Yes",
     "no": "No",
     "optional": "Optional",
-    "required": "Required"
+    "required": "Required",
+    "show": "Show",
+    "hide": "Hide"
   },
   "nav": {
     "home": "Home",

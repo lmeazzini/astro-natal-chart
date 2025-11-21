@@ -834,9 +834,35 @@ logger.bind(user_id=user.id).info("Chart created")
 
 ## Development Workflow
 
-1. Create feature branch: `git checkout -b feature/name`
+### GitFlow Strategy
+
+We use a simplified GitFlow with two main branches:
+
+- **`main`** (🔴 Production): Stable code only, protected, auto-deploy to production
+- **`dev`** (🟡 Development): Default branch, active development, auto-deploy to staging
+
+**Branch types:**
+- `feature/*` - New functionality
+- `fix/*` - Bug corrections
+- `chore/*` - Maintenance tasks
+- `docs/*` - Documentation
+- `refactor/*` - Code improvements
+- `test/*` - Test additions
+- `hotfix/*` - Critical production fixes (from `main`)
+
+### Workflow Steps
+
+1. **Create feature branch from `dev`:**
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/my-feature
+   ```
+
 2. Make changes with hot-reload active (both frontend and backend)
+
 3. Run tests locally: `make test`
+
 4. **BEFORE COMMITTING: Verify CI checks pass locally**
    ```bash
    # Backend linting and type checking
@@ -854,9 +880,24 @@ logger.bind(user_id=user.id).info("Chart created")
    make lint
    ```
    **CRITICAL**: All these checks MUST pass before committing. The CI pipeline runs the same checks and will fail if any errors exist.
+
 5. Commit with Conventional Commits: `git commit -m "feat: add aspect calculation"`
-6. Push and create PR (CI will run automatically)
+
+6. Push and create PR **to `dev`** (CI will run automatically):
+   ```bash
+   git push origin feature/my-feature
+   gh pr create --base dev --title "feat: add aspect calculation"
+   ```
+
 7. Wait for CI to pass (all 3 jobs must be green: backend, frontend, build)
+
+8. After approval, merge to `dev`
+
+**IMPORTANT:**
+- **NEVER** commit directly to `main` or `dev`
+- **ALWAYS** create PRs to `dev` (not `main`)
+- Only maintainers merge `dev` → `main` (releases)
+- See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for full guidelines
 
 ## Key Dependencies to Know
 

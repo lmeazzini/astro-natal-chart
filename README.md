@@ -490,17 +490,43 @@ npm run test:e2e
 
 ## Contribuindo
 
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+Contribuições são bem-vindas! Veja o guia completo em [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+
+### Git Workflow (GitFlow)
+
+Usamos GitFlow com duas branches principais:
+
+- 🔴 **`main`** - Produção (stable, protected, auto-deploy)
+- 🟡 **`dev`** - Desenvolvimento (default branch, staging)
+
+**Quick start:**
+
+```bash
+# 1. Clone e configure
+git clone <repo-url>
+cd astro
+
+# 2. Criar feature branch (sempre a partir de dev)
+git checkout dev
+git pull origin dev
+git checkout -b feature/my-feature
+
+# 3. Desenvolver, testar, commitar
+make test
+make lint
+git commit -m "feat: add my feature"
+
+# 4. Push e abrir PR para dev
+git push origin feature/my-feature
+gh pr create --base dev
+```
 
 ### Padrões de Código
 
 - **Backend**: Ruff (linting), mypy (type checking), pytest
 - **Frontend**: ESLint, Prettier, TypeScript strict mode
 - **Commits**: Conventional Commits (feat:, fix:, docs:, etc.)
+- **PRs**: Sempre para `dev`, nunca direto para `main`
 
 ## Segurança
 

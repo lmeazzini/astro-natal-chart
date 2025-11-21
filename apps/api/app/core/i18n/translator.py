@@ -17,9 +17,20 @@ from app.core.context import get_locale
 # Directory containing translation files
 TRANSLATIONS_DIR = Path(__file__).parent / "translations"
 
-# Supported locales
+# Import shared constants (defined in __init__.py to avoid circular imports)
+# These are duplicated here to avoid import cycle - __init__.py imports this module
 SUPPORTED_LOCALES = ["pt-BR", "en-US"]
 DEFAULT_LOCALE = settings.DEFAULT_LOCALE
+
+# Locale normalization map (same as in __init__.py)
+_LOCALE_MAP = {
+    "en": "en-US",
+    "en_US": "en-US",
+    "en-us": "en-US",
+    "pt": "pt-BR",
+    "pt_BR": "pt-BR",
+    "pt-br": "pt-BR",
+}
 
 
 class Translator:
@@ -102,16 +113,7 @@ class Translator:
 
     def _normalize_locale(self, locale: str) -> str:
         """Normalize locale string to supported format."""
-        # Map common variants
-        locale_map = {
-            "en": "en-US",
-            "en_US": "en-US",
-            "en-us": "en-US",
-            "pt": "pt-BR",
-            "pt_BR": "pt-BR",
-            "pt-br": "pt-BR",
-        }
-        return locale_map.get(locale, locale)
+        return _LOCALE_MAP.get(locale, locale)
 
     def _get_nested(self, data: dict[str, Any], key: str) -> str | None:
         """Get a value from a nested dict using dot notation."""

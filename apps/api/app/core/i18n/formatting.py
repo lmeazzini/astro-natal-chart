@@ -7,8 +7,6 @@ Provides locale-aware formatting based on the current request context.
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from app.core.context import get_locale
-
 if TYPE_CHECKING:
     from decimal import Decimal
 
@@ -55,18 +53,6 @@ DATETIME_FORMATS = {
         "medium": "%b %d, %Y at %I:%M %p",
         "long": "%B %d, %Y at %I:%M:%S %p",
         "full": "%A, %B %d, %Y at %I:%M:%S %p",
-    },
-}
-
-# Number format settings by locale
-NUMBER_FORMATS = {
-    "pt-BR": {
-        "decimal_sep": ",",
-        "thousands_sep": ".",
-    },
-    "en-US": {
-        "decimal_sep": ".",
-        "thousands_sep": ",",
     },
 }
 
@@ -117,6 +103,8 @@ PT_BR_WEEKDAYS = {
 
 def _normalize_locale(locale: str | None) -> str:
     """Normalize locale string to supported format."""
+    from app.core.context import get_locale
+
     if locale is None:
         locale = get_locale() or "pt-BR"
 

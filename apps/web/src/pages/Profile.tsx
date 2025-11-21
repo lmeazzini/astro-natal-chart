@@ -7,6 +7,7 @@ import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import {
   userService,
@@ -15,6 +16,7 @@ import {
   OAuthConnection,
 } from '../services/users';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { LanguageSelector } from '../components/LanguageSelector';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -31,31 +33,20 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Form schemas
-const profileFormSchema = z.object({
-  full_name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  bio: z.string().max(500, 'Bio deve ter no máximo 500 caracteres').optional(),
-  locale: z.string(),
-  timezone: z.string(),
-  profile_public: z.boolean(),
-});
+// Type definitions (outside component to maintain type consistency)
+type ProfileFormValues = {
+  full_name: string;
+  bio?: string;
+  locale: string;
+  timezone: string;
+  profile_public: boolean;
+};
 
-const passwordFormSchema = z.object({
-  current_password: z.string().min(1, 'Senha atual é obrigatória'),
-  new_password: z.string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres')
-    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
-    .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
-    .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, 'Senha deve conter pelo menos um caractere especial'),
-  new_password_confirm: z.string().min(1, 'Confirmação de senha é obrigatória'),
-}).refine((data) => data.new_password === data.new_password_confirm, {
-  message: 'As senhas não coincidem',
-  path: ['new_password_confirm'],
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
-type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+type PasswordFormValues = {
+  current_password: string;
+  new_password: string;
+  new_password_confirm: string;
+};
 
 // Available timezones
 const TIMEZONES = [
@@ -74,8 +65,32 @@ const LOCALES = [
 ];
 
 export function ProfilePage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, setUser, logout, isLoading: authLoading } = useAuth();
+
+  // Form schemas (inside component to access t())
+  const profileFormSchema = z.object({
+    full_name: z.string().min(3, t('validation.minLength', { min: 3 })),
+    bio: z.string().max(500, t('validation.maxLength', { max: 500 })).optional(),
+    locale: z.string(),
+    timezone: z.string(),
+    profile_public: z.boolean(),
+  });
+
+  const passwordFormSchema = z.object({
+    current_password: z.string().min(1, t('validation.required')),
+    new_password: z.string()
+      .min(8, t('auth.register.passwordMinLength'))
+      .regex(/[A-Z]/, t('validation.passwordUppercase', { defaultValue: 'Password must contain at least one uppercase letter' }))
+      .regex(/[a-z]/, t('validation.passwordLowercase', { defaultValue: 'Password must contain at least one lowercase letter' }))
+      .regex(/[0-9]/, t('validation.passwordNumber', { defaultValue: 'Password must contain at least one number' }))
+      .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, t('validation.passwordSpecial', { defaultValue: 'Password must contain at least one special character' })),
+    new_password_confirm: z.string().min(1, t('validation.required')),
+  }).refine((data) => data.new_password === data.new_password_confirm, {
+    message: t('validation.passwordMismatch'),
+    path: ['new_password_confirm'],
+  });
 
   const [activeTab, setActiveTab] = useState<string>('profile');
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -167,11 +182,11 @@ export function ProfilePage() {
 
       const updatedUser = await userService.updateProfile(data, token);
       setUser(updatedUser);
-      setProfileSuccess('Perfil atualizado com sucesso!');
+      setProfileSuccess(t('profile.success'));
 
       setTimeout(() => setProfileSuccess(''), 5000);
     } catch (error) {
-      setProfileError(error instanceof Error ? error.message : 'Erro ao atualizar perfil');
+      setProfileError(error instanceof Error ? error.message : t('profile.error'));
     } finally {
       setProfileLoading(false);
     }
@@ -196,12 +211,12 @@ export function ProfilePage() {
         token
       );
 
-      setPasswordSuccess('Senha alterada com sucesso!');
+      setPasswordSuccess(t('profile.passwordSuccess'));
       passwordForm.reset();
 
       setTimeout(() => setPasswordSuccess(''), 5000);
     } catch (error) {
-      setPasswordError(error instanceof Error ? error.message : 'Erro ao alterar senha');
+      setPasswordError(error instanceof Error ? error.message : t('profile.passwordError'));
     } finally {
       setPasswordLoading(false);
     }
@@ -226,13 +241,13 @@ export function ProfilePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      alert('Erro ao exportar dados');
+      alert(t('profile.privacy.exportError', { defaultValue: 'Error exporting data' }));
     }
   }
 
   // Handle account deletion
   async function handleDeleteAccount() {
-    const password = prompt('Digite sua senha para confirmar a exclusão da conta:');
+    const password = prompt(t('profile.privacy.confirmPasswordPrompt', { defaultValue: 'Enter your password to confirm account deletion:' }));
     if (!password) return;
 
     try {
@@ -243,7 +258,7 @@ export function ProfilePage() {
       logout();
       navigate('/');
     } catch (error) {
-      alert('Erro ao excluir conta. Verifique sua senha.');
+      alert(t('profile.deleteError'));
     }
   }
 
@@ -258,13 +273,14 @@ export function ProfilePage() {
         oauthConnections.filter((conn) => conn.provider !== provider)
       );
     } catch (error) {
-      alert('Erro ao desconectar OAuth');
+      alert(t('profile.security.disconnectError', { defaultValue: 'Error disconnecting OAuth' }));
     }
   }
 
-  // Format date
+  // Format date based on current locale
   function formatDate(date: string | Date) {
-    return new Date(date).toLocaleDateString('pt-BR', {
+    const locale = i18n.language || 'pt-BR';
+    return new Date(date).toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -276,7 +292,7 @@ export function ProfilePage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
+        <p className="text-muted-foreground">{t('common.loading')}</p>
       </div>
     );
   }
@@ -293,22 +309,23 @@ export function ProfilePage() {
           <Link
             to="/dashboard"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            aria-label="Voltar ao Dashboard"
+            aria-label={t('common.back')}
           >
             <img
               src="/logo.png"
               alt="Real Astrology"
               className="h-8 w-8"
             />
-            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSelector />
             <ThemeToggle />
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}
             >
-              ← Voltar ao Dashboard
+              ← {t('profile.backToDashboard', { defaultValue: 'Back to Dashboard' })}
             </Button>
           </div>
         </div>
@@ -318,19 +335,19 @@ export function ProfilePage() {
       <div className="max-w-6xl mx-auto py-8 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-            <TabsTrigger value="password">Senha</TabsTrigger>
-            <TabsTrigger value="security">Segurança</TabsTrigger>
-            <TabsTrigger value="privacy">Privacidade</TabsTrigger>
+            <TabsTrigger value="profile">{t('profile.tabs.profile', { defaultValue: 'Profile' })}</TabsTrigger>
+            <TabsTrigger value="password">{t('profile.tabs.password', { defaultValue: 'Password' })}</TabsTrigger>
+            <TabsTrigger value="security">{t('profile.tabs.security', { defaultValue: 'Security' })}</TabsTrigger>
+            <TabsTrigger value="privacy">{t('profile.tabs.privacy', { defaultValue: 'Privacy' })}</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>Informações do Perfil</CardTitle>
+                <CardTitle>{t('profile.personalInfo')}</CardTitle>
                 <CardDescription>
-                  Atualize suas informações pessoais e preferências
+                  {t('profile.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -355,9 +372,9 @@ export function ProfilePage() {
                       name="full_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Completo *</FormLabel>
+                          <FormLabel>{t('profile.name')} *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Seu nome completo" {...field} />
+                            <Input placeholder={t('profile.namePlaceholder', { defaultValue: 'Your full name' })} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -369,16 +386,16 @@ export function ProfilePage() {
                       name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Bio</FormLabel>
+                          <FormLabel>{t('profile.bio', { defaultValue: 'Bio' })}</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Conte um pouco sobre você..."
+                              placeholder={t('profile.bioPlaceholder', { defaultValue: 'Tell us a little about yourself...' })}
                               className="resize-none"
                               {...field}
                             />
                           </FormControl>
                           <FormDescription>
-                            Máximo de 500 caracteres
+                            {t('profile.bioMaxLength', { defaultValue: 'Maximum 500 characters' })}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -391,11 +408,11 @@ export function ProfilePage() {
                         name="locale"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Idioma</FormLabel>
+                            <FormLabel>{t('profile.locale')}</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um idioma" />
+                                  <SelectValue placeholder={t('profile.selectLocale', { defaultValue: 'Select a language' })} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -416,11 +433,11 @@ export function ProfilePage() {
                         name="timezone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Fuso Horário</FormLabel>
+                            <FormLabel>{t('profile.timezone')}</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Selecione seu fuso horário" />
+                                  <SelectValue placeholder={t('profile.selectTimezone', { defaultValue: 'Select your timezone' })} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -444,10 +461,10 @@ export function ProfilePage() {
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">
-                              Perfil Público
+                              {t('profile.publicProfile', { defaultValue: 'Public Profile' })}
                             </FormLabel>
                             <FormDescription>
-                              Permitir que outros usuários visualizem seu perfil
+                              {t('profile.publicProfileDesc', { defaultValue: 'Allow other users to view your profile' })}
                             </FormDescription>
                           </div>
                           <FormControl>
@@ -461,7 +478,7 @@ export function ProfilePage() {
                     />
 
                     <Button type="submit" disabled={profileLoading}>
-                      {profileLoading ? 'Salvando...' : 'Salvar Alterações'}
+                      {profileLoading ? t('profile.saving', { defaultValue: 'Saving...' }) : t('profile.updateProfile')}
                     </Button>
                   </form>
                 </Form>
@@ -473,9 +490,9 @@ export function ProfilePage() {
           <TabsContent value="password">
             <Card>
               <CardHeader>
-                <CardTitle>Alterar Senha</CardTitle>
+                <CardTitle>{t('profile.changePassword')}</CardTitle>
                 <CardDescription>
-                  Atualize sua senha para manter sua conta segura
+                  {t('profile.changePasswordDesc', { defaultValue: 'Update your password to keep your account secure' })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -500,7 +517,7 @@ export function ProfilePage() {
                       name="current_password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Senha Atual</FormLabel>
+                          <FormLabel>{t('profile.currentPassword')}</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
@@ -514,7 +531,7 @@ export function ProfilePage() {
                       name="new_password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nova Senha</FormLabel>
+                          <FormLabel>{t('profile.newPassword')}</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
@@ -528,7 +545,7 @@ export function ProfilePage() {
                       name="new_password_confirm"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirmar Nova Senha</FormLabel>
+                          <FormLabel>{t('profile.confirmPassword')}</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
@@ -539,19 +556,19 @@ export function ProfilePage() {
 
                     <Alert>
                       <AlertDescription>
-                        <p className="font-medium mb-2">Requisitos da senha:</p>
+                        <p className="font-medium mb-2">{t('profile.passwordRequirements', { defaultValue: 'Password requirements:' })}</p>
                         <ul className="text-xs space-y-1 list-disc list-inside">
-                          <li>Mínimo 8 caracteres</li>
-                          <li>Uma letra maiúscula</li>
-                          <li>Uma letra minúscula</li>
-                          <li>Um número</li>
-                          <li>Um caractere especial</li>
+                          <li>{t('profile.passwordReqMin', { defaultValue: 'Minimum 8 characters' })}</li>
+                          <li>{t('profile.passwordReqUpper', { defaultValue: 'One uppercase letter' })}</li>
+                          <li>{t('profile.passwordReqLower', { defaultValue: 'One lowercase letter' })}</li>
+                          <li>{t('profile.passwordReqNumber', { defaultValue: 'One number' })}</li>
+                          <li>{t('profile.passwordReqSpecial', { defaultValue: 'One special character' })}</li>
                         </ul>
                       </AlertDescription>
                     </Alert>
 
                     <Button type="submit" disabled={passwordLoading}>
-                      {passwordLoading ? 'Alterando...' : 'Alterar Senha'}
+                      {passwordLoading ? t('profile.changing', { defaultValue: 'Changing...' }) : t('profile.updatePassword')}
                     </Button>
                   </form>
                 </Form>
@@ -595,7 +612,7 @@ export function ProfilePage() {
                   <>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardDescription>Dias de Conta</CardDescription>
+                        <CardDescription>{t('profile.security.accountDays', { defaultValue: 'Account Age (days)' })}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{stats.account_age_days}</div>
@@ -603,7 +620,7 @@ export function ProfilePage() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardDescription>Mapas Criados</CardDescription>
+                        <CardDescription>{t('profile.security.chartsCreated', { defaultValue: 'Charts Created' })}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{stats.total_charts}</div>
@@ -611,11 +628,11 @@ export function ProfilePage() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardDescription>Membro Desde</CardDescription>
+                        <CardDescription>{t('profile.security.memberSince', { defaultValue: 'Member Since' })}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          {new Date(user.created_at).toLocaleDateString('pt-BR', {
+                          {new Date(user.created_at).toLocaleDateString(i18n.language || 'pt-BR', {
                             month: 'short',
                             year: 'numeric'
                           })}
@@ -629,9 +646,9 @@ export function ProfilePage() {
               {/* OAuth Connections */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Conexões OAuth</CardTitle>
+                  <CardTitle>{t('profile.security.oauthConnections', { defaultValue: 'OAuth Connections' })}</CardTitle>
                   <CardDescription>
-                    Gerencie suas conexões com provedores externos
+                    {t('profile.security.oauthDesc', { defaultValue: 'Manage your connections with external providers' })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -652,7 +669,7 @@ export function ProfilePage() {
                               {conn.provider}
                             </Badge>
                             <span className="text-sm text-muted-foreground">
-                              Conectado em {new Date(conn.connected_at).toLocaleDateString('pt-BR')}
+                              {t('profile.security.connectedOn', { defaultValue: 'Connected on' })} {new Date(conn.connected_at).toLocaleDateString(i18n.language || 'pt-BR')}
                             </span>
                           </div>
                           <Dialog>
@@ -662,25 +679,25 @@ export function ProfilePage() {
                                 size="sm"
                                 disabled={oauthConnections.length === 1}
                               >
-                                Desconectar
+                                {t('profile.security.disconnect', { defaultValue: 'Disconnect' })}
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>Desconectar {conn.provider}?</DialogTitle>
+                                <DialogTitle>{t('profile.security.disconnectTitle', { defaultValue: 'Disconnect' })} {conn.provider}?</DialogTitle>
                                 <DialogDescription>
                                   {oauthConnections.length === 1
-                                    ? 'Este é seu último provedor OAuth. Certifique-se de ter uma senha configurada antes de desconectar.'
-                                    : 'Você poderá reconectar esta conta posteriormente.'}
+                                    ? t('profile.security.lastProviderWarning', { defaultValue: 'This is your last OAuth provider. Make sure you have a password set before disconnecting.' })
+                                    : t('profile.security.reconnectInfo', { defaultValue: 'You can reconnect this account later.' })}
                                 </DialogDescription>
                               </DialogHeader>
                               <DialogFooter>
-                                <Button variant="outline">Cancelar</Button>
+                                <Button variant="outline">{t('common.cancel')}</Button>
                                 <Button
                                   variant="destructive"
                                   onClick={() => handleDisconnectOAuth(conn.provider)}
                                 >
-                                  Desconectar
+                                  {t('profile.security.disconnect', { defaultValue: 'Disconnect' })}
                                 </Button>
                               </DialogFooter>
                             </DialogContent>
@@ -690,7 +707,7 @@ export function ProfilePage() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Nenhuma conexão OAuth configurada
+                      {t('profile.security.noOauthConnections', { defaultValue: 'No OAuth connections configured' })}
                     </p>
                   )}
                 </CardContent>
@@ -699,9 +716,9 @@ export function ProfilePage() {
               {/* Activity Log */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Atividade Recente</CardTitle>
+                  <CardTitle>{t('profile.security.recentActivity', { defaultValue: 'Recent Activity' })}</CardTitle>
                   <CardDescription>
-                    Últimas atividades em sua conta
+                    {t('profile.security.recentActivityDesc', { defaultValue: 'Latest activities on your account' })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -715,9 +732,9 @@ export function ProfilePage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Ação</TableHead>
-                          <TableHead>IP</TableHead>
-                          <TableHead>Data</TableHead>
+                          <TableHead>{t('profile.security.action', { defaultValue: 'Action' })}</TableHead>
+                          <TableHead>{t('profile.security.ip', { defaultValue: 'IP' })}</TableHead>
+                          <TableHead>{t('profile.security.date', { defaultValue: 'Date' })}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -744,7 +761,7 @@ export function ProfilePage() {
                     </Table>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Nenhuma atividade recente
+                      {t('profile.security.noActivity', { defaultValue: 'No recent activity' })}
                     </p>
                   )}
                 </CardContent>
@@ -758,18 +775,17 @@ export function ProfilePage() {
               {/* Data Export */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Exportar Dados</CardTitle>
+                  <CardTitle>{t('profile.privacy.exportTitle', { defaultValue: 'Export Data' })}</CardTitle>
                   <CardDescription>
-                    Baixe uma cópia de todos os seus dados (LGPD/GDPR)
+                    {t('profile.privacy.exportDesc', { defaultValue: 'Download a copy of all your data (LGPD/GDPR)' })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Você pode exportar todos os seus dados pessoais a qualquer momento.
-                    O arquivo incluirá seu perfil, mapas natais e configurações.
+                    {t('profile.privacy.exportInfo', { defaultValue: 'You can export all your personal data at any time. The file will include your profile, birth charts, and settings.' })}
                   </p>
                   <Button onClick={handleExportData} variant="outline">
-                    Exportar Meus Dados
+                    {t('profile.privacy.exportButton', { defaultValue: 'Export My Data' })}
                   </Button>
                 </CardContent>
               </Card>
@@ -777,40 +793,38 @@ export function ProfilePage() {
               {/* Danger Zone */}
               <Card className="border-destructive">
                 <CardHeader>
-                  <CardTitle className="text-destructive">Zona de Perigo</CardTitle>
+                  <CardTitle className="text-destructive">{t('profile.privacy.dangerZone', { defaultValue: 'Danger Zone' })}</CardTitle>
                   <CardDescription>
-                    Ações irreversíveis em sua conta
+                    {t('profile.privacy.dangerZoneDesc', { defaultValue: 'Irreversible actions on your account' })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Excluir Conta</h4>
+                      <h4 className="text-sm font-medium mb-2">{t('profile.deleteAccount')}</h4>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Uma vez excluída, sua conta não poderá ser recuperada. Todos os seus dados
-                        serão permanentemente removidos após 30 dias.
+                        {t('profile.deleteAccountWarning')}
                       </p>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="destructive">
-                            Excluir Minha Conta
+                            {t('profile.privacy.deleteMyAccount', { defaultValue: 'Delete My Account' })}
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Tem certeza absoluta?</DialogTitle>
+                            <DialogTitle>{t('profile.privacy.confirmDeleteTitle', { defaultValue: 'Are you absolutely sure?' })}</DialogTitle>
                             <DialogDescription>
-                              Esta ação não pode ser desfeita. Isso excluirá permanentemente sua
-                              conta e removerá todos os seus dados de nossos servidores.
+                              {t('profile.privacy.confirmDeleteDesc', { defaultValue: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.' })}
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>
-                            <Button variant="outline">Cancelar</Button>
+                            <Button variant="outline">{t('common.cancel')}</Button>
                             <Button
                               variant="destructive"
                               onClick={handleDeleteAccount}
                             >
-                              Sim, excluir minha conta
+                              {t('profile.privacy.yesDeleteAccount', { defaultValue: 'Yes, delete my account' })}
                             </Button>
                           </DialogFooter>
                         </DialogContent>

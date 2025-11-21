@@ -1,10 +1,10 @@
 # Prompts para geração de interpretações astrológicas
-# Versão: 1.0
+# Versão: 2.0 - Melhorias para precisão de dignidades
 # Estilo: Misto (técnico + prático)
 # Idioma: Português (pt-BR)
 # Sistema: Astrologia Tradicional (Helênica/Medieval)
 
-version: "1.0"
+version: "2.0"
 language: "pt-BR"
 style: "mixed"  # technical + practical
 
@@ -21,95 +21,215 @@ classical_planets:
 # Prompt base para contexto de interpretação
 system_prompt: |
   Você é um astrólogo tradicional especializado em astrologia helênica e medieval.
-  Suas interpretações devem ser:
-  1. Baseadas em princípios tradicionais (dignidades essenciais, sect, triplicity, etc.)
-  2. Escritas em português brasileiro (pt-BR)
-  3. Estilo misto: combinando terminologia técnica com aplicações práticas
-  4. Concisas e diretas (máximo 3-4 frases)
-  5. Focadas nos 7 planetas clássicos apenas (ignore planetas modernos)
-  6. Considere sempre o contexto de sect (diurnal/nocturnal)
+
+  IMPORTANTE: Você deve interpretar as dignidades essenciais com PRECISÃO ABSOLUTA.
+
+  DIGNIDADES ESSENCIAIS CORRETAS:
+
+  DOMICÍLIOS (Regências):
+  - Sol: Leão (domicílio)
+  - Lua: Câncer (domicílio)
+  - Mercúrio: Gêmeos e Virgem (domicílios)
+  - Vênus: Touro e Libra (domicílios)
+  - Marte: Áries e Escorpião (domicílios)
+  - Júpiter: Sagitário e Peixes (domicílios)
+  - Saturno: Capricórnio e Aquário (domicílios)
+
+  EXALTAÇÕES (com graus exatos):
+  - Sol: exaltado em Áries (19°)
+  - Lua: exaltada em Touro (3°)
+  - Mercúrio: exaltado em Virgem (15°)
+  - Vênus: exaltada em Peixes (27°)
+  - Marte: exaltado em Capricórnio (28°)
+  - Júpiter: exaltado em Câncer (15°)
+  - Saturno: exaltado em Libra (21°)
+
+  DETRIMENTOS (opostos aos domicílios):
+  - Sol: detrimento em Aquário
+  - Lua: detrimento em Capricórnio
+  - Mercúrio: detrimento em Sagitário e Peixes
+  - Vênus: detrimento em Áries e Escorpião
+  - Marte: detrimento em Libra e Touro
+  - Júpiter: detrimento em Gêmeos e Virgem
+  - Saturno: detrimento em Câncer e Leão
+
+  QUEDAS (opostos às exaltações):
+  - Sol: queda em Libra
+  - Lua: queda em Escorpião
+  - Mercúrio: queda em Peixes
+  - Vênus: queda em Virgem
+  - Marte: queda em Câncer
+  - Júpiter: queda em Capricórnio
+  - Saturno: queda em Áries
+
+  TRIPLICIDADES (por elemento e sect):
+  - Fogo (Áries, Leão, Sagitário): Sol (dia), Júpiter (noite), Saturno (participante)
+  - Terra (Touro, Virgem, Capricórnio): Vênus (dia), Lua (noite), Marte (participante)
+  - Ar (Gêmeos, Libra, Aquário): Saturno (dia), Mercúrio (noite), Júpiter (participante)
+  - Água (Câncer, Escorpião, Peixes): Vênus (dia), Marte (noite), Lua (participante)
+
+  TERMOS: Divisões de 5-8 graus dentro de cada signo (sistema egípcio)
+  FACES: Divisões de 10 graus (decanatos) seguindo ordem caldaica
+
+  SISTEMA DE PONTUAÇÃO:
+  - Domicílio: +5 pontos (planeta em casa própria, máxima força)
+  - Exaltação: +4 pontos (planeta honrado e elevado)
+  - Triplicidade: +3 pontos (harmonia elemental)
+  - Termo: +2 pontos (controle moderado)
+  - Face: +1 ponto (dignidade menor)
+  - Detrimento: -5 pontos (planeta enfraquecido, oposto ao domicílio)
+  - Queda: -4 pontos (planeta rebaixado, oposto à exaltação)
+
+  PEREGRINO: Planeta sem dignidades essenciais (score próximo a 0)
+
+  Suas interpretações devem:
+  1. SEMPRE verificar e mencionar corretamente as dignidades do planeta
+  2. NUNCA confundir domicílio com exaltação ou outras dignidades
+  3. Explicar o impacto prático da dignidade na vida da pessoa
+  4. Ser escritas em português brasileiro (pt-BR)
+  5. Ser concisas e diretas (máximo 3-4 frases)
+  6. Considerar sempre o contexto de sect (diurnal/nocturnal)
 
 # Prompts para interpretação de planetas
 planet_prompts:
   base: |
-    Gere uma interpretação astrológica para {planet} em {sign} na casa {house}.
+    Gere uma interpretação astrológica PRECISA para {planet} em {sign} na casa {house}.
 
-    Contexto adicional:
+    DADOS FORNECIDOS:
     - Dignidades essenciais: {dignities}
     - Sect do mapa: {sect}
     - Retrógrado: {retrograde}
 
-    A interpretação deve:
-    1. Começar mencionando a dignidade do planeta (se relevante)
-    2. Explicar brevemente o significado dessa posição
-    3. Dar 1-2 aplicações práticas na vida da pessoa
-    4. Ser escrita em português brasileiro
-    5. Ter no máximo 4 frases
-    6. Usar terminologia técnica quando apropriado, mas explicar de forma acessível
+    INSTRUÇÕES CRÍTICAS:
+    1. VERIFIQUE as dignidades corretas consultando a tabela no system prompt
+    2. Se {dignities} indicar "domicílio", o planeta DEVE estar em seu signo de regência
+    3. Se {dignities} indicar "exaltação", o planeta DEVE estar em seu signo de exaltação
+    4. Se {dignities} indicar "detrimento", o planeta está oposto ao domicílio
+    5. Se {dignities} indicar "queda", o planeta está oposto à exaltação
+    6. Se {dignities} indicar score próximo a 0, o planeta está peregrino
+
+    A interpretação DEVE:
+    1. Começar mencionando CORRETAMENTE a dignidade essencial principal
+    2. Explicar o impacto prático dessa dignidade na manifestação do planeta
+    3. Considerar o sect e se o planeta se beneficia ou não dele
+    4. Dar 1-2 aplicações concretas para a vida da pessoa
+    5. Máximo 4 frases em português brasileiro
 
   examples:
-    dignified: |
-      "Sol em Leão (domicílio) na casa 10 sugere forte identidade pessoal e capacidade
-      de liderança. Esta posição dignificada favorece carreiras de destaque e autoridade.
-      A pessoa tende a brilhar naturalmente em posições públicas e de comando."
+    sol_domicilio: |
+      "Sol em Leão encontra-se em domicílio, sua máxima força e dignidade essencial.
+      Esta posição na casa 10 amplifica o carisma natural e capacidade de liderança.
+      A pessoa possui autoridade inata e tende a assumir posições de destaque profissional.
+      O Sol dignificado favorece o reconhecimento público e realização pessoal."
 
-    debilitated: |
-      "Lua em Escorpião (queda) na casa 12 indica intensidade emocional subconsciente.
-      Esta posição desafiadora pode trazer flutuações de humor e necessidade de trabalhar
-      questões emocionais profundas. Práticas de autocuidado emocional são especialmente
-      importantes."
+    lua_queda: |
+      "Lua em Escorpião está em queda, sua posição mais desafiadora (-4 pontos).
+      Na casa 12, intensifica questões emocionais subconscientes que requerem atenção.
+      Esta configuração pede trabalho consciente com as emoções profundas e transformação interior.
+      Meditação e terapia podem ajudar a transmutar esta energia desafiadora."
 
-    peregrine: |
-      "Mercúrio em Sagitário (peregrino) na casa 3 mostra comunicação expansiva e filosófica.
-      Sem dignidades maiores, o planeta opera de forma neutra, podendo tanto dispersar quanto
-      enriquecer o pensamento. A pessoa se beneficia de estruturar suas ideias."
+    mercurio_exaltacao: |
+      "Mercúrio em Virgem está exaltado (15°), sua posição de honra e elevação.
+      Na casa 3, potencializa capacidades analíticas e comunicação precisa.
+      A mente opera com clareza excepcional, favorecendo trabalhos detalhistas e intelectuais.
+      Esta dignidade traz facilidade para ensino, escrita técnica e análise crítica."
+
+    venus_detrimento: |
+      "Vênus em Áries encontra-se em detrimento, oposta ao seu domicílio em Libra.
+      Na casa 7, pode trazer impulsividade e desafios em parcerias e relacionamentos.
+      A pessoa precisa desenvolver paciência e diplomacia nas relações afetivas.
+      Aprender a equilibrar independência com cooperação é fundamental."
+
+    marte_domicilio_noturno: |
+      "Marte em Escorpião está em domicílio, com força plena neste signo de água.
+      Em mapa noturno, Marte beneficia-se do sect, moderando sua natureza marcial.
+      Na casa 8, intensifica poder de transformação e capacidade de regeneração.
+      Esta posição favorece investigação profunda, psicologia e gestão de recursos compartilhados."
+
+    jupiter_peregrine: |
+      "Júpiter em Virgem está peregrino, sem dignidades essenciais maiores (score: 0).
+      Na casa 6, opera de forma neutra, podendo expandir tanto ordem quanto preocupações.
+      A pessoa beneficia-se ao focar o otimismo jupiteriano em melhorias práticas de saúde.
+      Desenvolvimento de rotinas benéficas e serviço útil trazem satisfação."
 
 # Prompts para interpretação de casas
 house_prompts:
   base: |
-    Gere uma interpretação astrológica para a casa {house} com {sign} na cúspide.
+    Gere uma interpretação astrológica PRECISA para a casa {house} com {sign} na cúspide.
 
-    Contexto adicional:
+    DADOS FORNECIDOS:
     - Regente da casa: {ruler}
     - Dignidades do regente: {ruler_dignities}
     - Sect do mapa: {sect}
 
-    A interpretação deve:
-    1. Explicar o significado do signo na cúspide desta casa
-    2. Mencionar o estado do regente (se forte/fraco/neutro)
-    3. Dar aplicações práticas para essa área da vida
-    4. Ser concisa (máximo 3 frases)
+    REGRAS DE REGÊNCIA (consulte a tabela no system prompt):
+    - Áries: regido por Marte
+    - Touro: regido por Vênus
+    - Gêmeos: regido por Mercúrio
+    - Câncer: regido por Lua
+    - Leão: regido por Sol
+    - Virgem: regido por Mercúrio
+    - Libra: regido por Vênus
+    - Escorpião: regido por Marte
+    - Sagitário: regido por Júpiter
+    - Capricórnio: regido por Saturno
+    - Aquário: regido por Saturno
+    - Peixes: regido por Júpiter
+
+    A interpretação DEVE:
+    1. Mencionar o signo na cúspide e seu regente CORRETO
+    2. Avaliar a força do regente baseada nas dignidades fornecidas
+    3. Explicar o impacto prático para os assuntos desta casa
+    4. Máximo 3 frases em português brasileiro
 
   examples:
-    strong_ruler: |
-      "Casa 7 com Libra na cúspide, regida por Vênus dignificada. Esta posição favorece
-      parcerias harmoniosas e diplomáticas. O estado forte do regente sugere facilidade
-      em relações e contratos."
+    casa_7_venus_domicilio: |
+      "Casa 7 em Libra, regida por Vênus que está dignificada em domicílio.
+      O regente fortalecido favorece parcerias harmoniosas e duradouras.
+      Facilidade natural para diplomacia e acordos benéficos mútuos."
 
-    weak_ruler: |
-      "Casa 2 com Áries na cúspide, regida por Marte em detrimento. Pode haver impulsividade
-      com finanças e recursos. Desenvolvimento de paciência e planejamento são importantes
-      para estabilidade material."
+    casa_10_sol_exaltado: |
+      "Casa 10 em Áries, regida por Marte, com Sol exaltado presente.
+      Esta configuração potencializa ambições profissionais e liderança.
+      Forte impulso para conquistas públicas e reconhecimento de autoridade."
+
+    casa_2_marte_queda: |
+      "Casa 2 em Áries, regida por Marte em queda (Câncer).
+      O regente debilitado sugere desafios com gestão financeira e recursos.
+      Importante desenvolver estratégias emocionais equilibradas para prosperidade."
 
 # Prompts para interpretação de aspectos
 aspect_prompts:
   base: |
-    Gere uma interpretação astrológica para o aspecto {aspect} entre {planet1} em {sign1}
+    Gere uma interpretação astrológica PRECISA para o aspecto {aspect} entre {planet1} em {sign1}
     e {planet2} em {sign2}.
 
-    Contexto adicional:
+    DADOS FORNECIDOS:
     - Orbe: {orb}°
     - Aplicativo: {applying}
     - Sect do mapa: {sect}
     - Dignidades de {planet1}: {dignities1}
     - Dignidades de {planet2}: {dignities2}
 
-    A interpretação deve:
-    1. Explicar o significado do aspecto entre estes planetas
-    2. Considerar a natureza (benéfica/maléfica) dos planetas envolvidos
-    3. Mencionar se o aspecto é aplicativo ou separativo
-    4. Dar aplicação prática dessa dinâmica
-    5. Máximo 4 frases
+    NATUREZA DOS PLANETAS (tradicional):
+    - Benéficos: Júpiter (grande benéfico), Vênus (pequeno benéfico)
+    - Maléficos: Saturno (grande maléfico), Marte (pequeno maléfico)
+    - Luminares: Sol e Lua (neutros, mas essenciais)
+    - Neutro: Mercúrio (assume natureza dos planetas que aspecta)
+
+    QUALIDADE DOS ASPECTOS:
+    - Trino (120°): harmônico, fluxo fácil
+    - Sextil (60°): harmônico, oportunidade
+    - Quadratura (90°): tenso, desafio dinâmico
+    - Oposição (180°): tenso, polarização
+    - Conjunção (0°): neutra, fusão (depende dos planetas)
+
+    A interpretação DEVE:
+    1. Identificar corretamente a natureza do aspecto e dos planetas
+    2. Considerar as dignidades de ambos os planetas (forte/fraco)
+    3. Mencionar se é aplicativo (crescendo em força) ou separativo
+    4. Dar aplicação prática considerando as dignidades
+    5. Máximo 4 frases em português brasileiro
 
   aspect_types:
     conjunction:
@@ -133,20 +253,35 @@ aspect_prompts:
       description: "Oportunidade, cooperação"
 
   examples:
-    benefic_trine: |
-      "Trino entre Vênus e Júpiter forma aspecto extremamente favorável. Esta configuração
-      traz otimismo social, generosidade e facilidade em atrair oportunidades. A pessoa
-      naturalmente harmoniza beleza, prazer e expansão."
+    benefic_trine_dignified: |
+      "Trino entre Vênus em domicílio (Touro) e Júpiter exaltado (Câncer) forma aspecto
+      excepcional. Ambos benéficos em máxima dignidade criam abundância e harmonia notáveis.
+      Esta configuração favorece prosperidade material e emocional. Facilidade natural
+      para atrair recursos e criar ambientes nutritivos."
 
-    malefic_square: |
-      "Quadratura entre Marte e Saturno cria tensão dinâmica entre ação e restrição.
-      Este aspecto desafiador pode trazer frustração, mas também desenvolve disciplina
-      e determinação. Trabalhar com paciência ativa (nem impulsiva, nem paralisada) é a chave."
+    malefic_square_debilitated: |
+      "Quadratura entre Marte em queda (Câncer) e Saturno em detrimento (Leão) intensifica
+      desafios. Ambos maléficos debilitados criam frustração entre emoção e ego.
+      Este aspecto pede trabalho consciente para equilibrar assertividade e disciplina.
+      Desenvolvimento de maturidade emocional e autocontrole são essenciais."
 
-    applying_aspect: |
-      "Trino aplicativo entre Sol e Lua (ainda se formando) sugere crescente harmonia
-      entre vontade consciente e natureza emocional. O aspecto ganha força com o tempo,
-      favorecendo integração interna progressiva."
+    mixed_opposition_dignities: |
+      "Oposição entre Sol em domicílio (Leão) e Saturno em detrimento (Leão oposto).
+      O Sol fortalecido enfrenta Saturno enfraquecido, criando tensão entre brilho e limitação.
+      A dignidade solar favorece superação dos obstáculos saturnianos.
+      Importante equilibrar autoexpressão com responsabilidade prática."
+
+    applying_aspect_with_dignities: |
+      "Trino aplicativo entre Lua exaltada (Touro) e Vênus em domicílio (Libra).
+      Aspecto ainda se formando entre benéficos dignificados promete harmonia crescente.
+      Favorece relações afetivas e conforto emocional progressivos.
+      A aplicação sugere melhorias contínuas em questões venusianas e lunares."
+
+    conjunction_mixed_dignities: |
+      "Conjunção entre Júpiter peregrino e Mercúrio exaltado em Virgem.
+      Mercúrio dignificado eleva e organiza a expansão jupiteriana.
+      Esta fusão favorece estudos superiores e comunicação filosófica estruturada.
+      A exaltação mercurial traz precisão ao otimismo de Júpiter."
 
 # Guia de dignidades para contexto
 dignities_guide:

@@ -44,13 +44,15 @@ dependencies = [
     "celery[redis]==5.3.4",
     "redis==4.6.0",
     # PDF Generation
-    "Jinja2==3.1.2",
+    "jinja2==3.1.2",
     "cairosvg==2.7.1",
     # Utilities
     "python-dateutil==2.8.2",
     "PyYAML==6.0.1",
     # Logging
     "loguru==0.7.2",
+    "structlog==23.2.0",
+    "python-json-logger==2.0.7",
     "google-auth>=2.43.0",
     "google-auth-oauthlib>=1.2.2",
     "google-api-python-client>=2.187.0",

@@ -77,6 +77,16 @@ class BirthChart(Base):
         DateTime(timezone=True),
         nullable=True,
     )
+    pdf_generating: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        index=True,
+    )  # Prevents concurrent PDF generation
+    pdf_task_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        index=True,
+    )  # Celery task ID for PDF generation
 
     # Sharing and visibility
     visibility: Mapped[str] = mapped_column(String(20), default="private", nullable=False)

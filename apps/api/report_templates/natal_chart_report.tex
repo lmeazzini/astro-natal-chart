@@ -1,50 +1,92 @@
 \documentclass[12pt,a4paper]{article}
 
-% Required packages
+% ============================================================
+% PACKAGES — Astro Essence Design System
+% ============================================================
+
+% Basic encoding and language
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[portuguese]{babel}
+
+% Typography improvements (pdfLaTeX compatible)
+\usepackage{charter}      % Serif font similar to Playfair Display
+\usepackage{helvet}       % Sans-serif similar to Inter
+\usepackage{setspace}     % Line spacing control
+
+% Layout and design
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{tcolorbox}
 \usepackage{longtable}
 \usepackage{booktabs}
+\usepackage{colortbl}    % For colored table rows
+\usepackage{array}       % Better table formatting
+\usepackage{tikz}        % For gradients and decorations
 \usepackage{hyperref}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 
-% Page geometry
+% TikZ libraries for effects
+\tcbuselibrary{skins,shadows}
+\usetikzlibrary{fadings,patterns,shadows}
+
+% Page geometry (following 8px grid system)
 \geometry{
   a4paper,
-  left=2.5cm,
-  right=2.5cm,
-  top=3cm,
+  left=3cm,      % ~80px margin for desktop
+  right=3cm,
+  top=3.5cm,
   bottom=3cm
 }
 
 % Graphics path
-\graphicspath{ {{ '{' }} ./media/pdfs/ {{ '}' }} }
+\graphicspath{ {{ '{' }} ./media/ {{ '}' }} }
 
-% Hyperref setup
+% ============================================================
+% TYPOGRAPHY SETTINGS — Astro Essence
+% ============================================================
+
+% Set sans-serif as default (similar to Inter for body text)
+\renewcommand{\familydefault}{\sfdefault}
+
+% Line spacing (1.6 for body text as per design system)
+\setstretch{1.6}
+
+% Hyperref setup with Astro Essence colors
 \hypersetup{
   colorlinks=true,
-  linkcolor=blue,
-  urlcolor=blue,
+  linkcolor=primary,    % Using primary color for links
+  urlcolor=primary,
   pdftitle={Mapa Natal - {{ person_name }}},
   pdfauthor={Real Astrology},
-  pdfsubject={Natal Chart Report}
+  pdfsubject={Relatório de Mapa Natal - Astrologia Tradicional}
 }
 
-% Header and footer
+% ============================================================
+% HEADER & FOOTER — Premium Style
+% ============================================================
+
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small Mapa Natal - {{ person_name }}}
-\fancyhead[R]{\small {{ birth_date }}}
-\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
-\fancyfoot[R]{\small Real Astrology}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0.4pt}
+
+% Header configuration
+\fancyhead[L]{\sffamily\small\color{textmuted}Mapa Natal — {{ person_name }}}
+\fancyhead[R]{\sffamily\small\color{textmuted}{{ birth_date }}}
+
+% Footer configuration
+\fancyfoot[L]{\sffamily\small\color{textmuted}Real Astrology}
+\fancyfoot[C]{\sffamily\small\color{textdark}Página \thepage\ de \pageref{LastPage}}
+\fancyfoot[R]{\sffamily\small\color{textmuted}\today}
+
+% Line colors and widths (using Astro Essence border color)
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+
+% Custom header/footer lines with border color
+\renewcommand{\headrule}{{\color{border}\hrule width\headwidth height\headrulewidth\vskip-\headrulewidth}}
+\renewcommand{\footrule}{{\color{border}\vskip-\footruleskip\vskip-\footrulewidth\hrule width\headwidth height\footrulewidth\vskip\footruleskip}}
 
 % Load custom macros
 \input{macros.tex}
@@ -92,30 +134,56 @@
 
 \chartsubsection{Posições Planetárias}
 
-\begin{longtable}{llllll}
+% Table with Astro Essence styling
+\renewcommand{\arraystretch}{1.5} % Better spacing
+\arrayrulecolor{border} % Use border color for rules
+
+\begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}r>{\sffamily}c>{\sffamily}l>{\sffamily}c}
 \toprule
-\textbf{Planeta} & \textbf{Signo} & \textbf{Grau} & \textbf{Casa} & \textbf{Dignidade} & \textbf{Retrógrado} \\
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} &
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Dignidade} &
+\textbf{\color{textdark}Retrógrado} \\
 \midrule
 \endfirsthead
 
 \multicolumn{6}{c}%
-{\tablename\ \thetable\ -- \textit{Continuação}} \\
+{\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
 \toprule
-\textbf{Planeta} & \textbf{Signo} & \textbf{Grau} & \textbf{Casa} & \textbf{Dignidade} & \textbf{Retrógrado} \\
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} &
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Dignidade} &
+\textbf{\color{textdark}Retrógrado} \\
 \midrule
 \endhead
 
 \midrule
-\multicolumn{6}{r}{\textit{Continua na próxima página}} \\
+\multicolumn{6}{r}{\sffamily\color{textmuted}\textit{Continua na próxima página}} \\
 \endfoot
 
 \bottomrule
 \endlastfoot
 
 {% for planet in planets %}
-{{ planet.name }} & {{ planet.sign }} & {{ planet.degree }}° & Casa {{ planet.house }} & {{ planet.dignity }} & {{ planet.retrograde }} \\
+{% if loop.index is odd %}
+\rowcolor{bgcard}
+{% endif %}
+\color{textdark}{{ planet.name }} &
+\color{textmuted}{{ planet.sign }} &
+\color{textdark}{{ planet.degree }}° &
+\color{primary}Casa {{ planet.house }} &
+\color{textmuted}{{ planet.dignity }} &
+\color{textdark}{{ planet.retrograde }} \\
 {% endfor %}
 \end{longtable}
+
+\renewcommand{\arraystretch}{1.0} % Reset spacing
 
 \newpage
 
@@ -140,30 +208,47 @@
 
 \chartsubsection{Cúspides das Casas}
 
-\begin{longtable}{lll}
+% Table with Astro Essence styling
+\renewcommand{\arraystretch}{1.5} % Better spacing
+\arrayrulecolor{border} % Use border color for rules
+
+\begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}r}
 \toprule
-\textbf{Casa} & \textbf{Signo} & \textbf{Grau} \\
+\rowcolor{primary!10}
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} \\
 \midrule
 \endfirsthead
 
 \multicolumn{3}{c}%
-{\tablename\ \thetable\ -- \textit{Continuação}} \\
+{\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
 \toprule
-\textbf{Casa} & \textbf{Signo} & \textbf{Grau} \\
+\rowcolor{primary!10}
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} \\
 \midrule
 \endhead
 
 \midrule
-\multicolumn{3}{r}{\textit{Continua na próxima página}} \\
+\multicolumn{3}{r}{\sffamily\color{textmuted}\textit{Continua na próxima página}} \\
 \endfoot
 
 \bottomrule
 \endlastfoot
 
 {% for house in houses %}
-Casa {{ house.number }} & {{ house.sign }} & {{ house.degree }}° \\
+{% if loop.index is odd %}
+\rowcolor{bgcard}
+{% endif %}
+\color{secondary}Casa {{ house.number }} &
+\color{textmuted}{{ house.sign }} &
+\color{textdark}{{ house.degree }}° \\
 {% endfor %}
 \end{longtable}
+
+\renewcommand{\arraystretch}{1.0} % Reset spacing
 
 \newpage
 
@@ -188,30 +273,50 @@ Casa {{ house.number }} & {{ house.sign }} & {{ house.degree }}° \\
 
 \chartsubsection{Aspectos Principais}
 
-\begin{longtable}{llll}
+% Table with Astro Essence styling
+\renewcommand{\arraystretch}{1.5} % Better spacing
+\arrayrulecolor{border} % Use border color for rules
+
+\begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}l>{\sffamily}r}
 \toprule
-\textbf{Planeta 1} & \textbf{Aspecto} & \textbf{Planeta 2} & \textbf{Orbe} \\
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta 1} &
+\textbf{\color{textdark}Aspecto} &
+\textbf{\color{textdark}Planeta 2} &
+\textbf{\color{textdark}Orbe} \\
 \midrule
 \endfirsthead
 
 \multicolumn{4}{c}%
-{\tablename\ \thetable\ -- \textit{Continuação}} \\
+{\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
 \toprule
-\textbf{Planeta 1} & \textbf{Aspecto} & \textbf{Planeta 2} & \textbf{Orbe} \\
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta 1} &
+\textbf{\color{textdark}Aspecto} &
+\textbf{\color{textdark}Planeta 2} &
+\textbf{\color{textdark}Orbe} \\
 \midrule
 \endhead
 
 \midrule
-\multicolumn{4}{r}{\textit{Continua na próxima página}} \\
+\multicolumn{4}{r}{\sffamily\color{textmuted}\textit{Continua na próxima página}} \\
 \endfoot
 
 \bottomrule
 \endlastfoot
 
 {% for aspect in aspects %}
-{{ aspect.planet1 }} & {{ aspect.aspect }} & {{ aspect.planet2 }} & {{ aspect.orb }}° \\
+{% if loop.index is odd %}
+\rowcolor{bgcard}
+{% endif %}
+\color{primary}{{ aspect.planet1 }} &
+\color{textmuted}{{ aspect.aspect }} &
+\color{primary}{{ aspect.planet2 }} &
+\color{textdark}{{ aspect.orb }}° \\
 {% endfor %}
 \end{longtable}
+
+\renewcommand{\arraystretch}{1.0} % Reset spacing
 
 \newpage
 

@@ -61,12 +61,13 @@ export async function getPDFStatus(
 export async function downloadChartPDF(
   chartId: string,
   token: string,
-  personName?: string
+  _personName?: string  // Prefixed with _ to indicate it's intentionally unused
 ): Promise<void> {
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const url = `${API_BASE_URL}/api/v1/charts/${chartId}/download-pdf`;
 
   try {
+    // Step 1: Get the presigned URL from the API
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -76,32 +77,19 @@ export async function downloadChartPDF(
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to download PDF');
+      throw new Error(error.detail || 'Failed to get download URL');
     }
 
-    // Get filename from Content-Disposition header or construct default
-    const contentDisposition = response.headers.get('Content-Disposition');
-    let filename = `natal_chart_${chartId}.pdf`;
+    // Parse the JSON response containing the presigned URL
+    const downloadInfo = await response.json();
+    const { download_url } = downloadInfo;
 
-    if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-      if (filenameMatch) {
-        filename = filenameMatch[1];
-      }
-    } else if (personName) {
-      filename = `natal_chart_${personName}_${chartId}.pdf`.replace(/\s+/g, '_');
-    }
-
-    // Create blob and download
-    const blob = await response.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
+    // Step 2: Open PDF in new tab
+    // This works for both S3 presigned URLs and local files
+    // - Avoids CORS issues with S3
+    // - Keeps the current tab open
+    // - User can view PDF in browser or download from there
+    window.open(download_url, '_blank', 'noopener,noreferrer');
   } catch (error) {
     if (error instanceof Error) {
       throw error;

@@ -120,6 +120,10 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
                 logger.error(f"Chart {chart_id} has no calculated data")
                 raise ValueError(f"Chart {chart_id} has no calculated data")
 
+            # 1.5. Log if replacing existing PDF (no deletion needed, will overwrite)
+            if chart.pdf_url:
+                logger.info(f"Will overwrite existing PDF: {chart.pdf_url}")
+
             # 2. Check interpretations, generate if missing
             logger.info(f"Checking interpretations for chart {chart_id}")
             interpretation_service = InterpretationService(db)
@@ -226,10 +230,10 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
 
             s3_url = None
             if s3_service.enabled:
-                # Generate filename with timestamp for S3
-                filename = f"full-report-{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.pdf"
+                # Use fixed filename (no timestamp) to enable overwriting
+                filename = "full-report.pdf"
 
-                # Upload to S3
+                # Upload to S3 (will overwrite if exists)
                 s3_url = s3_service.upload_pdf(
                     file_path=pdf_path,
                     user_id=str(chart.user_id),
@@ -252,17 +256,39 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
             # Use S3 URL if available, otherwise use local path
             pdf_url = s3_url or f"/media/pdfs/{pdf_path.name}"
 
-            # 8. Update database with PDF URL and timestamp
+            # 8. Update database with PDF URL, timestamp, and clear generation flags
             chart.pdf_url = pdf_url
             chart.pdf_generated_at = datetime.now(UTC)
+            chart.pdf_generating = False
+            chart.pdf_task_id = None
             await db.commit()
 
             logger.info(f"PDF generation complete for chart {chart_id}: {pdf_url}")
+
+            # Old PDF deletion removed - S3 upload now overwrites existing file automatically
 
             return {
                 'pdf_url': pdf_url,
                 'status': 'completed',
             }
+
+    except Exception as exc:
+        # Mark PDF generation as failed and clear flags
+        logger.error(f"PDF generation failed for chart {chart_id}: {exc}")
+        try:
+            async with SessionLocal() as db:
+                stmt = select(BirthChart).where(BirthChart.id == chart_id)
+                result = await db.execute(stmt)
+                chart = result.scalar_one_or_none()
+                if chart:
+                    chart.pdf_generating = False
+                    chart.pdf_task_id = None
+                    await db.commit()
+                    logger.info(f"Cleared generation flags for chart {chart_id}")
+        except Exception as db_error:
+            logger.error(f"Failed to clear generation flags: {db_error}")
+        raise exc
+
     finally:
         # Clean up database engine
         await engine.dispose()

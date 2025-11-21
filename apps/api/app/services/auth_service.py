@@ -5,6 +5,7 @@ Authentication service for user registration, login, and token management.
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -85,14 +86,21 @@ async def register_user(
     # Send email (don't fail registration if email fails)
     try:
         email_service = EmailService()
-        await email_service.send_verification_email(
+        success = await email_service.send_verification_email(
             to_email=created_user.email,
             user_name=created_user.full_name,
             verification_url=verification_url,
         )
-    except Exception:
+        if success:
+            logger.info(f"Verification email sent to {created_user.email}")
+        else:
+            logger.error(f"Failed to send verification email to {created_user.email}")
+    except Exception as e:
         # Log but don't fail registration
-        pass
+        logger.error(
+            f"Exception sending verification email to {created_user.email}: {e}",
+            extra={"user_id": str(created_user.id)}
+        )
 
     # If user accepted terms, create consent record
     if user_data.accept_terms:
@@ -401,6 +409,22 @@ async def verify_email(db: AsyncSession, token: str) -> User:
     # Verify email
     user.email_verified = True
     await user_repo.update(user)
+
+    # Send welcome email after successful verification
+    from app.services.email import EmailService
+
+    email_service = EmailService()
+    try:
+        await email_service.send_welcome_email(
+            to_email=user.email,
+            user_name=user.full_name or "Usuário",
+        )
+    except Exception as e:
+        # Log error but don't fail verification if email fails
+        logger.error(
+            f"Failed to send welcome email after verification: {e}",
+            extra={"user_id": str(user.id), "email": user.email}
+        )
 
     return user
 

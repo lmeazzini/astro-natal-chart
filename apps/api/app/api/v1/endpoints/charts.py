@@ -2,14 +2,13 @@
 Birth chart endpoints for creating and managing natal charts.
 """
 
-from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.dependencies import get_current_user, get_db
 from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
@@ -20,6 +19,7 @@ from app.schemas.chart import (
     BirthChartUpdate,
     ChartStatusResponse,
     PDFDownloadResponse,
+    PDFDownloadURLResponse,
 )
 from app.services import chart_service
 from app.services.s3_service import s3_service
@@ -376,8 +376,20 @@ async def generate_chart_pdf(
                 detail="Chart must be fully calculated before generating PDF. Wait for chart calculations to complete.",
             )
 
+        # Check if PDF is already being generated (prevent concurrent generation)
+        if chart.pdf_generating:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"PDF is already being generated for this chart. Task ID: {chart.pdf_task_id}. Please wait for the current generation to complete.",
+            )
+
         # Dispatch Celery task to generate PDF in background
         task = generate_chart_pdf_task.delay(str(chart_id))
+
+        # Mark chart as generating and save task ID
+        chart.pdf_generating = True
+        chart.pdf_task_id = task.id
+        await db.commit()
 
         return {
             "message": "PDF generation started",
@@ -501,9 +513,9 @@ async def get_pdf_status(
 
 @router.get(
     "/{chart_id}/download-pdf",
-    response_class=FileResponse,
-    summary="Download PDF report",
-    description="Download the generated PDF report for a birth chart.",
+    response_model=PDFDownloadURLResponse,
+    summary="Get PDF download URL",
+    description="Get the presigned download URL for a birth chart PDF.",
 )
 @limiter.limit(RateLimits.CHART_READ)
 async def download_chart_pdf(
@@ -511,9 +523,10 @@ async def download_chart_pdf(
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> FileResponse:
+    response: Response,
+) -> PDFDownloadURLResponse:
     """
-    Download PDF report for a birth chart.
+    Get presigned URL for PDF download.
 
     **Prerequisites:**
     1. Chart must be fully calculated (status='completed')
@@ -524,9 +537,10 @@ async def download_chart_pdf(
         chart_id: Birth chart UUID
         current_user: Current authenticated user
         db: Database session
+        response: FastAPI response object for setting headers
 
     Returns:
-        PDF file download
+        PDFDownloadURLResponse with presigned URL or local file URL
     """
     try:
         chart = await chart_service.get_chart_by_id(
@@ -542,23 +556,43 @@ async def download_chart_pdf(
                 detail="PDF not generated yet. Call POST /charts/{id}/generate-pdf first.",
             )
 
-        # Construct file path
-        media_dir = Path(__file__).parent.parent.parent.parent / "media"
-        pdf_path = media_dir / "pdfs" / chart.pdf_url.split('/')[-1]
+        # Generate filename
+        filename = f"natal_chart_{chart.person_name}_{chart_id}.pdf".replace(" ", "_")
 
-        # Verify file exists on disk
-        if not pdf_path.exists():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="PDF file not found on server. It may have been deleted or generation failed.",
+        # Set cache-control headers to prevent browser caching
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+        # Handle S3 URLs - return presigned URL as JSON
+        if chart.pdf_url.startswith("s3://"):
+            # Generate presigned URL for S3 download
+            download_url = s3_service.generate_presigned_url(
+                s3_url=chart.pdf_url,
+                expires_in=settings.S3_PRESIGNED_URL_EXPIRATION,
             )
 
-        # Return file for download
-        filename = f"natal_chart_{chart.person_name}_{chart_id}.pdf".replace(" ", "_")
-        return FileResponse(
-            path=str(pdf_path),
-            media_type="application/pdf",
+            if not download_url:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to generate download URL from S3. Please try again.",
+                )
+
+            # Return presigned URL in JSON response
+            return PDFDownloadURLResponse(
+                download_url=download_url,
+                filename=filename,
+                expires_in=settings.S3_PRESIGNED_URL_EXPIRATION,
+                content_type="application/pdf",
+            )
+
+        # Handle local files - for now, just return the path as-is
+        # Frontend will need to construct full URL
+        return PDFDownloadURLResponse(
+            download_url=chart.pdf_url,
             filename=filename,
+            expires_in=None,  # Local files don't expire
+            content_type="application/pdf",
         )
 
     except chart_service.ChartNotFoundError:

@@ -2,9 +2,11 @@
 Email service for sending transactional emails.
 """
 
+import asyncio
 import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from functools import partial
 
 import aiosmtplib
 from google.auth.transport.requests import Request
@@ -100,7 +102,10 @@ class EmailService:
         text_body: str | None = None,
     ) -> bool:
         """
-        Envia email usando OAuth2 (Gmail API).
+        Envia email usando OAuth2 (Gmail API) de forma assíncrona.
+
+        Usa run_in_executor() para evitar bloqueio do event loop durante
+        operações síncronas de I/O (token refresh, Gmail API calls).
 
         Args:
             to_email: Email do destinatário
@@ -112,14 +117,26 @@ class EmailService:
             True se enviado com sucesso, False caso contrário
         """
         try:
-            # Refresh token if needed (synchronous, but fast)
+            loop = asyncio.get_event_loop()
+
+            # 1. Refresh token if needed (async via executor)
             if not self.credentials.valid:
-                self.credentials.refresh(Request())
+                await loop.run_in_executor(
+                    None,  # Uses default ThreadPoolExecutor
+                    self.credentials.refresh,
+                    Request()
+                )
 
-            # Build Gmail service
-            service = build('gmail', 'v1', credentials=self.credentials)
+            # 2. Build Gmail service (async via executor)
+            service = await loop.run_in_executor(
+                None,
+                build,
+                'gmail',
+                'v1',
+                self.credentials
+            )
 
-            # Create message
+            # 3. Create message (sync, but fast - no I/O)
             message = MIMEMultipart("alternative")
             message["From"] = settings.SMTP_FROM_EMAIL
             message["To"] = to_email
@@ -133,11 +150,14 @@ class EmailService:
             # Encode message
             raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
-            # Send via Gmail API
-            service.users().messages().send(
-                userId='me',
-                body={'raw': raw}
-            ).execute()
+            # 4. Send email (async via executor)
+            send_func = partial(
+                service.users().messages().send(
+                    userId='me',
+                    body={'raw': raw}
+                ).execute
+            )
+            await loop.run_in_executor(None, send_func)
 
             logger.info(f"Email enviado com sucesso via OAuth2 para {to_email}")
             return True

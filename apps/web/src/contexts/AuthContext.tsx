@@ -5,6 +5,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User } from '../services/auth';
+import { useLocaleSync } from '../hooks/useLocaleSync';
 
 interface AuthContextData {
   user: User | null;
@@ -28,6 +29,9 @@ const REFRESH_TOKEN_KEY = 'astro_refresh_token';
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Sync i18n with user's locale preference when user changes
+  useLocaleSync(user);
 
   useEffect(() => {
     loadStoredUser();

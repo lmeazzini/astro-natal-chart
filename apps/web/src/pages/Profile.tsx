@@ -61,7 +61,6 @@ const TIMEZONES = [
 const LOCALES = [
   { value: 'pt-BR', label: 'Português (Brasil)' },
   { value: 'en-US', label: 'English (US)' },
-  { value: 'es-ES', label: 'Español' },
 ];
 
 export function ProfilePage() {
@@ -181,6 +180,13 @@ export function ProfilePage() {
       if (!token) throw new Error('Not authenticated');
 
       const updatedUser = await userService.updateProfile(data, token);
+
+      // Sync i18n if locale changed
+      if (data.locale && data.locale !== i18n.language) {
+        await i18n.changeLanguage(data.locale);
+        localStorage.setItem('astro_language', data.locale);
+      }
+
       setUser(updatedUser);
       setProfileSuccess(t('profile.success'));
 

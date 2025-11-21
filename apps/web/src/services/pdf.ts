@@ -144,14 +144,14 @@ export async function generateAndDownloadPDF(
     const status = await getPDFStatus(chartId, token);
     onProgress?.(status);
 
-    if (status.pdf_status === 'completed') {
+    if (status.status === 'ready') {
       // Step 3: Download
       await downloadChartPDF(chartId, token, personName);
       return;
     }
 
-    if (status.pdf_status === 'failed') {
-      throw new Error(status.error_message || 'PDF generation failed');
+    if (status.status === 'failed') {
+      throw new Error(status.message || 'PDF generation failed');
     }
 
     attempts++;

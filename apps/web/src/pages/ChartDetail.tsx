@@ -138,7 +138,7 @@ export function ChartDetailPage() {
     }
 
     try {
-      setPdfStatus('processing');
+      setPdfStatus('generating');
       setPdfError(null);
 
       // Step 1: Trigger PDF generation
@@ -149,20 +149,21 @@ export function ChartDetailPage() {
         try {
           const status = await getPDFStatus(id, token);
 
-          if (status.pdf_status === 'completed') {
+          if (status.status === 'ready') {
             clearInterval(pollInterval);
-            setPdfStatus('completed');
+            setPdfStatus('ready');
 
-            // Step 3: Auto-download
+            // Step 3: Auto-download when ready
             await downloadChartPDF(id, token, chart.person_name);
 
-            // Reset to idle after download
+            // Reset to idle after download (2 seconds delay)
             setTimeout(() => setPdfStatus('idle'), 2000);
-          } else if (status.pdf_status === 'failed') {
+          } else if (status.status === 'failed') {
             clearInterval(pollInterval);
             setPdfStatus('failed');
-            setPdfError(status.error_message || 'Erro ao gerar PDF');
+            setPdfError(status.message || 'Erro ao gerar PDF');
           }
+          // If status is 'generating', continue polling
         } catch (err) {
           clearInterval(pollInterval);
           setPdfStatus('failed');
@@ -173,7 +174,7 @@ export function ChartDetailPage() {
       // Timeout after 5 minutes
       setTimeout(() => {
         clearInterval(pollInterval);
-        if (pdfStatus === 'processing') {
+        if (pdfStatus === 'generating') {
           setPdfStatus('failed');
           setPdfError('Tempo limite excedido ao gerar PDF');
         }
@@ -339,21 +340,21 @@ export function ChartDetailPage() {
 
               {/* PDF Export Button */}
               <Button
-                variant={pdfStatus === 'completed' ? 'default' : 'outline'}
+                variant={pdfStatus === 'ready' ? 'default' : 'outline'}
                 size="sm"
                 onClick={handleExportPDF}
-                disabled={pdfStatus === 'processing'}
+                disabled={pdfStatus === 'generating'}
                 className={pdfStatus === 'failed' ? 'border-destructive text-destructive' : ''}
               >
-                {pdfStatus === 'processing' ? (
+                {pdfStatus === 'generating' ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Gerando PDF...
                   </>
-                ) : pdfStatus === 'completed' ? (
+                ) : pdfStatus === 'ready' ? (
                   <>
                     <FileDown className="mr-2 h-4 w-4" />
-                    PDF Pronto!
+                    PDF Baixado!
                   </>
                 ) : pdfStatus === 'failed' ? (
                   <>

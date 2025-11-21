@@ -1,0 +1,124 @@
+% ============================================================
+% FRONT PAGE — Astro Essence Design System
+% ============================================================
+
+\begin{titlepage}
+  % Background with celestial gradient effect (simulated with TikZ)
+  {% raw %}
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[primary!20] (current page.north west) rectangle ([yshift=-6cm]current page.north east);
+    \fill[secondary!15] ([yshift=-6cm]current page.north west) rectangle ([yshift=-12cm]current page.north east);
+    \fill[accent!10] ([yshift=-12cm]current page.north west) rectangle (current page.south east);
+
+    \foreach \i in {1,...,20} {
+      \pgfmathsetmacro{\randx}{random()*18-9}
+      \pgfmathsetmacro{\randy}{random()*8-14}
+      \fill[primary!30,opacity=0.5] (\randx,\randy) circle (1.5pt);
+    }
+
+    \node[anchor=north west,opacity=0.1] at ([xshift=2cm,yshift=-2cm]current page.north west) {
+      \color{primary}\Huge ✧
+    };
+    \node[anchor=north east,opacity=0.1] at ([xshift=-2cm,yshift=-2cm]current page.north east) {
+      \color{secondary}\Huge ✧
+    };
+  \end{tikzpicture}
+  {% endraw %}
+
+  \centering
+  \vspace*{1.5cm}
+
+  {% if logo_path %}
+  \includegraphics[width=0.15\textwidth]{{ '{' }}{{ logo_path }}{{ '}' }}\\[0.8cm]
+  {% else %}
+  {\rmfamily\Huge\bfseries\color{primary}Real Astrology}\\[0.2cm]
+  {\sffamily\large\color{textmuted}Astrologia Tradicional}\\[2cm]
+  {% endif %}
+
+  {\rmfamily\Huge\bfseries\color{textdark}Mapa Natal}\\[0.8cm]
+
+  {\rmfamily\LARGE\color{primary}{{ person_name }}}\\[2.5cm]
+
+  {% if chart_image_path %}
+  {% raw %}
+  \begin{tcolorbox}[
+    enhanced,
+    colback=white,
+    colframe=border,
+    arc=5mm,
+    boxrule=1pt,
+    width=0.55\textwidth,
+    center,
+    drop shadow={
+      opacity=0.08,
+      shadow xshift=0pt,
+      shadow yshift=-3pt,
+      fill=textdark
+    }
+  ]
+  {% endraw %}
+    \includegraphics[width=\textwidth]{{ '{' }}{{ chart_image_path }}{{ '}' }}
+  {% raw %}
+  \end{tcolorbox}
+  {% endraw %}
+  \vspace{1.5cm}
+  {% endif %}
+
+  {% raw %}
+  \begin{tcolorbox}[
+    enhanced,
+    colback=white,
+    colframe=border,
+    arc=8mm,
+    boxrule=1.5pt,
+    width=0.75\textwidth,
+    center,
+    left=20pt,
+    right=20pt,
+    top=16pt,
+    bottom=16pt,
+    drop shadow={
+      opacity=0.08,
+      shadow xshift=0pt,
+      shadow yshift=-4pt,
+      fill=textdark
+    }
+  ]
+    \begin{center}
+      \sffamily
+      \renewcommand{\arraystretch}{1.3}
+      \begin{tabular}{@{}l@{\hspace{1cm}}l@{}}
+  {% endraw %}
+        \textcolor{textdark}{\textbf{Data:}} & \textcolor{textmuted}{{ '{' }}{{ birth_date }}{{ '}' }} \\
+        \textcolor{textdark}{\textbf{Hora:}} & \textcolor{textmuted}{{ '{' }}{{ birth_time }}{{ '}' }} \\
+        \textcolor{textdark}{\textbf{Local:}} & \textcolor{textmuted}{{ '{' }}{{ location }}{{ '}' }} \\
+        \textcolor{textdark}{\textbf{Coordenadas:}} & \textcolor{textmuted}{{ '{' }}{{ coordinates }}{{ '}' }}
+  {% raw %}
+      \end{tabular}
+    \end{center}
+  \end{tcolorbox}
+  {% endraw %}
+
+  \vfill
+
+  \begin{center}
+    {\sffamily\small\color{textmuted}\textit{"Autoconhecimento com precisão astrológica"}}\\[0.5cm]
+    {\sffamily\small\color{textmuted}Relatório gerado em {{ generation_date }}}\\[0.2cm]
+    {\sffamily\small\color{primary}Real Astrology} • {\sffamily\small\color{textmuted}realastrology.com.br}
+  \end{center}
+
+  {% raw %}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south,opacity=0.05] at ([yshift=2cm]current page.south) {
+      \color{primary}\Huge ☽ ✦ ☾
+    };
+  \end{tikzpicture}
+  {% endraw %}
+
+\end{titlepage}
+
+% Blank page for better printing
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage

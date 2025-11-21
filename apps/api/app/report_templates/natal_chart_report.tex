@@ -1,0 +1,344 @@
+\documentclass[12pt,a4paper]{article}
+
+% ============================================================
+% PACKAGES — Astro Essence Design System
+% ============================================================
+
+% Basic encoding and language
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[portuguese]{babel}
+
+% Typography improvements (pdfLaTeX compatible)
+\usepackage{charter}      % Serif font similar to Playfair Display
+\usepackage{helvet}       % Sans-serif similar to Inter
+\usepackage{setspace}     % Line spacing control
+
+% Layout and design
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{colortbl}    % For colored table rows
+\usepackage{array}       % Better table formatting
+\usepackage{tikz}        % For gradients and decorations
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% TikZ libraries for effects
+\tcbuselibrary{skins}
+\usetikzlibrary{fadings,patterns,shadows}
+
+% Page geometry (following 8px grid system)
+{% raw %}
+\geometry{
+  a4paper,
+  left=3cm,
+  right=3cm,
+  top=3.5cm,
+  bottom=3cm
+}
+{% endraw %}
+
+% Graphics path
+{% raw %}
+\graphicspath{{./media/}}
+{% endraw %}
+
+% ============================================================
+% TYPOGRAPHY SETTINGS — Astro Essence
+% ============================================================
+
+% Set sans-serif as default (similar to Inter for body text)
+\renewcommand{\familydefault}{\sfdefault}
+
+% Line spacing (1.6 for body text as per design system)
+\setstretch{1.6}
+
+% Hyperref setup with Astro Essence colors
+\hypersetup{{ '{' }}
+  colorlinks=true,
+  linkcolor=primary,
+  urlcolor=primary,
+  pdftitle={{ '{' }}Mapa Natal - {{ person_name }}{{ '}' }},
+  pdfauthor={{ '{' }}Real Astrology{{ '}' }},
+  pdfsubject={{ '{' }}Relatório de Mapa Natal - Astrologia Tradicional{{ '}' }}
+{{ '}' }}
+
+% ============================================================
+% HEADER & FOOTER — Premium Style
+% ============================================================
+
+\pagestyle{fancy}
+\fancyhf{}
+
+% Header configuration
+\fancyhead[L]{\sffamily\small\color{textmuted}Mapa Natal — {{ person_name }}}
+\fancyhead[R]{\sffamily\small\color{textmuted}{{ birth_date }}}
+
+% Footer configuration
+\fancyfoot[L]{\sffamily\small\color{textmuted}Real Astrology}
+\fancyfoot[C]{\sffamily\small\color{textdark}Página \thepage\ de \pageref{LastPage}}
+\fancyfoot[R]{\sffamily\small\color{textmuted}\today}
+
+% Line colors and widths (using Astro Essence border color)
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+
+% Custom header/footer lines with border color
+{% raw %}
+\renewcommand{\headrule}{{\color{border}\hrule width\headwidth height\headrulewidth\vskip-\headrulewidth}}
+\renewcommand{\footrule}{{\color{border}\vskip-\footruleskip\vskip-\footrulewidth\hrule width\headwidth height\footrulewidth\vskip\footruleskip}}
+{% endraw %}
+
+% Load custom macros
+\input{macros.tex}
+
+% Document starts
+\begin{document}
+
+{% include 'frontpage.tex' %}
+
+% Table of contents
+\tableofcontents
+\newpage
+
+% ============================================================
+% CHART INFORMATION SECTION
+% ============================================================
+\chartsection{Informações do Mapa}
+
+\chartinfo{{ '{' }}{{ person_name }}{{ '}' }}{{ '{' }}{{ birth_datetime }}{{ '}' }}{{ '{' }}{{ location }}{{ '}' }}{{ '{' }}{{ coordinates }}{{ '}' }}
+
+\vspace{0.5cm}
+
+\begin{itemize}
+  \item \textbf{Sistema de Casas:} {{ house_system }}
+  \item \textbf{Tipo de Zodíaco:} {{ zodiac_type }}
+  \item \textbf{Ascendente:} {{ ascendant }}
+  \item \textbf{Meio do Céu (MC):} {{ midheaven }}
+\end{itemize}
+
+\newpage
+
+% ============================================================
+% PLANETS SECTION
+% ============================================================
+\chartsection{Planetas}
+
+\chartsubsection{Posições Planetárias}
+
+% Table with Astro Essence styling
+{% raw %}
+\renewcommand{\arraystretch}{1.5}
+\arrayrulecolor{border}
+
+\begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}r>{\sffamily}c>{\sffamily}l>{\sffamily}c}
+{% endraw %}
+\toprule
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} &
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Dignidade} &
+\textbf{\color{textdark}Retrógrado} \\
+\midrule
+\endfirsthead
+
+\multicolumn{6}{c}
+{\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
+\toprule
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} &
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Dignidade} &
+\textbf{\color{textdark}Retrógrado} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{6}{r}{\sffamily\color{textmuted}\textit{Continua na próxima página}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+{% for planet in planets %}
+{% if loop.index is odd %}
+\rowcolor{bgcard}
+{% endif %}
+\color{textdark}{{ planet.name }} &
+\color{textmuted}{{ planet.sign }} &
+\color{textdark}{{ planet.degree }}° &
+\color{primary}Casa {{ planet.house }} &
+\color{textmuted}{{ planet.dignity }} &
+\color{textdark}{{ planet.retrograde }} \\
+{% endfor %}
+\end{longtable}
+
+\renewcommand{\arraystretch}{1.0}
+
+\newpage
+
+\chartsubsection{Interpretações Planetárias}
+
+{% for planet in planets %}
+{% if planet.interpretation %}
+\chartsubsection{\planetname{{ '{' }}{{ planet.name }}{{ '}' }}{{ '{' }}{{ planet.symbol }}{{ '}' }} em {{ planet.sign }} - Casa {{ planet.house }}}
+
+\interpretation{{ '{' }}{{ planet.interpretation }}{{ '}' }}
+{% endif %}
+{% endfor %}
+
+\newpage
+
+% ============================================================
+% HOUSES SECTION
+% ============================================================
+\chartsection{Casas}
+
+\chartsubsection{Cúspides das Casas}
+
+% Table with Astro Essence styling
+{% raw %}
+\renewcommand{\arraystretch}{1.5}
+\arrayrulecolor{border}
+
+\begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}r}
+{% endraw %}
+\toprule
+\rowcolor{primary!10}
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{c}
+{\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
+\toprule
+\rowcolor{primary!10}
+\textbf{\color{textdark}Casa} &
+\textbf{\color{textdark}Signo} &
+\textbf{\color{textdark}Grau} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{3}{r}{\sffamily\color{textmuted}\textit{Continua na próxima página}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+{% for house in houses %}
+{% if loop.index is odd %}
+\rowcolor{bgcard}
+{% endif %}
+\color{secondary}Casa {{ house.number }} &
+\color{textmuted}{{ house.sign }} &
+\color{textdark}{{ house.degree }}° \\
+{% endfor %}
+\end{longtable}
+
+\renewcommand{\arraystretch}{1.0}
+
+\newpage
+
+\chartsubsection{Interpretações das Casas}
+
+{% for house in houses %}
+{% if house.interpretation %}
+\chartsubsection{{ '{' }}\housename{{ '{' }}{{ house.number }}{{ '}' }} - {{ house.sign }}{{ '}' }}
+
+\interpretation{{ '{' }}{{ house.interpretation }}{{ '}' }}
+{% endif %}
+{% endfor %}
+
+\newpage
+
+% ============================================================
+% ASPECTS SECTION
+% ============================================================
+\chartsection{Aspectos}
+
+\chartsubsection{Aspectos Principais}
+
+% Table with Astro Essence styling
+{% raw %}
+\renewcommand{\arraystretch}{1.5}
+\arrayrulecolor{border}
+
+\begin{longtable}{>{\sffamily}l>{\sffamily}l>{\sffamily}l>{\sffamily}r}
+{% endraw %}
+\toprule
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta 1} &
+\textbf{\color{textdark}Aspecto} &
+\textbf{\color{textdark}Planeta 2} &
+\textbf{\color{textdark}Orbe} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{c}
+{\sffamily\color{textmuted}\tablename\ \thetable\ -- \textit{Continuação}} \\
+\toprule
+\rowcolor{primary!10}
+\textbf{\color{textdark}Planeta 1} &
+\textbf{\color{textdark}Aspecto} &
+\textbf{\color{textdark}Planeta 2} &
+\textbf{\color{textdark}Orbe} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{4}{r}{\sffamily\color{textmuted}\textit{Continua na próxima página}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+{% for aspect in aspects %}
+{% if loop.index is odd %}
+\rowcolor{bgcard}
+{% endif %}
+\color{primary}{{ aspect.planet1 }} &
+\color{textmuted}{{ aspect.aspect }} &
+\color{primary}{{ aspect.planet2 }} &
+\color{textdark}{{ aspect.orb }}° \\
+{% endfor %}
+\end{longtable}
+
+\renewcommand{\arraystretch}{1.0}
+
+\newpage
+
+\chartsubsection{Interpretações dos Aspectos}
+
+{% for aspect in aspects %}
+{% if aspect.interpretation %}
+\chartsubsection{{ '{' }}\aspectname{{ '{' }}{{ aspect.planet1 }}{{ '}' }}{{ '{' }}{{ aspect.aspect }}{{ '}' }}{{ '{' }}{{ aspect.planet2 }}{{ '}' }}{{ '}' }}
+
+\interpretation{{ '{' }}{{ aspect.interpretation }}{{ '}' }}
+{% endif %}
+{% endfor %}
+
+% ============================================================
+% FOOTER
+% ============================================================
+\newpage
+\vspace*{\fill}
+\begin{center}
+  \large\textbf{Real Astrology}\\[0.3cm]
+  \normalsize Astrologia Tradicional\\[0.5cm]
+  \small Relatório gerado em {{ generation_date }}
+\end{center}
+\vspace*{\fill}
+
+\end{document}

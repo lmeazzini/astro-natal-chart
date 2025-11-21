@@ -22,6 +22,7 @@ import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/ThemeToggle';
+import { LanguageSelector } from './components/LanguageSelector';
 
 // shadcn/ui components (used by DashboardPage)
 import { Button } from '@/components/ui/button';
@@ -130,6 +131,7 @@ function DashboardPage() {
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-4">
+            <LanguageSelector />
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/profile">

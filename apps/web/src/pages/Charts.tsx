@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles } from 'lucide-react';
 import { formatBirthDateTime } from '@/utils/datetime';
+import { EducationalBanner } from '@/components/EducationalBanner';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -123,6 +124,25 @@ export function ChartsPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto py-8 px-4">
+        {/* Educational Banner */}
+        <EducationalBanner
+          title="💡 Você sabia?"
+          description={
+            <>
+              Nossa plataforma utiliza <strong>Astrologia Tradicional</strong> com cálculos de{' '}
+              <strong>Swiss Ephemeris</strong> (precisão &lt; 1 arcsecond). Diferentemente da astrologia moderna,
+              focamos em <strong>dignidades essenciais</strong>, <strong>análise de seita</strong> e{' '}
+              <strong>temperamento</strong> - técnicas validadas por séculos de prática.{' '}
+              <Link to="/about/methodology" className="underline hover:text-primary transition-colors">
+                Saiba mais sobre nossa metodologia →
+              </Link>
+            </>
+          }
+          dismissible={true}
+          storageKey="educational-banner-charts"
+          className="mb-6"
+        />
+
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />

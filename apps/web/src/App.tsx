@@ -17,6 +17,7 @@ import { PrivacyPage } from './pages/Privacy';
 import { CookiesPage } from './pages/Cookies';
 import { ConsentPage } from './pages/Consent';
 import { LandingPage } from './pages/Landing';
+import { MethodologyPage } from './pages/Methodology';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { ThemeProvider } from './components/theme-provider';
@@ -52,6 +53,8 @@ function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/cookies" element={<CookiesPage />} />
           <Route path="/consent" element={<ConsentPage />} />
+          {/* About Pages */}
+          <Route path="/about/methodology" element={<MethodologyPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <CookieBanner />

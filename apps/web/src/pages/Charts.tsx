@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles } from 'lucide-react';
+import { formatBirthDateTime } from '@/utils/datetime';
 
 const TOKEN_KEY = 'astro_access_token';
 
@@ -60,16 +61,6 @@ export function ChartsPage() {
     }
   }
 
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
 
   function getSignFromLongitude(longitude: number): string {
     const signIndex = Math.floor(longitude / 30);
@@ -178,7 +169,7 @@ export function ChartsPage() {
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p>
                       <strong className="text-foreground">Nascimento:</strong>{' '}
-                      {formatDate(chart.birth_datetime)}
+                      {formatBirthDateTime(chart.birth_datetime, chart.birth_timezone || 'UTC', false)}
                     </p>
                     <p>
                       <strong className="text-foreground">Local:</strong> {chart.city}

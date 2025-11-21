@@ -10,6 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 
+# Use English locale for test assertions to get consistent error messages
+TEST_LOCALE_HEADERS = {"Accept-Language": "en-US"}
+
 
 class TestRegister:
     """Test user registration endpoint."""
@@ -55,6 +58,7 @@ class TestRegister:
                 "full_name": "Duplicate User",
                 "accept_terms": True,
             },
+            headers=TEST_LOCALE_HEADERS,
         )
 
         assert response.status_code == 400
@@ -145,6 +149,7 @@ class TestLogin:
                 "email": "nonexistent@example.com",
                 "password": "AnyPassword123!",
             },
+            headers=TEST_LOCALE_HEADERS,
         )
 
         assert response.status_code == 401
@@ -159,6 +164,7 @@ class TestLogin:
                 "email": test_user.email,
                 "password": "WrongPassword123!",
             },
+            headers=TEST_LOCALE_HEADERS,
         )
 
         assert response.status_code == 401
@@ -184,6 +190,7 @@ class TestLogin:
                 "email": inactive_user.email,
                 "password": "Test123!@#",
             },
+            headers=TEST_LOCALE_HEADERS,
         )
 
         assert response.status_code == 401
@@ -238,6 +245,7 @@ class TestRefreshToken:
         response = await client.post(
             "/api/v1/auth/refresh",
             json={"refresh_token": "invalid.token.here"},
+            headers=TEST_LOCALE_HEADERS,
         )
 
         assert response.status_code == 401

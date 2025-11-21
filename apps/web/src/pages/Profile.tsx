@@ -220,7 +220,7 @@ export function ProfilePage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `astro-data-${Date.now()}.json`;
+      a.download = `real-astrology-data-${Date.now()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -297,10 +297,10 @@ export function ProfilePage() {
           >
             <img
               src="/logo.png"
-              alt="Astro"
+              alt="Real Astrology"
               className="h-8 w-8"
             />
-            <h1 className="text-2xl font-bold text-foreground">Astro</h1>
+            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-3">
             <ThemeToggle />

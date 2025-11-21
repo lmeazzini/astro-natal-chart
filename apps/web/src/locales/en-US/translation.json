@@ -89,10 +89,15 @@
       "subtitle": "Enter your new password",
       "newPassword": "New password",
       "confirmPassword": "Confirm new password",
+      "chooseStrong": "Choose a strong and secure password",
+      "passwordRequirements": "Minimum 8 characters, including uppercase, lowercase and numbers",
+      "tokenNotFound": "Recovery token not found",
+      "redirecting": "Redirecting to login in 3 seconds...",
+      "backToLogin": "Back to login",
       "submit": "Reset password",
       "success": "Password reset successfully!",
-      "error": "Error resetting password",
-      "invalidToken": "Invalid or expired token",
+      "error": "Error resetting password. Check if the link is still valid.",
+      "invalidToken": "Invalid or expired recovery link",
       "passwordMismatch": "Passwords don't match"
     },
     "verifyEmail": {

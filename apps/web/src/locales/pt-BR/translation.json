@@ -91,10 +91,15 @@
       "subtitle": "Digite sua nova senha",
       "newPassword": "Nova senha",
       "confirmPassword": "Confirmar nova senha",
+      "chooseStrong": "Escolha uma senha forte e segura",
+      "passwordRequirements": "Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números",
+      "tokenNotFound": "Token de recuperação não encontrado",
+      "redirecting": "Redirecionando para login em 3 segundos...",
+      "backToLogin": "Voltar para login",
       "submit": "Redefinir senha",
       "success": "Senha redefinida com sucesso!",
-      "error": "Erro ao redefinir senha",
-      "invalidToken": "Token inválido ou expirado",
+      "error": "Erro ao redefinir senha. Verifique se o link ainda é válido.",
+      "invalidToken": "Link de recuperação inválido ou expirado",
       "passwordMismatch": "As senhas não coincidem"
     },
     "verifyEmail": {

@@ -7,6 +7,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,24 +16,29 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
 
-const resetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'Senha deve ter no mínimo 8 caracteres')
-      .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-      .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
-      .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
-    confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'As senhas não coincidem',
-    path: ['confirmPassword'],
-  });
-
-type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordValues = {
+  password: string;
+  confirmPassword: string;
+};
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation();
+
+  // Zod schema inside component to access t()
+  const resetPasswordSchema = z
+    .object({
+      password: z
+        .string()
+        .min(8, t('auth.register.passwordMinLength'))
+        .regex(/[A-Z]/, t('validation.passwordUppercase', { defaultValue: 'Senha deve conter pelo menos uma letra maiúscula' }))
+        .regex(/[a-z]/, t('validation.passwordLowercase', { defaultValue: 'Senha deve conter pelo menos uma letra minúscula' }))
+        .regex(/[0-9]/, t('validation.passwordNumber', { defaultValue: 'Senha deve conter pelo menos um número' })),
+      confirmPassword: z.string().min(1, t('validation.required')),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t('validation.passwordMismatch'),
+      path: ['confirmPassword'],
+    });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -51,16 +57,16 @@ export function ResetPasswordPage() {
   useEffect(() => {
     // Check if token exists
     if (!token) {
-      setGeneralError('Link de recuperação inválido ou expirado');
+      setGeneralError(t('auth.resetPassword.invalidToken'));
     }
-  }, [token]);
+  }, [token, t]);
 
   async function onSubmit(values: ResetPasswordValues) {
     setGeneralError('');
     setSuccessMessage('');
 
     if (!token) {
-      setGeneralError('Token de recuperação não encontrado');
+      setGeneralError(t('auth.resetPassword.tokenNotFound', { defaultValue: 'Token de recuperação não encontrado' }));
       return;
     }
 
@@ -83,7 +89,7 @@ export function ResetPasswordPage() {
       setGeneralError(
         error instanceof Error
           ? error.message
-          : 'Erro ao redefinir senha. Verifique se o link ainda é válido.'
+          : t('auth.resetPassword.error')
       );
     }
   }
@@ -94,19 +100,19 @@ export function ResetPasswordPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Redefinir Senha
+            {t('auth.resetPassword.title')}
           </h1>
           <p className="text-muted-foreground">
-            Digite sua nova senha
+            {t('auth.resetPassword.subtitle')}
           </p>
         </div>
 
         {/* Form Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Nova Senha</CardTitle>
+            <CardTitle>{t('auth.resetPassword.newPassword')}</CardTitle>
             <CardDescription>
-              Escolha uma senha forte e segura
+              {t('auth.resetPassword.chooseStrong', { defaultValue: 'Escolha uma senha forte e segura' })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -123,7 +129,7 @@ export function ResetPasswordPage() {
                 <AlertDescription className="text-green-700 dark:text-green-400">
                   {successMessage}
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Redirecionando para login em 3 segundos...
+                    {t('auth.resetPassword.redirecting', { defaultValue: 'Redirecionando para login em 3 segundos...' })}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -137,7 +143,7 @@ export function ResetPasswordPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nova Senha</FormLabel>
+                        <FormLabel>{t('auth.resetPassword.newPassword')}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -148,7 +154,7 @@ export function ResetPasswordPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números
+                          {t('auth.resetPassword.passwordRequirements', { defaultValue: 'Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números' })}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -160,7 +166,7 @@ export function ResetPasswordPage() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar Nova Senha</FormLabel>
+                        <FormLabel>{t('auth.resetPassword.confirmPassword')}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -182,7 +188,7 @@ export function ResetPasswordPage() {
                     {form.formState.isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {form.formState.isSubmitting ? 'Redefinindo...' : 'Redefinir Senha'}
+                    {form.formState.isSubmitting ? t('common.loading') : t('auth.resetPassword.submit')}
                   </Button>
                 </form>
               </Form>
@@ -193,7 +199,7 @@ export function ResetPasswordPage() {
               <Button variant="link" asChild>
                 <Link to="/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar para login
+                  {t('auth.resetPassword.backToLogin', { defaultValue: 'Voltar para login' })}
                 </Link>
               </Button>
             </div>

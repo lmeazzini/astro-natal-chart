@@ -112,6 +112,10 @@ class BirthChartRead(BaseModel):
     progress: int = Field(default=0, ge=0, le=100, description="Processing progress (0-100)")
     error_message: str | None = Field(None, description="Error message if status is failed")
     chart_data: dict[str, Any] | None
+    pdf_url: str | None = Field(None, description="URL to generated PDF (S3 or local)")
+    pdf_generated_at: datetime | None = Field(None, description="When PDF was generated")
+    pdf_generating: bool = Field(default=False, description="Is PDF currently being generated")
+    pdf_task_id: str | None = Field(None, description="Celery task ID for PDF generation")
     visibility: str
     share_uuid: UUID | None
     created_at: datetime
@@ -159,3 +163,22 @@ class PDFDownloadResponse(BaseModel):
         None, description="Timestamp when PDF was generated"
     )
     message: str | None = Field(None, description="Human-readable status message")
+
+
+class PDFDownloadURLResponse(BaseModel):
+    """Schema for PDF download URL endpoint response."""
+
+    download_url: str = Field(
+        description="Direct S3 presigned URL or local file URL for download"
+    )
+    filename: str = Field(
+        description="Suggested filename for the PDF download"
+    )
+    expires_in: int | None = Field(
+        None,
+        description="Seconds until download URL expires (only for S3 presigned URLs)",
+    )
+    content_type: str = Field(
+        default="application/pdf",
+        description="MIME type of the file"
+    )

@@ -118,6 +118,76 @@ class TestGeneratePDFEndpoint:
         assert response.status_code == 400
         assert "fully calculated" in response.json()["detail"].lower()
 
+    async def test_generate_pdf_concurrent_generation(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_chart_factory,
+        auth_headers: dict[str, str],
+        db_session: AsyncSession,
+    ):
+        """Test that concurrent PDF generation is blocked."""
+        # Create a test chart with status='completed'
+        chart = await test_chart_factory(user=test_user, status='completed')
+
+        # Simulate an ongoing PDF generation
+        chart.pdf_generating = True
+        chart.pdf_task_id = "existing-task-id"
+        await db_session.commit()
+
+        # Try to generate PDF again
+        response = await client.post(
+            f"/api/v1/charts/{chart.id}/generate-pdf",
+            headers=auth_headers,
+        )
+
+        # Should return 409 Conflict
+        assert response.status_code == 409
+        assert "already being generated" in response.json()["detail"].lower()
+        assert "existing-task-id" in response.json()["detail"]
+
+    async def test_generate_pdf_regeneration_success(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_chart_factory,
+        auth_headers: dict[str, str],
+        db_session: AsyncSession,
+    ):
+        """Test successful PDF regeneration after first generation completed."""
+        from datetime import UTC, datetime
+
+        # Create a test chart with completed PDF
+        chart = await test_chart_factory(user=test_user, status='completed')
+        chart.pdf_url = "s3://bucket/old-pdf.pdf"
+        chart.pdf_generated_at = datetime.now(UTC)
+        chart.pdf_generating = False  # Previous generation completed
+        chart.pdf_task_id = None
+        await db_session.commit()
+
+        # Mock Celery task
+        with patch("app.api.v1.endpoints.charts.generate_chart_pdf_task") as mock_task:
+            mock_task.delay.return_value = MagicMock(id="new-task-id")
+
+            # Regenerate PDF
+            response = await client.post(
+                f"/api/v1/charts/{chart.id}/generate-pdf",
+                headers=auth_headers,
+            )
+
+            assert response.status_code == 202
+            data = response.json()
+            assert data["message"] == "PDF generation started"
+            assert data["task_id"] == "new-task-id"
+
+            # Verify task was called
+            mock_task.delay.assert_called_once_with(str(chart.id))
+
+        # Verify database updated with new task
+        await db_session.refresh(chart)
+        assert chart.pdf_generating is True
+        assert chart.pdf_task_id == "new-task-id"
+
 
 @pytest.mark.asyncio
 class TestPDFStatusEndpoint:

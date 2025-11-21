@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LANGUAGES = [
   { code: 'pt-BR', name: 'Português (BR)', flag: '🇧🇷' },
@@ -20,6 +21,7 @@ const LANGUAGES = [
 
 export function LanguageSelector() {
   const { i18n } = useTranslation();
+  const { user, setUser } = useAuth();
 
   const handleLanguageChange = async (languageCode: string) => {
     await i18n.changeLanguage(languageCode);
@@ -27,9 +29,9 @@ export function LanguageSelector() {
     // Store preference in localStorage
     localStorage.setItem('astro_language', languageCode);
 
-    // If user is authenticated, update backend preference
+    // If user is authenticated, update backend preference and context
     const token = localStorage.getItem('astro_access_token');
-    if (token) {
+    if (token && user) {
       try {
         await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me`, {
           method: 'PUT',
@@ -39,6 +41,9 @@ export function LanguageSelector() {
           },
           body: JSON.stringify({ locale: languageCode }),
         });
+
+        // Update user context to keep in sync
+        setUser({ ...user, locale: languageCode });
       } catch (error) {
         console.error('Failed to update language preference:', error);
       }

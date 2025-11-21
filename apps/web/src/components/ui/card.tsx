@@ -1,20 +1,43 @@
 import * as React from "react"
-
+import { motion } from "framer-motion"
+import { cardHover, fadeInUp } from "@/config/animations"
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-astro-lg border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const {
+    onDrag: _,
+    onDragEnd: _end,
+    onDragEnter: _enter,
+    onDragExit: _exit,
+    onDragLeave: _leave,
+    onDragOver: _over,
+    onDragStart: _start,
+    onDrop: _drop,
+    onAnimationStart: _animStart,
+    onAnimationEnd: _animEnd,
+    onAnimationIteration: _animIter,
+    ...motionProps
+  } = props;
+
+  return (
+    <motion.div
+      ref={ref}
+      className={cn(
+        "rounded-astro-lg border bg-card text-card-foreground shadow-sm",
+        className
+      )}
+      initial="hidden"
+      animate="visible"
+      variants={fadeInUp}
+      whileHover={cardHover}
+      transition={{ duration: 0.3 }}
+      {...motionProps}
+    />
+  );
+})
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { MotionProvider } from './providers/MotionProvider';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { ChartsPage } from './pages/Charts';
@@ -30,8 +31,9 @@ import { Badge } from '@/components/ui/badge';
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <AuthProvider>
-        <BrowserRouter>
+      <MotionProvider>
+        <AuthProvider>
+          <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -53,8 +55,9 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <CookieBanner />
-      </BrowserRouter>
-    </AuthProvider>
+          </BrowserRouter>
+        </AuthProvider>
+      </MotionProvider>
     </ThemeProvider>
   );
 }

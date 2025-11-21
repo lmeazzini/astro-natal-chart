@@ -1,30 +1,65 @@
 % LaTeX Macros for Natal Chart Reports
-% Defines custom commands and formatting styles
+% Astro Essence Design System Implementation
+% Version 2.0 - Following design system from ux/DESIGN_REFERENCE.md
 
-% Color definitions (extracted from TailwindCSS theme)
-\definecolor{primary}{RGB}{59, 130, 246}      % blue-500
-\definecolor{secondary}{RGB}{139, 92, 246}    % violet-500
-\definecolor{accent}{RGB}{236, 72, 153}       % pink-500
-\definecolor{textdark}{RGB}{31, 41, 55}       % gray-800
-\definecolor{textlight}{RGB}{107, 114, 128}   % gray-500
-\definecolor{border}{RGB}{229, 231, 235}      % gray-200
+% ============================================================
+% ASTRO ESSENCE COLOR PALETTE
+% ============================================================
 
-% Section formatting
+% Primary Colors
+\definecolor{primary}{RGB}{74, 95, 193}       % #4A5FC1 — Indigo Blue
+\definecolor{secondary}{RGB}{200, 162, 200}   % #C8A2C8 — Muted Lavender
+\definecolor{accent}{RGB}{244, 237, 226}      % #F4EDE2 — Soft Ivory
+
+% Background Colors
+\definecolor{bglight}{RGB}{250, 250, 255}     % #FAFAFF — Pure White Tint
+\definecolor{bgcard}{RGB}{247, 247, 252}      % #F7F7FC — Card background (calculated from gradient)
+
+% Text Colors
+\definecolor{textdark}{RGB}{43, 43, 56}       % #2B2B38 — Deep Charcoal
+\definecolor{textmuted}{RGB}{107, 114, 128}   % #6B7280 — Soft Gray
+
+% Border & Dividers
+\definecolor{border}{RGB}{216, 218, 229}      % #D8DAE5 — Subtle Gray
+
+% Planet Colors (from Astro Essence)
+\definecolor{sunorange}{RGB}{245, 158, 11}    % #F59E0B — Sun (Amber)
+\definecolor{moonblue}{RGB}{147, 197, 253}    % #93C5FD — Moon (Sky Blue)
+\definecolor{mercurypurple}{RGB}{167, 139, 250} % #A78BFA — Mercury (Purple)
+\definecolor{venuspink}{RGB}{249, 168, 212}   % #F9A8D4 — Venus (Pink)
+\definecolor{marsred}{RGB}{239, 68, 68}       % #EF4444 — Mars (Red)
+\definecolor{jupiterblue}{RGB}{59, 130, 246}  % #3B82F6 — Jupiter (Blue)
+\definecolor{saturnslate}{RGB}{100, 116, 139} % #64748B — Saturn (Slate)
+\definecolor{uranuscyan}{RGB}{6, 182, 212}    % #06B6D4 — Uranus (Cyan)
+\definecolor{neptuneviolet}{RGB}{139, 92, 246}% #8B5CF6 — Neptune (Violet)
+\definecolor{plutopurple}{RGB}{124, 58, 237}  % #7C3AED — Pluto (Purple)
+
+% Semantic Colors
+\definecolor{success}{RGB}{16, 185, 129}      % #10B981 — Success (Green)
+\definecolor{warning}{RGB}{245, 158, 11}      % #F59E0B — Warning (Amber)
+\definecolor{error}{RGB}{239, 68, 68}         % #EF4444 — Error (Red)
+\definecolor{info}{RGB}{59, 130, 246}         % #3B82F6 — Info (Blue)
+
+% ============================================================
+% TYPOGRAPHY COMMANDS
+% ============================================================
+
+% Section formatting — Astro Essence style
 \newcommand{\chartsection}[1]{%
-  \section*{\color{primary}\Large #1}%
+  \section*{\color{primary}\LARGE\bfseries #1}%
   \addcontentsline{toc}{section}{#1}%
-  \vspace{0.3cm}%
+  \vspace{0.5cm}%
 }
 
 % Subsection formatting
 \newcommand{\chartsubsection}[1]{%
-  \subsection*{\color{secondary}\large #1}%
-  \vspace{0.2cm}%
+  \subsection*{\color{textdark}\Large\bfseries #1}%
+  \vspace{0.3cm}%
 }
 
-% Planet name with symbol
+% Planet name with colored symbol
 \newcommand{\planetname}[2]{%
-  \textbf{\color{primary}#1} \textit{(#2)}%
+  \textbf{\color{primary}#1} \textit{\color{textmuted}(#2)}%
 }
 
 % House number formatting
@@ -34,7 +69,7 @@
 
 % Aspect formatting
 \newcommand{\aspectname}[3]{%
-  \textbf{\color{accent}#1 #2 #3}%
+  \textbf{\color{primary}#1} \color{textmuted}{#2} \textbf{\color{primary}#3}%
 }
 
 % Dignity formatting with colored badges
@@ -42,43 +77,117 @@
   \textcolor{#1}{\textbf{#2}}%
 }
 
-% Interpretation text box
+% ============================================================
+% STYLED COMPONENTS (Astro Essence Design)
+% ============================================================
+
+% Interpretation text box — Premium card style
 \newcommand{\interpretation}[1]{%
   \begin{tcolorbox}[
-    colback=gray!5,
-    colframe=primary,
-    arc=2mm,
-    boxrule=0.5pt,
-    left=5pt,
-    right=5pt,
-    top=5pt,
-    bottom=5pt
+    enhanced,
+    colback=bgcard,        % Soft background
+    colframe=border,       % Subtle border
+    arc=5mm,               % ~12px border radius
+    boxrule=1.5pt,
+    left=16pt,             % 16px padding (md spacing)
+    right=16pt,
+    top=16pt,
+    bottom=16pt,
+    drop shadow={
+      opacity=0.04,
+      shadow xshift=0pt,
+      shadow yshift=-2pt,
+      fill=textdark
+    }
   ]
+  \color{textdark}
   #1
+  \end{tcolorbox}
+  \vspace{0.5cm}
+}
+
+% Chart info box — Premium card with Astro Essence styling
+\newcommand{\chartinfo}[4]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=accent!30,     % Soft ivory background
+    colframe=primary,
+    arc=8mm,               % 20px border radius
+    boxrule=1.5pt,
+    title={
+      \Large\bfseries Dados do Mapa
+    },
+    fonttitle=\bfseries,
+    coltitle=white,
+    colbacktitle=primary,
+    left=20pt,             % Generous padding
+    right=20pt,
+    top=20pt,
+    bottom=20pt,
+    drop shadow={
+      opacity=0.08,
+      shadow xshift=0pt,
+      shadow yshift=-4pt,
+      fill=textdark
+    }
+  ]
+  \color{textdark}
+  \textbf{Nome:} \textcolor{textdark}{#1} \\[0.3cm]
+  \textbf{Data e Hora:} \textcolor{textmuted}{#2} \\[0.3cm]
+  \textbf{Local:} \textcolor{textmuted}{#3} \\[0.3cm]
+  \textbf{Coordenadas:} \textcolor{textmuted}{#4}
+  \end{tcolorbox}
+}
+
+% Key insight box (for important interpretations)
+\newcommand{\keyinsight}[1]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=primary!10,
+    colframe=primary,
+    arc=5mm,
+    boxrule=1.5pt,
+    left=16pt,
+    right=16pt,
+    top=16pt,
+    bottom=16pt,
+    drop shadow={
+      opacity=0.06,
+      shadow xshift=0pt,
+      shadow yshift=-3pt,
+      fill=primary
+    }
+  ]
+  \color{textdark}
+  \textbf{✨ Insight Principal:} #1
   \end{tcolorbox}
   \vspace{0.3cm}
 }
 
-% Chart info box (for birth data)
-\newcommand{\chartinfo}[4]{%
+% Highlight box (for warnings or important notes)
+\newcommand{\highlight}[1]{%
   \begin{tcolorbox}[
-    colback=primary!10,
-    colframe=primary,
-    arc=3mm,
-    boxrule=1pt,
-    title={\Large\textbf{Dados do Mapa}},
-    fonttitle=\bfseries\color{white},
-    coltitle=black,
-    colbacktitle=primary
+    enhanced,
+    colback=warning!10,
+    colframe=warning,
+    arc=5mm,
+    boxrule=1.5pt,
+    left=16pt,
+    right=16pt,
+    top=12pt,
+    bottom=12pt
   ]
-  \textbf{Nome:} #1 \\
-  \textbf{Data e Hora:} #2 \\
-  \textbf{Local:} #3 \\
-  \textbf{Coordenadas:} #4
+  \color{textdark}
+  \textbf{⚠️ Nota:} #1
   \end{tcolorbox}
+  \vspace{0.3cm}
 }
 
-% Zodiac sign symbols (using UTF-8)
+% ============================================================
+% ASTROLOGICAL SYMBOLS (UTF-8)
+% ============================================================
+
+% Zodiac sign symbols
 \newcommand{\aries}{♈}
 \newcommand{\taurus}{♉}
 \newcommand{\gemini}{♊}
@@ -92,7 +201,7 @@
 \newcommand{\aquarius}{♒}
 \newcommand{\pisces}{♓}
 
-% Planet symbols (using UTF-8)
+% Planet symbols
 \newcommand{\sun}{☉}
 \newcommand{\moon}{☽}
 \newcommand{\mercury}{☿}
@@ -100,6 +209,9 @@
 \newcommand{\mars}{♂}
 \newcommand{\jupiter}{♃}
 \newcommand{\saturn}{♄}
+\newcommand{\uranus}{⛢}
+\newcommand{\neptune}{♆}
+\newcommand{\pluto}{♇}
 
 % Aspect symbols
 \newcommand{\conjunction}{☌}
@@ -107,3 +219,33 @@
 \newcommand{\trine}{△}
 \newcommand{\square}{□}
 \newcommand{\sextile}{⚹}
+
+% ============================================================
+% TABLE STYLING COMMANDS
+% ============================================================
+
+% Table header row with Astro Essence colors
+\newcommand{\tableheader}[1]{%
+  \rowcolor{primary!10}
+  \textbf{\color{textdark}#1}%
+}
+
+% Alternating row color for tables
+\newcommand{\tablerow}[1]{%
+  \rowcolor{bgcard}
+  #1%
+}
+
+% ============================================================
+% SPACING UTILITIES (following 8px grid)
+% ============================================================
+
+% Vertical spacing commands
+\newcommand{\spacexs}{\vspace{4pt}}    % xs: 4px
+\newcommand{\spacesm}{\vspace{8pt}}    % sm: 8px
+\newcommand{\spacemd}{\vspace{16pt}}   % md: 16px
+\newcommand{\spacelg}{\vspace{24pt}}   % lg: 24px
+\newcommand{\spacexl}{\vspace{32pt}}   % xl: 32px
+\newcommand{\spacexxl}{\vspace{48pt}}  % 2xl: 48px
+
+% End of macros.tex

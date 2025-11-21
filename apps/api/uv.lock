@@ -1735,6 +1735,15 @@ cryptography = [
 ]
 
 [[package]]
+name = "python-json-logger"
+version = "2.0.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/da/95963cebfc578dabd323d7263958dfb68898617912bb09327dd30e9c8d13/python-json-logger-2.0.7.tar.gz", hash = "sha256:23e7ec02d34237c5aa1e29a070193a4ea87583bb4e7f8fd06d3de8264c4b2e1c", size = 10508, upload-time = "2023-02-21T17:40:06.209Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/35/a6/145655273568ee78a581e734cf35beb9e33a370b29c5d3c8fee3744de29f/python_json_logger-2.0.7-py3-none-any.whl", hash = "sha256:f380b826a991ebbe3de4d897aeec42760035ac760345e57b812938dc8b35e2bd", size = 8067, upload-time = "2023-02-21T17:40:05.117Z" },
+]
+
+[[package]]
 name = "python-multipart"
 version = "0.0.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1796,11 +1805,13 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "python-dotenv" },
     { name = "python-jose", extra = ["cryptography"] },
+    { name = "python-json-logger" },
     { name = "python-multipart" },
     { name = "pyyaml" },
     { name = "redis" },
     { name = "slowapi" },
     { name = "sqlalchemy" },
+    { name = "structlog" },
     { name = "timezonefinder" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -1846,11 +1857,13 @@ requires-dist = [
     { name = "python-dateutil", specifier = "==2.8.2" },
     { name = "python-dotenv", specifier = "==1.0.0" },
     { name = "python-jose", extras = ["cryptography"], specifier = "==3.3.0" },
+    { name = "python-json-logger", specifier = "==2.0.7" },
     { name = "python-multipart", specifier = "==0.0.6" },
     { name = "pyyaml", specifier = "==6.0.1" },
     { name = "redis", specifier = "==4.6.0" },
     { name = "slowapi", specifier = "==0.1.9" },
     { name = "sqlalchemy", specifier = "==2.0.25" },
+    { name = "structlog", specifier = "==23.2.0" },
     { name = "timezonefinder", specifier = "==6.4.0" },
     { name = "uvicorn", extras = ["standard"], specifier = "==0.25.0" },
 ]
@@ -2047,6 +2060,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/06/a9/a42ef0fb5479e21738a03c0aa1078023a38c23198b049cb901eeda06cde0/starlette-0.32.0.post1.tar.gz", hash = "sha256:e54e2b7e2fb06dff9eac40133583f10dfa05913f5a85bf26f427c7a40a9a3d02", size = 2837480, upload-time = "2023-11-06T06:30:40.516Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/40/9e/6bfa6be40034fa04cc50e2a81d24a4e5b89279c688b51380d70ac31c0556/starlette-0.32.0.post1-py3-none-any.whl", hash = "sha256:cd0cb10ddb49313f609cedfac62c8c12e56c7314b66d89bb077ba228bada1b09", size = 70017, upload-time = "2023-11-06T06:30:37.537Z" },
+]
+
+[[package]]
+name = "structlog"
+version = "23.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/4c/67e8cc235bbeb0a87053739c4c9d0619e3f284730ebdb2b34349488d9e8a/structlog-23.2.0.tar.gz", hash = "sha256:334666b94707f89dbc4c81a22a8ccd34449f0201d5b1ee097a030b577fa8c858", size = 749288, upload-time = "2023-10-09T14:56:18.602Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fc/26/0f5f842dea4e93e28f7d4ed020021cf41ebd79572a06f12e273c8eac4db9/structlog-23.2.0-py3-none-any.whl", hash = "sha256:16a167e87b9fa7fae9a972d5d12805ef90e04857a93eba479d4be3801a6a1482", size = 62875, upload-time = "2023-10-09T14:56:16.76Z" },
 ]
 
 [[package]]

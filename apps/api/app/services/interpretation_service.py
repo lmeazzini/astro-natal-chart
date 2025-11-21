@@ -47,6 +47,68 @@ class InterpretationService:
             result = yaml.safe_load(f)
             return result if isinstance(result, dict) else {}
 
+    def _validate_dignities(self, planet: str, sign: str, dignities: dict[str, Any]) -> dict[str, Any]:
+        """
+        Validate that dignity information is consistent with planet and sign.
+
+        Args:
+            planet: Planet name
+            sign: Zodiac sign
+            dignities: Dictionary of essential dignities
+
+        Returns:
+            Validated dignities dictionary (may be corrected)
+        """
+        from app.astro.dignities import EXALTATIONS, RULERSHIPS, SIGNS
+
+        validated = dignities.copy() if dignities else {}
+
+        # Check domicile (rulership)
+        expected_ruler = RULERSHIPS.get(sign)
+        if validated.get("is_ruler") and expected_ruler != planet:
+            logger.warning(
+                f"Dignity validation error: {planet} marked as ruler in {sign}, "
+                f"but {sign} is ruled by {expected_ruler}"
+            )
+            validated["is_ruler"] = False
+
+        # Check exaltation
+        if planet in EXALTATIONS:
+            exalt_sign = EXALTATIONS[planet]["sign"]
+            if validated.get("is_exalted") and exalt_sign != sign:
+                logger.warning(
+                    f"Dignity validation error: {planet} marked as exalted in {sign}, "
+                    f"but {planet} is exalted in {exalt_sign}"
+                )
+                validated["is_exalted"] = False
+
+        # Check detriment (opposite of rulership)
+        if sign in SIGNS:
+            sign_index = SIGNS.index(sign)
+            opposite_sign = SIGNS[(sign_index + 6) % 12]
+            opposite_ruler = RULERSHIPS.get(opposite_sign)
+            if validated.get("is_detriment") and opposite_ruler != planet:
+                logger.warning(
+                    f"Dignity validation error: {planet} marked as detriment in {sign}, "
+                    f"but detriment would be {opposite_ruler}"
+                )
+                validated["is_detriment"] = False
+
+        # Check fall (opposite of exaltation)
+        if planet in EXALTATIONS:
+            exalt_sign = str(EXALTATIONS[planet]["sign"])
+            if exalt_sign in SIGNS:
+                exalt_index = SIGNS.index(exalt_sign)
+                fall_sign = SIGNS[(exalt_index + 6) % 12]
+                if validated.get("is_fall") and fall_sign != sign:
+                    logger.warning(
+                        f"Dignity validation error: {planet} marked as fall in {sign}, "
+                        f"but {planet} falls in {fall_sign}"
+                    )
+                    validated["is_fall"] = False
+
+        return validated
+
     async def generate_planet_interpretation(
         self,
         planet: str,
@@ -74,10 +136,13 @@ class InterpretationService:
         if planet not in CLASSICAL_PLANETS:
             return ""
 
-        # Build context from dignities
-        dignity_context = self._format_dignities(dignities)
+        # Validate dignities before using them
+        validated_dignities = self._validate_dignities(planet, sign, dignities)
 
-        # Format the prompt
+        # Build context from dignities
+        dignity_context = self._format_dignities(validated_dignities)
+
+        # Format the prompt with validated data
         prompt = self.prompts["planet_prompts"]["base"].format(
             planet=planet,
             sign=sign,
@@ -85,6 +150,12 @@ class InterpretationService:
             dignities=dignity_context,
             sect=sect,
             retrograde="Sim" if retrograde else "Não",
+        )
+
+        # Log the interpretation context for debugging
+        logger.debug(
+            f"Generating interpretation for {planet} in {sign} (house {house}): "
+            f"dignities={validated_dignities}, sect={sect}, retrograde={retrograde}"
         )
 
         # Generate interpretation using OpenAI
@@ -100,11 +171,16 @@ class InterpretationService:
             )
 
             interpretation = response.choices[0].message.content
+
+            # Log successful generation
+            if interpretation:
+                logger.info(f"Successfully generated interpretation for {planet} in {sign}")
+
             return interpretation.strip() if interpretation else ""
 
         except Exception as e:
-            logger.error(f"Error generating interpretation for {planet}: {e}")
-            return f"Erro ao gerar interpretação para {planet}."
+            logger.error(f"Error generating interpretation for {planet} in {sign}: {e}")
+            return f"Erro ao gerar interpretação para {planet} em {sign}."
 
     async def generate_house_interpretation(
         self,
@@ -420,34 +496,59 @@ class InterpretationService:
 
     def _format_dignities(self, dignities: dict[str, Any]) -> str:
         """
-        Format dignities dictionary into readable text.
+        Format dignities dictionary into detailed and accurate text for AI interpretation.
 
         Args:
-            dignities: Dignities dictionary
+            dignities: Dignities dictionary from calculate_essential_dignities
 
         Returns:
-            Formatted dignity text
+            Formatted dignity text with explicit details
         """
         if not dignities:
-            return "Sem dignidades essenciais"
+            return "Peregrino - sem dignidades essenciais (score: 0)"
 
         parts = []
         score = dignities.get("score", 0)
         classification = dignities.get("classification", "peregrine")
 
+        # Primary dignities (most important)
         if dignities.get("is_ruler"):
-            parts.append("domicílio")
+            parts.append("DOMICÍLIO (+5 pontos) - planeta em seu signo de regência, máxima força")
         if dignities.get("is_exalted"):
-            parts.append("exaltação")
+            parts.append("EXALTAÇÃO (+4 pontos) - planeta honrado e elevado")
         if dignities.get("is_detriment"):
-            parts.append("detrimento")
+            parts.append("DETRIMENTO (-5 pontos) - planeta enfraquecido, oposto ao domicílio")
         if dignities.get("is_fall"):
-            parts.append("queda")
-        if dignities.get("triplicity_ruler"):
-            parts.append(f"triplicidade ({dignities['triplicity_ruler']})")
+            parts.append("QUEDA (-4 pontos) - planeta rebaixado, oposto à exaltação")
 
+        # Secondary dignities
+        if dignities.get("triplicity_ruler"):
+            trip_type = dignities["triplicity_ruler"]
+            if trip_type == "day":
+                parts.append("TRIPLICIDADE DIURNA (+3 pontos) - regente diurno do elemento")
+            elif trip_type == "night":
+                parts.append("TRIPLICIDADE NOTURNA (+3 pontos) - regente noturno do elemento")
+            else:
+                parts.append("TRIPLICIDADE PARTICIPANTE (+3 pontos) - participante do elemento")
+
+        # Minor dignities
+        if dignities.get("term_ruler"):
+            parts.append("TERMO (+2 pontos) - regente do termo/bounds")
+        if dignities.get("face_ruler"):
+            parts.append("FACE (+1 ponto) - regente do decanato")
+
+        # Build final description
         if parts:
-            dignity_list = ", ".join(parts)
-            return f"{dignity_list} (score: {score}, {classification})"
+            dignity_details = " | ".join(parts)
+
+            # Add classification explanation
+            if classification == "dignified":
+                class_text = "DIGNIFICADO - planeta forte e bem posicionado"
+            elif classification == "debilitated":
+                class_text = "DEBILITADO - planeta enfraquecido e mal posicionado"
+            else:
+                class_text = "PEREGRINO - planeta sem força especial"
+
+            return f"{dignity_details} | Score Total: {score} | Status: {class_text}"
         else:
-            return f"Peregrino (score: {score})"
+            return f"PEREGRINO - sem dignidades essenciais (score: {score})"

@@ -86,14 +86,21 @@ async def register_user(
     # Send email (don't fail registration if email fails)
     try:
         email_service = EmailService()
-        await email_service.send_verification_email(
+        success = await email_service.send_verification_email(
             to_email=created_user.email,
             user_name=created_user.full_name,
             verification_url=verification_url,
         )
-    except Exception:
+        if success:
+            logger.info(f"Verification email sent to {created_user.email}")
+        else:
+            logger.error(f"Failed to send verification email to {created_user.email}")
+    except Exception as e:
         # Log but don't fail registration
-        pass
+        logger.error(
+            f"Exception sending verification email to {created_user.email}: {e}",
+            extra={"user_id": str(created_user.id)}
+        )
 
     # If user accepted terms, create consent record
     if user_data.accept_terms:

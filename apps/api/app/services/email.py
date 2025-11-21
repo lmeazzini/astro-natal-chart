@@ -137,10 +137,7 @@ class EmailService:
             # 2. Build Gmail service (async via executor)
             service = await loop.run_in_executor(
                 None,
-                build,
-                'gmail',
-                'v1',
-                self.credentials
+                partial(build, 'gmail', 'v1', credentials=self.credentials)
             )
 
             # 3. Create message (sync, but fast - no I/O)

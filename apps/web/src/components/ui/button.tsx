@@ -63,17 +63,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const {
-      onDrag: _,
-      onDragEnd: _end,
-      onDragEnter: _enter,
-      onDragExit: _exit,
-      onDragLeave: _leave,
-      onDragOver: _over,
-      onDragStart: _start,
-      onDrop: _drop,
-      onAnimationStart: _animStart,
-      onAnimationEnd: _animEnd,
-      onAnimationIteration: _animIter,
+      onDrag: _onDrag,
+      onDragEnd: _onDragEnd,
+      onDragEnter: _onDragEnter,
+      onDragExit: _onDragExit,
+      onDragLeave: _onDragLeave,
+      onDragOver: _onDragOver,
+      onDragStart: _onDragStart,
+      onDrop: _onDrop,
+      onAnimationStart: _onAnimationStart,
+      onAnimationEnd: _onAnimationEnd,
+      onAnimationIteration: _onAnimationIteration,
       ...motionProps
     } = props;
 

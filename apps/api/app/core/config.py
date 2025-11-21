@@ -106,6 +106,22 @@ class Settings(BaseSettings):
             and self.S3_BUCKET_NAME
         )
 
+    # AWS S3 - Backup Storage (uses same AWS credentials)
+    BACKUP_S3_BUCKET: str | None = None
+    BACKUP_S3_PREFIX: str = "backups"
+    BACKUP_S3_RETENTION_DAYS: int = 30  # Local retention after S3 upload
+    BACKUP_S3_GLACIER_DAYS: int = 30  # Days before transitioning to Glacier
+    BACKUP_S3_DELETE_DAYS: int = 90  # Days before permanent deletion
+
+    @property
+    def backup_s3_enabled(self) -> bool:
+        """Check if Backup S3 is properly configured."""
+        return bool(
+            self.AWS_ACCESS_KEY_ID
+            and self.AWS_SECRET_ACCESS_KEY
+            and self.BACKUP_S3_BUCKET
+        )
+
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 

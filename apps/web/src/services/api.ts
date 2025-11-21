@@ -2,6 +2,8 @@
  * API client configuration and base setup
  */
 
+import i18n from '../i18n';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export interface ApiError {
@@ -25,6 +27,7 @@ class ApiClient {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': i18n.language || 'pt-BR',
         ...options.headers,
       },
     };

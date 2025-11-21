@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { chartsService, BirthChart } from '../services/charts';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -103,6 +104,7 @@ export function ChartsPage() {
             <h1 className="text-h3 font-display text-foreground">Meus Mapas Natais</h1>
           </Link>
           <div className="flex items-center gap-4">
+            <LanguageSelector />
             <ThemeToggle />
             <Button asChild>
               <Link to="/charts/new">

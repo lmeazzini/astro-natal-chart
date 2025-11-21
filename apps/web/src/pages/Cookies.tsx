@@ -254,7 +254,7 @@ export function CookiesPage() {
 
           <h2>4. Como Gerenciar Cookies</h2>
 
-          <h3>4.1 No Astro App</h3>
+          <h3>4.1 No Real Astrology</h3>
           <ol>
             <li>
               Acesse <strong>Configurações → Privacidade → Gerenciar Cookies</strong>

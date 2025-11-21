@@ -40,7 +40,7 @@ export function PrivacyPage() {
         <div className="prose prose-slate dark:prose-invert max-w-none bg-card border border-border rounded-lg p-8">
           <h2>1. Introdução</h2>
           <p>
-            O <strong>Astro App</strong> respeita sua privacidade e está
+            O <strong>Real Astrology</strong> respeita sua privacidade e está
             comprometido em proteger seus dados pessoais. Esta Política explica
             como coletamos, usamos e protegemos suas informações conforme a{' '}
             <strong>LGPD</strong> (Lei 13.709/2018) e o <strong>GDPR</strong>{' '}
@@ -49,7 +49,7 @@ export function PrivacyPage() {
 
           <h2>2. Controlador e DPO</h2>
           <p>
-            <strong>Controlador de Dados</strong>: Astro App
+            <strong>Controlador de Dados</strong>: Real Astrology
             <br />
             <strong>DPO (Encarregado)</strong>: dpo@astro-app.com
             <br />

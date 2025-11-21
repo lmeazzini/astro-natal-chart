@@ -75,9 +75,11 @@
     "forgotPassword": {
       "title": "Recover Password",
       "subtitle": "Enter your email to receive instructions",
+      "description": "We will send a recovery link to your email",
       "email": "Email",
       "submit": "Send instructions",
       "backToLogin": "Back to login",
+      "checkInbox": "Check your inbox and spam folder.",
       "success": "Instructions sent! Check your email.",
       "error": "Error sending instructions",
       "emailNotFound": "Email not found"

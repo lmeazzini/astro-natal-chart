@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,13 +16,17 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
-});
-
-type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+type ForgotPasswordValues = {
+  email: string;
+};
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation();
+
+  // Zod schema inside component to access t()
+  const forgotPasswordSchema = z.object({
+    email: z.string().min(1, t('validation.required')).email(t('validation.email')),
+  });
   const [successMessage, setSuccessMessage] = useState('');
   const [generalError, setGeneralError] = useState('');
 
@@ -49,7 +54,7 @@ export function ForgotPasswordPage() {
       setGeneralError(
         error instanceof Error
           ? error.message
-          : 'Erro ao solicitar recuperação de senha'
+          : t('auth.forgotPassword.error')
       );
     }
   }
@@ -60,19 +65,19 @@ export function ForgotPasswordPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Recuperar Senha
+            {t('auth.forgotPassword.title')}
           </h1>
           <p className="text-muted-foreground">
-            Digite seu email para receber as instruções de recuperação
+            {t('auth.forgotPassword.subtitle')}
           </p>
         </div>
 
         {/* Form Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Esqueceu sua senha?</CardTitle>
+            <CardTitle>{t('auth.forgotPassword.title')}</CardTitle>
             <CardDescription>
-              Enviaremos um link de recuperação para seu email
+              {t('auth.forgotPassword.description', { defaultValue: 'Enviaremos um link de recuperação para seu email' })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -89,7 +94,7 @@ export function ForgotPasswordPage() {
                 <AlertDescription className="text-green-700 dark:text-green-400">
                   {successMessage}
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Verifique sua caixa de entrada e spam.
+                    {t('auth.forgotPassword.checkInbox', { defaultValue: 'Verifique sua caixa de entrada e spam.' })}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -103,11 +108,11 @@ export function ForgotPasswordPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('auth.forgotPassword.email')}</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="seu@email.com"
+                            placeholder={t('auth.forgotPassword.email')}
                             autoComplete="email"
                             autoFocus
                             {...field}
@@ -126,7 +131,7 @@ export function ForgotPasswordPage() {
                     {form.formState.isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {form.formState.isSubmitting ? 'Enviando...' : 'Enviar Instruções'}
+                    {form.formState.isSubmitting ? t('common.loading') : t('auth.forgotPassword.submit')}
                   </Button>
                 </form>
               </Form>
@@ -137,7 +142,7 @@ export function ForgotPasswordPage() {
               <Button variant="link" asChild>
                 <Link to="/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar para login
+                  {t('auth.forgotPassword.backToLogin')}
                 </Link>
               </Button>
             </div>

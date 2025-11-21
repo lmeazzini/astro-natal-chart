@@ -77,9 +77,11 @@
     "forgotPassword": {
       "title": "Recuperar Senha",
       "subtitle": "Digite seu e-mail para receber instruções",
+      "description": "Enviaremos um link de recuperação para seu email",
       "email": "E-mail",
       "submit": "Enviar instruções",
       "backToLogin": "Voltar ao login",
+      "checkInbox": "Verifique sua caixa de entrada e spam.",
       "success": "Instruções enviadas! Verifique seu e-mail.",
       "error": "Erro ao enviar instruções",
       "emailNotFound": "E-mail não encontrado"

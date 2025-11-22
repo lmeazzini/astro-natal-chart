@@ -20,6 +20,13 @@ import { ProgressIndicator } from '@/components/ui/progress-indicator';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check } from 'lucide-react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Configure dayjs plugins for timezone handling
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const TOKEN_KEY = 'astro_access_token';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -170,7 +177,21 @@ export function NewChartPage() {
         return;
       }
 
-      await chartsService.create(values as BirthChartCreate, token);
+      // Convert datetime-local value to ISO string with correct timezone
+      // datetime-local returns "YYYY-MM-DDTHH:mm" format without timezone info
+      // We need to interpret it in the user's selected birth_timezone
+      const localDatetime = values.birth_datetime; // e.g., "1994-05-29T16:30"
+      const birthTimezone = values.birth_timezone; // e.g., "America/Sao_Paulo"
+
+      // Parse the datetime as if it's in the birth timezone and convert to ISO
+      const isoDatetime = dayjs.tz(localDatetime, birthTimezone).toISOString();
+
+      const chartData: BirthChartCreate = {
+        ...values,
+        birth_datetime: isoDatetime,
+      };
+
+      await chartsService.create(chartData, token);
       navigate('/charts');
     } catch (error) {
       setGeneralError(

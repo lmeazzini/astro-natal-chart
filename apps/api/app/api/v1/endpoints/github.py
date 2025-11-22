@@ -75,9 +75,10 @@ async def get_redis_client() -> AsyncGenerator[Redis | None, None]:
 
 async def fetch_all_feature_issues() -> list[dict]:
     """
-    Fetch ALL issues with 'feature' label using pagination.
+    Fetch ALL issues with 'enhancement' label using pagination.
 
     GitHub API returns max 100 issues per page.
+    Uses 'enhancement' label which is GitHub's default for new features.
     """
     headers = {
         "Accept": "application/vnd.github.v3+json",
@@ -98,7 +99,7 @@ async def fetch_all_feature_issues() -> list[dict]:
                     f"{GITHUB_API_URL}/repos/{settings.GITHUB_REPO}/issues",
                     params={
                         "state": "all",
-                        "labels": "feature",
+                        "labels": "enhancement",
                         "per_page": per_page,
                         "page": page,
                     },
@@ -164,22 +165,25 @@ async def fetch_all_feature_issues() -> list[dict]:
 
 async def fetch_features_from_github() -> FeaturesResponse:
     """
-    Fetch features from GitHub API based on issue labels.
+    Fetch features from GitHub API based on issue state and labels.
 
-    Labels expected:
-    - 'implemented' or 'done': Completed features
-    - 'in-progress' or 'doing': Features in development
-    - 'planned' or 'backlog': Planned features
+    Categorization:
+    - Closed issues → Implemented
+    - Open issues with 'in-progress' or 'doing' label → In Progress
+    - Open issues without those labels → Planned
+
+    Falls back to state-based categorization if no status labels exist.
     """
     issues = await fetch_all_feature_issues()
 
-    # Categorize by labels
+    # Categorize by state and labels
     implemented: list[Feature] = []
     in_progress: list[Feature] = []
     planned: list[Feature] = []
 
     for issue in issues:
         labels = [label["name"].lower() for label in issue.get("labels", [])]
+        state = issue.get("state", "").lower()
 
         feature = Feature(
             title=issue["title"],
@@ -189,12 +193,20 @@ async def fetch_features_from_github() -> FeaturesResponse:
             closed_at=issue.get("closed_at"),
         )
 
-        if "implemented" in labels or "done" in labels:
+        # Check if it's closed (implemented)
+        if state == "closed":
             implemented.append(feature)
+        # Check for in-progress labels
         elif "in-progress" in labels or "doing" in labels:
             in_progress.append(feature)
-        elif "planned" in labels or "backlog" in labels:
+        # Open issues without in-progress are planned
+        else:
             planned.append(feature)
+
+    # Sort by most recent first
+    implemented.sort(key=lambda f: f.closed_at or f.created_at, reverse=True)
+    in_progress.sort(key=lambda f: f.created_at, reverse=True)
+    planned.sort(key=lambda f: f.created_at, reverse=True)
 
     return FeaturesResponse(
         implemented=implemented,

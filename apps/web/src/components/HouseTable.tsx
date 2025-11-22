@@ -4,6 +4,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { getSignSymbol, formatDMS, isAngularHouse, getHouseType } from '../utils/astro';
+import { useAstroTranslation } from '../hooks/useAstroTranslation';
 
 // shadcn/ui components
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -31,6 +32,7 @@ export function HouseTable({
   interpretations,
 }: HouseTableProps) {
   const { t } = useTranslation();
+  const { translateSign } = useAstroTranslation();
 
   // Translation function for house types
   const getHouseTypeTranslated = (type: string) => {
@@ -82,11 +84,11 @@ export function HouseTable({
                   {/* Sign on Cusp with Symbol */}
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl" title={house.sign}>
+                      <span className="text-xl" title={translateSign(house.sign)}>
                         {getSignSymbol(house.sign)}
                       </span>
                       <span className={angular ? 'text-foreground' : 'text-muted-foreground'}>
-                        {house.sign}
+                        {translateSign(house.sign)}
                       </span>
                     </div>
                   </TableCell>

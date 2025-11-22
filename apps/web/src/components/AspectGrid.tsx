@@ -11,6 +11,7 @@ import {
   formatOrb,
   isMajorAspect,
 } from '../utils/astro';
+import { useAstroTranslation } from '../hooks/useAstroTranslation';
 
 // shadcn/ui components
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -35,22 +36,12 @@ interface AspectGridProps {
   interpretations?: Record<string, string>;
 }
 
-// Planet names in Portuguese
-const PLANET_NAMES_PT: Record<string, string> = {
-  Sun: 'Sol',
-  Moon: 'Lua',
-  Mercury: 'Mercúrio',
-  Venus: 'Vênus',
-  Mars: 'Marte',
-  Jupiter: 'Júpiter',
-  Saturn: 'Saturno',
-};
-
 export function AspectGrid({
   aspects,
   interpretations,
 }: AspectGridProps) {
   const { t } = useTranslation();
+  const { translatePlanet, translateAspect } = useAstroTranslation();
   const [filter, setFilter] = useState<'all' | 'major'>('all');
   const [sortBy, setSortBy] = useState<'orb' | 'type'>('orb');
 
@@ -133,11 +124,11 @@ export function AspectGrid({
                     {/* Planet 1 */}
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="text-xl" title={aspect.planet1}>
+                        <span className="text-xl" title={translatePlanet(aspect.planet1)}>
                           {getPlanetSymbol(aspect.planet1)}
                         </span>
                         <span className="font-medium text-foreground">
-                          {aspect.planet1}
+                          {translatePlanet(aspect.planet1)}
                         </span>
                       </div>
                     </TableCell>
@@ -148,7 +139,7 @@ export function AspectGrid({
                         <span
                           className="text-2xl"
                           style={{ color: aspectColor }}
-                          title={aspect.aspect}
+                          title={translateAspect(aspect.aspect)}
                         >
                           {getAspectSymbol(aspect.aspect)}
                         </span>
@@ -156,7 +147,7 @@ export function AspectGrid({
                           className="text-xs font-medium"
                           style={{ color: aspectColor }}
                         >
-                          {aspect.aspect}
+                          {translateAspect(aspect.aspect)}
                         </span>
                       </div>
                     </TableCell>
@@ -164,11 +155,11 @@ export function AspectGrid({
                     {/* Planet 2 */}
                     <TableCell className="">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl" title={aspect.planet2}>
+                        <span className="text-xl" title={translatePlanet(aspect.planet2)}>
                           {getPlanetSymbol(aspect.planet2)}
                         </span>
                         <span className="font-medium text-foreground">
-                          {aspect.planet2}
+                          {translatePlanet(aspect.planet2)}
                         </span>
                       </div>
                     </TableCell>
@@ -262,13 +253,13 @@ export function AspectGrid({
               return (
                 <Card key={aspectKey}>
                   <CardHeader>
-                    <div className="text-sm text-muted-foreground mb-1">{aspect}</div>
+                    <div className="text-sm text-muted-foreground mb-1">{translateAspect(aspect)}</div>
                     <CardTitle className="flex items-center gap-2 flex-wrap">
                       <span className="text-xl">{getPlanetSymbol(planet1)}</span>
-                      <span className="text-sm">{PLANET_NAMES_PT[planet1] || planet1}</span>
+                      <span className="text-sm">{translatePlanet(planet1)}</span>
                       <span className="text-sm text-muted-foreground">-</span>
                       <span className="text-xl">{getPlanetSymbol(planet2)}</span>
-                      <span className="text-sm">{PLANET_NAMES_PT[planet2] || planet2}</span>
+                      <span className="text-sm">{translatePlanet(planet2)}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

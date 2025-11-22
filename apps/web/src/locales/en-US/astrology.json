@@ -1,4 +1,5 @@
 {
+  "rising": "Rising",
   "chart": {
     "birthChart": "Birth Chart",
     "natalChart": "Natal Chart",
@@ -51,14 +52,23 @@
   },
   "aspects": {
     "conjunction": "Conjunction",
+    "Conjunction": "Conjunction",
     "opposition": "Opposition",
+    "Opposition": "Opposition",
     "trine": "Trine",
+    "Trine": "Trine",
     "square": "Square",
+    "Square": "Square",
     "sextile": "Sextile",
+    "Sextile": "Sextile",
     "quincunx": "Quincunx",
+    "Quincunx": "Quincunx",
     "semisextile": "Semisextile",
+    "Semisextile": "Semisextile",
     "semisquare": "Semisquare",
+    "Semisquare": "Semisquare",
     "sesquiquadrate": "Sesquiquadrate",
+    "Sesquiquadrate": "Sesquiquadrate",
     "applying": "Applying",
     "separating": "Separating"
   },

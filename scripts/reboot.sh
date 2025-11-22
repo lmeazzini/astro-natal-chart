@@ -120,11 +120,32 @@ echo ""
 
 # Step 6: Run database migrations
 print_header "🗄️  Step 6: Running database migrations"
-log_info "Applying database migrations..."
-if docker compose exec -T api sh -c "cd /app && alembic upgrade head" > /dev/null 2>&1; then
-    log_success "Database migrations completed"
+log_info "Checking migration status..."
+
+# Get current migration status
+CURRENT_REVISION=$(docker compose exec -T api uv run alembic current 2>/dev/null | grep -E "^[a-f0-9]+" | head -1 || echo "")
+HEAD_REVISION=$(docker compose exec -T api uv run alembic heads 2>/dev/null | grep -E "^[a-f0-9]+" | head -1 || echo "")
+
+if [ -z "$CURRENT_REVISION" ]; then
+    log_info "No migrations applied yet. Applying all migrations..."
+    if docker compose exec -T api uv run alembic upgrade head 2>&1; then
+        log_success "Database migrations completed"
+    else
+        log_error "Failed to apply migrations"
+        exit 1
+    fi
+elif [ "$CURRENT_REVISION" != "$HEAD_REVISION" ]; then
+    log_info "Current: $CURRENT_REVISION"
+    log_info "Head: $HEAD_REVISION"
+    log_info "Applying pending migrations..."
+    if docker compose exec -T api uv run alembic upgrade head 2>&1; then
+        log_success "Database migrations completed"
+    else
+        log_error "Failed to apply migrations"
+        exit 1
+    fi
 else
-    log_warning "Migrations may have already been applied or failed"
+    log_success "Database is already up to date (revision: $CURRENT_REVISION)"
 fi
 echo ""
 

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPlanetSymbol, getSignSymbol, formatDMS } from '../utils/astro';
+import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import {
   Dignities,
   getDignityBadge,
@@ -59,17 +60,6 @@ type SortBy = 'position' | 'house' | 'dignity';
 // Classical 7 planets (no modern planets)
 const CLASSICAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
 
-// Planet names in Portuguese
-const PLANET_NAMES_PT: Record<string, string> = {
-  Sun: 'Sol',
-  Moon: 'Lua',
-  Mercury: 'Mercúrio',
-  Venus: 'Vênus',
-  Mars: 'Marte',
-  Jupiter: 'Júpiter',
-  Saturn: 'Saturno',
-};
-
 export function PlanetList({
   planets,
   showOnlyClassical = false,
@@ -77,6 +67,7 @@ export function PlanetList({
   lordOfNativity,
 }: PlanetListProps) {
   const { t } = useTranslation();
+  const { translateSign, translatePlanet } = useAstroTranslation();
   const [sortBy, setSortBy] = useState<SortBy>('position');
   const [showDignityInfo, setShowDignityInfo] = useState(false);
 
@@ -223,11 +214,11 @@ export function PlanetList({
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <span className="text-2xl" title={planet.name}>
+                      <span className="text-2xl" title={translatePlanet(planet.name)}>
                         {getPlanetSymbol(planet.name)}
                       </span>
                       <span className="font-medium text-foreground">
-                        {planet.name}
+                        {translatePlanet(planet.name)}
                       </span>
                       {lordOfNativity && lordOfNativity.planet === planet.name && (
                         <motion.div
@@ -250,10 +241,10 @@ export function PlanetList({
                 {/* Sign with Symbol */}
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl" title={planet.sign}>
+                    <span className="text-xl" title={translateSign(planet.sign)}>
                       {getSignSymbol(planet.sign)}
                     </span>
-                    <span className="text-muted-foreground">{planet.sign}</span>
+                    <span className="text-muted-foreground">{translateSign(planet.sign)}</span>
                   </div>
                 </TableCell>
 
@@ -384,10 +375,10 @@ export function PlanetList({
                 <Card key={planetKey}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <span className="text-2xl" title={PLANET_NAMES_PT[planetKey]}>
+                      <span className="text-2xl" title={translatePlanet(planetKey)}>
                         {getPlanetSymbol(planetKey)}
                       </span>
-                      {PLANET_NAMES_PT[planetKey] || planetKey}
+                      {translatePlanet(planetKey)}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

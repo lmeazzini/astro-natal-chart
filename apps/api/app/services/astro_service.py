@@ -81,18 +81,25 @@ def convert_to_julian_day(dt: datetime, timezone: str, latitude: float, longitud
     Convert datetime to Julian Day for Swiss Ephemeris calculations.
 
     Args:
-        dt: Birth datetime
-        timezone: Timezone string (e.g., 'America/Sao_Paulo')
-        latitude: Geographic latitude
-        longitude: Geographic longitude
+        dt: Birth datetime (can be timezone-aware UTC or naive local time)
+        timezone: Timezone string (e.g., 'America/Sao_Paulo') - used only if dt is naive
+        latitude: Geographic latitude (unused, kept for API compatibility)
+        longitude: Geographic longitude (unused, kept for API compatibility)
 
     Returns:
         Julian Day number
     """
-    # Convert to UTC
-    tz = ZoneInfo(timezone)
-    dt_aware = dt.replace(tzinfo=tz)
-    dt_utc = dt_aware.astimezone(ZoneInfo("UTC"))
+    # Handle timezone conversion properly
+    # Case 1: datetime already has timezone info (e.g., from database with UTC)
+    # Case 2: naive datetime that should be interpreted in the given timezone
+    if dt.tzinfo is not None:
+        # Already timezone-aware - convert directly to UTC
+        dt_utc = dt.astimezone(ZoneInfo("UTC"))
+    else:
+        # Naive datetime - interpret it in the given timezone, then convert to UTC
+        tz = ZoneInfo(timezone)
+        dt_aware = dt.replace(tzinfo=tz)
+        dt_utc = dt_aware.astimezone(ZoneInfo("UTC"))
 
     # Calculate Julian Day
     jd: float = swe.julday(  # type: ignore[no-any-return]

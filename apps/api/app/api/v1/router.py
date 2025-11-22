@@ -5,6 +5,7 @@ API v1 router - aggregates all v1 endpoints.
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    admin,
     auth,
     charts,
     geocoding,
@@ -68,4 +69,10 @@ api_router.include_router(
 api_router.include_router(
     privacy.router,
     tags=["privacy"],
+)
+
+# Admin endpoints (restricted)
+api_router.include_router(
+    admin.router,
+    tags=["admin"],
 )

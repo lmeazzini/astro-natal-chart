@@ -194,7 +194,7 @@ async def get_chart_status(
     "/{chart_id}",
     response_model=BirthChartRead,
     summary="Get birth chart",
-    description="Get a specific birth chart by ID.",
+    description="Get a specific birth chart by ID. Admins can access any chart.",
 )
 @limiter.limit(RateLimits.CHART_READ)
 async def get_chart(
@@ -206,6 +206,8 @@ async def get_chart(
 ) -> BirthChartRead:
     """
     Get a birth chart by ID.
+
+    Admins can access any chart in the system.
 
     Args:
         chart_id: Birth chart UUID
@@ -220,6 +222,7 @@ async def get_chart(
             db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
+            is_admin=current_user.is_admin,
         )
         return chart  # type: ignore[return-value]
     except chart_service.ChartNotFoundError:

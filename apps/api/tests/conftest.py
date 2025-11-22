@@ -30,6 +30,7 @@ from app.core.database import Base  # noqa: E402
 from app.core.security import get_password_hash  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.chart import AuditLog, BirthChart  # noqa: E402
+from app.models.enums import UserRole  # noqa: E402
 from app.models.user import OAuthAccount, User  # noqa: E402
 
 # Create test database engine
@@ -193,6 +194,7 @@ async def test_user_factory(db_session: AsyncSession):
     Usage:
         user1 = await test_user_factory(email="user1@example.com")
         user2 = await test_user_factory(email="user2@example.com", is_superuser=True)
+        admin = await test_user_factory(email="admin@realastrology.ai", role="admin")
     """
     async def _create_user(
         email: str = "test@example.com",
@@ -201,6 +203,7 @@ async def test_user_factory(db_session: AsyncSession):
         email_verified: bool = True,
         is_active: bool = True,
         is_superuser: bool = False,
+        role: str = UserRole.GERAL.value,
         **kwargs,
     ) -> User:
         user = User(
@@ -211,6 +214,7 @@ async def test_user_factory(db_session: AsyncSession):
             email_verified=email_verified,
             is_active=is_active,
             is_superuser=is_superuser,
+            role=role,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
             **kwargs,
@@ -221,6 +225,47 @@ async def test_user_factory(db_session: AsyncSession):
         return user
 
     return _create_user
+
+
+@pytest.fixture
+async def test_admin_user(db_session: AsyncSession) -> User:
+    """
+    Create a test admin user.
+
+    Default credentials:
+    - email: admin@realastrology.ai
+    - password: Admin123!@#
+    - role: admin
+    """
+    user = User(
+        id=uuid4(),
+        email="admin@realastrology.ai",
+        password_hash=get_password_hash("Admin123!@#"),
+        full_name="Admin User",
+        email_verified=True,
+        is_active=True,
+        is_superuser=True,
+        role=UserRole.ADMIN.value,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+async def admin_auth_headers(test_admin_user: User) -> dict[str, str]:
+    """
+    Get authentication headers for admin user.
+
+    Returns headers dict with Bearer token.
+    """
+    from app.core.security import create_access_token
+
+    access_token = create_access_token(data={"sub": str(test_admin_user.id)})
+    return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture

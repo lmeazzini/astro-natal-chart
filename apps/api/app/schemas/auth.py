@@ -35,6 +35,25 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class TokenVerify(BaseModel):
+    """Schema for token verification response."""
+
+    valid: bool = Field(..., description="Whether the token is valid")
+    user_id: str = Field(..., description="User ID from token")
+    email: str = Field(..., description="User email")
+    expires_in: int = Field(..., description="Seconds until token expiration")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "valid": True,
+                "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                "email": "user@example.com",
+                "expires_in": 850,
+            }
+        }
+
+
 class OAuthCallbackRequest(BaseModel):
     """Schema for OAuth2 callback."""
 

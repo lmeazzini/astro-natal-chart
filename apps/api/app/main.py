@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.core.database import close_db, init_db
 from app.core.i18n.locale_middleware import LocaleMiddleware
 from app.core.logging_config import configure_logging, intercept_uvicorn_logs
-from app.core.middleware import RequestLoggingMiddleware
+from app.core.middleware import RequestLoggingMiddleware, TokenRefreshMiddleware
 from app.core.rate_limit import limiter
 from app.middleware.security import SecurityHeadersMiddleware
 
@@ -39,6 +39,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # ty
 
 # Request logging middleware (should be first to capture all requests)
 app.add_middleware(RequestLoggingMiddleware)
+
+# Token refresh middleware (auto-refresh tokens near expiration)
+app.add_middleware(TokenRefreshMiddleware)
 
 # Security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)

@@ -11,7 +11,7 @@ from app.core.dependencies import get_current_user, get_db
 from app.core.rate_limit import RateLimits, limiter
 from app.core.security import decode_token
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RefreshTokenRequest, Token
+from app.schemas.auth import LoginRequest, RefreshTokenRequest, Token, TokenVerify
 from app.schemas.user import UserCreate, UserRead
 from app.services import auth_service
 
@@ -200,6 +200,48 @@ async def get_current_user_info(
         Current user data
     """
     return current_user
+
+
+@router.get(
+    "/verify",
+    response_model=TokenVerify,
+    summary="Verify access token",
+    description="Verify if current access token is valid and get expiration info.",
+)
+async def verify_token(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> TokenVerify:
+    """
+    Verify if current access token is valid.
+
+    Returns token expiration time and user info. This endpoint is useful
+    for the frontend to check token validity and decide when to refresh.
+
+    Args:
+        request: FastAPI request object
+        current_user: Current authenticated user from JWT token
+
+    Returns:
+        Token verification info including expiration time
+    """
+    import time
+
+    # Extract token from Authorization header
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
+
+    # Decode token to get expiration
+    payload = decode_token(token)
+    exp = payload.get("exp", 0) if payload else 0
+    expires_in = max(0, int(exp - time.time()))
+
+    return TokenVerify(
+        valid=True,
+        user_id=str(current_user.id),
+        email=current_user.email,
+        expires_in=expires_in,
+    )
 
 
 @router.post(

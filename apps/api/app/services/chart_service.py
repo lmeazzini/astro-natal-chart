@@ -2,13 +2,14 @@
 Birth Chart service for CRUD operations.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.chart import BirthChart
+from app.repositories.audit_repository import AuditRepository
 from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import BirthChartCreate, BirthChartUpdate
 from app.services.astro_service import calculate_birth_chart
@@ -315,9 +316,24 @@ async def update_birth_chart(
             # Log error but don't fail update
             logger.error(f"Failed to regenerate interpretations for chart {chart.id}: {e}")
 
-    chart.updated_at = datetime.utcnow()
+    chart.updated_at = datetime.now(UTC)
 
-    return await chart_repo.update(chart)
+    updated_chart = await chart_repo.update(chart)
+
+    # Create audit log entry for chart update (LGPD compliance)
+    audit_repo = AuditRepository(db)
+    await audit_repo.create_log(
+        user_id=user_id,
+        action="update_chart",
+        resource_type="chart",
+        resource_id=chart_id,
+        extra_data={
+            "fields_updated": list(update_dict.keys()),
+            "recalculated": needs_recalc,
+        },
+    )
+
+    return updated_chart
 
 
 async def delete_birth_chart(

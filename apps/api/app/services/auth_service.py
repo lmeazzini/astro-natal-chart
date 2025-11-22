@@ -17,11 +17,34 @@ from app.core.security import (
     get_password_hash,
     verify_password,
 )
+from app.models.enums import UserRole
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
 from app.repositories.user_repository import OAuthAccountRepository, UserRepository
 from app.schemas.auth import Token
 from app.schemas.user import UserCreate
+
+# Domain for admin auto-assignment
+ADMIN_EMAIL_DOMAIN = "@realastrology.ai"
+
+
+def determine_user_role(email: str) -> UserRole:
+    """
+    Determine user role based on email.
+
+    Rules:
+    - Emails ending with @realastrology.ai → ADMIN
+    - All other emails → GERAL
+
+    Args:
+        email: User email address
+
+    Returns:
+        UserRole enum value
+    """
+    if email.lower().endswith(ADMIN_EMAIL_DOMAIN):
+        return UserRole.ADMIN
+    return UserRole.GERAL
 
 
 class AuthenticationError(Exception):
@@ -63,6 +86,9 @@ async def register_user(
     if await user_repo.email_exists(user_data.email):
         raise UserAlreadyExistsError(_(AuthMessages.USER_ALREADY_EXISTS, email=user_data.email))
 
+    # Determine user role based on email
+    user_role = determine_user_role(user_data.email)
+
     # Create new user
     user = User(
         id=uuid4(),
@@ -73,7 +99,8 @@ async def register_user(
         timezone=settings.DEFAULT_TIMEZONE,
         email_verified=False,
         is_active=True,
-        is_superuser=False,
+        is_superuser=user_role == UserRole.ADMIN,  # Sync with role
+        role=user_role.value,
     )
 
     created_user = await user_repo.create(user)
@@ -313,6 +340,9 @@ async def create_or_update_oauth_user(
         await user_repo.update(existing_user)
         return existing_user, False
 
+    # Determine user role based on email
+    user_role = determine_user_role(email)
+
     # Create new user with OAuth account
     user = User(
         id=uuid4(),
@@ -323,9 +353,17 @@ async def create_or_update_oauth_user(
         timezone=settings.DEFAULT_TIMEZONE,
         email_verified=True,  # Verified by OAuth provider
         is_active=True,
-        is_superuser=False,
+        is_superuser=user_role == UserRole.ADMIN,  # Sync with role
+        role=user_role.value,
     )
     await user_repo.create(user)
+
+    # Log admin user creation
+    if user.is_admin:
+        logger.info(
+            "Admin user created via OAuth",
+            extra={"user_id": str(user.id), "email": email, "provider": provider}
+        )
 
     # Create OAuth account
     oauth_account = OAuthAccount(

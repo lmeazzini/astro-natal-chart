@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     oauth,
     password_reset,
     privacy,
+    rag,
     timezones,
     users,
 )
@@ -99,4 +100,10 @@ api_router.include_router(
     timezones.router,
     prefix="/timezones",
     tags=["timezones"],
+)
+
+# RAG (Retrieval-Augmented Generation) endpoints
+api_router.include_router(
+    rag.router,
+    tags=["rag"],
 )

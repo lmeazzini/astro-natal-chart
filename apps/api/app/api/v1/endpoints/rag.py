@@ -1,0 +1,331 @@
+"""RAG API endpoints for vector search and document management."""
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from loguru import logger
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.dependencies import get_current_user, get_db
+from app.models.user import User
+from app.models.vector_document import VectorDocument
+from app.services.rag import (
+    document_ingestion_service,
+    hybrid_search_service,
+)
+
+router = APIRouter(prefix="/rag", tags=["RAG"])
+
+
+# Request/Response schemas
+class SearchRequest(BaseModel):
+    """Request schema for hybrid search."""
+
+    query: str = Field(..., description="Search query text")
+    limit: int = Field(10, ge=1, le=50, description="Maximum number of results")
+    fusion_method: str = Field("rrf", description="Fusion method: 'rrf' or 'weighted'")
+    filters: dict[str, Any] | None = Field(None, description="Optional metadata filters")
+
+
+class SearchResult(BaseModel):
+    """Search result schema."""
+
+    document_id: str
+    title: str
+    content_preview: str
+    score: float
+    metadata: dict[str, Any]
+    source_type: str  # "dense", "sparse", or "hybrid"
+
+
+class SearchResponse(BaseModel):
+    """Response schema for search."""
+
+    query: str
+    results: list[SearchResult]
+    total_results: int
+    fusion_method: str
+
+
+class IngestTextRequest(BaseModel):
+    """Request schema for text ingestion."""
+
+    title: str = Field(..., description="Document title")
+    content: str = Field(..., description="Document content")
+    document_type: str = Field("text", description="Type of document")
+    metadata: dict[str, Any] | None = Field(None, description="Optional metadata")
+
+
+class IngestResponse(BaseModel):
+    """Response schema for document ingestion."""
+
+    message: str
+    documents_created: int
+    document_ids: list[str]
+
+
+class DocumentResponse(BaseModel):
+    """Response schema for document details."""
+
+    id: str
+    title: str
+    content: str
+    document_type: str
+    metadata: dict[str, Any]
+    created_at: str
+    indexed: bool
+
+
+class StatsResponse(BaseModel):
+    """Response schema for RAG statistics."""
+
+    total_documents: int
+    indexed_documents: int
+    documents_by_type: dict[str, int]
+    bm25_stats: dict[str, Any]
+    qdrant_stats: dict[str, Any] | None
+
+
+@router.post("/search", response_model=SearchResponse)
+async def search_documents(
+    request: SearchRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> SearchResponse:
+    """
+    Perform hybrid search across documents.
+
+    This endpoint combines:
+    - Dense search: Semantic similarity using vector embeddings
+    - Sparse search: Keyword matching using BM25
+    - Fusion: RRF or weighted combination of results
+    """
+    try:
+        # For now, we'll use a simple embedding generation
+        # In production, this should use OpenAI or another embedding service
+        query_vector = None  # TODO: Generate embedding from query
+
+        # Perform hybrid search
+        results = await hybrid_search_service.search(
+            query=request.query,
+            query_vector=query_vector,
+            limit=request.limit,
+            fusion_method=request.fusion_method,
+            filters=request.filters,
+        )
+
+        # Format results
+        formatted_results = []
+        for result in results:
+            # Get document from database
+            doc_id = result.get("document_id")
+            if doc_id:
+                doc = await db.get(VectorDocument, UUID(doc_id) if len(doc_id) == 36 else None)
+                if doc:
+                    formatted_results.append(
+                        SearchResult(
+                            document_id=str(doc.id),
+                            title=doc.title,
+                            content_preview=doc.content[:200] + "..." if len(doc.content) > 200 else doc.content,
+                            score=result.get("hybrid_score", result.get("rrf_score", 0)),
+                            metadata=doc.doc_metadata,
+                            source_type="hybrid" if "hybrid_score" in result else "sparse",
+                        )
+                    )
+
+        return SearchResponse(
+            query=request.query,
+            results=formatted_results,
+            total_results=len(formatted_results),
+            fusion_method=request.fusion_method,
+        )
+
+    except Exception as e:
+        logger.error(f"Search failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Search failed: {str(e)}",
+        ) from e
+
+
+@router.post("/ingest/text", response_model=IngestResponse)
+async def ingest_text_document(
+    request: IngestTextRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> IngestResponse:
+    """
+    Ingest a text document into the RAG system.
+
+    This will:
+    1. Chunk the document into smaller pieces
+    2. Generate embeddings for each chunk
+    3. Store in vector database (Qdrant)
+    4. Index for BM25 search
+    """
+    try:
+        # TODO: Add embedding generation function
+        documents = await document_ingestion_service.ingest_text(
+            db=db,
+            title=request.title,
+            content=request.content,
+            document_type=request.document_type,
+            metadata=request.metadata,
+            get_embeddings_func=None,  # TODO: Implement embedding generation
+        )
+
+        return IngestResponse(
+            message=f"Successfully ingested document '{request.title}'",
+            documents_created=len(documents),
+            document_ids=[str(doc.id) for doc in documents],
+        )
+
+    except Exception as e:
+        logger.error(f"Ingestion failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Document ingestion failed: {str(e)}",
+        ) from e
+
+
+@router.post("/ingest/pdf", response_model=IngestResponse)
+async def ingest_pdf_document(
+    file: UploadFile = File(...),
+    metadata: str | None = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> IngestResponse:
+    """
+    Ingest a PDF document into the RAG system.
+
+    This will:
+    1. Extract text from each PDF page
+    2. Chunk the text into smaller pieces
+    3. Generate embeddings for each chunk
+    4. Store in vector database (Qdrant)
+    5. Index for BM25 search
+    """
+    import json
+    import tempfile
+    from pathlib import Path
+
+    try:
+        # Parse metadata if provided
+        parsed_metadata = {}
+        if metadata:
+            try:
+                parsed_metadata = json.loads(metadata)
+            except json.JSONDecodeError:
+                logger.warning("Invalid metadata JSON, ignoring")
+
+        # Save uploaded file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            content = await file.read()
+            tmp_file.write(content)
+            tmp_path = Path(tmp_file.name)
+
+        try:
+            # Ingest PDF
+            documents = await document_ingestion_service.ingest_pdf(
+                db=db,
+                pdf_path=tmp_path,
+                metadata={
+                    **parsed_metadata,
+                    "original_filename": file.filename,
+                    "content_type": file.content_type,
+                },
+                get_embeddings_func=None,  # TODO: Implement embedding generation
+            )
+
+            return IngestResponse(
+                message=f"Successfully ingested PDF '{file.filename}'",
+                documents_created=len(documents),
+                document_ids=[str(doc.id) for doc in documents],
+            )
+
+        finally:
+            # Clean up temporary file
+            tmp_path.unlink()
+
+    except Exception as e:
+        logger.error(f"PDF ingestion failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"PDF ingestion failed: {str(e)}",
+        ) from e
+
+
+@router.get("/documents/{document_id}", response_model=DocumentResponse)
+async def get_document(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DocumentResponse:
+    """Get details of a specific document."""
+    doc = await db.get(VectorDocument, document_id)
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    return DocumentResponse(
+        id=str(doc.id),
+        title=doc.title,
+        content=doc.content,
+        document_type=doc.document_type,
+        metadata=doc.doc_metadata,
+        created_at=doc.created_at.isoformat(),
+        indexed=doc.indexed_at is not None,
+    )
+
+
+@router.delete("/documents/{document_id}")
+async def delete_document(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    """Delete a document from the RAG system."""
+    try:
+        success = await document_ingestion_service.delete_document(db, document_id)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document not found",
+            )
+
+        return {"message": f"Document {document_id} deleted successfully"}
+
+    except Exception as e:
+        logger.error(f"Document deletion failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Document deletion failed: {str(e)}",
+        ) from e
+
+
+@router.get("/stats", response_model=StatsResponse)
+async def get_rag_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> StatsResponse:
+    """Get statistics about the RAG system."""
+    try:
+        stats = await document_ingestion_service.get_ingestion_stats(db)
+
+        return StatsResponse(
+            total_documents=stats.get("total_documents", 0),
+            indexed_documents=stats.get("indexed_documents", 0),
+            documents_by_type=stats.get("documents_by_type", {}),
+            bm25_stats=stats.get("bm25_stats", {}),
+            qdrant_stats=stats.get("qdrant_stats"),
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to get RAG stats: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get statistics: {str(e)}",
+        ) from e

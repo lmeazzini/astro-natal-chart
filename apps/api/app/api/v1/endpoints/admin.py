@@ -2,7 +2,7 @@
 Admin endpoints - restricted to admin users only.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.dependencies import require_admin
 from app.core.rate_limit import RateLimits, limiter
-from app.models.chart import BirthChart
+from app.models.chart import AuditLog, BirthChart
 from app.models.enums import UserRole
 from app.models.user import User
 from app.schemas.admin import (
@@ -124,7 +124,7 @@ async def get_user_detail(
         404: {"description": "User not found"},
     },
 )
-@limiter.limit(RateLimits.PASSWORD_RESET_CONFIRM)
+@limiter.limit(RateLimits.ADMIN_ROLE_UPDATE)
 async def update_user_role(
     user_id: UUID,
     request: UpdateUserRoleRequest,
@@ -144,8 +144,8 @@ async def update_user_role(
             detail="Cannot modify your own role",
         )
 
-    # Prevent modifying another admin
-    if user.is_admin and user.id != admin_user.id:
+    # Prevent modifying another admin (already checked it's not self above)
+    if user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cannot modify another admin's role",
@@ -169,7 +169,24 @@ async def update_user_role(
     user.role = request.role.value
     user.is_superuser = request.role == UserRole.ADMIN
 
+    # Create audit log for LGPD compliance
+    audit_log = AuditLog(
+        id=uuid4(),
+        user_id=user_id,
+        action="role_changed",
+        resource_type="user",
+        resource_id=user_id,
+        extra_data={
+            "old_role": old_role,
+            "new_role": request.role.value,
+            "admin_id": str(admin_user.id),
+            "admin_email": admin_user.email,
+        },
+    )
+    db.add(audit_log)
+
     await db.commit()
+    await db.refresh(user)
 
     logger.info(
         "User role updated by admin",

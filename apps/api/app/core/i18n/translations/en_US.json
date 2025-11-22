@@ -13,7 +13,8 @@
     "verification_sent": "Verification email sent successfully",
     "verification_failed": "Failed to send verification email",
     "invalid_verification_token": "Invalid or expired verification token",
-    "not_enough_privileges": "Not enough privileges"
+    "not_enough_privileges": "Not enough privileges",
+    "admin_email_not_verified": "Email verification required for admin access"
   },
   "password": {
     "reset_email_sent": "If the email exists, you will receive recovery instructions",

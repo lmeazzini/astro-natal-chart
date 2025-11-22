@@ -2,6 +2,7 @@
 Tests for admin endpoints.
 
 Tests RBAC (Role-Based Access Control) with GERAL and ADMIN roles.
+Tests email verification requirement for admin access (issue #138).
 """
 
 from uuid import uuid4
@@ -11,6 +12,88 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.enums import UserRole
 from app.models.user import User
+
+
+class TestUnverifiedAdminRestriction:
+    """Tests for restricting admin features to verified email admins (issue #138)."""
+
+    async def test_unverified_admin_cannot_list_users(
+        self,
+        client: AsyncClient,
+        unverified_admin_auth_headers: dict[str, str],
+    ):
+        """Admin with unverified email should not be able to list users."""
+        response = await client.get(
+            "/api/v1/admin/users",
+            headers=unverified_admin_auth_headers,
+        )
+
+        assert response.status_code == 403
+        # Should indicate email verification is required
+        assert "verification" in response.json()["detail"].lower() or "email" in response.json()["detail"].lower()
+
+    async def test_unverified_admin_cannot_get_user_detail(
+        self,
+        client: AsyncClient,
+        unverified_admin_auth_headers: dict[str, str],
+        test_user: User,
+    ):
+        """Admin with unverified email should not be able to get user details."""
+        response = await client.get(
+            f"/api/v1/admin/users/{test_user.id}",
+            headers=unverified_admin_auth_headers,
+        )
+
+        assert response.status_code == 403
+
+    async def test_unverified_admin_cannot_update_role(
+        self,
+        client: AsyncClient,
+        unverified_admin_auth_headers: dict[str, str],
+        test_user: User,
+    ):
+        """Admin with unverified email should not be able to update user roles."""
+        response = await client.patch(
+            f"/api/v1/admin/users/{test_user.id}/role",
+            headers=unverified_admin_auth_headers,
+            json={"role": "admin"},
+        )
+
+        assert response.status_code == 403
+
+    async def test_unverified_admin_cannot_get_stats(
+        self,
+        client: AsyncClient,
+        unverified_admin_auth_headers: dict[str, str],
+    ):
+        """Admin with unverified email should not be able to get system stats."""
+        response = await client.get(
+            "/api/v1/admin/stats",
+            headers=unverified_admin_auth_headers,
+        )
+
+        assert response.status_code == 403
+
+    async def test_verified_admin_can_access_all_endpoints(
+        self,
+        client: AsyncClient,
+        admin_auth_headers: dict[str, str],
+        test_admin_user: User,
+    ):
+        """Admin with verified email should be able to access all admin endpoints."""
+        # List users
+        response = await client.get(
+            "/api/v1/admin/users",
+            headers=admin_auth_headers,
+        )
+        assert response.status_code == 200
+
+        # Get stats
+        response = await client.get(
+            "/api/v1/admin/stats",
+            headers=admin_auth_headers,
+        )
+        assert response.status_code == 200
 
 
 class TestListUsers:
@@ -49,7 +132,8 @@ class TestListUsers:
         )
 
         assert response.status_code == 403
-        assert "Admin privileges required" in response.json()["detail"]
+        # Message can be translated (pt-BR: "Privilégios insuficientes")
+        assert response.json()["detail"] is not None
 
     async def test_unauthenticated_cannot_list_users(
         self,

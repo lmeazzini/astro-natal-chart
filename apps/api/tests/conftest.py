@@ -269,6 +269,48 @@ async def admin_auth_headers(test_admin_user: User) -> dict[str, str]:
 
 
 @pytest.fixture
+async def test_unverified_admin_user(db_session: AsyncSession) -> User:
+    """
+    Create a test admin user with unverified email.
+
+    Default credentials:
+    - email: unverified-admin@realastrology.ai
+    - password: Admin123!@#
+    - role: admin
+    - email_verified: False
+    """
+    user = User(
+        id=uuid4(),
+        email="unverified-admin@realastrology.ai",
+        password_hash=get_password_hash("Admin123!@#"),
+        full_name="Unverified Admin User",
+        email_verified=False,  # Email not verified
+        is_active=True,
+        is_superuser=True,
+        role=UserRole.ADMIN.value,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+async def unverified_admin_auth_headers(test_unverified_admin_user: User) -> dict[str, str]:
+    """
+    Get authentication headers for unverified admin user.
+
+    Returns headers dict with Bearer token.
+    """
+    from app.core.security import create_access_token
+
+    access_token = create_access_token(data={"sub": str(test_unverified_admin_user.id)})
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
 def test_chart_data() -> dict:
     """Sample chart calculation result for testing."""
     return {

@@ -13,7 +13,8 @@
     "verification_sent": "Email de verificação enviado com sucesso",
     "verification_failed": "Falha ao enviar email de verificação",
     "invalid_verification_token": "Token de verificação inválido ou expirado",
-    "not_enough_privileges": "Privilégios insuficientes"
+    "not_enough_privileges": "Privilégios insuficientes",
+    "admin_email_not_verified": "Verificação de email é necessária para acesso administrativo"
   },
   "password": {
     "reset_email_sent": "Se o email existir, você receberá instruções de recuperação",

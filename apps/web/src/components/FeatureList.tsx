@@ -28,12 +28,17 @@ interface FeaturesData {
   last_updated: string;
 }
 
+// Cooldown time in milliseconds (30 seconds)
+const REFRESH_COOLDOWN_MS = 30000;
+
 export function FeatureList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [features, setFeatures] = useState<FeaturesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<number>(0);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
 
   const loadFeatures = useCallback(async () => {
     try {
@@ -53,7 +58,17 @@ export function FeatureList() {
   }, [t]);
 
   const handleRefresh = useCallback(async () => {
+    const now = Date.now();
+    const timeSinceLastRefresh = now - lastRefresh;
+
+    // Check cooldown
+    if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
+      return;
+    }
+
     setRefreshing(true);
+    setLastRefresh(now);
+
     // Clear cache first
     try {
       await fetch(`${API_URL}/api/v1/github/features/cache`, { method: 'DELETE' });
@@ -61,7 +76,23 @@ export function FeatureList() {
       // Ignore cache clear errors
     }
     await loadFeatures();
-  }, [loadFeatures]);
+  }, [loadFeatures, lastRefresh]);
+
+  // Update cooldown timer
+  useEffect(() => {
+    if (lastRefresh === 0) return;
+
+    const intervalId = setInterval(() => {
+      const remaining = Math.max(0, REFRESH_COOLDOWN_MS - (Date.now() - lastRefresh));
+      setCooldownRemaining(remaining);
+
+      if (remaining === 0) {
+        clearInterval(intervalId);
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [lastRefresh]);
 
   useEffect(() => {
     loadFeatures();
@@ -113,7 +144,7 @@ export function FeatureList() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    return new Date(dateString).toLocaleDateString(i18n.language, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -243,17 +274,19 @@ export function FeatureList() {
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <p>
           {t('dashboard.features.lastUpdated', { defaultValue: 'Last updated' })}:{' '}
-          {new Date(features.last_updated).toLocaleString('pt-BR')}
+          {new Date(features.last_updated).toLocaleString(i18n.language)}
         </p>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleRefresh}
-          disabled={refreshing}
+          disabled={refreshing || cooldownRemaining > 0}
           className="flex items-center gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {t('common.refresh', { defaultValue: 'Refresh' })}
+          {cooldownRemaining > 0
+            ? `${Math.ceil(cooldownRemaining / 1000)}s`
+            : t('common.refresh', { defaultValue: 'Refresh' })}
         </Button>
       </div>
 

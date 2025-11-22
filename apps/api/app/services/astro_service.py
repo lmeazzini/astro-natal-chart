@@ -377,6 +377,143 @@ def calculate_sect(ascendant: float, sun_longitude: float) -> str:
     return "diurnal" if is_day_chart else "nocturnal"
 
 
+def get_planet_sect_status(planet_name: str, chart_sect: str) -> dict[str, Any]:
+    """
+    Get planet's sect status and performance based on traditional astrology.
+
+    In Hellenistic astrology:
+    - Diurnal planets (Sun, Jupiter, Saturn) work better in day charts
+    - Nocturnal planets (Moon, Venus, Mars) work better in night charts
+    - Mercury is neutral and adapts to either sect
+
+    Args:
+        planet_name: Name of planet
+        chart_sect: 'diurnal' or 'nocturnal'
+
+    Returns:
+        Dictionary with sect analysis for the planet
+    """
+    # Define planet sects
+    diurnal_planets = ["Sun", "Jupiter", "Saturn"]
+    nocturnal_planets = ["Moon", "Venus", "Mars"]
+
+    # Define factions
+    benefics = ["Jupiter", "Venus"]
+    malefics = ["Saturn", "Mars"]
+    luminaries = ["Sun", "Moon"]
+
+    # Determine planet's natural sect
+    if planet_name in diurnal_planets:
+        planet_sect = "diurnal"
+    elif planet_name in nocturnal_planets:
+        planet_sect = "nocturnal"
+    else:
+        planet_sect = "neutral"
+
+    # Check if in sect
+    in_sect = (planet_sect == chart_sect) or (planet_sect == "neutral")
+
+    # Determine faction
+    if planet_name in benefics:
+        faction = "benefic"
+    elif planet_name in malefics:
+        faction = "malefic"
+    elif planet_name in luminaries:
+        faction = "luminary"
+    else:
+        faction = "neutral"
+
+    # Determine performance based on faction and sect status
+    if faction == "benefic":
+        performance = "optimal" if in_sect else "moderate"
+    elif faction == "malefic":
+        performance = "moderate" if in_sect else "challenging"
+    else:
+        performance = "optimal"  # Luminaries and Mercury
+
+    return {
+        "planet_sect": planet_sect,
+        "in_sect": in_sect,
+        "faction": faction,
+        "performance": performance,
+    }
+
+
+def calculate_sect_analysis(planets: list[dict[str, Any]], chart_sect: str) -> dict[str, Any]:
+    """
+    Complete sect analysis of the chart.
+
+    Analyzes all planets' relationship with the chart's sect, categorizing them
+    as in-sect, out-of-sect, or neutral, and identifying benefics/malefics.
+
+    Args:
+        planets: List of planet dictionaries with name, sign, house
+        chart_sect: 'diurnal' or 'nocturnal'
+
+    Returns:
+        Complete sect analysis dictionary
+    """
+    planets_in_sect: list[dict[str, Any]] = []
+    planets_out_of_sect: list[dict[str, Any]] = []
+    planets_neutral: list[dict[str, Any]] = []
+
+    benefics: dict[str, dict[str, Any] | None] = {"in_sect": None, "out_of_sect": None}
+    malefics: dict[str, dict[str, Any] | None] = {"in_sect": None, "out_of_sect": None}
+
+    # Modern planets to skip in sect analysis
+    modern_planets = ["Uranus", "Neptune", "Pluto", "North Node", "Chiron"]
+
+    for planet in planets:
+        planet_name = planet.get("name", "")
+        if planet_name in modern_planets:
+            continue
+
+        status = get_planet_sect_status(planet_name, chart_sect)
+
+        planet_data = {
+            "name": planet_name,
+            "sign": planet.get("sign", ""),
+            "house": planet.get("house", 0),
+            "degree": planet.get("degree", 0),
+            **status,
+        }
+
+        # Categorize by sect status
+        if status["planet_sect"] == "neutral":
+            planets_neutral.append(planet_data)
+        elif status["in_sect"]:
+            planets_in_sect.append(planet_data)
+            if status["faction"] == "benefic":
+                benefics["in_sect"] = planet_data
+            elif status["faction"] == "malefic":
+                malefics["in_sect"] = planet_data
+        else:
+            planets_out_of_sect.append(planet_data)
+            if status["faction"] == "benefic":
+                benefics["out_of_sect"] = planet_data
+            elif status["faction"] == "malefic":
+                malefics["out_of_sect"] = planet_data
+
+    # Get Sun's house for display
+    sun_house = 1
+    for planet in planets:
+        if planet.get("name") == "Sun":
+            sun_house = planet.get("house", 1)
+            break
+
+    return {
+        "sect": chart_sect,
+        "sun_house": sun_house,
+        "planets_by_sect": {
+            "in_sect": planets_in_sect,
+            "out_of_sect": planets_out_of_sect,
+            "neutral": planets_neutral,
+        },
+        "benefics": benefics,
+        "malefics": malefics,
+    }
+
+
 def get_house_for_position(longitude: float, house_cusps: list[float]) -> int:
     """
     Determine which house a given position falls into.
@@ -620,6 +757,9 @@ def calculate_birth_chart(
         sect=sect,
     )
 
+    # Calculate complete sect analysis with planet classifications
+    sect_analysis = calculate_sect_analysis(planets_with_dignities, sect)
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -627,6 +767,7 @@ def calculate_birth_chart(
         "ascendant": ascendant,
         "midheaven": midheaven,
         "sect": sect,
+        "sect_analysis": sect_analysis,
         "lunar_phase": lunar_phase,
         "solar_phase": solar_phase,
         "lord_of_nativity": lord_of_nativity,

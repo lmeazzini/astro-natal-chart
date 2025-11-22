@@ -19,6 +19,7 @@ import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
+import { SectAnalysis } from '../components/SectAnalysis';
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
@@ -570,6 +571,14 @@ export function ChartDetailPage() {
                   </div>
                 )}
               </div>
+
+              {/* Sect Analysis */}
+              {chart.chart_data.sect_analysis && (
+                <div>
+                  <h3 className="text-h4 font-display mb-4">{t('components.sect.title', { defaultValue: 'Sect Analysis' })}</h3>
+                  <SectAnalysis sectData={chart.chart_data.sect_analysis} />
+                </div>
+              )}
               </CardContent>
             </Card>
             )}

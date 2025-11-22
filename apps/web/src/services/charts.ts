@@ -69,6 +69,35 @@ export interface ArabicParts {
   necessity: ArabicPart;
 }
 
+export interface PlanetSectStatus {
+  name: string;
+  sign: string;
+  house: number;
+  degree: number;
+  planet_sect: 'diurnal' | 'nocturnal' | 'neutral';
+  in_sect: boolean;
+  faction: 'benefic' | 'malefic' | 'luminary' | 'neutral';
+  performance: 'optimal' | 'moderate' | 'challenging';
+}
+
+export interface SectAnalysisData {
+  sect: 'diurnal' | 'nocturnal';
+  sun_house: number;
+  planets_by_sect: {
+    in_sect: PlanetSectStatus[];
+    out_of_sect: PlanetSectStatus[];
+    neutral: PlanetSectStatus[];
+  };
+  benefics: {
+    in_sect: PlanetSectStatus | null;
+    out_of_sect: PlanetSectStatus | null;
+  };
+  malefics: {
+    in_sect: PlanetSectStatus | null;
+    out_of_sect: PlanetSectStatus | null;
+  };
+}
+
 export interface BirthChart {
   id: string;
   user_id: string;
@@ -95,6 +124,7 @@ export interface BirthChart {
     ascendant: number;
     midheaven: number;
     sect?: string;
+    sect_analysis?: SectAnalysisData;
     lunar_phase?: LunarPhaseData;
     solar_phase?: SolarPhaseData;
     lord_of_nativity?: LordOfNativityData;

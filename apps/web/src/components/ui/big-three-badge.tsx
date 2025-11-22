@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { getPlanetSymbol, getSignSymbol } from "@/utils/astro"
@@ -12,10 +13,15 @@ interface BigThreeBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const BigThreeBadge = React.forwardRef<HTMLDivElement, BigThreeBadgeProps>(
   ({ className, sunSign, moonSign, risingSign, variant = "horizontal", ...props }, ref) => {
+    const { t } = useTranslation('astrology')
+
+    // Translate sign names
+    const translateSign = (sign: string) => t(`signs.${sign}`, { defaultValue: sign })
+
     const items = [
-      { label: "Sun", sign: sunSign, symbol: getPlanetSymbol("Sun") },
-      { label: "Moon", sign: moonSign, symbol: getPlanetSymbol("Moon") },
-      { label: "Rising", sign: risingSign, symbol: "ASC" },
+      { label: t('planets.Sun', { defaultValue: 'Sun' }), sign: sunSign, symbol: getPlanetSymbol("Sun") },
+      { label: t('planets.Moon', { defaultValue: 'Moon' }), sign: moonSign, symbol: getPlanetSymbol("Moon") },
+      { label: t('rising', { defaultValue: 'Rising' }), sign: risingSign, symbol: "ASC" },
     ]
 
     return (
@@ -36,7 +42,7 @@ const BigThreeBadge = React.forwardRef<HTMLDivElement, BigThreeBadgeProps>(
             <span className="opacity-70">{item.symbol}</span>
             <span className="font-semibold">{item.label}:</span>
             <span>{getSignSymbol(item.sign)}</span>
-            <span>{item.sign}</span>
+            <span>{translateSign(item.sign)}</span>
           </Badge>
         ))}
       </div>

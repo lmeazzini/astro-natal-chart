@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { MotionProvider } from './providers/MotionProvider';
 import { LoginPage } from './pages/Login';
@@ -68,6 +69,7 @@ function App() {
 }
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const { user, logout, isLoading } = useAuth();
   const [chartCount, setChartCount] = React.useState<number>(0);
   const [loadingCharts, setLoadingCharts] = React.useState(true);
@@ -122,7 +124,7 @@ function DashboardPage() {
           <Link
             to="/dashboard"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            aria-label="Voltar ao Dashboard"
+            aria-label={t('common.back')}
           >
             <img
               src="/logo.png"
@@ -136,14 +138,14 @@ function DashboardPage() {
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/profile">
-                Perfil
+                {t('nav.profile')}
               </Link>
             </Button>
             <span className="text-sm text-muted-foreground">
               {user.full_name}
             </span>
             <Button variant="ghost" size="sm" onClick={logout}>
-              Sair
+              {t('nav.logout')}
             </Button>
           </div>
         </div>
@@ -157,16 +159,16 @@ function DashboardPage() {
         )}
 
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard</h2>
+          <h2 className="text-3xl font-bold text-foreground mb-2">{t('dashboardPage.title')}</h2>
           <p className="text-muted-foreground">
-            Bem-vindo de volta, {user.full_name}!
+            {t('dashboardPage.welcome', { name: user.full_name })}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Meus Mapas</CardTitle>
+              <CardTitle>{t('dashboardPage.myCharts')}</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingCharts ? (
@@ -178,7 +180,11 @@ function DashboardPage() {
                 <>
                   <p className="text-3xl font-bold text-primary">{chartCount}</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    {chartCount === 0 ? 'Nenhum mapa criado ainda' : chartCount === 1 ? '1 mapa salvo' : `${chartCount} mapas salvos`}
+                    {chartCount === 0
+                      ? t('dashboardPage.noChartsYet')
+                      : chartCount === 1
+                        ? t('dashboardPage.oneChartSaved')
+                        : t('dashboardPage.chartsCount', { count: chartCount })}
                   </p>
                 </>
               )}
@@ -187,19 +193,19 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Conta</CardTitle>
+              <CardTitle>{t('dashboardPage.account')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{t('dashboardPage.email')}</p>
                 <p className="text-sm font-medium">{user.email}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Status</p>
+                <p className="text-sm text-muted-foreground">{t('dashboardPage.status')}</p>
                 {user.email_verified ? (
-                  <Badge variant="default">Verificado</Badge>
+                  <Badge variant="default">{t('dashboardPage.verified')}</Badge>
                 ) : (
-                  <Badge variant="secondary">Não verificado</Badge>
+                  <Badge variant="secondary">{t('dashboardPage.notVerified')}</Badge>
                 )}
               </div>
             </CardContent>
@@ -207,16 +213,16 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Configurações</CardTitle>
+              <CardTitle>{t('dashboardPage.settings')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div>
-                <p className="text-sm text-muted-foreground">Idioma</p>
+                <p className="text-sm text-muted-foreground">{t('dashboardPage.language')}</p>
                 <p className="text-sm font-medium">{user.locale}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Fuso Horário</p>
-                <p className="text-sm font-medium">{user.timezone || 'Não configurado'}</p>
+                <p className="text-sm text-muted-foreground">{t('dashboardPage.timezone')}</p>
+                <p className="text-sm font-medium">{user.timezone || t('dashboardPage.notConfigured')}</p>
               </div>
             </CardContent>
           </Card>
@@ -225,16 +231,15 @@ function DashboardPage() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Criar Mapa Natal</CardTitle>
+              <CardTitle>{t('dashboardPage.createChart')}</CardTitle>
               <CardDescription>
-                Calcule seu mapa natal ou de outra pessoa com precisão usando dados
-                astronômicos do Swiss Ephemeris.
+                {t('dashboardPage.createChartDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" asChild>
                 <Link to="/charts/new">
-                  + Novo Mapa Natal
+                  {t('dashboardPage.newChartButton')}
                 </Link>
               </Button>
             </CardContent>
@@ -242,16 +247,15 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Meus Mapas</CardTitle>
+              <CardTitle>{t('dashboardPage.myChartsCard')}</CardTitle>
               <CardDescription>
-                Acesse todos os seus mapas natais salvos, visualize detalhes e faça
-                análises astrológicas.
+                {t('dashboardPage.myChartsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="secondary" className="w-full" asChild>
                 <Link to="/charts">
-                  Ver Meus Mapas
+                  {t('dashboardPage.viewMyCharts')}
                 </Link>
               </Button>
             </CardContent>

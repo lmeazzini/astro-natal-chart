@@ -45,6 +45,8 @@ async def update_profile(
         user.locale = profile_data.locale
     if profile_data.timezone is not None:
         user.timezone = profile_data.timezone
+    if profile_data.time_format is not None:
+        user.time_format = profile_data.time_format
     if profile_data.avatar_url is not None:
         user.avatar_url = profile_data.avatar_url
     if profile_data.bio is not None:

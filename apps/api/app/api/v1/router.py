@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     oauth,
     password_reset,
     privacy,
+    timezones,
     users,
 )
 
@@ -91,4 +92,11 @@ api_router.include_router(
     github.router,
     prefix="/github",
     tags=["github"],
+)
+
+# Timezone endpoints
+api_router.include_router(
+    timezones.router,
+    prefix="/timezones",
+    tags=["timezones"],
 )

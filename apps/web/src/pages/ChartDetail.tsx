@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
 import { interpretationsService, ChartInterpretations } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
+import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
 import { ChartWheelAstro } from '../components/ChartWheelAstro';
 import { PlanetList } from '../components/PlanetList';
@@ -28,8 +29,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2 } from 'lucide-react';
-
-const TOKEN_KEY = 'astro_access_token';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
@@ -61,7 +60,7 @@ export function ChartDetailPage() {
 
     const pollInterval = setInterval(async () => {
       try {
-        const token = localStorage.getItem(TOKEN_KEY);
+        const token = getToken();
         if (!token || !id) return;
 
         const status = await chartsService.getStatus(id, token);
@@ -85,7 +84,7 @@ export function ChartDetailPage() {
 
   async function loadChart() {
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getToken();
       if (!token) {
         navigate('/login');
         return;
@@ -107,7 +106,7 @@ export function ChartDetailPage() {
 
   async function loadInterpretations() {
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getToken();
       if (!token || !id) return;
 
       const data = await interpretationsService.getByChartId(id, token);
@@ -124,7 +123,7 @@ export function ChartDetailPage() {
     }
 
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getToken();
       if (!token || !id) return;
 
       await chartsService.delete(id, token);
@@ -137,7 +136,7 @@ export function ChartDetailPage() {
   async function handleExportPDF() {
     if (!id || !chart) return;
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getToken();
     if (!token) {
       navigate('/login');
       return;

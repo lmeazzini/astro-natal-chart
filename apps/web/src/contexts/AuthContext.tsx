@@ -1,11 +1,13 @@
 /**
- * Authentication context for managing user state
+ * Authentication context for managing user state with automatic token refresh
  */
 
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authService, User } from '../services/auth';
+import { getToken, setToken, setRefreshToken, clearTokens, authEvents } from '../services/api';
 import { useLocaleSync } from '../hooks/useLocaleSync';
+import { useTokenMonitor } from '../hooks/useTokenMonitor';
 
 interface AuthContextData {
   user: User | null;
@@ -23,9 +25,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-const TOKEN_KEY = 'astro_access_token';
-const REFRESH_TOKEN_KEY = 'astro_refresh_token';
-
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,13 +32,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Sync i18n with user's locale preference when user changes
   useLocaleSync(user);
 
+  const logout = useCallback(() => {
+    const token = getToken();
+
+    if (token) {
+      authService.logout(token).catch(console.error);
+    }
+
+    clearTokens();
+    setUser(null);
+  }, []);
+
+  // Monitor token expiration and refresh proactively
+  useTokenMonitor({
+    onLogout: logout,
+    enabled: !!user,
+  });
+
+  // Subscribe to auth events (e.g., logout triggered by API client)
+  useEffect(() => {
+    const unsubscribe = authEvents.subscribe(() => {
+      setUser(null);
+    });
+
+    return unsubscribe;
+  }, []);
+
   useEffect(() => {
     loadStoredUser();
   }, []);
 
   async function loadStoredUser() {
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getToken();
 
       if (token) {
         const userData = await authService.getCurrentUser(token);
@@ -47,8 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error('Failed to load user:', error);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      clearTokens();
     } finally {
       setIsLoading(false);
     }
@@ -58,9 +82,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const tokens = await authService.login({ email, password });
 
-      localStorage.setItem(TOKEN_KEY, tokens.access_token);
+      setToken(tokens.access_token);
       if (tokens.refresh_token) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
+        setRefreshToken(tokens.refresh_token);
       }
 
       const userData = await authService.getCurrentUser(tokens.access_token);
@@ -93,18 +117,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error('Registration failed:', error);
       throw error;
     }
-  }
-
-  function logout() {
-    const token = localStorage.getItem(TOKEN_KEY);
-
-    if (token) {
-      authService.logout(token).catch(console.error);
-    }
-
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    setUser(null);
   }
 
   return (

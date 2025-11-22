@@ -7,7 +7,6 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
 from app.models.vector_document import VectorDocument
 
 
@@ -26,7 +25,7 @@ class TestRAGSearch:
     async def test_search_documents_success(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         db_session: AsyncSession,
         mock_rag_services,
     ):
@@ -65,7 +64,7 @@ class TestRAGSearch:
                 "limit": 10,
                 "fusion_method": "rrf",
             },
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -81,7 +80,7 @@ class TestRAGSearch:
     async def test_search_documents_no_results(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         mock_rag_services,
     ):
         """Test search with no results."""
@@ -95,7 +94,7 @@ class TestRAGSearch:
                 "limit": 10,
                 "fusion_method": "weighted",
             },
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -129,7 +128,7 @@ class TestRAGIngestion:
     async def test_ingest_text_document_success(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         db_session: AsyncSession,
         mock_rag_services,
     ):
@@ -155,7 +154,7 @@ class TestRAGIngestion:
                 "document_type": "text",
                 "metadata": {"author": "test_user"},
             },
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -170,7 +169,7 @@ class TestRAGIngestion:
     async def test_ingest_text_document_failure(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         mock_rag_services,
     ):
         """Test text ingestion failure."""
@@ -184,7 +183,7 @@ class TestRAGIngestion:
                 "content": "Content",
                 "document_type": "text",
             },
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 500
@@ -194,7 +193,7 @@ class TestRAGIngestion:
     async def test_ingest_pdf_document_success(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         mock_rag_services,
     ):
         """Test successful PDF document ingestion."""
@@ -221,7 +220,7 @@ class TestRAGIngestion:
             "/api/v1/rag/ingest/pdf",
             files={"file": ("test.pdf", pdf_content, "application/pdf")},
             data={"metadata": json.dumps({"source": "test"})},
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -239,7 +238,7 @@ class TestRAGDocumentManagement:
     async def test_get_document_success(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         db_session: AsyncSession,
     ):
         """Test getting document details."""
@@ -256,7 +255,7 @@ class TestRAGDocumentManagement:
 
         response = await client.get(
             f"/api/v1/rag/documents/{test_doc.id}",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -272,14 +271,14 @@ class TestRAGDocumentManagement:
     async def test_get_document_not_found(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
     ):
         """Test getting non-existent document."""
         fake_id = uuid4()
 
         response = await client.get(
             f"/api/v1/rag/documents/{fake_id}",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 404
@@ -289,7 +288,7 @@ class TestRAGDocumentManagement:
     async def test_delete_document_success(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         db_session: AsyncSession,
         mock_rag_services,
     ):
@@ -311,7 +310,7 @@ class TestRAGDocumentManagement:
 
         response = await client.delete(
             f"/api/v1/rag/documents/{test_doc.id}",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -321,7 +320,7 @@ class TestRAGDocumentManagement:
     async def test_delete_document_not_found(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         mock_rag_services,
     ):
         """Test deleting non-existent document."""
@@ -332,7 +331,7 @@ class TestRAGDocumentManagement:
 
         response = await client.delete(
             f"/api/v1/rag/documents/{fake_id}",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 404
@@ -346,7 +345,7 @@ class TestRAGStatistics:
     async def test_get_rag_stats_success(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         mock_rag_services,
     ):
         """Test getting RAG statistics."""
@@ -377,7 +376,7 @@ class TestRAGStatistics:
 
         response = await client.get(
             "/api/v1/rag/stats",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -393,7 +392,7 @@ class TestRAGStatistics:
     async def test_get_rag_stats_error(
         self,
         client: AsyncClient,
-        test_user: User,
+        auth_headers: dict[str, str],
         mock_rag_services,
     ):
         """Test getting RAG statistics with error."""
@@ -404,7 +403,7 @@ class TestRAGStatistics:
 
         response = await client.get(
             "/api/v1/rag/stats",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 500

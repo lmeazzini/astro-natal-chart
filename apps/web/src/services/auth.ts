@@ -18,6 +18,7 @@ export interface LoginData {
 }
 
 export type UserType = 'professional' | 'student' | 'curious';
+export type UserRole = 'geral' | 'admin';
 
 export interface User {
   id: string;
@@ -29,6 +30,7 @@ export interface User {
   email_verified: boolean;
   is_active: boolean;
   is_superuser: boolean;
+  role: UserRole;
   bio: string | null;
   profile_public: boolean;
   user_type: UserType;

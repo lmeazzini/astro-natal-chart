@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
-import { interpretationsService, ChartInterpretations } from '../services/interpretations';
+import { interpretationsService, ChartInterpretations, RAGInterpretations } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
@@ -30,18 +30,26 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit } from 'lucide-react';
+import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit, Database, FlaskConical } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
   const { translateSign, translatePlanet } = useAstroTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [chart, setChart] = useState<BirthChart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [interpretations, setInterpretations] = useState<ChartInterpretations | null>(null);
+
+  // RAG A/B Testing state (admin only)
+  const [useRAG, setUseRAG] = useState(false);
+  const [ragInterpretations, setRAGInterpretations] = useState<RAGInterpretations | null>(null);
+  const [isLoadingRAG, setIsLoadingRAG] = useState(false);
+  const isAdmin = user?.role === 'admin' || user?.is_superuser;
 
   // PDF export state
   const [pdfStatus, setPdfStatus] = useState<PDFStatus>('idle');
@@ -118,6 +126,52 @@ export function ChartDetailPage() {
       // Silently fail - interpretations are optional
       console.error('Failed to load interpretations:', err);
     }
+  }
+
+  async function loadRAGInterpretations() {
+    if (!isAdmin || !id) return;
+
+    try {
+      setIsLoadingRAG(true);
+      const token = getToken();
+      if (!token) return;
+
+      const data = await interpretationsService.getRAGByChartId(id, token);
+      setRAGInterpretations(data);
+    } catch (err) {
+      console.error('Failed to load RAG interpretations:', err);
+      // Fall back to standard interpretations
+      setUseRAG(false);
+    } finally {
+      setIsLoadingRAG(false);
+    }
+  }
+
+  // Load RAG interpretations when admin toggles RAG mode
+  useEffect(() => {
+    if (useRAG && !ragInterpretations && isAdmin) {
+      loadRAGInterpretations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useRAG, isAdmin]);
+
+  // Helper to get current interpretations based on mode
+  function getCurrentInterpretations(): { planets?: Record<string, string>; houses?: Record<string, string>; aspects?: Record<string, string> } | null {
+    if (useRAG && ragInterpretations) {
+      // Convert RAG interpretations to standard format for compatibility
+      return {
+        planets: Object.fromEntries(
+          Object.entries(ragInterpretations.planets).map(([key, item]) => [key, item.content])
+        ),
+        houses: Object.fromEntries(
+          Object.entries(ragInterpretations.houses).map(([key, item]) => [key, item.content])
+        ),
+        aspects: Object.fromEntries(
+          Object.entries(ragInterpretations.aspects).map(([key, item]) => [key, item.content])
+        ),
+      };
+    }
+    return interpretations;
   }
 
   async function handleDelete() {
@@ -337,6 +391,35 @@ export function ChartDetailPage() {
               <LanguageSelector />
               <ThemeToggle />
 
+              {/* RAG A/B Toggle (Admin Only) */}
+              {isAdmin && (
+                <Button
+                  variant={useRAG ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setUseRAG(!useRAG)}
+                  disabled={isLoadingRAG}
+                  className={useRAG ? 'bg-purple-600 hover:bg-purple-700' : ''}
+                  title={t('chartDetail.rag.toggleTitle', { defaultValue: 'Toggle RAG-enhanced interpretations (A/B Testing)' })}
+                >
+                  {isLoadingRAG ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('chartDetail.rag.loading', { defaultValue: 'Loading RAG...' })}
+                    </>
+                  ) : useRAG ? (
+                    <>
+                      <Database className="mr-2 h-4 w-4" />
+                      RAG
+                    </>
+                  ) : (
+                    <>
+                      <FlaskConical className="mr-2 h-4 w-4" />
+                      {t('chartDetail.rag.standard', { defaultValue: 'Standard' })}
+                    </>
+                  )}
+                </Button>
+              )}
+
               {/* PDF Export Button */}
               <Button
                 variant={pdfStatus === 'ready' ? 'default' : 'outline'}
@@ -400,6 +483,36 @@ export function ChartDetailPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-8 px-4 animate-fade-in">
+        {/* RAG Mode Banner (Admin Only) */}
+        {isAdmin && useRAG && ragInterpretations && (
+          <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Database className="h-5 w-5 text-purple-500" />
+                <div>
+                  <p className="font-medium text-purple-700 dark:text-purple-300">
+                    {t('chartDetail.rag.modeActive', { defaultValue: 'RAG Mode Active (A/B Testing)' })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('chartDetail.rag.documentsUsed', {
+                      count: ragInterpretations.documents_used,
+                      defaultValue: '{{count}} documents used for context retrieval',
+                    })}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setUseRAG(false)}
+                className="text-purple-600 hover:text-purple-700 hover:bg-purple-500/10"
+              >
+                {t('chartDetail.rag.switchToStandard', { defaultValue: 'Switch to Standard' })}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Chart Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
@@ -611,7 +724,7 @@ export function ChartDetailPage() {
                   <PlanetList
                     planets={chart.chart_data.planets}
                     showOnlyClassical={true}
-                    interpretations={interpretations?.planets}
+                    interpretations={getCurrentInterpretations()?.planets}
                     lordOfNativity={chart.chart_data.lord_of_nativity}
                   />
                 </CardContent>
@@ -635,7 +748,7 @@ export function ChartDetailPage() {
                 <CardContent>
                   <HouseTable
                     houses={chart.chart_data.houses}
-                    interpretations={interpretations?.houses}
+                    interpretations={getCurrentInterpretations()?.houses}
                   />
                 </CardContent>
               </Card>
@@ -658,7 +771,7 @@ export function ChartDetailPage() {
                 <CardContent>
                   <AspectGrid
                     aspects={chart.chart_data.aspects}
-                    interpretations={interpretations?.aspects}
+                    interpretations={getCurrentInterpretations()?.aspects}
                   />
                 </CardContent>
               </Card>

@@ -338,6 +338,123 @@ class S3Service:
         except ClientError:
             return False
 
+    # ============================================
+    # Avatar Upload Methods
+    # ============================================
+
+    ALLOWED_IMAGE_TYPES = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+    }
+    MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5MB
+
+    def _build_avatar_key(self, user_id: str, filename: str) -> str:
+        """
+        Build S3 object key for avatar images.
+
+        Args:
+            user_id: UUID of the user
+            filename: Name of the image file
+
+        Returns:
+            Full S3 key path (e.g., 'avatars/{user_id}/{filename}')
+        """
+        # Remove any path components from filename (security)
+        filename = Path(filename).name
+        return f"avatars/{user_id}/{filename}"
+
+    def upload_avatar(
+        self,
+        image_bytes: bytes,
+        user_id: str,
+        content_type: str,
+        filename: str | None = None,
+    ) -> str | None:
+        """
+        Upload an avatar image to S3.
+
+        Args:
+            image_bytes: Image content as bytes
+            user_id: UUID of the user
+            content_type: MIME type of the image (image/jpeg, image/png, image/webp)
+            filename: Optional custom filename
+
+        Returns:
+            S3 URL (s3://bucket/key) if successful, None if failed or invalid
+
+        Raises:
+            ValueError: If content type is not allowed or file is too large
+        """
+        # Validate content type
+        if content_type not in self.ALLOWED_IMAGE_TYPES:
+            raise ValueError(
+                f"Invalid image type. Allowed: {', '.join(self.ALLOWED_IMAGE_TYPES.keys())}"
+            )
+
+        # Validate file size
+        if len(image_bytes) > self.MAX_AVATAR_SIZE:
+            raise ValueError(
+                f"File too large. Maximum size is {self.MAX_AVATAR_SIZE // (1024 * 1024)}MB"
+            )
+
+        # Generate filename if not provided
+        if not filename:
+            ext = self.ALLOWED_IMAGE_TYPES[content_type]
+            filename = f"avatar-{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}.{ext}"
+
+        if not self.enabled:
+            logger.warning("[DEV MODE] Simulated avatar upload")
+            return f"memory://avatars/{user_id}/{filename}"
+
+        key = self._build_avatar_key(user_id, filename)
+
+        try:
+            self.client.put_object(
+                Bucket=self.bucket_name,
+                Key=key,
+                Body=image_bytes,
+                ContentType=content_type,
+                Metadata={
+                    "user_id": str(user_id),
+                    "uploaded_at": datetime.now(UTC).isoformat(),
+                },
+            )
+
+            s3_url = f"s3://{self.bucket_name}/{key}"
+            logger.info(f"Successfully uploaded avatar to {s3_url}")
+            return s3_url
+
+        except (ClientError, NoCredentialsError) as e:
+            logger.error(f"Failed to upload avatar to S3: {e}")
+            return None
+
+    def get_avatar_public_url(self, s3_url: str) -> str | None:
+        """
+        Get a public URL for an avatar image (presigned URL with longer expiration).
+
+        For avatars, we use a longer expiration (24 hours) since they're displayed frequently.
+
+        Args:
+            s3_url: S3 URL of the avatar (format: s3://bucket/key)
+
+        Returns:
+            HTTPS presigned URL valid for 24 hours, None if failed
+        """
+        return self.generate_presigned_url(s3_url, expires_in=86400)  # 24 hours
+
+    def delete_avatar(self, s3_url: str) -> bool:
+        """
+        Delete an avatar image from S3.
+
+        Args:
+            s3_url: S3 URL of the avatar to delete
+
+        Returns:
+            True if deleted successfully, False otherwise
+        """
+        return self.delete_pdf(s3_url)  # Same logic as PDF deletion
+
 
 # Create singleton instance
 s3_service = S3Service()

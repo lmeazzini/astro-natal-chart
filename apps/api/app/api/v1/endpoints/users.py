@@ -5,7 +5,9 @@ User profile and account management endpoints.
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, UploadFile, status
+from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
@@ -13,12 +15,20 @@ from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.repositories.user_repository import OAuthAccountRepository
 from app.schemas.password import PasswordChange
-from app.schemas.user import UserRead, UserUpdate
+from app.schemas.user import UserPublicProfile, UserRead, UserUpdate
 from app.schemas.user_activity import UserActivityList
 from app.schemas.user_stats import UserStats
 from app.services import user_service
+from app.services.s3_service import s3_service
 
 router = APIRouter()
+
+
+class AvatarUploadResponse(BaseModel):
+    """Response for avatar upload."""
+
+    avatar_url: str
+    message: str
 
 
 @router.get(
@@ -300,3 +310,155 @@ async def disconnect_oauth_provider(
 
     # Delete the OAuth account
     await oauth_repo.delete(account_to_delete)
+
+
+@router.post(
+    "/me/avatar",
+    response_model=AvatarUploadResponse,
+    summary="Upload avatar image",
+    description="Upload a new avatar image. Accepts JPEG, PNG, and WebP formats. Max size: 5MB.",
+)
+@limiter.limit(RateLimits.CHART_UPDATE)
+async def upload_avatar(
+    request: Request,
+    response: Response,
+    file: UploadFile,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> AvatarUploadResponse:
+    """
+    Upload user avatar image.
+
+    Args:
+        file: Image file (JPEG, PNG, WebP)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        Avatar URL and success message
+
+    Raises:
+        HTTPException 400: If file type is invalid or file is too large
+    """
+    # Validate content type
+    if file.content_type not in s3_service.ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Allowed types: {', '.join(s3_service.ALLOWED_IMAGE_TYPES.keys())}",
+        )
+
+    # Read file content
+    contents = await file.read()
+
+    # Validate file size
+    if len(contents) > s3_service.MAX_AVATAR_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum size is {s3_service.MAX_AVATAR_SIZE // (1024 * 1024)}MB",
+        )
+
+    try:
+        # Delete old avatar if exists and is in S3
+        if current_user.avatar_url and current_user.avatar_url.startswith("s3://"):
+            s3_service.delete_avatar(current_user.avatar_url)
+
+        # Upload new avatar
+        s3_url = s3_service.upload_avatar(
+            image_bytes=contents,
+            user_id=str(current_user.id),
+            content_type=file.content_type,
+            filename=file.filename,
+        )
+
+        if not s3_url:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to upload avatar",
+            )
+
+        # Update user avatar_url
+        current_user.avatar_url = s3_url
+        await db.commit()
+        await db.refresh(current_user)
+
+        return AvatarUploadResponse(
+            avatar_url=s3_url,
+            message="Avatar uploaded successfully",
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+
+
+@router.delete(
+    "/me/avatar",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete avatar image",
+    description="Delete the current avatar image.",
+)
+async def delete_avatar(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """
+    Delete user avatar image.
+
+    Args:
+        current_user: Authenticated user
+        db: Database session
+    """
+    if current_user.avatar_url and current_user.avatar_url.startswith("s3://"):
+        s3_service.delete_avatar(current_user.avatar_url)
+
+    current_user.avatar_url = None
+    await db.commit()
+
+
+@router.get(
+    "/{user_id}/profile",
+    response_model=UserPublicProfile,
+    summary="Get public user profile",
+    description="Get the public profile of any user (if their profile is set to public).",
+)
+async def get_public_profile(
+    user_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    """
+    Get public user profile.
+
+    Args:
+        user_id: UUID of the user
+        db: Database session
+
+    Returns:
+        Public profile data
+
+    Raises:
+        HTTPException 404: If user not found or profile is not public
+    """
+    result = await db.execute(
+        select(User).where(
+            User.id == user_id,
+            User.is_active == True,  # noqa: E712
+            User.deleted_at.is_(None),
+        )
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    if not user.profile_public:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This profile is private",
+        )
+
+    return user

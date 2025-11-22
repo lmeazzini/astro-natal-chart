@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LANGUAGES = [
   { code: 'pt-BR', name: 'Português (BR)', flag: '🇧🇷' },
@@ -20,27 +21,33 @@ const LANGUAGES = [
 
 export function LanguageSelector() {
   const { i18n } = useTranslation();
+  const { user, setUser } = useAuth();
 
   const handleLanguageChange = async (languageCode: string) => {
+    // Update i18n language immediately
     await i18n.changeLanguage(languageCode);
 
     // Store preference in localStorage
     localStorage.setItem('astro_language', languageCode);
 
-    // If user is authenticated, update backend preference
-    const token = localStorage.getItem('astro_access_token');
-    if (token) {
-      try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me`, {
+    // If user is authenticated, update context optimistically and sync with backend
+    if (user) {
+      // Update user context immediately (optimistic update)
+      setUser({ ...user, locale: languageCode });
+
+      // Sync with backend in background (don't block UI)
+      const token = localStorage.getItem('astro_access_token');
+      if (token) {
+        fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({ locale: languageCode }),
+        }).catch((error) => {
+          console.error('Failed to update language preference:', error);
         });
-      } catch (error) {
-        console.error('Failed to update language preference:', error);
       }
     }
   };

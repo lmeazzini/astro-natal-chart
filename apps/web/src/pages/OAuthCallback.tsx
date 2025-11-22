@@ -6,13 +6,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { oauthService } from '../services/oauth';
+import { setToken, setRefreshToken } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
-
-const TOKEN_KEY = 'astro_access_token';
-const REFRESH_TOKEN_KEY = 'astro_refresh_token';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
@@ -36,8 +34,8 @@ export function OAuthCallbackPage() {
       }
 
       // Store tokens
-      localStorage.setItem(TOKEN_KEY, tokens.access_token);
-      localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
+      setToken(tokens.access_token);
+      setRefreshToken(tokens.refresh_token);
 
       // Fetch user data
       const response = await fetch('http://localhost:8000/api/v1/auth/me', {

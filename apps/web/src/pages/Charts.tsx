@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
+import { getToken } from '../services/api';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,6 @@ import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles } from 'lucide-react';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { EducationalBanner } from '@/components/EducationalBanner';
-
-const TOKEN_KEY = 'astro_access_token';
 
 export function ChartsPage() {
   const { t } = useTranslation();
@@ -34,7 +33,7 @@ export function ChartsPage() {
 
   async function loadCharts() {
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getToken();
       if (!token) {
         navigate('/login');
         return;
@@ -55,7 +54,7 @@ export function ChartsPage() {
     }
 
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = getToken();
       if (!token) return;
 
       await chartsService.delete(chartId, token);

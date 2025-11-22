@@ -70,7 +70,8 @@ def interpretation_service(mock_db, mock_openai_client):
         }
 
         with patch.object(InterpretationService, "_load_prompts", return_value=mock_prompts):
-            service = InterpretationService(mock_db)
+            # Disable cache for unit tests (cache tested separately)
+            service = InterpretationService(mock_db, use_cache=False)
             service.client = mock_openai_client
             service.prompts = mock_prompts
             return service

@@ -14,6 +14,7 @@ celery_app = Celery(
     backend=str(settings.REDIS_URL) if settings.REDIS_URL else "redis://localhost:6379/0",
     include=[
         "app.tasks.astro_tasks",
+        "app.tasks.cache_tasks",
         "app.tasks.pdf_tasks",
         "app.tasks.privacy",
     ],
@@ -44,5 +45,11 @@ celery_app.conf.beat_schedule = {
     "cleanup-expired-password-reset-tokens-daily": {
         "task": "privacy.cleanup_expired_password_reset_tokens",
         "schedule": crontab(hour=4, minute=0),  # 4h AM diariamente
+    },
+    # Limpar cache de interpretações expirado (30+ dias sem acesso)
+    "cleanup-expired-interpretation-cache-daily": {
+        "task": "cache.cleanup_expired_interpretations",
+        "schedule": crontab(hour=5, minute=0),  # 5h AM diariamente
+        "kwargs": {"ttl_days": 30},
     },
 }

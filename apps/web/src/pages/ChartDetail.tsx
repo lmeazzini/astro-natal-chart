@@ -30,7 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2 } from 'lucide-react';
+import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit } from 'lucide-react';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
@@ -366,6 +366,16 @@ export function ChartDetailPage() {
                     {t('chartDetail.pdf.export', { defaultValue: 'Export PDF' })}
                   </>
                 )}
+              </Button>
+
+              {/* Edit Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/charts/${id}/edit`)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                {t('common.edit', { defaultValue: 'Edit' })}
               </Button>
 
               <Button

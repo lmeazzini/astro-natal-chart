@@ -17,6 +17,8 @@ export interface LoginData {
   password: string;
 }
 
+export type UserType = 'professional' | 'student' | 'curious';
+
 export interface User {
   id: string;
   email: string;
@@ -29,6 +31,16 @@ export interface User {
   is_superuser: boolean;
   bio: string | null;
   profile_public: boolean;
+  user_type: UserType;
+  // Social links
+  website: string | null;
+  instagram: string | null;
+  twitter: string | null;
+  // Professional info
+  location: string | null;
+  professional_since: number | null;
+  specializations: string[] | null;
+  // Settings
   allow_email_notifications: boolean;
   analytics_consent: boolean;
   last_login_at: string | null;

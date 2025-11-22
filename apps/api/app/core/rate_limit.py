@@ -74,3 +74,6 @@ class RateLimits:
     # Password Reset endpoints (by IP)
     PASSWORD_RESET_REQUEST = "3/hour"  # 3 reset requests per hour
     PASSWORD_RESET_CONFIRM = "5/hour"  # 5 reset confirmations per hour
+
+    # Avatar Upload (by user_id - heavier operation)
+    AVATAR_UPLOAD = "10/hour"  # 10 avatar uploads per hour

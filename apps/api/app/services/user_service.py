@@ -52,6 +52,22 @@ async def update_profile(
     if profile_data.profile_public is not None:
         user.profile_public = profile_data.profile_public
 
+    # New profile fields
+    if profile_data.user_type is not None:
+        user.user_type = profile_data.user_type.value
+    if profile_data.website is not None:
+        user.website = profile_data.website
+    if profile_data.instagram is not None:
+        user.instagram = profile_data.instagram
+    if profile_data.twitter is not None:
+        user.twitter = profile_data.twitter
+    if profile_data.location is not None:
+        user.location = profile_data.location
+    if profile_data.professional_since is not None:
+        user.professional_since = profile_data.professional_since
+    if profile_data.specializations is not None:
+        user.specializations = profile_data.specializations
+
     # Update last_activity_at
     user.last_activity_at = datetime.now(UTC)
 

@@ -108,13 +108,13 @@ class ApiClient {
         if (data.refresh_token) {
           setRefreshToken(data.refresh_token);
         }
-        console.log('Token refreshed successfully');
+        console.log('[Auth] Token refreshed successfully via API client');
         return data.access_token;
       }
 
       return null;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      console.error('[Auth] Token refresh failed:', error);
       return null;
     }
   }
@@ -197,7 +197,7 @@ class ApiClient {
       const newToken = response.headers.get('X-New-Access-Token');
       if (newToken) {
         setToken(newToken);
-        console.log('Token auto-refreshed via middleware');
+        console.log('[Auth] Token auto-refreshed via middleware header');
       }
 
       // Handle 401 Unauthorized - attempt token refresh

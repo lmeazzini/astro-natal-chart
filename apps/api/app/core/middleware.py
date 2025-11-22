@@ -160,7 +160,15 @@ class TokenRefreshMiddleware(BaseHTTPMiddleware):
         # Add new token to response header if generated
         if new_access_token:
             response.headers["X-New-Access-Token"] = new_access_token
-            # Add header to CORS exposed headers
-            response.headers["Access-Control-Expose-Headers"] = "X-New-Access-Token, X-Request-ID"
+            # Append to CORS exposed headers (preserve existing headers)
+            existing_expose = response.headers.get("Access-Control-Expose-Headers", "")
+            new_headers = ["X-New-Access-Token", "X-Request-ID"]
+            if existing_expose:
+                # Parse existing headers and add new ones
+                existing_set = {h.strip() for h in existing_expose.split(",")}
+                existing_set.update(new_headers)
+                response.headers["Access-Control-Expose-Headers"] = ", ".join(sorted(existing_set))
+            else:
+                response.headers["Access-Control-Expose-Headers"] = ", ".join(new_headers)
 
         return response

@@ -2,6 +2,7 @@
 Authentication endpoints for user registration, login, and token management.
 """
 
+import time
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -208,8 +209,10 @@ async def get_current_user_info(
     summary="Verify access token",
     description="Verify if current access token is valid and get expiration info.",
 )
+@limiter.limit(RateLimits.REFRESH)
 async def verify_token(
     request: Request,
+    response: Response,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> TokenVerify:
     """
@@ -225,8 +228,6 @@ async def verify_token(
     Returns:
         Token verification info including expiration time
     """
-    import time
-
     # Extract token from Authorization header
     auth_header = request.headers.get("Authorization", "")
     token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""

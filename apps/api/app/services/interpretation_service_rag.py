@@ -6,7 +6,6 @@ retrieve relevant astrological knowledge from a vector database before generatin
 interpretations, resulting in more accurate and contextually grounded responses.
 """
 
-from collections.abc import Callable
 from typing import Any
 
 from loguru import logger
@@ -129,10 +128,9 @@ class InterpretationServiceRAG(InterpretationService):
         planet: str,
         sign: str,
         house: int,
-        dignities: dict[str, Any] | None = None,
-        sect: str | None = None,
-        retrograde: bool = False,
-        progress_callback: Callable[[int], None] | None = None,
+        dignities: dict[str, Any],
+        sect: str,
+        retrograde: bool,
     ) -> str:
         """
         Generate RAG-enhanced interpretation for a planet placement.
@@ -144,14 +142,13 @@ class InterpretationServiceRAG(InterpretationService):
             dignities: Planet dignities
             sect: Chart sect
             retrograde: Whether planet is retrograde
-            progress_callback: Optional callback for progress updates
 
         Returns:
             Generated interpretation text
         """
-        # Validate input
-        validated_dignities = self._validate_dignities(dignities) if dignities else {}
-        validated_sect = sect if sect in ["diurno", "noturno"] else None
+        # Validate input using parent method
+        validated_dignities = self._validate_dignities(planet, sign, dignities)
+        validated_sect = sect if sect in ["diurnal", "nocturnal"] else sect
 
         # Build cache parameters
         cache_params = {
@@ -159,7 +156,7 @@ class InterpretationServiceRAG(InterpretationService):
             "sign": sign,
             "house": house,
             "dignities": validated_dignities,
-            "sect": validated_sect,
+            "sect": sect,
             "retrograde": retrograde,
         }
 
@@ -187,9 +184,6 @@ class InterpretationServiceRAG(InterpretationService):
             search_query += " retrograde"
 
         # Retrieve relevant context
-        if progress_callback:
-            progress_callback(10)  # 10% - Starting retrieval
-
         documents = await self._retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
@@ -197,9 +191,6 @@ class InterpretationServiceRAG(InterpretationService):
 
         # Format RAG context
         rag_context = await self._format_rag_context(documents)
-
-        if progress_callback:
-            progress_callback(30)  # 30% - Context retrieved
 
         # Build enhanced prompt with RAG context
         dignity_context = self._format_dignities(validated_dignities)
@@ -209,7 +200,7 @@ class InterpretationServiceRAG(InterpretationService):
             sign=sign,
             house=house,
             dignities=dignity_context,
-            sect=validated_sect or "não especificado",
+            sect=validated_sect,
             retrograde="Sim" if retrograde else "Não",
         )
 
@@ -218,9 +209,6 @@ class InterpretationServiceRAG(InterpretationService):
             enhanced_prompt = f"{rag_context}\n\nCom base no contexto acima e seu conhecimento astrológico:\n\n{base_prompt}"
         else:
             enhanced_prompt = base_prompt
-
-        if progress_callback:
-            progress_callback(50)  # 50% - Generating interpretation
 
         # Generate interpretation
         try:
@@ -236,9 +224,6 @@ class InterpretationServiceRAG(InterpretationService):
 
             interpretation = response.choices[0].message.content
             interpretation_text = interpretation.strip() if interpretation else ""
-
-            if progress_callback:
-                progress_callback(80)  # 80% - Interpretation generated
 
             # Store in cache
             if interpretation_text and self.cache_service:
@@ -258,16 +243,13 @@ class InterpretationServiceRAG(InterpretationService):
                     f"(used {len(documents)} context documents)"
                 )
 
-            if progress_callback:
-                progress_callback(100)  # 100% - Complete
-
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG interpretation for {planet} in {sign}: {e}")
             # Fall back to non-RAG interpretation
             return await super().generate_planet_interpretation(
-                planet, sign, house, dignities, sect, retrograde, progress_callback
+                planet, sign, house, dignities, sect, retrograde
             )
 
     async def generate_aspect_interpretation(
@@ -275,30 +257,34 @@ class InterpretationServiceRAG(InterpretationService):
         planet1: str,
         planet2: str,
         aspect: str,
+        sign1: str,
+        sign2: str,
         orb: float,
-        planet1_sign: str | None = None,
-        planet2_sign: str | None = None,
+        applying: bool,
+        sect: str,
+        dignities1: dict[str, Any],
+        dignities2: dict[str, Any],
     ) -> str:
         """
         Generate RAG-enhanced interpretation for an aspect.
 
         Args:
-            planet1: First planet
-            planet2: Second planet
-            aspect: Aspect name
-            orb: Orb value
-            planet1_sign: Sign of first planet
-            planet2_sign: Sign of second planet
+            planet1: First planet name
+            planet2: Second planet name
+            aspect: Aspect type (e.g., "Trine", "Square")
+            sign1: Sign of first planet
+            sign2: Sign of second planet
+            orb: Orb in degrees
+            applying: Whether aspect is applying
+            sect: Chart sect
+            dignities1: Dignities of first planet
+            dignities2: Dignities of second planet
 
         Returns:
             Generated interpretation text
         """
         # Build search query
-        search_query = f"{planet1} {aspect} {planet2}"
-        if planet1_sign:
-            search_query += f" {planet1} in {planet1_sign}"
-        if planet2_sign:
-            search_query += f" {planet2} in {planet2_sign}"
+        search_query = f"{planet1} {aspect} {planet2} in {sign1} and {sign2}"
 
         # Retrieve context
         documents = await self._retrieve_context(
@@ -309,14 +295,22 @@ class InterpretationServiceRAG(InterpretationService):
         # Format context
         rag_context = await self._format_rag_context(documents)
 
+        # Format dignities
+        dignities1_context = self._format_dignities(dignities1)
+        dignities2_context = self._format_dignities(dignities2)
+
         # Build prompt
         base_prompt = self.prompts["aspect_prompts"]["base"].format(
+            aspect=aspect,
             planet1=planet1,
             planet2=planet2,
-            aspect=aspect,
-            orb=orb,
-            planet1_sign=planet1_sign or "não especificado",
-            planet2_sign=planet2_sign or "não especificado",
+            sign1=sign1,
+            sign2=sign2,
+            orb=round(orb, 1),
+            applying="Sim" if applying else "Não",
+            sect=sect,
+            dignities1=dignities1_context,
+            dignities2=dignities2_context,
         )
 
         if rag_context:
@@ -342,17 +336,18 @@ class InterpretationServiceRAG(InterpretationService):
         except Exception as e:
             logger.error(f"Error generating RAG aspect interpretation: {e}")
             return await super().generate_aspect_interpretation(
-                planet1, planet2, aspect, orb, planet1_sign, planet2_sign
+                planet1, planet2, aspect, sign1, sign2, orb, applying, sect, dignities1, dignities2
             )
 
-    async def get_statistics(self) -> dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get service statistics including RAG usage.
 
         Returns:
             Statistics dictionary
         """
-        base_stats = await super().get_statistics()
+        # Get base session cache stats
+        base_stats = self.get_session_cache_stats()
 
         # Add RAG-specific stats
         base_stats["rag_enabled"] = self.use_rag

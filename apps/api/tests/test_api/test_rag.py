@@ -1,7 +1,8 @@
 """Tests for RAG API endpoints."""
 import json
-from uuid import uuid4
 from unittest.mock import AsyncMock, patch
+from uuid import uuid4
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession

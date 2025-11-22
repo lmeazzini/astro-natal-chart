@@ -7,6 +7,7 @@ from uuid import UUID
 
 import tiktoken
 from loguru import logger
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.search_index import SearchIndex
@@ -218,8 +219,8 @@ class DocumentIngestionService:
             List of created VectorDocument objects
         """
         try:
-            # Import PyPDF2 only when needed
-            import PyPDF2
+            # Import PyPDF2 only when needed (no type stubs available)
+            import PyPDF2  # type: ignore[import-not-found]
 
             documents = []
             metadata = metadata or {}
@@ -301,7 +302,7 @@ class DocumentIngestionService:
 
             # Delete search index entries
             await db.execute(
-                SearchIndex.__table__.delete().where(
+                delete(SearchIndex).where(
                     SearchIndex.document_id == document_id
                 )
             )

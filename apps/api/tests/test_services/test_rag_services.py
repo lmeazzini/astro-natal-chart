@@ -1,15 +1,14 @@
 """Tests for RAG services."""
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+
 from app.models.vector_document import VectorDocument
-from app.models.search_index import SearchIndex
 from app.services.rag.bm25_service import BM25Service
-from app.services.rag.qdrant_service import QdrantService
-from app.services.rag.hybrid_search_service import HybridSearchService
 from app.services.rag.document_ingestion_service import DocumentIngestionService
+from app.services.rag.hybrid_search_service import HybridSearchService
+from app.services.rag.qdrant_service import QdrantService
 
 
 class TestBM25Service:

@@ -200,6 +200,9 @@ async def _generate_rag_interpretations(
     planets = chart_data.get("planets", [])
     houses = chart_data.get("houses", [])
 
+    # Get chart sect for interpretations
+    sect = chart_data.get("sect", "diurnal")
+
     # Process planets
     for planet in planets:
         planet_name = planet.get("name", "")
@@ -209,6 +212,7 @@ async def _generate_rag_interpretations(
         sign = planet.get("sign", "")
         house = planet.get("house", 1)
         retrograde = planet.get("retrograde", False)
+        dignities = planet.get("dignities", {})
 
         # Build search query for RAG context retrieval
         search_query = f"{planet_name} in {sign} house {house}"
@@ -224,11 +228,13 @@ async def _generate_rag_interpretations(
         rag_sources = _format_rag_sources(documents)
         total_documents_used += len(documents)
 
-        # Generate interpretation
+        # Generate interpretation with full signature
         interpretation = await rag_service.generate_planet_interpretation(
             planet=planet_name,
             sign=sign,
             house=house,
+            dignities=dignities,
+            sect=sect,
             retrograde=retrograde,
         )
 
@@ -303,21 +309,31 @@ async def _generate_rag_interpretations(
         rag_sources = _format_rag_sources(documents)
         total_documents_used += len(documents)
 
-        # Get signs for additional context
-        planet1_sign = next(
-            (p.get("sign") for p in planets if p.get("name") == planet1), None
+        # Get signs and dignities for additional context
+        planet1_data: dict[str, Any] = next(
+            (p for p in planets if p.get("name") == planet1), {}
         )
-        planet2_sign = next(
-            (p.get("sign") for p in planets if p.get("name") == planet2), None
+        planet2_data: dict[str, Any] = next(
+            (p for p in planets if p.get("name") == planet2), {}
         )
+
+        sign1 = planet1_data.get("sign", "")
+        sign2 = planet2_data.get("sign", "")
+        dignities1 = planet1_data.get("dignities", {})
+        dignities2 = planet2_data.get("dignities", {})
+        applying = aspect.get("applying", False)
 
         interpretation = await rag_service.generate_aspect_interpretation(
             planet1=planet1,
             planet2=planet2,
             aspect=aspect_name,
+            sign1=sign1,
+            sign2=sign2,
             orb=orb,
-            planet1_sign=planet1_sign,
-            planet2_sign=planet2_sign,
+            applying=applying,
+            sect=sect,
+            dignities1=dignities1,
+            dignities2=dignities2,
         )
 
         aspects_data[aspect_key] = InterpretationItem(

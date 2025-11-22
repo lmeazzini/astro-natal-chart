@@ -2,18 +2,54 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from loguru import logger
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.dependencies import get_current_user, get_db
+from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.models.vector_document import VectorDocument
 from app.services.rag import (
     document_ingestion_service,
     hybrid_search_service,
 )
+
+# OpenAI client for embeddings
+_openai_client: AsyncOpenAI | None = None
+
+
+def get_openai_client() -> AsyncOpenAI:
+    """Get or create OpenAI client singleton."""
+    global _openai_client
+    if _openai_client is None:
+        _openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+    return _openai_client
+
+
+async def generate_embedding(text: str) -> list[float] | None:
+    """
+    Generate embedding for text using OpenAI.
+
+    Args:
+        text: Text to embed
+
+    Returns:
+        Embedding vector or None if error
+    """
+    try:
+        client = get_openai_client()
+        response = await client.embeddings.create(
+            model=settings.OPENAI_EMBEDDING_MODEL,
+            input=text,
+        )
+        return response.data[0].embedding
+    except Exception as e:
+        logger.error(f"Failed to generate embedding: {e}")
+        return None
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
 
@@ -88,8 +124,10 @@ class StatsResponse(BaseModel):
 
 
 @router.post("/search", response_model=SearchResponse)
+@limiter.limit(RateLimits.RAG_SEARCH)
 async def search_documents(
-    request: SearchRequest,
+    search_request: SearchRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> SearchResponse:
@@ -102,17 +140,18 @@ async def search_documents(
     - Fusion: RRF or weighted combination of results
     """
     try:
-        # For now, we'll use a simple embedding generation
-        # In production, this should use OpenAI or another embedding service
-        query_vector = None  # TODO: Generate embedding from query
+        # Generate embedding for semantic search
+        query_vector = await generate_embedding(search_request.query)
+        if query_vector is None:
+            logger.warning("Failed to generate embedding, falling back to BM25-only search")
 
         # Perform hybrid search
         results = await hybrid_search_service.search(
-            query=request.query,
+            query=search_request.query,
             query_vector=query_vector,
-            limit=request.limit,
-            fusion_method=request.fusion_method,
-            filters=request.filters,
+            limit=search_request.limit,
+            fusion_method=search_request.fusion_method,
+            filters=search_request.filters,
         )
 
         # Format results
@@ -135,10 +174,10 @@ async def search_documents(
                     )
 
         return SearchResponse(
-            query=request.query,
+            query=search_request.query,
             results=formatted_results,
             total_results=len(formatted_results),
-            fusion_method=request.fusion_method,
+            fusion_method=search_request.fusion_method,
         )
 
     except Exception as e:
@@ -150,8 +189,10 @@ async def search_documents(
 
 
 @router.post("/ingest/text", response_model=IngestResponse)
+@limiter.limit(RateLimits.RAG_INGEST_TEXT)
 async def ingest_text_document(
-    request: IngestTextRequest,
+    ingest_request: IngestTextRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> IngestResponse:
@@ -165,18 +206,17 @@ async def ingest_text_document(
     4. Index for BM25 search
     """
     try:
-        # TODO: Add embedding generation function
         documents = await document_ingestion_service.ingest_text(
             db=db,
-            title=request.title,
-            content=request.content,
-            document_type=request.document_type,
-            metadata=request.metadata,
-            get_embeddings_func=None,  # TODO: Implement embedding generation
+            title=ingest_request.title,
+            content=ingest_request.content,
+            document_type=ingest_request.document_type,
+            metadata=ingest_request.metadata,
+            get_embeddings_func=generate_embedding,
         )
 
         return IngestResponse(
-            message=f"Successfully ingested document '{request.title}'",
+            message=f"Successfully ingested document '{ingest_request.title}'",
             documents_created=len(documents),
             document_ids=[str(doc.id) for doc in documents],
         )
@@ -190,7 +230,9 @@ async def ingest_text_document(
 
 
 @router.post("/ingest/pdf", response_model=IngestResponse)
+@limiter.limit(RateLimits.RAG_INGEST_PDF)
 async def ingest_pdf_document(
+    request: Request,
     file: UploadFile = File(...),
     metadata: str | None = None,
     current_user: User = Depends(get_current_user),
@@ -235,7 +277,7 @@ async def ingest_pdf_document(
                     "original_filename": file.filename,
                     "content_type": file.content_type,
                 },
-                get_embeddings_func=None,  # TODO: Implement embedding generation
+                get_embeddings_func=generate_embedding,
             )
 
             return IngestResponse(
@@ -282,8 +324,10 @@ async def get_document(
 
 
 @router.delete("/documents/{document_id}")
+@limiter.limit(RateLimits.RAG_DELETE)
 async def delete_document(
     document_id: UUID,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
@@ -307,7 +351,9 @@ async def delete_document(
 
 
 @router.get("/stats", response_model=StatsResponse)
+@limiter.limit(RateLimits.RAG_STATS)
 async def get_rag_stats(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> StatsResponse:

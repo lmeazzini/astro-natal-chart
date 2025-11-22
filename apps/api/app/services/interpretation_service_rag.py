@@ -8,10 +8,8 @@ interpretations, resulting in more accurate and contextually grounded responses.
 
 from collections.abc import Callable
 from typing import Any
-from uuid import UUID
 
 from loguru import logger
-from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings

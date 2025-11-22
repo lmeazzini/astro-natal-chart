@@ -1,10 +1,11 @@
 """Qdrant vector database service for semantic search."""
-import os
 from typing import Any
 
 from loguru import logger
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
+
+from app.core.config import settings
 
 
 class QdrantService:
@@ -13,16 +14,16 @@ class QdrantService:
     def __init__(self) -> None:
         """Initialize Qdrant client."""
         self.client: QdrantClient | None = None
-        self.collection_name = "astrology_knowledge"
-        self.vector_size = 1536  # OpenAI ada-002 embedding size
+        self.collection_name = settings.QDRANT_COLLECTION
+        self.vector_size = settings.QDRANT_VECTOR_SIZE
         self.enabled = False
         self._initialize_client()
 
     def _initialize_client(self) -> None:
         """Initialize Qdrant client with proper configuration."""
         try:
-            # Get Qdrant URL from environment or use default
-            qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
+            # Get Qdrant URL from settings
+            qdrant_url = settings.QDRANT_URL
 
             # Initialize client
             self.client = QdrantClient(
@@ -250,14 +251,28 @@ class QdrantService:
 
         try:
             info = self.client.get_collection(self.collection_name)
+            vectors_config = info.config.params.vectors
+            # Handle both single vector config and named vectors
+            if isinstance(vectors_config, dict):
+                # Named vectors - get first one
+                first_config = next(iter(vectors_config.values()), None)
+                vector_size = first_config.size if first_config else 0
+                distance = str(first_config.distance) if first_config else "unknown"
+            elif vectors_config is not None:
+                vector_size = vectors_config.size
+                distance = str(vectors_config.distance)
+            else:
+                vector_size = 0
+                distance = "unknown"
+
             return {
                 "vectors_count": info.vectors_count,
                 "points_count": info.points_count,
                 "segments_count": info.segments_count,
                 "status": info.status,
                 "config": {
-                    "vector_size": info.config.params.vectors.size,
-                    "distance": info.config.params.vectors.distance,
+                    "vector_size": vector_size,
+                    "distance": distance,
                 },
             }
 

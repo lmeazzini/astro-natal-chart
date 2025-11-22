@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 from loguru import logger
-from rank_bm25 import BM25Okapi
+from rank_bm25 import BM25Okapi  # type: ignore[import-untyped]
 
 
 class BM25Service:
@@ -59,7 +59,7 @@ class BM25Service:
             "até", "desde", "durante", "mediante", "perante", "contra", "através",
             # Conjunções
             "e", "ou", "mas", "porém", "todavia", "contudo", "portanto", "logo",
-            "pois", "porque", "se", "caso", "embora", "ainda", "já", "também",
+            "pois", "porque", "embora", "também",
             # Verbos auxiliares e comuns
             "ser", "estar", "ter", "haver", "fazer", "ir", "vir", "dar", "poder",
             "dever", "querer", "saber", "foi", "é", "são", "era", "eram", "será",
@@ -222,6 +222,44 @@ class BM25Service:
         )
 
         logger.debug(f"Added document {document_id} to BM25 index")
+
+    def add_documents_batch(
+        self,
+        documents: list[str],
+        document_ids: list[str],
+    ) -> None:
+        """
+        Add multiple documents efficiently (rebuilds index once).
+
+        Args:
+            documents: List of document texts
+            document_ids: List of document IDs
+        """
+        if len(documents) != len(document_ids):
+            raise ValueError("Documents and IDs must have same length")
+
+        if not documents:
+            return
+
+        if not self.bm25:
+            # Initialize with all documents if index doesn't exist
+            self.build_index(documents, document_ids)
+            return
+
+        # Tokenize all new documents
+        for doc, doc_id in zip(documents, document_ids, strict=True):
+            tokens = self.tokenize(doc)
+            self.corpus.append(tokens)
+            self.document_ids.append(doc_id)
+
+        # Rebuild BM25 once after all additions
+        self.bm25 = BM25Okapi(
+            self.corpus,
+            k1=self.k1,
+            b=self.b,
+        )
+
+        logger.info(f"Added {len(documents)} documents to BM25 index in batch")
 
     def remove_document(self, document_id: str) -> bool:
         """

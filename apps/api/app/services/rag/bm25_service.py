@@ -9,7 +9,28 @@ from rank_bm25 import BM25Okapi  # type: ignore[import-untyped]
 
 
 class BM25Service:
-    """Service for BM25 sparse keyword search."""
+    """
+    Service for BM25 sparse keyword search.
+
+    Memory Considerations:
+        This implementation stores the entire tokenized corpus in memory. For large
+        corpora (>100k documents), memory usage can become significant. Consider:
+
+        1. For corpora >100k docs: Use a database-backed BM25 implementation or
+           disk-based index (e.g., Whoosh, Elasticsearch).
+
+        2. For corpora >1M docs: Consider using approximate methods like:
+           - SPLADE (learned sparse representations)
+           - BM25 with inverted index sharding
+           - Hybrid approaches with vector-only retrieval
+
+        3. For incremental updates: The current implementation rebuilds the index
+           on each add/remove operation. For frequent updates, consider batching
+           changes and rebuilding periodically, or using a streaming BM25 variant.
+
+        Current implementation is optimized for corpora <50k documents with
+        infrequent updates, which is typical for astrological knowledge bases.
+    """
 
     def __init__(self, k1: float = 1.2, b: float = 0.75) -> None:
         """

@@ -32,6 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit, Database, FlaskConical } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ export function ChartDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [chart, setChart] = useState<BirthChart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -140,6 +142,12 @@ export function ChartDetailPage() {
       setRAGInterpretations(data);
     } catch (err) {
       console.error('Failed to load RAG interpretations:', err);
+      // Show toast notification for error
+      toast({
+        title: t('chartDetail.rag.errorTitle', { defaultValue: 'RAG Error' }),
+        description: t('chartDetail.rag.errorDesc', { defaultValue: 'Failed to load RAG interpretations. Falling back to standard mode.' }),
+        variant: 'destructive',
+      });
       // Fall back to standard interpretations
       setUseRAG(false);
     } finally {

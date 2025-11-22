@@ -104,6 +104,9 @@ async def mock_rag_services():
                 "score": 0.95,
             }
         ])
+        mock_instance._format_rag_context = AsyncMock(
+            return_value="Contexto Astrológico Relevante:\nTest astrological context..."
+        )
         mock_instance.generate_planet_interpretation = AsyncMock(
             return_value="RAG-enhanced interpretation for Sun in Taurus..."
         )
@@ -152,6 +155,7 @@ class TestRAGInterpretationsEndpoints:
         self,
         client: AsyncClient,
         test_user: User,
+        auth_headers: dict[str, str],
         db_session: AsyncSession,
         test_chart_data: dict,
     ):
@@ -179,7 +183,7 @@ class TestRAGInterpretationsEndpoints:
 
         response = await client.get(
             f"/api/v1/charts/{chart.id}/interpretations/rag",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 403
@@ -196,7 +200,8 @@ class TestRAGInterpretationsEndpoints:
             f"/api/v1/charts/{test_chart.id}/interpretations/rag",
         )
 
-        assert response.status_code == 401
+        # 403 is returned by require_admin when no token is provided
+        assert response.status_code == 403
 
     @pytest.mark.asyncio
     async def test_get_rag_interpretations_chart_not_found(
@@ -241,6 +246,7 @@ class TestRAGInterpretationsEndpoints:
         self,
         client: AsyncClient,
         test_user: User,
+        auth_headers: dict[str, str],
         db_session: AsyncSession,
         test_chart_data: dict,
     ):
@@ -268,7 +274,7 @@ class TestRAGInterpretationsEndpoints:
 
         response = await client.post(
             f"/api/v1/charts/{chart.id}/interpretations/rag/regenerate",
-            headers={"Authorization": f"Bearer {test_user.id}"},
+            headers=auth_headers,
         )
 
         assert response.status_code == 403

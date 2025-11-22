@@ -156,6 +156,9 @@ class Settings(BaseSettings):
     # OpenAI Embeddings (for RAG)
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-ada-002"
 
+    # RAG Settings
+    RAG_MAX_ASPECTS: int = 10  # Maximum aspects to interpret in RAG mode
+
     # Cookie Security Settings
     COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
     COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies

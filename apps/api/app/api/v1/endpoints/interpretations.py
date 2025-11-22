@@ -9,8 +9,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.dependencies import get_current_user, get_db, require_admin
 from app.core.rate_limit import RateLimits, limiter
+from app.models.chart import BirthChart
 from app.models.user import User
 from app.schemas.interpretation import (
     ChartInterpretationsResponse,
@@ -169,6 +171,170 @@ async def regenerate_chart_interpretations(
 # ============================================================================
 
 
+async def _generate_rag_interpretations(
+    chart: BirthChart,
+    rag_service: InterpretationServiceRAG,
+) -> RAGInterpretationsResponse:
+    """
+    Generate RAG-enhanced interpretations for a birth chart.
+
+    This helper function contains the common logic for generating RAG interpretations,
+    used by both get and regenerate endpoints.
+
+    Args:
+        chart: The birth chart with chart_data
+        rag_service: Configured RAG interpretation service
+
+    Returns:
+        RAGInterpretationsResponse with planets, houses, and aspects interpretations
+    """
+    planets_data: dict[str, InterpretationItem] = {}
+    houses_data: dict[str, InterpretationItem] = {}
+    aspects_data: dict[str, InterpretationItem] = {}
+    total_documents_used = 0
+
+    # chart_data is guaranteed to be non-None by the calling endpoints
+    chart_data = chart.chart_data
+    assert chart_data is not None, "chart_data must not be None"
+
+    planets = chart_data.get("planets", [])
+    houses = chart_data.get("houses", [])
+
+    # Process planets
+    for planet in planets:
+        planet_name = planet.get("name", "")
+        if not planet_name:
+            continue
+
+        sign = planet.get("sign", "")
+        house = planet.get("house", 1)
+        retrograde = planet.get("retrograde", False)
+
+        # Build search query for RAG context retrieval
+        search_query = f"{planet_name} in {sign} house {house}"
+        if retrograde:
+            search_query += " retrograde"
+
+        # Retrieve context documents
+        documents = await rag_service._retrieve_context(
+            query=search_query,
+            filters={"document_type": ["text", "pdf", "interpretation"]},
+        )
+
+        rag_sources = _format_rag_sources(documents)
+        total_documents_used += len(documents)
+
+        # Generate interpretation
+        interpretation = await rag_service.generate_planet_interpretation(
+            planet=planet_name,
+            sign=sign,
+            house=house,
+            retrograde=retrograde,
+        )
+
+        planets_data[planet_name] = InterpretationItem(
+            content=interpretation,
+            source="rag",
+            rag_sources=rag_sources,
+        )
+
+    # Process houses
+    for house in houses:
+        house_number = house.get("number", 0)
+        house_sign = house.get("sign", "")
+
+        if not house_number or not house_sign:
+            continue
+
+        house_key = f"House {house_number}"
+
+        # Build search query for house interpretation
+        search_query = f"house {house_number} in {house_sign}"
+
+        # Retrieve context documents
+        documents = await rag_service._retrieve_context(
+            query=search_query,
+            filters={"document_type": ["text", "pdf", "interpretation"]},
+        )
+
+        rag_sources = _format_rag_sources(documents)
+        total_documents_used += len(documents)
+
+        # Generate house interpretation using the context
+        # Note: Houses use a simpler interpretation since there's no dedicated method
+        context = await rag_service._format_rag_context(documents)
+        house_interpretation = (
+            f"House {house_number} ({house_sign}): "
+            f"This house governs specific life areas as indicated by its position in {house_sign}."
+        )
+        if context:
+            house_interpretation = context[:500] if len(context) > 500 else context
+
+        houses_data[house_key] = InterpretationItem(
+            content=house_interpretation,
+            source="rag",
+            rag_sources=rag_sources,
+        )
+
+    # Process aspects (limited by RAG_MAX_ASPECTS setting)
+    aspects = chart_data.get("aspects", [])
+    max_aspects = settings.RAG_MAX_ASPECTS
+
+    for aspect in aspects[:max_aspects]:
+        planet1 = aspect.get("planet1", "")
+        planet2 = aspect.get("planet2", "")
+        aspect_name = aspect.get("aspect", "")
+        orb = aspect.get("orb", 0.0)
+
+        if not all([planet1, planet2, aspect_name]):
+            continue
+
+        aspect_key = f"{planet1}-{aspect_name}-{planet2}"
+
+        # Build search query
+        search_query = f"{planet1} {aspect_name} {planet2}"
+
+        # Retrieve context documents
+        documents = await rag_service._retrieve_context(
+            query=search_query,
+            filters={"document_type": ["text", "pdf", "interpretation"]},
+        )
+
+        rag_sources = _format_rag_sources(documents)
+        total_documents_used += len(documents)
+
+        # Get signs for additional context
+        planet1_sign = next(
+            (p.get("sign") for p in planets if p.get("name") == planet1), None
+        )
+        planet2_sign = next(
+            (p.get("sign") for p in planets if p.get("name") == planet2), None
+        )
+
+        interpretation = await rag_service.generate_aspect_interpretation(
+            planet1=planet1,
+            planet2=planet2,
+            aspect=aspect_name,
+            orb=orb,
+            planet1_sign=planet1_sign,
+            planet2_sign=planet2_sign,
+        )
+
+        aspects_data[aspect_key] = InterpretationItem(
+            content=interpretation,
+            source="rag",
+            rag_sources=rag_sources,
+        )
+
+    return RAGInterpretationsResponse(
+        planets=planets_data,
+        houses=houses_data,
+        aspects=aspects_data,
+        source="rag",
+        documents_used=total_documents_used,
+    )
+
+
 @router.get(
     "/charts/{chart_id}/interpretations/rag",
     response_model=RAGInterpretationsResponse,
@@ -220,115 +386,18 @@ async def get_chart_interpretations_rag(
                 detail="Chart is still processing. Please wait until calculations are complete.",
             )
 
-        # Use RAG-enhanced interpretation service
+        # Use RAG-enhanced interpretation service with caching
         rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
 
-        # Generate RAG interpretations for planets
-        planets_data: dict[str, InterpretationItem] = {}
-        houses_data: dict[str, InterpretationItem] = {}
-        aspects_data: dict[str, InterpretationItem] = {}
-        total_documents_used = 0
-
-        # Process planets
-        chart_data = chart.chart_data
-        planets = chart_data.get("planets", [])
-
-        for planet in planets:
-            planet_name = planet.get("name", "")
-            if not planet_name:
-                continue
-
-            sign = planet.get("sign", "")
-            house = planet.get("house", 1)
-            retrograde = planet.get("retrograde", False)
-
-            # Get RAG context and interpretation
-            search_query = f"{planet_name} in {sign} house {house}"
-            if retrograde:
-                search_query += " retrograde"
-
-            # Retrieve context
-            documents = await rag_service._retrieve_context(
-                query=search_query,
-                filters={"document_type": ["text", "pdf", "interpretation"]},
-            )
-
-            # Format RAG sources
-            rag_sources = _format_rag_sources(documents)
-            total_documents_used += len(documents)
-
-            # Generate interpretation
-            interpretation = await rag_service.generate_planet_interpretation(
-                planet=planet_name,
-                sign=sign,
-                house=house,
-                retrograde=retrograde,
-            )
-
-            planets_data[planet_name] = InterpretationItem(
-                content=interpretation,
-                source="rag",
-                rag_sources=rag_sources,
-            )
-
-        # Process aspects
-        aspects = chart_data.get("aspects", [])
-        for aspect in aspects[:10]:  # Limit to first 10 aspects
-            planet1 = aspect.get("planet1", "")
-            planet2 = aspect.get("planet2", "")
-            aspect_name = aspect.get("aspect", "")
-            orb = aspect.get("orb", 0.0)
-
-            if not all([planet1, planet2, aspect_name]):
-                continue
-
-            aspect_key = f"{planet1}-{aspect_name}-{planet2}"
-
-            # Get RAG context
-            search_query = f"{planet1} {aspect_name} {planet2}"
-            documents = await rag_service._retrieve_context(
-                query=search_query,
-                filters={"document_type": ["text", "pdf", "interpretation"]},
-            )
-
-            rag_sources = _format_rag_sources(documents)
-            total_documents_used += len(documents)
-
-            # Get signs for context
-            planet1_sign = next(
-                (p.get("sign") for p in planets if p.get("name") == planet1), None
-            )
-            planet2_sign = next(
-                (p.get("sign") for p in planets if p.get("name") == planet2), None
-            )
-
-            interpretation = await rag_service.generate_aspect_interpretation(
-                planet1=planet1,
-                planet2=planet2,
-                aspect=aspect_name,
-                orb=orb,
-                planet1_sign=planet1_sign,
-                planet2_sign=planet2_sign,
-            )
-
-            aspects_data[aspect_key] = InterpretationItem(
-                content=interpretation,
-                source="rag",
-                rag_sources=rag_sources,
-            )
+        # Generate interpretations using common helper
+        response = await _generate_rag_interpretations(chart, rag_service)
 
         logger.info(
             f"Generated RAG interpretations for chart {chart_id} "
-            f"(admin: {admin_user.email}, documents used: {total_documents_used})"
+            f"(admin: {admin_user.email}, documents used: {response.documents_used})"
         )
 
-        return RAGInterpretationsResponse(
-            planets=planets_data,
-            houses=houses_data,
-            aspects=aspects_data,
-            source="rag",
-            documents_used=total_documents_used,
-        )
+        return response
 
     except chart_service.ChartNotFoundError as e:
         raise HTTPException(
@@ -340,6 +409,9 @@ async def get_chart_interpretations_rag(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e),
         ) from e
+    except HTTPException:
+        # Re-raise HTTP exceptions (e.g., 400 for processing chart)
+        raise
     except Exception as e:
         logger.error(f"Error generating RAG interpretations for chart {chart_id}: {e}")
         raise HTTPException(
@@ -398,105 +470,15 @@ async def regenerate_chart_interpretations_rag(
         # Use RAG service with cache disabled for regeneration
         rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
 
-        # Similar logic to get_chart_interpretations_rag but with cache disabled
-        planets_data: dict[str, InterpretationItem] = {}
-        houses_data: dict[str, InterpretationItem] = {}
-        aspects_data: dict[str, InterpretationItem] = {}
-        total_documents_used = 0
-
-        chart_data = chart.chart_data
-        planets = chart_data.get("planets", [])
-
-        for planet in planets:
-            planet_name = planet.get("name", "")
-            if not planet_name:
-                continue
-
-            sign = planet.get("sign", "")
-            house = planet.get("house", 1)
-            retrograde = planet.get("retrograde", False)
-
-            search_query = f"{planet_name} in {sign} house {house}"
-            if retrograde:
-                search_query += " retrograde"
-
-            documents = await rag_service._retrieve_context(
-                query=search_query,
-                filters={"document_type": ["text", "pdf", "interpretation"]},
-            )
-
-            rag_sources = _format_rag_sources(documents)
-            total_documents_used += len(documents)
-
-            interpretation = await rag_service.generate_planet_interpretation(
-                planet=planet_name,
-                sign=sign,
-                house=house,
-                retrograde=retrograde,
-            )
-
-            planets_data[planet_name] = InterpretationItem(
-                content=interpretation,
-                source="rag",
-                rag_sources=rag_sources,
-            )
-
-        # Process aspects
-        aspects = chart_data.get("aspects", [])
-        for aspect in aspects[:10]:
-            planet1 = aspect.get("planet1", "")
-            planet2 = aspect.get("planet2", "")
-            aspect_name = aspect.get("aspect", "")
-            orb = aspect.get("orb", 0.0)
-
-            if not all([planet1, planet2, aspect_name]):
-                continue
-
-            aspect_key = f"{planet1}-{aspect_name}-{planet2}"
-
-            search_query = f"{planet1} {aspect_name} {planet2}"
-            documents = await rag_service._retrieve_context(
-                query=search_query,
-                filters={"document_type": ["text", "pdf", "interpretation"]},
-            )
-
-            rag_sources = _format_rag_sources(documents)
-            total_documents_used += len(documents)
-
-            planet1_sign = next(
-                (p.get("sign") for p in planets if p.get("name") == planet1), None
-            )
-            planet2_sign = next(
-                (p.get("sign") for p in planets if p.get("name") == planet2), None
-            )
-
-            interpretation = await rag_service.generate_aspect_interpretation(
-                planet1=planet1,
-                planet2=planet2,
-                aspect=aspect_name,
-                orb=orb,
-                planet1_sign=planet1_sign,
-                planet2_sign=planet2_sign,
-            )
-
-            aspects_data[aspect_key] = InterpretationItem(
-                content=interpretation,
-                source="rag",
-                rag_sources=rag_sources,
-            )
+        # Generate interpretations using common helper
+        response = await _generate_rag_interpretations(chart, rag_service)
 
         logger.info(
             f"Regenerated RAG interpretations for chart {chart_id} "
-            f"(admin: {admin_user.email}, documents used: {total_documents_used})"
+            f"(admin: {admin_user.email}, documents used: {response.documents_used})"
         )
 
-        return RAGInterpretationsResponse(
-            planets=planets_data,
-            houses=houses_data,
-            aspects=aspects_data,
-            source="rag",
-            documents_used=total_documents_used,
-        )
+        return response
 
     except chart_service.ChartNotFoundError as e:
         raise HTTPException(
@@ -508,6 +490,9 @@ async def regenerate_chart_interpretations_rag(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e),
         ) from e
+    except HTTPException:
+        # Re-raise HTTP exceptions (e.g., 400 for processing chart)
+        raise
     except Exception as e:
         logger.error(f"Error regenerating RAG interpretations for chart {chart_id}: {e}")
         raise HTTPException(

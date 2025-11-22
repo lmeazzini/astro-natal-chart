@@ -1,6 +1,6 @@
 """add_rag_vector_documents_and_search_indices
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: add_rag_160000
 Revises: 93b7ace49920
 Create Date: 2025-11-22 16:00:00.000000
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'a1b2c3d4e5f6'
+revision: str = 'add_rag_160000'
 down_revision: Union[str, None] = '93b7ace49920'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

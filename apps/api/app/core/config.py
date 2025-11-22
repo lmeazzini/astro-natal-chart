@@ -143,6 +143,11 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True  # Disable for testing
 
+    # GitHub API Integration (for dynamic feature list)
+    GITHUB_REPO: str = "lmeazzini/astro-natal-chart"
+    GITHUB_TOKEN: str | None = None  # Optional, increases rate limit from 60 to 5000/hour
+    GITHUB_FEATURES_CACHE_TTL: int = 300  # Cache TTL in seconds (5 minutes)
+
     # Cookie Security Settings
     COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
     COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies

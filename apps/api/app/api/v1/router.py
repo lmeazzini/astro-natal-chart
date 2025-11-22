@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     cache,
     charts,
     geocoding,
+    github,
     interpretations,
     oauth,
     password_reset,
@@ -83,4 +84,11 @@ api_router.include_router(
     cache.router,
     prefix="/cache",
     tags=["cache"],
+)
+
+# GitHub API endpoints
+api_router.include_router(
+    github.router,
+    prefix="/github",
+    tags=["github"],
 )

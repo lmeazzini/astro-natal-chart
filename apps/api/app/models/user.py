@@ -3,15 +3,24 @@ User model for database.
 """
 
 from datetime import datetime
+from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.enums import UserRole
+
+
+class UserType(str, Enum):
+    """User type enumeration."""
+
+    PROFESSIONAL = "professional"
+    STUDENT = "student"
+    CURIOUS = "curious"
 
 if TYPE_CHECKING:
     from app.models.chart import BirthChart
@@ -49,6 +58,19 @@ class User(Base):
     # Profile fields
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     profile_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    user_type: Mapped[str] = mapped_column(
+        String(50), default=UserType.CURIOUS.value, nullable=False
+    )
+
+    # Social links
+    website: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    instagram: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    twitter: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Professional info
+    location: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    professional_since: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    specializations: Mapped[list | None] = mapped_column(JSONB, nullable=True)
 
     # Preferences
     allow_email_notifications: Mapped[bool] = mapped_column(

@@ -5,6 +5,8 @@
 import { apiClient } from './api';
 import type { User } from './auth';
 
+export type UserType = 'professional' | 'student' | 'curious';
+
 export interface UserUpdate {
   full_name?: string;
   locale?: string;
@@ -12,6 +14,13 @@ export interface UserUpdate {
   avatar_url?: string;
   bio?: string;
   profile_public?: boolean;
+  user_type?: UserType;
+  website?: string;
+  instagram?: string;
+  twitter?: string;
+  location?: string;
+  professional_since?: number | null;
+  specializations?: string[];
 }
 
 export interface PasswordChange {

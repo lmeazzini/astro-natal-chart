@@ -532,15 +532,19 @@ export function ChartDetailPage() {
                 </div>
               </div>
 
-              {/* Lunar and Solar Phases */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {chart.chart_data.lunar_phase && (
-                  <LunarPhase lunarPhase={chart.chart_data.lunar_phase} />
-                )}
-                {chart.chart_data.solar_phase && (
-                  <SolarPhase solarPhase={chart.chart_data.solar_phase} />
-                )}
+              {/* Chart Wheel - Professional visualization with AstroChart (PRIMEIRO) */}
+              <div>
+                <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
+                <ChartWheelAstro chartData={chart.chart_data} />
               </div>
+
+              {/* Temperament (SEGUNDO) */}
+              {chart.chart_data.temperament && (
+                <div>
+                  <h3 className="text-h4 font-display mb-4">Cálculo Final do Temperamento</h3>
+                  <TemperamentDisplay temperament={chart.chart_data.temperament} />
+                </div>
+              )}
 
               {/* Lord of Nativity */}
               {chart.chart_data.lord_of_nativity && (
@@ -549,17 +553,20 @@ export function ChartDetailPage() {
                 </div>
               )}
 
-              {/* Temperament */}
-              {chart.chart_data.temperament && (
-                <div>
-                  <TemperamentDisplay temperament={chart.chart_data.temperament} />
-                </div>
-              )}
-
-              {/* Chart Wheel - Professional visualization with AstroChart */}
-              <div>
-                <h3 className="text-h4 font-display mb-4">{t('chartDetail.chartWheel', { defaultValue: 'Birth Chart Wheel' })}</h3>
-                <ChartWheelAstro chartData={chart.chart_data} />
+              {/* Lunar and Solar Phases - with explicit labels */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {chart.chart_data.lunar_phase && (
+                  <div>
+                    <h3 className="text-h4 font-display mb-4">{t('chartDetail.lunarPhase', { defaultValue: 'Lunar Phase' })}</h3>
+                    <LunarPhase lunarPhase={chart.chart_data.lunar_phase} />
+                  </div>
+                )}
+                {chart.chart_data.solar_phase && (
+                  <div>
+                    <h3 className="text-h4 font-display mb-4">{t('chartDetail.solarPhase', { defaultValue: 'Solar Phase' })}</h3>
+                    <SolarPhase solarPhase={chart.chart_data.solar_phase} />
+                  </div>
+                )}
               </div>
               </CardContent>
             </Card>

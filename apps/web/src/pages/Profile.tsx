@@ -14,6 +14,8 @@ import {
   UserStats,
   UserActivity,
   OAuthConnection,
+  UserUpdate,
+  UserType,
 } from '../services/users';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
@@ -33,6 +35,13 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// User type options
+const USER_TYPES = [
+  { value: 'professional', label: '🔮 Astrólogo Profissional' },
+  { value: 'student', label: '📚 Estudante de Astrologia' },
+  { value: 'curious', label: '✨ Curioso' },
+];
+
 // Type definitions (outside component to maintain type consistency)
 type ProfileFormValues = {
   full_name: string;
@@ -40,6 +49,13 @@ type ProfileFormValues = {
   locale: string;
   timezone: string;
   profile_public: boolean;
+  user_type?: string;
+  website?: string;
+  instagram?: string;
+  twitter?: string;
+  location?: string;
+  professional_since?: number | null;
+  specializations?: string[];
 };
 
 type PasswordFormValues = {
@@ -114,6 +130,13 @@ export function ProfilePage() {
       locale: 'pt-BR',
       timezone: 'America/Sao_Paulo',
       profile_public: false,
+      user_type: 'curious',
+      website: '',
+      instagram: '',
+      twitter: '',
+      location: '',
+      professional_since: null,
+      specializations: [],
     },
   });
 
@@ -136,6 +159,13 @@ export function ProfilePage() {
         locale: user.locale || 'pt-BR',
         timezone: user.timezone || 'America/Sao_Paulo',
         profile_public: user.profile_public || false,
+        user_type: user.user_type || 'curious',
+        website: user.website || '',
+        instagram: user.instagram || '',
+        twitter: user.twitter || '',
+        location: user.location || '',
+        professional_since: user.professional_since || null,
+        specializations: user.specializations || [],
       });
     }
   }, [user, profileForm]);
@@ -179,7 +209,13 @@ export function ProfilePage() {
       const token = localStorage.getItem('astro_access_token');
       if (!token) throw new Error('Not authenticated');
 
-      const updatedUser = await userService.updateProfile(data, token);
+      // Cast user_type from string to UserType for type safety
+      const updateData: UserUpdate = {
+        ...data,
+        user_type: data.user_type as UserType | undefined,
+      };
+
+      const updatedUser = await userService.updateProfile(updateData, token);
 
       // Sync i18n if locale changed
       if (data.locale && data.locale !== i18n.language) {
@@ -459,6 +495,148 @@ export function ProfilePage() {
                         )}
                       />
                     </div>
+
+                    {/* User Type */}
+                    <FormField
+                      control={profileForm.control}
+                      name="user_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo de Usuário</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione seu tipo de usuário" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {USER_TYPES.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Location */}
+                    <FormField
+                      control={profileForm.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Localização</FormLabel>
+                          <FormControl>
+                            <Input placeholder="São Paulo, Brasil" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Social Links */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium">Redes Sociais</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField
+                          control={profileForm.control}
+                          name="website"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Website</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://seusite.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={profileForm.control}
+                          name="instagram"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Instagram</FormLabel>
+                              <FormControl>
+                                <Input placeholder="@seuperfil" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={profileForm.control}
+                          name="twitter"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Twitter/X</FormLabel>
+                              <FormControl>
+                                <Input placeholder="@seuperfil" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Professional Fields - Only show for professionals */}
+                    {profileForm.watch('user_type') === 'professional' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                        <h3 className="text-sm font-medium">Informações Profissionais</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={profileForm.control}
+                            name="professional_since"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Profissional desde</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="2020"
+                                    min={1900}
+                                    max={new Date().getFullYear()}
+                                    {...field}
+                                    value={field.value || ''}
+                                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={profileForm.control}
+                            name="specializations"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Especializações</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Mapas Natais, Sinastria, Trânsitos"
+                                    value={field.value?.join(', ') || ''}
+                                    onChange={(e) => field.onChange(
+                                      e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                                    )}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Separe por vírgula
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     <FormField
                       control={profileForm.control}

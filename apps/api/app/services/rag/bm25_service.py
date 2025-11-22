@@ -27,7 +27,7 @@ class BM25Service:
         self.stopwords = self._get_stopwords()
 
     def _get_stopwords(self) -> set[str]:
-        """Get common English and astrological stopwords."""
+        """Get common English, Portuguese and astrological stopwords."""
         # Common English stopwords
         english_stopwords = {
             "a", "an", "and", "are", "as", "at", "be", "been", "by", "for",
@@ -37,12 +37,60 @@ class BM25Service:
             "when", "where", "why", "how", "all", "would", "there", "could",
         }
 
-        # Common astrological articles/prepositions
-        astro_stopwords = {
-            "degree", "degrees", "sign", "house", "planet", "aspect",
+        # Common Portuguese stopwords
+        portuguese_stopwords = {
+            # Artigos
+            "o", "a", "os", "as", "um", "uma", "uns", "umas",
+            # Pronomes
+            "eu", "tu", "ele", "ela", "nós", "vós", "eles", "elas",
+            "me", "te", "se", "nos", "vos", "lhe", "lhes",
+            "meu", "minha", "meus", "minhas", "teu", "tua", "teus", "tuas",
+            "seu", "sua", "seus", "suas", "nosso", "nossa", "nossos", "nossas",
+            "vosso", "vossa", "vossos", "vossas", "este", "esta", "estes", "estas",
+            "esse", "essa", "esses", "essas", "aquele", "aquela", "aqueles", "aquelas",
+            "isto", "isso", "aquilo", "mesmo", "mesma", "mesmos", "mesmas",
+            "próprio", "própria", "próprios", "próprias", "todo", "toda", "todos", "todas",
+            "outro", "outra", "outros", "outras", "muito", "muita", "muitos", "muitas",
+            "pouco", "pouca", "poucos", "poucas", "algum", "alguma", "alguns", "algumas",
+            "nenhum", "nenhuma", "nenhuns", "nenhumas", "qual", "quais", "quanto", "quanta",
+            "quantos", "quantas", "que", "quem", "onde", "quando", "como",
+            # Preposições
+            "de", "em", "para", "por", "com", "sem", "sob", "sobre", "entre",
+            "até", "desde", "durante", "mediante", "perante", "contra", "através",
+            # Conjunções
+            "e", "ou", "mas", "porém", "todavia", "contudo", "portanto", "logo",
+            "pois", "porque", "se", "caso", "embora", "ainda", "já", "também",
+            # Verbos auxiliares e comuns
+            "ser", "estar", "ter", "haver", "fazer", "ir", "vir", "dar", "poder",
+            "dever", "querer", "saber", "foi", "é", "são", "era", "eram", "será",
+            "serão", "seja", "sejam", "fosse", "fossem", "for", "forem", "sou",
+            "está", "estão", "estava", "estavam", "estará", "estarão", "esteja",
+            "estejam", "estivesse", "estivessem", "estiver", "estiverem", "estou",
+            "tem", "têm", "tinha", "tinham", "terá", "terão", "tenha", "tenham",
+            "tivesse", "tivessem", "tiver", "tiverem", "tenho", "há", "havia",
+            "haverá", "haja", "hajam", "houvesse", "houvessem", "houver", "houverem",
+            # Advérbios comuns
+            "não", "sim", "mais", "menos", "bem", "mal",
+            "apenas", "só", "somente", "sempre", "nunca", "agora",
+            "então", "depois", "antes", "ontem", "hoje", "amanhã", "aqui", "aí",
+            "ali", "lá", "cá", "dentro", "fora", "acima", "abaixo", "atrás",
+            "adiante", "longe", "perto", "assim", "talvez",
+            # Palavras comuns
+            "coisa", "coisas", "vez", "vezes", "dia", "dias", "ano", "anos",
+            "tempo", "parte", "lugar", "pessoa", "pessoas", "homem", "mulher",
+            "momento", "forma", "jeito", "modo", "maneira", "caso", "vida",
         }
 
-        return english_stopwords | astro_stopwords
+        # Common astrological stopwords (bilingual)
+        astro_stopwords = {
+            # English
+            "degree", "degrees", "sign", "house", "planet", "aspect",
+            # Portuguese
+            "grau", "graus", "signo", "casa", "planeta", "aspecto",
+            "astrologia", "astrológico", "astrológica", "natal", "mapa",
+        }
+
+        return english_stopwords | portuguese_stopwords | astro_stopwords
 
     def tokenize(self, text: str) -> list[str]:
         """

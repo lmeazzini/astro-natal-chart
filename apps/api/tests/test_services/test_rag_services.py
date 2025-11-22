@@ -34,6 +34,28 @@ class TestBM25Service:
         # Check all lowercase
         assert all(token.islower() for token in tokens)
 
+    def test_tokenize_portuguese(self):
+        """Test text tokenization with Portuguese stopwords."""
+        service = BM25Service()
+        text = "O Sol está em Áries no grau 15 da casa"
+        tokens = service.tokenize(text)
+
+        # Check Portuguese stopwords are removed
+        assert "o" not in tokens
+        assert "está" not in tokens
+        assert "em" not in tokens
+        assert "no" not in tokens
+        assert "da" not in tokens
+        assert "casa" not in tokens  # astrological stopword
+        assert "grau" not in tokens  # astrological stopword
+
+        # Check content words remain
+        assert "sol" in tokens
+        assert "áries" in tokens
+
+        # Check all lowercase
+        assert all(token.islower() for token in tokens)
+
     def test_build_index(self):
         """Test building BM25 index."""
         service = BM25Service()

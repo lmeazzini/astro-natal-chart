@@ -8,7 +8,7 @@ Tests cover:
 - Result parsing and normalization
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
@@ -529,9 +529,10 @@ class TestGetCoordinates:
         ) as mock_search:
             mock_search.return_value = [mock_result]
 
-            result = await service.get_coordinates("Paris")
+            coords = await service.get_coordinates("Paris")
 
             mock_search.assert_called_once_with("Paris", limit=1)
+            assert coords is not None
 
     @pytest.mark.asyncio
     async def test_get_coordinates_not_found(self):

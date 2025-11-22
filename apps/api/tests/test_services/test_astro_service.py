@@ -13,10 +13,8 @@ Tests cover:
 """
 
 from datetime import datetime
-from typing import Any
 
-import pytest
-
+from app.schemas.chart import PlanetPosition
 from app.services.astro_service import (
     ASPECTS,
     HOUSE_SYSTEMS,
@@ -34,7 +32,6 @@ from app.services.astro_service import (
     get_sign_and_position,
     is_aspect_applying,
 )
-from app.schemas.chart import PlanetPosition
 
 
 class TestConstants:
@@ -441,15 +438,10 @@ class TestCalculateSect:
 
     def test_sect_at_sunset(self):
         """Test sect calculation at sunset (Sun at DSC)."""
-        # DSC is ASC + 180 = 280, so Sun at DSC (280) is on the horizon
-        # Sun just below horizon should be nocturnal
-        # ASC=100, DSC=280, Sun at 285 is just past DSC (below horizon)
-        sect = calculate_sect(ascendant=100.0, sun_longitude=285.0)
-        # Actually let's understand the logic: Sun above horizon (day) is between ASC and DSC
-        # Sun at 280 when ASC=100 and DSC=280 is right at the edge
         # For a clear nocturnal chart, Sun should be clearly below horizon
-        sect2 = calculate_sect(ascendant=100.0, sun_longitude=50.0)  # Sun clearly below
-        assert sect2 == "nocturnal"
+        # ASC=100, DSC=280, Sun at 50 is clearly in the lower hemisphere
+        sect = calculate_sect(ascendant=100.0, sun_longitude=50.0)
+        assert sect == "nocturnal"
 
 
 class TestGetHouseForPosition:
@@ -523,7 +515,6 @@ class TestCalculateArabicParts:
 
     def test_part_of_spirit(self):
         """Test Part of Spirit calculation."""
-        planets = []
         house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
                        180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
 

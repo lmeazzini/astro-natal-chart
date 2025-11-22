@@ -9,8 +9,6 @@ Tests cover:
 - Dignity validation
 """
 
-from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -105,7 +103,7 @@ class TestInterpretationServiceInit:
         """Test that initialization creates OpenAI client."""
         with patch("app.services.interpretation_service.AsyncOpenAI") as mock_class:
             with patch.object(InterpretationService, "_load_prompts", return_value={}):
-                service = InterpretationService(mock_db)
+                InterpretationService(mock_db)
                 mock_class.assert_called_once()
 
     def test_init_loads_prompts(self, mock_db):
@@ -114,7 +112,7 @@ class TestInterpretationServiceInit:
             with patch.object(
                 InterpretationService, "_load_prompts", return_value={"test": "prompt"}
             ) as mock_load:
-                service = InterpretationService(mock_db)
+                InterpretationService(mock_db)
                 mock_load.assert_called_once()
 
 
@@ -124,13 +122,6 @@ class TestLoadPrompts:
     def test_load_prompts_returns_dict(self, mock_db):
         """Test that _load_prompts returns a dictionary."""
         with patch("app.services.interpretation_service.AsyncOpenAI"):
-            # Create a mock YAML file content
-            mock_yaml_content = """
-version: "1.0"
-system_prompt: "Test prompt"
-planet_prompts:
-  base: "Test planet"
-"""
             with patch("builtins.open", MagicMock()):
                 with patch("yaml.safe_load", return_value={"version": "1.0"}):
                     service = InterpretationService(mock_db)

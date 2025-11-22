@@ -370,6 +370,145 @@ def calculate_sect(ascendant: float, sun_longitude: float) -> str:
     return "diurnal" if is_day_chart else "nocturnal"
 
 
+def get_house_for_position(longitude: float, house_cusps: list[float]) -> int:
+    """
+    Determine which house a given position falls into.
+
+    Args:
+        longitude: Ecliptic longitude (0-360)
+        house_cusps: List of 12 house cusp longitudes
+
+    Returns:
+        House number (1-12)
+    """
+    lon = longitude % 360
+
+    for i in range(len(house_cusps)):
+        cusp = house_cusps[i]
+        next_cusp = house_cusps[(i + 1) % 12]
+
+        if cusp < next_cusp:
+            # Normal case
+            if cusp <= lon < next_cusp:
+                return i + 1
+        else:
+            # Wrapped case (crosses 0° Aries)
+            if lon >= cusp or lon < next_cusp:
+                return i + 1
+
+    return 1  # Fallback to first house
+
+
+def calculate_arabic_parts(
+    ascendant: float,
+    sun_longitude: float,
+    moon_longitude: float,
+    planets: list[PlanetPosition],
+    house_cusps: list[float],
+    sect: str,
+) -> dict[str, Any]:
+    """
+    Calculate Arabic Parts (Lots) according to Hellenistic tradition.
+
+    Formula: Part = Ascendant + Planet1 - Planet2 (all modulo 360)
+    Formulas differ between diurnal and nocturnal charts.
+
+    Args:
+        ascendant: Ascendant degree (0-360)
+        sun_longitude: Sun's ecliptic longitude (0-360)
+        moon_longitude: Moon's ecliptic longitude (0-360)
+        planets: List of planet positions
+        house_cusps: List of house cusp longitudes
+        sect: "diurnal" or "nocturnal"
+
+    Returns:
+        Dictionary with calculated Arabic Parts
+    """
+    is_diurnal = sect == "diurnal"
+
+    # Helper to get planet longitude
+    def get_planet_long(name: str) -> float:
+        for planet in planets:
+            if planet.name == name:
+                return planet.longitude
+        return 0.0
+
+    # Helper to get sign from longitude
+    def get_sign(lon: float) -> str:
+        sign_index = int((lon % 360) // 30)
+        return SIGNS[sign_index]
+
+    parts = {}
+
+    # 1. Part of Fortune (Lote da Fortuna)
+    # Most important Arabic Part - body, health, material wealth
+    # Diurnal: Asc + Moon - Sun
+    # Nocturnal: Asc + Sun - Moon
+    if is_diurnal:
+        fortune_lon = (ascendant + moon_longitude - sun_longitude) % 360
+    else:
+        fortune_lon = (ascendant + sun_longitude - moon_longitude) % 360
+
+    parts["fortune"] = {
+        "longitude": fortune_lon,
+        "sign": get_sign(fortune_lon),
+        "degree": fortune_lon % 30,
+        "house": get_house_for_position(fortune_lon, house_cusps),
+    }
+
+    # 2. Part of Spirit (Lote do Espírito)
+    # Mind, action, initiative - inverse of Fortune
+    # Diurnal: Asc + Sun - Moon
+    # Nocturnal: Asc + Moon - Sun
+    if is_diurnal:
+        spirit_lon = (ascendant + sun_longitude - moon_longitude) % 360
+    else:
+        spirit_lon = (ascendant + moon_longitude - sun_longitude) % 360
+
+    parts["spirit"] = {
+        "longitude": spirit_lon,
+        "sign": get_sign(spirit_lon),
+        "degree": spirit_lon % 30,
+        "house": get_house_for_position(spirit_lon, house_cusps),
+    }
+
+    # 3. Part of Eros (Lote de Eros)
+    # Love, desire, passion
+    # Diurnal: Asc + Venus - Spirit
+    # Nocturnal: Asc + Spirit - Venus
+    venus_lon = get_planet_long("Venus")
+    if is_diurnal:
+        eros_lon = (ascendant + venus_lon - spirit_lon) % 360
+    else:
+        eros_lon = (ascendant + spirit_lon - venus_lon) % 360
+
+    parts["eros"] = {
+        "longitude": eros_lon,
+        "sign": get_sign(eros_lon),
+        "degree": eros_lon % 30,
+        "house": get_house_for_position(eros_lon, house_cusps),
+    }
+
+    # 4. Part of Necessity (Lote da Necessidade)
+    # Restrictions, karma, destiny
+    # Diurnal: Asc + Fortune - Mercury
+    # Nocturnal: Asc + Mercury - Fortune
+    mercury_lon = get_planet_long("Mercury")
+    if is_diurnal:
+        necessity_lon = (ascendant + fortune_lon - mercury_lon) % 360
+    else:
+        necessity_lon = (ascendant + mercury_lon - fortune_lon) % 360
+
+    parts["necessity"] = {
+        "longitude": necessity_lon,
+        "sign": get_sign(necessity_lon),
+        "degree": necessity_lon % 30,
+        "house": get_house_for_position(necessity_lon, house_cusps),
+    }
+
+    return parts
+
+
 def calculate_birth_chart(
     birth_datetime: datetime,
     timezone: str,
@@ -464,6 +603,16 @@ def calculate_birth_chart(
         lord_of_nativity_sign=lord_of_nativity_sign,
     )
 
+    # Calculate Arabic Parts (Lots)
+    arabic_parts = calculate_arabic_parts(
+        ascendant=ascendant,
+        sun_longitude=sun_longitude,
+        moon_longitude=moon_longitude,
+        planets=planets,
+        house_cusps=house_cusps,
+        sect=sect,
+    )
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -475,5 +624,6 @@ def calculate_birth_chart(
         "solar_phase": solar_phase,
         "lord_of_nativity": lord_of_nativity,
         "temperament": temperament,
+        "arabic_parts": arabic_parts,
         "calculation_timestamp": datetime.utcnow().isoformat(),
     }

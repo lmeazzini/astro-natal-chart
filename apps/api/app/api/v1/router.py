@@ -5,9 +5,12 @@ API v1 router - aggregates all v1 endpoints.
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    admin,
     auth,
+    cache,
     charts,
     geocoding,
+    github,
     interpretations,
     oauth,
     password_reset,
@@ -68,4 +71,24 @@ api_router.include_router(
 api_router.include_router(
     privacy.router,
     tags=["privacy"],
+)
+
+# Admin endpoints (restricted)
+api_router.include_router(
+    admin.router,
+    tags=["admin"],
+)
+
+# Cache management endpoints
+api_router.include_router(
+    cache.router,
+    prefix="/cache",
+    tags=["cache"],
+)
+
+# GitHub API endpoints
+api_router.include_router(
+    github.router,
+    prefix="/github",
+    tags=["github"],
 )

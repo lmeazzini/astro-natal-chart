@@ -2,6 +2,7 @@
  * Temperament Display component - shows dominant temperament based on 5 traditional factors
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -101,11 +102,25 @@ function QualityBar({ quality, value, maxValue }: QualityBarProps) {
 }
 
 export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
+
   const colorClass = temperamentColors[temperament.dominant] ||
     'from-gray-500/10 to-gray-500/10 border-gray-500/20';
 
   // Max value is 10 (5 factors x 2 qualities each)
   const maxQualityValue = 10;
+
+  // Translated quality labels
+  const getQualityLabel = (quality: string) => {
+    const labels: Record<string, string> = {
+      hot: t('components.temperament.hot', { defaultValue: 'Quente' }),
+      cold: t('components.temperament.cold', { defaultValue: 'Frio' }),
+      wet: t('components.temperament.wet', { defaultValue: 'Úmido' }),
+      dry: t('components.temperament.dry', { defaultValue: 'Seco' }),
+    };
+    return labels[quality] || quality;
+  };
 
   return (
     <Card className={`bg-gradient-to-br ${colorClass}`}>
@@ -116,10 +131,10 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
           </span>
           <div className="flex-1">
             <div className="text-lg font-semibold text-foreground">
-              Temperamento: {temperament.dominant_pt}
+              {t('components.temperament.title', { defaultValue: 'Temperamento' })}: {isEn ? temperament.dominant : temperament.dominant_pt}
             </div>
             <div className="text-xs text-muted-foreground font-normal mt-1">
-              Elemento {temperament.element_pt} • Baseado em 5 fatores tradicionais
+              {t('components.temperament.element', { defaultValue: 'Elemento' })} {isEn ? temperament.element : temperament.element_pt} • {t('components.temperament.basedOn', { defaultValue: 'Baseado em 5 fatores tradicionais' })}
             </div>
           </div>
         </CardTitle>
@@ -128,7 +143,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Quality Scores */}
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-            Pontuação de Qualidades
+            {t('components.temperament.qualityScores', { defaultValue: 'Pontuação de Qualidades' })}
           </p>
           <div className="space-y-3">
             <QualityBar quality="hot" value={temperament.scores.hot} maxValue={maxQualityValue} />
@@ -141,7 +156,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Factors Breakdown */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-            Fatores Contribuintes
+            {t('components.temperament.contributingFactors', { defaultValue: 'Fatores Contribuintes' })}
           </p>
           <div className="space-y-2">
             {temperament.factors.map((factor, index) => (
@@ -151,10 +166,10 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
               >
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-semibold text-foreground">
-                    {factor.factor_pt}
+                    {isEn ? factor.factor : factor.factor_pt}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {factor.value_pt || factor.value}
+                    {isEn ? factor.value : (factor.value_pt || factor.value)}
                   </p>
                 </div>
                 <div className="flex gap-1 ml-2">
@@ -163,7 +178,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
                       key={qIndex}
                       variant="secondary"
                       className="text-xs px-2"
-                      title={qualityLabels[qual]}
+                      title={getQualityLabel(qual)}
                     >
                       {qualityIcons[qual]}
                     </Badge>
@@ -177,7 +192,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Description */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-            Interpretação
+            {t('components.temperament.interpretation', { defaultValue: 'Interpretação' })}
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {temperament.description}
@@ -187,9 +202,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            ⚖️ O temperamento é determinado pela soma das qualidades elementares (Quente, Frio,
-            Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante
-            Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.
+            ⚖️ {t('components.temperament.note', { defaultValue: 'O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.' })}
           </p>
         </div>
       </CardContent>

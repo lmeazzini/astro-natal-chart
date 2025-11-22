@@ -9,17 +9,42 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.i18n import translate as _
+from app.core.i18n.messages import AuthMessages
 from app.core.security import (
     create_access_token,
     create_email_verification_token,
     get_password_hash,
     verify_password,
 )
+from app.models.enums import UserRole
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
 from app.repositories.user_repository import OAuthAccountRepository, UserRepository
 from app.schemas.auth import Token
 from app.schemas.user import UserCreate
+
+# Domain for admin auto-assignment
+ADMIN_EMAIL_DOMAIN = "@realastrology.ai"
+
+
+def determine_user_role(email: str) -> UserRole:
+    """
+    Determine user role based on email.
+
+    Rules:
+    - Emails ending with @realastrology.ai → ADMIN
+    - All other emails → GERAL
+
+    Args:
+        email: User email address
+
+    Returns:
+        UserRole enum value
+    """
+    if email.lower().endswith(ADMIN_EMAIL_DOMAIN):
+        return UserRole.ADMIN
+    return UserRole.GERAL
 
 
 class AuthenticationError(Exception):
@@ -59,7 +84,10 @@ async def register_user(
 
     # Check if user already exists
     if await user_repo.email_exists(user_data.email):
-        raise UserAlreadyExistsError(f"User with email {user_data.email} already exists")
+        raise UserAlreadyExistsError(_(AuthMessages.USER_ALREADY_EXISTS, email=user_data.email))
+
+    # Determine user role based on email
+    user_role = determine_user_role(user_data.email)
 
     # Create new user
     user = User(
@@ -71,7 +99,8 @@ async def register_user(
         timezone=settings.DEFAULT_TIMEZONE,
         email_verified=False,
         is_active=True,
-        is_superuser=False,
+        is_superuser=user_role == UserRole.ADMIN,  # Sync with role
+        role=user_role.value,
     )
 
     created_user = await user_repo.create(user)
@@ -165,15 +194,15 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
     user = await user_repo.get_by_email(email)
 
     if not user:
-        raise AuthenticationError("Invalid email or password")
+        raise AuthenticationError(_(AuthMessages.INVALID_CREDENTIALS))
 
     # Verify password
     if not user.password_hash or not verify_password(password, user.password_hash):
-        raise AuthenticationError("Invalid email or password")
+        raise AuthenticationError(_(AuthMessages.INVALID_CREDENTIALS))
 
     # Check if user is active
     if not user.is_active:
-        raise AuthenticationError("User account is inactive")
+        raise AuthenticationError(_(AuthMessages.USER_INACTIVE))
 
     return user
 
@@ -241,7 +270,7 @@ async def refresh_access_token(db: AsyncSession, user_id: UUID) -> Token:
     user = await user_repo.get_active_user_by_id(user_id)
 
     if not user:
-        raise AuthenticationError("User not found or inactive")
+        raise AuthenticationError(_(AuthMessages.USER_NOT_FOUND))
 
     # Generate new access token
     access_token = create_access_token(
@@ -311,6 +340,9 @@ async def create_or_update_oauth_user(
         await user_repo.update(existing_user)
         return existing_user, False
 
+    # Determine user role based on email
+    user_role = determine_user_role(email)
+
     # Create new user with OAuth account
     user = User(
         id=uuid4(),
@@ -321,9 +353,17 @@ async def create_or_update_oauth_user(
         timezone=settings.DEFAULT_TIMEZONE,
         email_verified=True,  # Verified by OAuth provider
         is_active=True,
-        is_superuser=False,
+        is_superuser=user_role == UserRole.ADMIN,  # Sync with role
+        role=user_role.value,
     )
     await user_repo.create(user)
+
+    # Log admin user creation
+    if user.is_admin:
+        logger.info(
+            "Admin user created via OAuth",
+            extra={"user_id": str(user.id), "email": email, "provider": provider}
+        )
 
     # Create OAuth account
     oauth_account = OAuthAccount(
@@ -387,12 +427,12 @@ async def verify_email(db: AsyncSession, token: str) -> User:
     payload = verify_email_verification_token(token)
 
     if not payload:
-        raise AuthenticationError("Invalid or expired verification token")
+        raise AuthenticationError(_(AuthMessages.INVALID_VERIFICATION_TOKEN))
 
     # Extract user_id from token
     user_id_str = payload.get("sub")
     if not user_id_str:
-        raise AuthenticationError("Invalid token payload")
+        raise AuthenticationError(_(AuthMessages.INVALID_TOKEN_PAYLOAD))
 
     user_id = UUID(user_id_str)
     user_repo = UserRepository(db)
@@ -400,7 +440,7 @@ async def verify_email(db: AsyncSession, token: str) -> User:
     # Get user
     user = await user_repo.get_by_id(user_id)
     if not user:
-        raise AuthenticationError("User not found")
+        raise AuthenticationError(_(AuthMessages.USER_NOT_FOUND))
 
     # Check if already verified
     if user.email_verified:
@@ -446,7 +486,7 @@ async def resend_verification_email(db: AsyncSession, user: User) -> None:
 
     # Check if already verified
     if user.email_verified:
-        raise AuthenticationError("Email already verified")
+        raise AuthenticationError(_(AuthMessages.EMAIL_ALREADY_VERIFIED))
 
     # Generate new verification token
     token = create_email_verification_token(user.email, str(user.id))
@@ -463,4 +503,4 @@ async def resend_verification_email(db: AsyncSession, user: User) -> None:
     )
 
     if not success:
-        raise AuthenticationError("Failed to send verification email")
+        raise AuthenticationError(_(AuthMessages.VERIFICATION_FAILED))

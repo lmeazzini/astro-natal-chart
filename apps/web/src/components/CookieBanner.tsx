@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 
@@ -22,6 +23,7 @@ interface CookiePreferences {
 const COOKIE_CONSENT_KEY = 'astro_cookie_consent';
 
 export function CookieBanner() {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -121,19 +123,18 @@ export function CookieBanner() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-foreground mb-1">
-                  🍪 Este site usa cookies
+                  🍪 {t('components.cookies.title', { defaultValue: 'Este site usa cookies' })}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Usamos cookies essenciais, funcionais e analíticos para melhorar
-                  sua experiência. Consulte nossa{' '}
+                  {t('components.cookies.description', { defaultValue: 'Usamos cookies essenciais, funcionais e analíticos para melhorar sua experiência. Consulte nossa' })}{' '}
                   <Link
                     to="/cookies"
                     className="text-primary hover:underline"
                     target="_blank"
                   >
-                    Política de Cookies
+                    {t('components.cookies.policyLink', { defaultValue: 'Política de Cookies' })}
                   </Link>{' '}
-                  para mais detalhes.
+                  {t('components.cookies.forMoreDetails', { defaultValue: 'para mais detalhes.' })}
                 </p>
               </div>
 
@@ -143,20 +144,20 @@ export function CookieBanner() {
                   size="sm"
                   onClick={() => setShowDetails(true)}
                 >
-                  Personalizar
+                  {t('components.cookies.customize', { defaultValue: 'Personalizar' })}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleAcceptEssentialOnly}
                 >
-                  Apenas Essenciais
+                  {t('components.cookies.essentialOnly', { defaultValue: 'Apenas Essenciais' })}
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleAcceptAll}
                 >
-                  Aceitar Todos
+                  {t('components.cookies.acceptAll', { defaultValue: 'Aceitar Todos' })}
                 </Button>
               </div>
             </div>
@@ -165,7 +166,7 @@ export function CookieBanner() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">
-                  Preferências de Cookies
+                  {t('components.cookies.preferencesTitle', { defaultValue: 'Preferências de Cookies' })}
                 </h3>
                 <Button
                   variant="ghost"
@@ -183,14 +184,14 @@ export function CookieBanner() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="text-xs font-semibold text-foreground">
-                        Cookies Essenciais
+                        {t('components.cookies.essential', { defaultValue: 'Cookies Essenciais' })}
                       </h4>
                       <Badge variant="secondary" className="h-5">
-                        Obrigatório
+                        {t('components.cookies.required', { defaultValue: 'Obrigatório' })}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Necessários para autenticação e funcionamento básico do site
+                      {t('components.cookies.essentialDesc', { defaultValue: 'Necessários para autenticação e funcionamento básico do site' })}
                     </p>
                   </div>
                   <Checkbox
@@ -204,10 +205,10 @@ export function CookieBanner() {
                 <div className="flex items-start justify-between p-3 bg-background rounded-md border border-border">
                   <div className="flex-1">
                     <h4 className="text-xs font-semibold text-foreground">
-                      Cookies Funcionais
+                      {t('components.cookies.functional', { defaultValue: 'Cookies Funcionais' })}
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Lembrar preferências (tema, idioma, fuso horário)
+                      {t('components.cookies.functionalDesc', { defaultValue: 'Lembrar preferências (tema, idioma, fuso horário)' })}
                     </p>
                   </div>
                   <Checkbox
@@ -226,10 +227,10 @@ export function CookieBanner() {
                 <div className="flex items-start justify-between p-3 bg-background rounded-md border border-border">
                   <div className="flex-1">
                     <h4 className="text-xs font-semibold text-foreground">
-                      Cookies Analíticos
+                      {t('components.cookies.analytics', { defaultValue: 'Cookies Analíticos' })}
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Google Analytics (anonimizado) - entender uso do site
+                      {t('components.cookies.analyticsDesc', { defaultValue: 'Google Analytics (anonimizado) - entender uso do site' })}
                     </p>
                   </div>
                   <Checkbox
@@ -251,7 +252,7 @@ export function CookieBanner() {
                   className="flex-1"
                   onClick={handleSavePreferences}
                 >
-                  Salvar Preferências
+                  {t('components.cookies.savePreferences', { defaultValue: 'Salvar Preferências' })}
                 </Button>
                 <Button
                   size="sm"
@@ -259,13 +260,12 @@ export function CookieBanner() {
                   className="flex-1"
                   onClick={handleAcceptAll}
                 >
-                  Aceitar Todos
+                  {t('components.cookies.acceptAll', { defaultValue: 'Aceitar Todos' })}
                 </Button>
               </div>
 
               <p className="mt-3 text-xs text-center text-muted-foreground">
-                Você pode alterar suas preferências a qualquer momento em
-                Configurações → Privacidade
+                {t('components.cookies.changePreferencesNote', { defaultValue: 'Você pode alterar suas preferências a qualquer momento em Configurações → Privacidade' })}
               </p>
             </div>
           )}

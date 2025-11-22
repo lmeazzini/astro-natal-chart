@@ -1,0 +1,62 @@
+{
+  "auth": {
+    "user_already_exists": "User with email {email} already exists",
+    "invalid_credentials": "Invalid email or password",
+    "user_not_found": "User not found",
+    "user_inactive": "User account is inactive",
+    "invalid_token": "Invalid or expired authentication token",
+    "invalid_token_type": "Invalid token type",
+    "invalid_token_payload": "Invalid token payload",
+    "token_expired": "Token expired",
+    "token_invalidated": "Token invalidated due to password change",
+    "email_already_verified": "Email already verified",
+    "verification_sent": "Verification email sent successfully",
+    "verification_failed": "Failed to send verification email",
+    "invalid_verification_token": "Invalid or expired verification token",
+    "not_enough_privileges": "Not enough privileges"
+  },
+  "password": {
+    "reset_email_sent": "If the email exists, you will receive recovery instructions",
+    "invalid_reset_token": "Invalid or expired reset token",
+    "password_changed": "Password changed successfully",
+    "too_short": "Password must be at least 8 characters",
+    "missing_uppercase": "Password must contain at least one uppercase letter",
+    "missing_lowercase": "Password must contain at least one lowercase letter",
+    "missing_digit": "Password must contain at least one number",
+    "missing_special": "Password must contain at least one special character",
+    "passwords_dont_match": "Passwords do not match"
+  },
+  "validation": {
+    "required_field": "Required field",
+    "invalid_email": "Invalid email",
+    "must_accept_terms": "You must accept the terms of service and privacy policy",
+    "invalid_date": "Invalid date",
+    "invalid_time": "Invalid time",
+    "invalid_location": "Invalid location"
+  },
+  "chart": {
+    "not_found": "Birth chart not found",
+    "created": "Birth chart created successfully",
+    "updated": "Birth chart updated successfully",
+    "deleted": "Birth chart deleted successfully",
+    "calculation_error": "Error calculating birth chart",
+    "pdf_generating": "PDF is being generated. Please wait.",
+    "pdf_ready": "PDF ready for download",
+    "pdf_failed": "Failed to generate PDF"
+  },
+  "user": {
+    "profile_updated": "Profile updated successfully",
+    "avatar_uploaded": "Avatar uploaded successfully",
+    "account_deleted": "Account scheduled for deletion",
+    "deletion_cancelled": "Account deletion cancelled",
+    "data_exported": "Data exported successfully"
+  },
+  "common": {
+    "internal_error": "Internal server error",
+    "not_found": "Resource not found",
+    "forbidden": "Access denied",
+    "bad_request": "Invalid request",
+    "success": "Operation completed successfully",
+    "rate_limit_exceeded": "Rate limit exceeded. Please try again in a few minutes."
+  }
+}

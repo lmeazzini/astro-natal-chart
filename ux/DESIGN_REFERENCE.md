@@ -1272,6 +1272,3 @@ Before shipping any new screen:
 **Last Updated**: November 2025
 **Version**: 2.0 (Updated with shadcn/ui integration)
 **Maintained By**: Astro Development Team
-
-**Related Issues**:
-- #44 — Migrar para shadcn/ui como biblioteca de componentes

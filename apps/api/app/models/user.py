@@ -12,6 +12,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.models.enums import UserRole
 
 
 class UserType(str, Enum):
@@ -45,6 +46,14 @@ class User(Base):
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Role-based access control
+    role: Mapped[str] = mapped_column(
+        String(20),
+        default=UserRole.GERAL.value,
+        nullable=False,
+        index=True,
+    )
 
     # Profile fields
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -114,6 +123,19 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User {self.email}>"
+
+    @property
+    def is_admin(self) -> bool:
+        """Check if user has admin role."""
+        return self.role == UserRole.ADMIN.value or self.is_superuser
+
+    @property
+    def user_role(self) -> UserRole:
+        """Get user role as enum."""
+        try:
+            return UserRole(self.role)
+        except ValueError:
+            return UserRole.GERAL
 
 
 class OAuthAccount(Base):

@@ -2,6 +2,7 @@
  * House Table component - displays all 12 houses with their cusps
  */
 
+import { useTranslation } from 'react-i18next';
 import { getSignSymbol, formatDMS, isAngularHouse, getHouseType } from '../utils/astro';
 
 // shadcn/ui components
@@ -29,16 +30,28 @@ export function HouseTable({
   houses,
   interpretations,
 }: HouseTableProps) {
+  const { t } = useTranslation();
+
+  // Translation function for house types
+  const getHouseTypeTranslated = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'Angular': t('components.houseTable.angular', { defaultValue: 'Angular' }),
+      'Succedent': t('components.houseTable.succedent', { defaultValue: 'Sucedente' }),
+      'Cadent': t('components.houseTable.cadent', { defaultValue: 'Cadente' }),
+    };
+    return typeMap[type] || type;
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Casa</TableHead>
-              <TableHead>Signo na Cúspide</TableHead>
-              <TableHead>Posição</TableHead>
-              <TableHead className="text-center">Tipo</TableHead>
+              <TableHead>{t('components.houseTable.house', { defaultValue: 'Casa' })}</TableHead>
+              <TableHead>{t('components.houseTable.signOnCusp', { defaultValue: 'Signo na Cúspide' })}</TableHead>
+              <TableHead>{t('components.houseTable.position', { defaultValue: 'Posição' })}</TableHead>
+              <TableHead className="text-center">{t('components.houseTable.type', { defaultValue: 'Tipo' })}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,7 +109,7 @@ export function HouseTable({
                           : 'outline'
                       }
                     >
-                      {houseType}
+                      {getHouseTypeTranslated(houseType)}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -109,20 +122,20 @@ export function HouseTable({
       {/* Legend */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Tipos de Casas</CardTitle>
+          <CardTitle className="text-sm">{t('components.houseTable.houseTypes', { defaultValue: 'Tipos de Casas' })}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
-            <Badge>Angular</Badge>
-            <span className="text-muted-foreground">(1, 4, 7, 10) - Casas de ação e iniciativa</span>
+            <Badge>{t('components.houseTable.angular', { defaultValue: 'Angular' })}</Badge>
+            <span className="text-muted-foreground">(1, 4, 7, 10) - {t('components.houseTable.angularDesc', { defaultValue: 'Casas de ação e iniciativa' })}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">Succedent</Badge>
-            <span className="text-muted-foreground">(2, 5, 8, 11) - Casas de recursos e valores</span>
+            <Badge variant="secondary">{t('components.houseTable.succedent', { defaultValue: 'Sucedente' })}</Badge>
+            <span className="text-muted-foreground">(2, 5, 8, 11) - {t('components.houseTable.succedentDesc', { defaultValue: 'Casas de recursos e valores' })}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">Cadent</Badge>
-            <span className="text-muted-foreground">(3, 6, 9, 12) - Casas de aprendizado e adaptação</span>
+            <Badge variant="outline">{t('components.houseTable.cadent', { defaultValue: 'Cadente' })}</Badge>
+            <span className="text-muted-foreground">(3, 6, 9, 12) - {t('components.houseTable.cadentDesc', { defaultValue: 'Casas de aprendizado e adaptação' })}</span>
           </div>
         </CardContent>
       </Card>
@@ -131,7 +144,7 @@ export function HouseTable({
       {interpretations && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-foreground">
-            Interpretações Astrológicas
+            {t('components.houseTable.astrologicalInterpretations', { defaultValue: 'Interpretações Astrológicas' })}
           </h3>
 
           <div className="space-y-4">
@@ -146,7 +159,7 @@ export function HouseTable({
                       <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
                         {houseNum}
                       </span>
-                      Casa {houseNum}
+                      {t('components.houseTable.houseNumber', { defaultValue: 'Casa {{num}}', num: houseNum })}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -159,7 +172,7 @@ export function HouseTable({
             })}
             {Object.keys(interpretations).length === 0 && (
               <p className="text-center text-muted-foreground py-8">
-                Nenhuma interpretação disponível
+                {t('components.houseTable.noInterpretations', { defaultValue: 'Nenhuma interpretação disponível' })}
               </p>
             )}
           </div>
@@ -167,9 +180,7 @@ export function HouseTable({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>Sobre as interpretações:</strong> Geradas por IA baseando-se em
-              princípios de astrologia tradicional. Interpretações consideram o signo na cúspide
-              e significado de cada casa.
+              <strong>{t('components.houseTable.aboutInterpretations', { defaultValue: 'Sobre as interpretações' })}:</strong> {t('components.houseTable.interpretationsDesc', { defaultValue: 'Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram o signo na cúspide e significado de cada casa.' })}
             </AlertDescription>
           </Alert>
         </div>

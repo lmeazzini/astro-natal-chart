@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, Mail, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface EmailVerificationBannerProps {
 }
 
 export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerProps) {
+  const { t } = useTranslation();
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendError, setResendError] = useState('');
@@ -31,7 +33,7 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
 
       const token = localStorage.getItem('astro_access_token');
       if (!token) {
-        throw new Error('Você precisa estar autenticado');
+        throw new Error(t('components.emailVerification.needAuth', { defaultValue: 'Você precisa estar autenticado' }));
       }
 
       const response = await fetch(`${API_URL}/api/v1/auth/resend-verification`, {
@@ -44,7 +46,7 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Falha ao reenviar email');
+        throw new Error(error.detail || t('components.emailVerification.resendFailed', { defaultValue: 'Falha ao reenviar email' }));
       }
 
       setResendSuccess(true);
@@ -57,7 +59,7 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
       if (error instanceof Error) {
         setResendError(error.message);
       } else {
-        setResendError('Erro ao reenviar email. Tente novamente mais tarde.');
+        setResendError(t('components.emailVerification.genericError', { defaultValue: 'Erro ao reenviar email. Tente novamente mais tarde.' }));
       }
     } finally {
       setIsResending(false);
@@ -77,18 +79,18 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
             <span className="font-medium text-yellow-900 dark:text-yellow-100">
-              Email não verificado
+              {t('components.emailVerification.title', { defaultValue: 'Email não verificado' })}
             </span>
           </div>
           <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
-            Verifique seu email para ter acesso completo à plataforma.
-            Não recebeu o email?{' '}
+            {t('components.emailVerification.message', { defaultValue: 'Verifique seu email para ter acesso completo à plataforma.' })}{' '}
+            {t('components.emailVerification.didntReceive', { defaultValue: 'Não recebeu o email?' })}{' '}
             <button
               onClick={handleResendEmail}
               disabled={isResending || resendSuccess}
               className="font-medium underline hover:no-underline disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isResending ? 'Enviando...' : resendSuccess ? 'Email enviado!' : 'Reenviar'}
+              {isResending ? t('components.emailVerification.sending', { defaultValue: 'Enviando...' }) : resendSuccess ? t('components.emailVerification.sent', { defaultValue: 'Email enviado!' }) : t('components.emailVerification.resend', { defaultValue: 'Reenviar' })}
             </button>
           </p>
           {resendError && (
@@ -98,7 +100,7 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
           )}
           {resendSuccess && (
             <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-              Email de verificação enviado! Verifique sua caixa de entrada.
+              {t('components.emailVerification.success', { defaultValue: 'Email de verificação enviado! Verifique sua caixa de entrada.' })}
             </p>
           )}
         </div>
@@ -107,7 +109,7 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
           size="sm"
           onClick={handleDismiss}
           className="h-8 w-8 p-0 text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900"
-          aria-label="Dispensar"
+          aria-label={t('components.emailVerification.dismiss', { defaultValue: 'Dispensar' })}
         >
           <X className="h-4 w-4" />
         </Button>

@@ -2,7 +2,7 @@
 FastAPI dependencies for authentication and database access.
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -10,7 +10,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.i18n import translate as _
+from app.core.i18n.messages import AuthMessages
 from app.core.security import decode_token
+from app.models.enums import UserRole
 from app.models.user import User
 
 # HTTP Bearer security scheme
@@ -41,7 +44,7 @@ async def get_current_user(
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail=_(AuthMessages.INVALID_TOKEN),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -50,7 +53,7 @@ async def get_current_user(
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
+            detail=_(AuthMessages.INVALID_TOKEN_PAYLOAD),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -61,14 +64,14 @@ async def get_current_user(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail=_(AuthMessages.USER_NOT_FOUND),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user",
+            detail=_(AuthMessages.USER_INACTIVE),
         )
 
     # Check if token was issued before password change (JWT invalidation)
@@ -84,7 +87,7 @@ async def get_current_user(
             if token_issued_datetime < user.password_changed_at:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token invalidated due to password change",
+                    detail=_(AuthMessages.TOKEN_INVALIDATED),
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
@@ -124,6 +127,64 @@ async def get_current_superuser(
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough privileges",
+            detail=_(AuthMessages.NOT_ENOUGH_PRIVILEGES),
         )
     return current_user
+
+
+async def require_admin(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Require admin role for endpoint access.
+
+    Args:
+        current_user: Current user from get_current_user dependency
+
+    Returns:
+        User object
+
+    Raises:
+        HTTPException: If user does not have admin role
+    """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+    return current_user
+
+
+def require_role(required_role: UserRole) -> Any:
+    """
+    Factory that creates a dependency to check for a specific role.
+
+    Usage:
+        @router.get("/admin-only")
+        async def admin_endpoint(
+            user: User = Depends(require_role(UserRole.ADMIN))
+        ):
+            ...
+
+    Args:
+        required_role: Required UserRole
+
+    Returns:
+        Dependency function
+    """
+
+    async def _check_role(
+        current_user: Annotated[User, Depends(get_current_user)],
+    ) -> User:
+        # Admins can access any role-restricted endpoint
+        if current_user.is_admin:
+            return current_user
+
+        if current_user.user_role != required_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Role '{required_role.value}' required",
+            )
+        return current_user
+
+    return _check_role

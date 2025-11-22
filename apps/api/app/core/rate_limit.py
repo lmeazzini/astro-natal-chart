@@ -75,5 +75,8 @@ class RateLimits:
     PASSWORD_RESET_REQUEST = "3/hour"  # 3 reset requests per hour
     PASSWORD_RESET_CONFIRM = "5/hour"  # 5 reset confirmations per hour
 
+    # Admin endpoints (by user_id - admin only)
+    ADMIN_ROLE_UPDATE = "10/hour"  # 10 role updates per hour
+
     # Avatar Upload (by user_id - heavier operation)
     AVATAR_UPLOAD = "10/hour"  # 10 avatar uploads per hour

@@ -7,9 +7,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { oauthService, OAuthProvider } from '../services/oauth';
 import { Logo } from '../components/Logo';
+import { LanguageSelector } from '../components/LanguageSelector';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { Eye, EyeOff } from 'lucide-react';
 
 // shadcn/ui components
@@ -21,32 +24,39 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 
-// Complex password validation schema
-const registerFormSchema = z.object({
-  email: z.string()
-    .min(1, 'Email é obrigatório')
-    .email('Email inválido'),
-  fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  password: z.string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres')
-    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
-    .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
-    .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, 'Senha deve conter pelo menos um caractere especial'),
-  passwordConfirm: z.string().min(1, 'Confirmação de senha é obrigatória'),
-  acceptedTerms: z.boolean().refine((val) => val === true, {
-    message: 'Você deve aceitar os Termos de Uso e a Política de Privacidade',
-  }),
-}).refine((data) => data.password === data.passwordConfirm, {
-  message: 'As senhas não coincidem',
-  path: ['passwordConfirm'],
-});
-
-type RegisterFormValues = z.infer<typeof registerFormSchema>;
+type RegisterFormValues = {
+  email: string;
+  fullName: string;
+  password: string;
+  passwordConfirm: string;
+  acceptedTerms: boolean;
+};
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { t } = useTranslation();
+
+  // Complex password validation schema (inside component to access t())
+  const registerFormSchema = z.object({
+    email: z.string()
+      .min(1, t('validation.required'))
+      .email(t('validation.email')),
+    fullName: z.string().min(3, t('validation.minLength', { min: 3 })),
+    password: z.string()
+      .min(8, t('auth.register.passwordMinLength'))
+      .regex(/[A-Z]/, t('validation.passwordUppercase', { defaultValue: 'Senha deve conter pelo menos uma letra maiúscula' }))
+      .regex(/[a-z]/, t('validation.passwordLowercase', { defaultValue: 'Senha deve conter pelo menos uma letra minúscula' }))
+      .regex(/[0-9]/, t('validation.passwordNumber', { defaultValue: 'Senha deve conter pelo menos um número' }))
+      .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, t('validation.passwordSpecial', { defaultValue: 'Senha deve conter pelo menos um caractere especial' })),
+    passwordConfirm: z.string().min(1, t('validation.required')),
+    acceptedTerms: z.boolean().refine((val) => val === true, {
+      message: t('validation.acceptTerms', { defaultValue: 'Você deve aceitar os Termos de Uso e a Política de Privacidade' }),
+    }),
+  }).refine((data) => data.password === data.passwordConfirm, {
+    message: t('validation.passwordMismatch'),
+    path: ['passwordConfirm'],
+  });
 
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
@@ -99,7 +109,7 @@ export function RegisterPage() {
       navigate('/dashboard');
     } catch (error) {
       setGeneralError(
-        error instanceof Error ? error.message : 'Erro ao criar conta'
+        error instanceof Error ? error.message : t('auth.register.error')
       );
     } finally {
       setIsLoading(false);
@@ -107,7 +117,13 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 relative">
+      {/* Floating Controls */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <LanguageSelector />
+        <ThemeToggle />
+      </div>
+
       {/* Left Panel - Celestial Branding */}
       <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-secondary via-secondary/90 to-primary/80 text-primary-foreground p-12 relative overflow-hidden">
         {/* Decorative floating elements */}
@@ -119,33 +135,33 @@ export function RegisterPage() {
 
         {/* Content */}
         <div className="relative z-10 max-w-md text-center animate-fade-in">
-          <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
+          <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity" aria-label={t('common.back')}>
             <Logo size="xl" />
           </Link>
           <h1 className="text-h1 text-white mb-astro-md">
-            Inicie sua jornada astrológica
+            {t('auth.register.title')}
           </h1>
           <p className="text-body text-white/90 mb-astro-xl">
-            Crie sua conta e descubra insights profundos sobre seu mapa natal com cálculos astronômicos de precisão profissional.
+            {t('auth.register.subtitle')}
           </p>
           <div className="flex flex-col gap-3 text-white/80 text-sm text-left max-w-xs mx-auto">
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>Mapas natais ilimitados</span>
+              <span>{t('auth.register.features.unlimited', { defaultValue: 'Mapas natais ilimitados' })}</span>
             </div>
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>Visualização gráfica profissional</span>
+              <span>{t('auth.register.features.professional', { defaultValue: 'Visualização gráfica profissional' })}</span>
             </div>
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>100% gratuito e seguro</span>
+              <span>{t('auth.register.features.free', { defaultValue: '100% gratuito e seguro' })}</span>
             </div>
           </div>
         </div>
@@ -156,7 +172,7 @@ export function RegisterPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <Link to="/" className="inline-block mb-6 hover:opacity-80 transition-opacity" aria-label="Voltar para Página Inicial">
+            <Link to="/" className="inline-block mb-6 hover:opacity-80 transition-opacity" aria-label={t('common.back')}>
               <Logo size="lg" />
             </Link>
           </div>
@@ -164,9 +180,9 @@ export function RegisterPage() {
           {/* Form Card */}
           <Card className="border-0 shadow-lg">
           <CardHeader className="space-y-2">
-            <CardTitle className="text-h2 text-center">Criar Conta</CardTitle>
+            <CardTitle className="text-h2 text-center">{t('auth.register.title')}</CardTitle>
             <CardDescription className="text-center text-base">
-              Comece sua jornada astrológica hoje
+              {t('auth.register.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -184,11 +200,11 @@ export function RegisterPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('auth.register.email')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="seu.nome@example.com"
+                          placeholder={t('auth.register.email')}
                           autoComplete="email"
                           {...field}
                         />
@@ -204,11 +220,11 @@ export function RegisterPage() {
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
+                      <FormLabel>{t('auth.register.name')}</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
-                          placeholder="Seu Nome Completo"
+                          placeholder={t('auth.register.name')}
                           autoComplete="name"
                           {...field}
                         />
@@ -224,7 +240,7 @@ export function RegisterPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha</FormLabel>
+                      <FormLabel>{t('auth.register.password')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -237,7 +253,7 @@ export function RegisterPage() {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                            aria-label={showPassword ? t('common.hide') : t('common.show')}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -258,7 +274,7 @@ export function RegisterPage() {
                   name="passwordConfirm"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirmar Senha</FormLabel>
+                      <FormLabel>{t('auth.register.confirmPassword')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
@@ -271,7 +287,7 @@ export function RegisterPage() {
                             type="button"
                             onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            aria-label={showPasswordConfirm ? "Ocultar senha" : "Mostrar senha"}
+                            aria-label={showPasswordConfirm ? t('common.hide') : t('common.show')}
                           >
                             {showPasswordConfirm ? (
                               <EyeOff className="h-4 w-4" />
@@ -300,21 +316,21 @@ export function RegisterPage() {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
-                          Li e concordo com os{' '}
+                          {t('auth.register.agreeToTerms')}{' '}
                           <Link
                             to="/terms"
                             target="_blank"
                             className="text-primary hover:underline font-medium"
                           >
-                            Termos de Uso
+                            {t('auth.register.termsOfService')}
                           </Link>
-                          {' '}e a{' '}
+                          {' '}{t('common.and')}{' '}
                           <Link
                             to="/privacy"
                             target="_blank"
                             className="text-primary hover:underline font-medium"
                           >
-                            Política de Privacidade
+                            {t('auth.register.privacyPolicy')}
                           </Link>
                         </FormLabel>
                         <FormMessage />
@@ -329,7 +345,7 @@ export function RegisterPage() {
                   className="w-full"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Criando conta...' : 'Criar Conta'}
+                  {isLoading ? t('common.loading') : t('auth.register.submit')}
                 </Button>
               </form>
             </Form>
@@ -343,7 +359,7 @@ export function RegisterPage() {
                   </div>
                   <div className="relative flex justify-center text-sm font-medium">
                     <span className="bg-card px-4 text-muted-foreground">
-                      ou cadastre-se com
+                      {t('auth.register.orContinueWith')}
                     </span>
                   </div>
                 </div>
@@ -398,12 +414,12 @@ export function RegisterPage() {
           {/* Login Link */}
           <CardFooter className="flex-col space-y-4">
             <p className="w-full text-center text-sm text-muted-foreground">
-              Já tem uma conta?{' '}
+              {t('auth.register.haveAccount')}{' '}
               <Link
                 to="/login"
                 className="text-primary hover:underline font-semibold"
               >
-                Fazer login
+                {t('auth.register.loginLink')}
               </Link>
             </p>
           </CardFooter>
@@ -412,25 +428,25 @@ export function RegisterPage() {
         {/* Password Requirements */}
         <Alert className="mt-6 border-primary/20 bg-primary/5">
           <AlertDescription>
-            <p className="font-semibold mb-2 text-sm">Requisitos da senha:</p>
+            <p className="font-semibold mb-2 text-sm">{t('auth.register.passwordRequirements', { defaultValue: 'Requisitos da senha:' })}</p>
             <ul className="text-xs space-y-1.5 text-muted-foreground">
               <li className="flex items-center gap-2">
                 <svg className="w-3 h-3 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                <span>Pelo menos 8 caracteres</span>
+                <span>{t('auth.register.passwordMinLength')}</span>
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-3 h-3 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                <span>Letras maiúsculas e minúsculas</span>
+                <span>{t('auth.register.passwordCase', { defaultValue: 'Letras maiúsculas e minúsculas' })}</span>
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-3 h-3 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                <span>Um número e um caractere especial</span>
+                <span>{t('auth.register.passwordSpecialNumber', { defaultValue: 'Um número e um caractere especial' })}</span>
               </li>
             </ul>
           </AlertDescription>

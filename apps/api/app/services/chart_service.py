@@ -176,7 +176,12 @@ async def get_user_charts(
     )
 
 
-async def get_chart_by_id(db: AsyncSession, chart_id: UUID, user_id: UUID) -> BirthChart:
+async def get_chart_by_id(
+    db: AsyncSession,
+    chart_id: UUID,
+    user_id: UUID,
+    is_admin: bool = False,
+) -> BirthChart:
     """
     Get a birth chart by ID.
 
@@ -184,16 +189,22 @@ async def get_chart_by_id(db: AsyncSession, chart_id: UUID, user_id: UUID) -> Bi
         db: Database session
         chart_id: Chart ID
         user_id: User ID (for authorization)
+        is_admin: If True, bypasses ownership check (admin access)
 
     Returns:
         Birth chart
 
     Raises:
         ChartNotFoundError: If chart not found
-        UnauthorizedAccessError: If user doesn't own chart
+        UnauthorizedAccessError: If user doesn't own chart (and not admin)
     """
     chart_repo = ChartRepository(db)
-    chart = await chart_repo.get_by_id_and_user(chart_id, user_id)
+
+    if is_admin:
+        # Admin can access any chart
+        chart = await chart_repo.get_by_id(chart_id)
+    else:
+        chart = await chart_repo.get_by_id_and_user(chart_id, user_id)
 
     if not chart:
         raise ChartNotFoundError(f"Chart {chart_id} not found")

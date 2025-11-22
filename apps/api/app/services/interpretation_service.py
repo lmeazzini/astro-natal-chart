@@ -1,5 +1,7 @@
 """
 Service for generating AI-powered astrological interpretations using OpenAI.
+
+Includes caching support to reduce API costs by reusing identical interpretations.
 """
 
 from collections.abc import Callable
@@ -15,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.interpretation import ChartInterpretation
 from app.repositories.interpretation_repository import InterpretationRepository
+from app.services.interpretation_cache_service import InterpretationCacheService
 
 # Classical 7 planets only (no modern planets)
 CLASSICAL_PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
@@ -23,17 +26,22 @@ CLASSICAL_PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Satu
 class InterpretationService:
     """Service for generating and managing astrological interpretations."""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, use_cache: bool = True):
         """
         Initialize interpretation service.
 
         Args:
             db: Database session
+            use_cache: Whether to use interpretation cache (default: True)
         """
         self.db = db
         self.repository = InterpretationRepository(db)
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.prompts = self._load_prompts()
+        self.use_cache = use_cache
+        self.cache_service = InterpretationCacheService(db) if use_cache else None
+        self._cache_hits = 0
+        self._cache_misses = 0
 
     def _load_prompts(self) -> dict[str, Any]:
         """
@@ -139,6 +147,30 @@ class InterpretationService:
         # Validate dignities before using them
         validated_dignities = self._validate_dignities(planet, sign, dignities)
 
+        # Build cache parameters (normalized for consistent hashing)
+        cache_params = {
+            "planet": planet,
+            "sign": sign,
+            "house": house,
+            "dignities": validated_dignities,
+            "sect": sect,
+            "retrograde": retrograde,
+        }
+
+        # Try to get from cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="planet",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+            )
+            if cached:
+                self._cache_hits += 1
+                return cached
+
+        self._cache_misses += 1
+
         # Build context from dignities
         dignity_context = self._format_dignities(validated_dignities)
 
@@ -171,12 +203,24 @@ class InterpretationService:
             )
 
             interpretation = response.choices[0].message.content
+            interpretation_text = interpretation.strip() if interpretation else ""
+
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="planet",
+                    subject=planet,
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                )
 
             # Log successful generation
-            if interpretation:
+            if interpretation_text:
                 logger.info(f"Successfully generated interpretation for {planet} in {sign}")
 
-            return interpretation.strip() if interpretation else ""
+            return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating interpretation for {planet} in {sign}: {e}")
@@ -203,6 +247,29 @@ class InterpretationService:
         Returns:
             Generated interpretation text
         """
+        # Build cache parameters
+        cache_params = {
+            "house": house,
+            "sign": sign,
+            "ruler": ruler,
+            "ruler_dignities": ruler_dignities,
+            "sect": sect,
+        }
+
+        # Try to get from cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="house",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+            )
+            if cached:
+                self._cache_hits += 1
+                return cached
+
+        self._cache_misses += 1
+
         ruler_context = self._format_dignities(ruler_dignities)
 
         prompt = self.prompts["house_prompts"]["base"].format(
@@ -225,7 +292,20 @@ class InterpretationService:
             )
 
             interpretation = response.choices[0].message.content
-            return interpretation.strip() if interpretation else ""
+            interpretation_text = interpretation.strip() if interpretation else ""
+
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="house",
+                    subject=str(house),
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                )
+
+            return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating interpretation for house {house}: {e}")
@@ -266,6 +346,34 @@ class InterpretationService:
         if planet1 not in CLASSICAL_PLANETS or planet2 not in CLASSICAL_PLANETS:
             return ""
 
+        # Build cache parameters (normalize orb to 1 decimal)
+        cache_params = {
+            "planet1": planet1,
+            "planet2": planet2,
+            "aspect": aspect,
+            "sign1": sign1,
+            "sign2": sign2,
+            "orb": round(orb, 1),
+            "applying": applying,
+            "sect": sect,
+            "dignities1": dignities1,
+            "dignities2": dignities2,
+        }
+
+        # Try to get from cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="aspect",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+            )
+            if cached:
+                self._cache_hits += 1
+                return cached
+
+        self._cache_misses += 1
+
         dignities1_context = self._format_dignities(dignities1)
         dignities2_context = self._format_dignities(dignities2)
 
@@ -294,7 +402,21 @@ class InterpretationService:
             )
 
             interpretation = response.choices[0].message.content
-            return interpretation.strip() if interpretation else ""
+            interpretation_text = interpretation.strip() if interpretation else ""
+
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                subject = f"{planet1}-{aspect}-{planet2}"
+                await self.cache_service.set(
+                    interpretation_type="aspect",
+                    subject=subject,
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                )
+
+            return interpretation_text
 
         except Exception as e:
             logger.error(
@@ -463,8 +585,30 @@ class InterpretationService:
                 progress = 50 + int((current_item / total_count) * 40)
                 await progress_callback(min(progress, 90))
 
-        logger.info(f"Generated {len(interpretations)} interpretations for chart {chart_id}")
+        # Log cache statistics
+        total_requests = self._cache_hits + self._cache_misses
+        hit_rate = (self._cache_hits / total_requests * 100) if total_requests > 0 else 0
+        logger.info(
+            f"Generated {len(interpretations)} interpretations for chart {chart_id} "
+            f"(cache: {self._cache_hits} hits, {self._cache_misses} misses, {hit_rate:.1f}% hit rate)"
+        )
         return interpretations
+
+    def get_session_cache_stats(self) -> dict[str, Any]:
+        """
+        Get cache statistics for the current session.
+
+        Returns:
+            Dictionary with session cache stats
+        """
+        total = self._cache_hits + self._cache_misses
+        return {
+            "cache_hits": self._cache_hits,
+            "cache_misses": self._cache_misses,
+            "total_requests": total,
+            "hit_rate": round(self._cache_hits / total * 100, 2) if total > 0 else 0,
+            "cache_enabled": self.use_cache,
+        }
 
     async def get_interpretations_by_chart(self, chart_id: UUID) -> dict[str, dict[str, str]]:
         """

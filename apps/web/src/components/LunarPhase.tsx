@@ -2,6 +2,7 @@
  * Lunar Phase component - displays Moon phase at birth
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,6 +21,9 @@ interface LunarPhaseProps {
 }
 
 export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
+
   return (
     <Card>
       <CardHeader>
@@ -29,10 +33,10 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
           </span>
           <div>
             <div className="text-lg font-semibold text-foreground">
-              {lunarPhase.phase_name_pt}
+              {isEn ? lunarPhase.phase_name : lunarPhase.phase_name_pt}
             </div>
             <div className="text-xs text-muted-foreground font-normal">
-              {lunarPhase.phase_name}
+              {isEn ? lunarPhase.phase_name_pt : lunarPhase.phase_name}
             </div>
           </div>
         </CardTitle>
@@ -42,7 +46,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              Ângulo Sol-Lua
+              {t('components.lunarPhase.sunMoonAngle', { defaultValue: 'Ângulo Sol-Lua' })}
             </p>
             <p className="text-sm font-semibold text-foreground">
               {lunarPhase.angle.toFixed(1)}°
@@ -50,7 +54,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              Iluminação
+              {t('components.lunarPhase.illumination', { defaultValue: 'Iluminação' })}
             </p>
             <p className="text-sm font-semibold text-foreground">
               {lunarPhase.illumination_percentage.toFixed(1)}%
@@ -61,7 +65,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Keywords */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            Características
+            {t('components.lunarPhase.characteristics', { defaultValue: 'Características' })}
           </p>
           <div className="flex flex-wrap gap-2">
             {lunarPhase.keywords.split(',').map((keyword, index) => (
@@ -75,7 +79,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Interpretation */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            Interpretação
+            {t('components.lunarPhase.interpretation', { defaultValue: 'Interpretação' })}
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {lunarPhase.interpretation}
@@ -85,8 +89,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            💡 A fase lunar no nascimento revela padrões sobre temperamento, ciclo de vida e
-            como você processa experiências emocionais.
+            💡 {t('components.lunarPhase.note', { defaultValue: 'A fase lunar no nascimento revela padrões sobre temperamento, ciclo de vida e como você processa experiências emocionais.' })}
           </p>
         </div>
       </CardContent>

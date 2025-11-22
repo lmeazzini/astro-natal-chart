@@ -318,7 +318,7 @@ async def disconnect_oauth_provider(
     summary="Upload avatar image",
     description="Upload a new avatar image. Accepts JPEG, PNG, and WebP formats. Max size: 5MB.",
 )
-@limiter.limit(RateLimits.CHART_UPDATE)
+@limiter.limit(RateLimits.AVATAR_UPLOAD)
 async def upload_avatar(
     request: Request,
     response: Response,

@@ -349,6 +349,43 @@ class S3Service:
     }
     MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5MB
 
+    # Magic bytes (file signatures) for image validation
+    IMAGE_MAGIC_BYTES = {
+        "image/jpeg": [b"\xff\xd8\xff"],  # JPEG
+        "image/png": [b"\x89PNG\r\n\x1a\n"],  # PNG
+        "image/webp": [b"RIFF"],  # WebP (followed by size and WEBP)
+    }
+
+    def _validate_image_magic_bytes(
+        self, image_bytes: bytes, content_type: str
+    ) -> bool:
+        """
+        Validate that the image file's magic bytes match the declared content type.
+
+        This provides additional security by verifying the actual file content
+        matches what the client claims it is.
+
+        Args:
+            image_bytes: The raw image data
+            content_type: The declared MIME type
+
+        Returns:
+            True if magic bytes match, False otherwise
+        """
+        if content_type not in self.IMAGE_MAGIC_BYTES:
+            return False
+
+        magic_signatures = self.IMAGE_MAGIC_BYTES[content_type]
+
+        for signature in magic_signatures:
+            if image_bytes.startswith(signature):
+                # Special check for WebP: must have 'WEBP' at offset 8
+                if content_type == "image/webp":
+                    return len(image_bytes) > 12 and image_bytes[8:12] == b"WEBP"
+                return True
+
+        return False
+
     def _build_avatar_key(self, user_id: str, filename: str) -> str:
         """
         Build S3 object key for avatar images.
@@ -396,6 +433,15 @@ class S3Service:
         if len(image_bytes) > self.MAX_AVATAR_SIZE:
             raise ValueError(
                 f"File too large. Maximum size is {self.MAX_AVATAR_SIZE // (1024 * 1024)}MB"
+            )
+
+        # Validate magic bytes (file signature) for security
+        if not self._validate_image_magic_bytes(image_bytes, content_type):
+            logger.warning(
+                f"Magic bytes validation failed for content_type={content_type}"
+            )
+            raise ValueError(
+                "File content does not match declared type. Please upload a valid image."
             )
 
         # Generate filename if not provided

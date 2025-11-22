@@ -89,7 +89,26 @@ class UserUpdate(BaseModel):
     # Professional info
     location: str | None = Field(None, max_length=200)
     professional_since: int | None = Field(None, ge=1900, le=2100)
-    specializations: list[str] | None = Field(None, max_length=10)
+    specializations: list[str] | None = Field(
+        None,
+        description="List of specializations (max 10 items, 100 chars each)",
+    )
+
+    @field_validator("specializations")
+    @classmethod
+    def validate_specializations(cls, v: list[str] | None) -> list[str] | None:
+        """Validate specializations list: max 10 items, max 100 chars each."""
+        if v is None:
+            return v
+        if len(v) > 10:
+            raise ValueError("Maximum of 10 specializations allowed")
+        for i, spec in enumerate(v):
+            if len(spec) > 100:
+                raise ValueError(f"Specialization {i + 1} exceeds 100 characters")
+            if len(spec.strip()) == 0:
+                raise ValueError(f"Specialization {i + 1} cannot be empty")
+        # Remove duplicates and strip whitespace
+        return list(dict.fromkeys(s.strip() for s in v if s.strip()))
 
     @field_validator("instagram", "twitter")
     @classmethod

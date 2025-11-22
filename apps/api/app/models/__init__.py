@@ -3,6 +3,7 @@ Database models.
 """
 
 from app.models.chart import AuditLog, BirthChart
+from app.models.interpretation_cache import InterpretationCache
 from app.models.password_reset import PasswordResetToken
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
@@ -14,4 +15,5 @@ __all__ = [
     "AuditLog",
     "PasswordResetToken",
     "UserConsent",
+    "InterpretationCache",
 ]

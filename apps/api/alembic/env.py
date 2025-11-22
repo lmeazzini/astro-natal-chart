@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.database import Base
 from app.models.chart import AuditLog, BirthChart  # noqa: F401
 from app.models.interpretation import ChartInterpretation  # noqa: F401
+from app.models.interpretation_cache import InterpretationCache  # noqa: F401
 from app.models.user import OAuthAccount, User  # noqa: F401
 
 # Alembic Config object

@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     admin,
     auth,
+    cache,
     charts,
     geocoding,
     interpretations,
@@ -75,4 +76,11 @@ api_router.include_router(
 api_router.include_router(
     admin.router,
     tags=["admin"],
+)
+
+# Cache management endpoints
+api_router.include_router(
+    cache.router,
+    prefix="/cache",
+    tags=["cache"],
 )

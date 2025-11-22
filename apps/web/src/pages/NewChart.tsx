@@ -20,6 +20,7 @@ import { ProgressIndicator } from '@/components/ui/progress-indicator';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check } from 'lucide-react';
+import { TimezoneSelect } from '@/components/TimezoneSelect';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -379,20 +380,20 @@ export function NewChartPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-base">{t('newChart.timezone')}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="text-base">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="America/Sao_Paulo">América/São Paulo (BRT)</SelectItem>
-                              <SelectItem value="America/Manaus">América/Manaus (AMT)</SelectItem>
-                              <SelectItem value="America/Fortaleza">América/Fortaleza (BRT)</SelectItem>
-                              <SelectItem value="America/Recife">América/Recife (BRT)</SelectItem>
-                              <SelectItem value="America/Bahia">América/Bahia (BRT)</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <TimezoneSelect
+                              value={field.value}
+                              onChange={field.onChange}
+                              coordinates={
+                                form.watch('latitude') && form.watch('longitude')
+                                  ? { latitude: form.watch('latitude'), longitude: form.watch('longitude') }
+                                  : null
+                              }
+                            />
+                          </FormControl>
+                          <p className="text-sm text-muted-foreground">
+                            {t('newChart.timezoneAutoDetect', 'Automatically detected from location. Adjust if needed.')}
+                          </p>
                           <FormMessage />
                         </FormItem>
                       )}

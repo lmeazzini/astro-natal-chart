@@ -43,6 +43,7 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
     locale: Mapped[str] = mapped_column(String(10), default="pt-BR", nullable=False)
     timezone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    time_format: Mapped[str] = mapped_column(String(5), default="24h", nullable=False)
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

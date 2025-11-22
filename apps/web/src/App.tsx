@@ -20,6 +20,7 @@ import { LandingPage } from './pages/Landing';
 import { MethodologyPage } from './pages/Methodology';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
+import { FeatureList } from './components/FeatureList';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSelector } from './components/LanguageSelector';
@@ -257,138 +258,10 @@ function DashboardPage() {
           </Card>
         </div>
 
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Funcionalidades Implementadas</CardTitle>
-            <CardDescription>
-              Recursos recentemente adicionados à plataforma
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">🌙</span>
-              <div className="flex-1">
-                <p className="font-medium">Modo Escuro</p>
-                <p className="text-sm text-muted-foreground">
-                  Dark mode completo para melhor experiência noturna
-                </p>
-              </div>
-              <Badge variant="default">Implementado</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">⚡</span>
-              <div className="flex-1">
-                <p className="font-medium">Processamento Assíncrono com Celery</p>
-                <p className="text-sm text-muted-foreground">
-                  Geração de mapas em background sem travar a interface (1-2 minutos)
-                </p>
-              </div>
-              <Badge variant="default">Implementado</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">🤖</span>
-              <div className="flex-1">
-                <p className="font-medium">Interpretações com IA (GPT-4o-mini)</p>
-                <p className="text-sm text-muted-foreground">
-                  Análises personalizadas de planetas, casas e aspectos usando OpenAI
-                </p>
-              </div>
-              <Badge variant="default">Implementado</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">📊</span>
-              <div className="flex-1">
-                <p className="font-medium">Progresso Incremental de Geração</p>
-                <p className="text-sm text-muted-foreground">
-                  Acompanhe em tempo real cada etapa do cálculo (10%, 20%, 30%... 100%)
-                </p>
-              </div>
-              <Badge variant="default">Implementado</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Em Desenvolvimento</CardTitle>
-            <CardDescription>
-              Funcionalidades planejadas para as próximas versões
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">🔬</span>
-              <div className="flex-1">
-                <p className="font-medium">Cálculo de Temperamento Automatizado</p>
-                <p className="text-sm text-muted-foreground">
-                  Sistema automatizado dos 4 temperamentos baseado em 5 fatores da astrologia tradicional
-                </p>
-              </div>
-              <Badge variant="outline">Em breve</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">📄</span>
-              <div className="flex-1">
-                <p className="font-medium">Exportação PDF</p>
-                <p className="text-sm text-muted-foreground">
-                  Gere relatórios completos em PDF com LaTeX para impressão profissional
-                </p>
-              </div>
-              <Badge variant="outline">Em breve</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">🔐</span>
-              <div className="flex-1">
-                <p className="font-medium">Endpoints LGPD/GDPR</p>
-                <p className="text-sm text-muted-foreground">
-                  Acesso, exportação, retificação e exclusão de dados pessoais
-                </p>
-              </div>
-              <Badge variant="outline">Planejado</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">💳</span>
-              <div className="flex-1">
-                <p className="font-medium">Sistema de Pagamento</p>
-                <p className="text-sm text-muted-foreground">
-                  Planos premium com relatórios avançados e análises detalhadas
-                </p>
-              </div>
-              <Badge variant="outline">Planejado</Badge>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-primary text-xl">📚</span>
-              <div className="flex-1">
-                <p className="font-medium">Conteúdo Educacional</p>
-                <p className="text-sm text-muted-foreground">
-                  Explicações sobre astrologia tradicional e precisão dos cálculos
-                </p>
-              </div>
-              <Badge variant="outline">Planejado</Badge>
-            </div>
-
-            <div className="mt-6 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                Veja todas as funcionalidades planejadas no nosso{' '}
-                <a
-                  href="https://github.com/lmeazzini/astro-natal-chart/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  roadmap público →
-                </a>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Dynamic Feature List from GitHub */}
+        <div className="mt-8">
+          <FeatureList />
+        </div>
       </div>
     </div>
   );

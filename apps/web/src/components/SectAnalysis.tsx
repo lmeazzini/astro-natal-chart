@@ -21,35 +21,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getPlanetSymbol } from '@/utils/astro';
+import type { SectAnalysisData } from '@/services/charts';
 
-interface PlanetSectStatus {
-  name: string;
-  sign: string;
-  house: number;
-  degree: number;
-  planet_sect: 'diurnal' | 'nocturnal' | 'neutral';
-  in_sect: boolean;
-  faction: 'benefic' | 'malefic' | 'luminary' | 'neutral';
-  performance: 'optimal' | 'moderate' | 'challenging';
-}
-
-interface SectAnalysisData {
-  sect: 'diurnal' | 'nocturnal';
-  sun_house: number;
-  planets_by_sect: {
-    in_sect: PlanetSectStatus[];
-    out_of_sect: PlanetSectStatus[];
-    neutral: PlanetSectStatus[];
-  };
-  benefics: {
-    in_sect: PlanetSectStatus | null;
-    out_of_sect: PlanetSectStatus | null;
-  };
-  malefics: {
-    in_sect: PlanetSectStatus | null;
-    out_of_sect: PlanetSectStatus | null;
-  };
-}
+// Classical planet order for sorting (traditional)
+const CLASSICAL_PLANET_ORDER = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
 
 interface SectAnalysisProps {
   sectData: SectAnalysisData;
@@ -66,9 +41,8 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
     ...planets_by_sect.out_of_sect,
     ...planets_by_sect.neutral,
   ].sort((a, b) => {
-    // Sort order: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn
-    const order = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-    return order.indexOf(a.name) - order.indexOf(b.name);
+    // Sort using classical planet order constant
+    return CLASSICAL_PLANET_ORDER.indexOf(a.name) - CLASSICAL_PLANET_ORDER.indexOf(b.name);
   });
 
   return (

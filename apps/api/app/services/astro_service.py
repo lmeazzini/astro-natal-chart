@@ -75,6 +75,23 @@ ASPECTS = {
     "Sesquiquadrate": {"angle": 135, "orb": 2},
 }
 
+# Sect constants (Hellenistic astrology)
+# Diurnal planets work better in day charts, nocturnal planets in night charts
+DIURNAL_PLANETS = ["Sun", "Jupiter", "Saturn"]
+NOCTURNAL_PLANETS = ["Moon", "Venus", "Mars"]
+NEUTRAL_PLANETS = ["Mercury"]
+
+# Planet factions
+BENEFIC_PLANETS = ["Jupiter", "Venus"]
+MALEFIC_PLANETS = ["Saturn", "Mars"]
+LUMINARY_PLANETS = ["Sun", "Moon"]
+
+# Modern/outer planets to skip in traditional sect analysis
+MODERN_PLANETS = ["Uranus", "Neptune", "Pluto", "North Node", "Chiron"]
+
+# Classical planet order (traditional sorting)
+CLASSICAL_PLANET_ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+
 
 def convert_to_julian_day(dt: datetime, timezone: str, latitude: float, longitude: float) -> float:
     """
@@ -393,19 +410,10 @@ def get_planet_sect_status(planet_name: str, chart_sect: str) -> dict[str, Any]:
     Returns:
         Dictionary with sect analysis for the planet
     """
-    # Define planet sects
-    diurnal_planets = ["Sun", "Jupiter", "Saturn"]
-    nocturnal_planets = ["Moon", "Venus", "Mars"]
-
-    # Define factions
-    benefics = ["Jupiter", "Venus"]
-    malefics = ["Saturn", "Mars"]
-    luminaries = ["Sun", "Moon"]
-
-    # Determine planet's natural sect
-    if planet_name in diurnal_planets:
+    # Determine planet's natural sect using module constants
+    if planet_name in DIURNAL_PLANETS:
         planet_sect = "diurnal"
-    elif planet_name in nocturnal_planets:
+    elif planet_name in NOCTURNAL_PLANETS:
         planet_sect = "nocturnal"
     else:
         planet_sect = "neutral"
@@ -413,12 +421,12 @@ def get_planet_sect_status(planet_name: str, chart_sect: str) -> dict[str, Any]:
     # Check if in sect
     in_sect = (planet_sect == chart_sect) or (planet_sect == "neutral")
 
-    # Determine faction
-    if planet_name in benefics:
+    # Determine faction using module constants
+    if planet_name in BENEFIC_PLANETS:
         faction = "benefic"
-    elif planet_name in malefics:
+    elif planet_name in MALEFIC_PLANETS:
         faction = "malefic"
-    elif planet_name in luminaries:
+    elif planet_name in LUMINARY_PLANETS:
         faction = "luminary"
     else:
         faction = "neutral"
@@ -460,12 +468,10 @@ def calculate_sect_analysis(planets: list[dict[str, Any]], chart_sect: str) -> d
     benefics: dict[str, dict[str, Any] | None] = {"in_sect": None, "out_of_sect": None}
     malefics: dict[str, dict[str, Any] | None] = {"in_sect": None, "out_of_sect": None}
 
-    # Modern planets to skip in sect analysis
-    modern_planets = ["Uranus", "Neptune", "Pluto", "North Node", "Chiron"]
-
     for planet in planets:
         planet_name = planet.get("name", "")
-        if planet_name in modern_planets:
+        # Skip modern planets using module constant
+        if planet_name in MODERN_PLANETS:
             continue
 
         status = get_planet_sect_status(planet_name, chart_sect)

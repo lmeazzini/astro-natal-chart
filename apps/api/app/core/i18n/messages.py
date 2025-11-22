@@ -25,6 +25,7 @@ class AuthMessages(StrEnum):
     VERIFICATION_FAILED = "auth.verification_failed"
     INVALID_VERIFICATION_TOKEN = "auth.invalid_verification_token"
     NOT_ENOUGH_PRIVILEGES = "auth.not_enough_privileges"
+    ADMIN_EMAIL_NOT_VERIFIED = "auth.admin_email_not_verified"
 
 
 class PasswordMessages(StrEnum):

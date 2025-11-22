@@ -13,6 +13,8 @@ import {
   UserStats,
   UserActivity,
   OAuthConnection,
+  UserUpdate,
+  UserType,
 } from '../services/users';
 import { ThemeToggle } from '../components/ThemeToggle';
 
@@ -193,7 +195,13 @@ export function ProfilePage() {
       const token = localStorage.getItem('astro_access_token');
       if (!token) throw new Error('Not authenticated');
 
-      const updatedUser = await userService.updateProfile(data, token);
+      // Cast user_type from string to UserType for type safety
+      const updateData: UserUpdate = {
+        ...data,
+        user_type: data.user_type as UserType | undefined,
+      };
+
+      const updatedUser = await userService.updateProfile(updateData, token);
       setUser(updatedUser);
       setProfileSuccess('Perfil atualizado com sucesso!');
 

@@ -195,7 +195,7 @@ export function ChartsPage() {
 
                   {chart.chart_data && (
                     <div className="pt-4 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground mb-3 font-medium">{t('chartDetail.bigThree')}</p>
+                      <p className="text-xs text-muted-foreground mb-3 font-medium">{t('chartDetail.bigThree.title')}</p>
                       <BigThreeBadge
                         sunSign={chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
                         moonSign={chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}

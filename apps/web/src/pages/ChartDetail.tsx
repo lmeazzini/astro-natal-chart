@@ -22,6 +22,7 @@ import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
+import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2 } from 'lucide-react';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
+  const { translateSign, translatePlanet } = useAstroTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -393,7 +395,7 @@ export function ChartDetailPage() {
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground mb-2 font-medium">{t('chartDetail.ascendant')}</p>
               <p className="text-h3 font-display text-foreground flex items-center gap-2">
-                {getSignSymbol(ascSign)} {ascSign} {ascDegree}°
+                {getSignSymbol(ascSign)} {translateSign(ascSign)} {ascDegree}°
               </p>
             </CardContent>
           </Card>
@@ -470,7 +472,7 @@ export function ChartDetailPage() {
                         />
                       </div>
                       <p className="text-lg font-semibold text-foreground">
-                        {t('chartDetail.sun')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(sunSign)} {sunSign}
+                        {translatePlanet('Sun')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(sunSign)} {translateSign(sunSign)}
                       </p>
                     </div>
                   </div>
@@ -496,7 +498,7 @@ export function ChartDetailPage() {
                         />
                       </div>
                       <p className="text-lg font-semibold text-foreground">
-                        {t('chartDetail.moon')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(moonSign)} {moonSign}
+                        {translatePlanet('Moon')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(moonSign)} {translateSign(moonSign)}
                       </p>
                     </div>
                   </div>
@@ -522,7 +524,7 @@ export function ChartDetailPage() {
                         />
                       </div>
                       <p className="text-lg font-semibold text-foreground">
-                        {getSignSymbol(ascSign)} {ascSign}
+                        {getSignSymbol(ascSign)} {translateSign(ascSign)}
                       </p>
                     </div>
                   </div>

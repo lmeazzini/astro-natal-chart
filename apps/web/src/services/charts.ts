@@ -24,6 +24,26 @@ export interface BirthChartCreate {
   node_type?: string;
 }
 
+export interface BirthChartUpdate {
+  // Personal info (no recalculation needed)
+  person_name?: string | null;
+  gender?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  visibility?: string | null;
+  // Birth data (triggers recalculation if changed)
+  birth_datetime?: string | null; // ISO format
+  birth_timezone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  country?: string | null;
+  // Technical settings (triggers recalculation if changed)
+  house_system?: string | null;
+  zodiac_type?: string | null;
+  node_type?: string | null;
+}
+
 export interface PlanetPosition {
   name: string;
   longitude: number;
@@ -188,6 +208,14 @@ export const chartsService = {
    */
   async getStatus(chartId: string, token: string): Promise<ChartStatus> {
     return apiClient.get<ChartStatus>(`/api/v1/charts/${chartId}/status`, token);
+  },
+
+  /**
+   * Update a birth chart
+   * If birth data changes, chart will be recalculated
+   */
+  async update(chartId: string, data: BirthChartUpdate, token: string): Promise<BirthChart> {
+    return apiClient.put<BirthChart>(`/api/v1/charts/${chartId}`, data, token);
   },
 
   /**

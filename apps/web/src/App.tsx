@@ -7,6 +7,7 @@ import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { ChartsPage } from './pages/Charts';
 import { NewChartPage } from './pages/NewChart';
+import { EditChartPage } from './pages/EditChart';
 import { ChartDetailPage } from './pages/ChartDetail';
 import { OAuthCallbackPage } from './pages/OAuthCallback';
 import { ForgotPasswordPage } from './pages/ForgotPassword';
@@ -51,6 +52,7 @@ function App() {
           <Route path="/charts" element={<ChartsPage />} />
           <Route path="/charts/new" element={<NewChartPage />} />
           <Route path="/charts/:id" element={<ChartDetailPage />} />
+          <Route path="/charts/:id/edit" element={<EditChartPage />} />
           {/* Legal Pages */}
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

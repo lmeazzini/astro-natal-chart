@@ -227,6 +227,19 @@
     "step4Desc": "Confirm data",
     "stepOf": "Step {{current}} of {{total}}"
   },
+  "editChart": {
+    "title": "Edit Birth Chart",
+    "editing": "Editing chart for",
+    "noId": "Chart ID not provided",
+    "loading": "Loading chart data...",
+    "loadError": "Error loading chart",
+    "error": "Error updating chart",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "confirmChanges": "Confirm your changes",
+    "recalcWarning": "Note",
+    "recalcWarningDesc": "If you change birth date, time, or location, the chart will be recalculated automatically."
+  },
   "chartDetail": {
     "title": "Chart Details",
     "backToList": "Back to charts",

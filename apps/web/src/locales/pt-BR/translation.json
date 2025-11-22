@@ -227,6 +227,19 @@
     "step4Desc": "Confirmar dados",
     "stepOf": "Passo {{current}} de {{total}}"
   },
+  "editChart": {
+    "title": "Editar Mapa Natal",
+    "editing": "Editando mapa de",
+    "noId": "ID do mapa não fornecido",
+    "loading": "Carregando dados do mapa...",
+    "loadError": "Erro ao carregar mapa",
+    "error": "Erro ao atualizar mapa",
+    "saving": "Salvando...",
+    "saveChanges": "Salvar Alterações",
+    "confirmChanges": "Confirme suas alterações",
+    "recalcWarning": "Atenção",
+    "recalcWarningDesc": "Se você alterar a data, hora ou local de nascimento, o mapa será recalculado automaticamente."
+  },
   "chartDetail": {
     "title": "Detalhes do Mapa",
     "backToList": "Voltar aos mapas",

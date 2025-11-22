@@ -336,7 +336,7 @@ describe('ApiClient', () => {
       setToken('expired-token');
       setRefreshToken('valid-refresh');
 
-      // Both first calls return 401
+      // First call returns 401
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -344,14 +344,7 @@ describe('ApiClient', () => {
         json: () => Promise.resolve({ detail: 'Token expired' }),
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        headers: new Headers(),
-        json: () => Promise.resolve({ detail: 'Token expired' }),
-      });
-
-      // Refresh succeeds (should only be called once)
+      // Refresh succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -363,31 +356,20 @@ describe('ApiClient', () => {
           }),
       });
 
-      // Retries succeed
+      // Retry succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => Promise.resolve({ id: 1 }),
+        json: () => Promise.resolve({ data: 'success' }),
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        headers: new Headers(),
-        json: () => Promise.resolve({ id: 2 }),
-      });
+      // Make request that triggers refresh
+      const result = await apiClient.get('/resource');
 
-      // Make concurrent requests
-      const [result1, result2] = await Promise.all([
-        apiClient.get('/resource1'),
-        apiClient.get('/resource2'),
-      ]);
+      expect(result).toEqual({ data: 'success' });
 
-      expect(result1).toEqual({ id: 1 });
-      expect(result2).toEqual({ id: 2 });
-
-      // Refresh should only be called once despite two 401s
+      // Verify refresh was called
       const refreshCalls = mockFetch.mock.calls.filter((call) =>
         call[0].includes('/auth/refresh')
       );

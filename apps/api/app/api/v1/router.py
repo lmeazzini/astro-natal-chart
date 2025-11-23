@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     oauth,
     password_reset,
     privacy,
+    public_charts,
     rag,
     timezones,
     users,
@@ -106,4 +107,16 @@ api_router.include_router(
 api_router.include_router(
     rag.router,
     tags=["rag"],
+)
+
+# Public charts endpoints (no auth required for GET)
+api_router.include_router(
+    public_charts.router,
+    tags=["public-charts"],
+)
+
+# Public charts admin endpoints (admin only)
+api_router.include_router(
+    public_charts.admin_router,
+    tags=["admin-public-charts"],
 )

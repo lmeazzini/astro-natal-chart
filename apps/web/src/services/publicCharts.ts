@@ -55,6 +55,14 @@ export interface ListPublicChartsParams {
   page_size?: number;
 }
 
+export interface PublicChartInterpretations {
+  planets: Record<string, string>;
+  houses: Record<string, string>;
+  aspects: Record<string, string>;
+  arabic_parts?: Record<string, string>;
+  source?: 'standard' | 'rag';
+}
+
 /**
  * List public charts with optional filters
  */
@@ -146,4 +154,24 @@ export const CATEGORY_LABELS: Record<string, string> = {
  */
 export function getCategoryLabel(category: string): string {
   return CATEGORY_LABELS[category] || category;
+}
+
+/**
+ * Get interpretations for a public chart
+ */
+export async function getPublicChartInterpretations(
+  slug: string
+): Promise<PublicChartInterpretations> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/public-charts/${slug}/interpretations`
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Public chart not found');
+    }
+    throw new Error('Failed to fetch interpretations');
+  }
+
+  return response.json();
 }

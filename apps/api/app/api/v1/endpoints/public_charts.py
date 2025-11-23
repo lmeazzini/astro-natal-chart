@@ -4,16 +4,22 @@ Public Charts API endpoints.
 Provides public access to famous people's natal charts for evaluating RAG interpretations.
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import require_admin
 from app.core.rate_limit import RateLimits, limiter
+from app.models.public_chart import PublicChart
+from app.models.public_chart_interpretation import PublicChartInterpretation
 from app.models.user import User
+from app.schemas.interpretation import ChartInterpretationsResponse
 from app.schemas.public_chart import (
     PUBLIC_CHART_CATEGORIES,
     PublicChartCreate,
@@ -22,6 +28,7 @@ from app.schemas.public_chart import (
     PublicChartPreview,
     PublicChartUpdate,
 )
+from app.services.interpretation_service_rag import ARABIC_PARTS, InterpretationServiceRAG
 from app.services.public_chart_service import PublicChartService
 
 router = APIRouter(prefix="/public-charts", tags=["public-charts"])
@@ -145,6 +152,296 @@ async def get_public_chart(
         )
 
     return chart
+
+
+@router.get(
+    "/{slug}/interpretations",
+    response_model=ChartInterpretationsResponse,
+    summary="Get public chart interpretations",
+    description="Get all AI-generated interpretations for a public chart. No authentication required.",
+)
+@limiter.limit(RateLimits.CHART_READ)
+async def get_public_chart_interpretations(
+    request: Request,
+    response: Response,
+    slug: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ChartInterpretationsResponse:
+    """
+    Get all interpretations for a public chart by its slug.
+
+    - **slug**: URL-friendly identifier (e.g., 'albert-einstein')
+
+    Returns interpretations for planets, houses, aspects, and Arabic parts.
+    If interpretations don't exist, they will be generated using RAG-enhanced AI.
+    """
+    # Get the public chart
+    service = PublicChartService(db)
+    chart = await service.get_chart_by_slug(slug)
+
+    if not chart:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Public chart '{slug}' not found",
+        )
+
+    if not chart.chart_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Chart data is not available yet.",
+        )
+
+    # Check for existing interpretations
+    stmt = select(PublicChartInterpretation).where(
+        PublicChartInterpretation.chart_id == chart.id
+    )
+    result = await db.execute(stmt)
+    existing = result.scalars().all()
+
+    if existing:
+        # Return existing interpretations
+        planets: dict[str, str] = {}
+        houses: dict[str, str] = {}
+        aspects: dict[str, str] = {}
+        arabic_parts: dict[str, str] = {}
+
+        for interp in existing:
+            if interp.interpretation_type == "planet":
+                planets[interp.subject] = interp.content
+            elif interp.interpretation_type == "house":
+                houses[interp.subject] = interp.content
+            elif interp.interpretation_type == "aspect":
+                aspects[interp.subject] = interp.content
+            elif interp.interpretation_type == "arabic_part":
+                arabic_parts[interp.subject] = interp.content
+
+        logger.info(
+            f"Returning {len(existing)} existing interpretations for public chart {slug}"
+        )
+
+        return ChartInterpretationsResponse(
+            planets=planets,
+            houses=houses,
+            aspects=aspects,
+            arabic_parts=arabic_parts,
+            source="rag",
+        )
+
+    # Generate new interpretations
+    try:
+        interpretations = await _generate_public_chart_interpretations(
+            chart=chart,
+            db=db,
+        )
+        logger.info(f"Generated new interpretations for public chart {slug}")
+        return interpretations
+    except Exception as e:
+        logger.error(f"Error generating interpretations for public chart {slug}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error generating interpretations",
+        ) from e
+
+
+async def _generate_public_chart_interpretations(
+    chart: PublicChart,
+    db: AsyncSession,
+) -> ChartInterpretationsResponse:
+    """
+    Generate RAG-enhanced interpretations for a public chart.
+
+    This helper function generates interpretations and saves them to the database.
+    """
+    planets: dict[str, str] = {}
+    houses: dict[str, str] = {}
+    aspects: dict[str, str] = {}
+    arabic_parts: dict[str, str] = {}
+
+    # Initialize RAG service
+    rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
+
+    chart_data = chart.chart_data
+    assert chart_data is not None, "chart_data must not be None"
+
+    planets_data = chart_data.get("planets", [])
+    houses_data = chart_data.get("houses", [])
+    arabic_parts_data = chart_data.get("arabic_parts", {})
+    sect = chart_data.get("sect", "diurnal")
+
+    # Process planets
+    for planet in planets_data:
+        planet_name = planet.get("name", "")
+        if not planet_name:
+            continue
+
+        sign = planet.get("sign", "")
+        house = planet.get("house", 1)
+        retrograde = planet.get("retrograde", False)
+        dignities = planet.get("dignities", {})
+
+        interpretation = await rag_service.generate_planet_interpretation(
+            planet=planet_name,
+            sign=sign,
+            house=house,
+            dignities=dignities,
+            sect=sect,
+            retrograde=retrograde,
+        )
+
+        planets[planet_name] = interpretation
+
+        # Save to database
+        interp_record = PublicChartInterpretation(
+            chart_id=chart.id,
+            interpretation_type="planet",
+            subject=planet_name,
+            content=interpretation,
+            openai_model="gpt-4o-mini-rag",
+            prompt_version="rag-v1",
+        )
+        db.add(interp_record)
+
+    # Process houses
+    for house in houses_data:
+        house_number = house.get("house", 0) or house.get("number", 0)
+        house_sign = house.get("sign", "")
+
+        if not house_number or not house_sign:
+            continue
+
+        house_key = str(house_number)
+
+        from app.astro.dignities import get_sign_ruler
+
+        ruler = get_sign_ruler(house_sign) or "Unknown"
+
+        ruler_dignities: dict[str, Any] = {}
+        for planet_data in planets_data:
+            if planet_data.get("name") == ruler:
+                ruler_dignities = planet_data.get("dignities", {})
+                break
+
+        interpretation = await rag_service.generate_house_interpretation(
+            house=house_number,
+            sign=house_sign,
+            ruler=ruler,
+            ruler_dignities=ruler_dignities,
+            sect=sect,
+        )
+
+        houses[house_key] = interpretation
+
+        # Save to database
+        interp_record = PublicChartInterpretation(
+            chart_id=chart.id,
+            interpretation_type="house",
+            subject=house_key,
+            content=interpretation,
+            openai_model="gpt-4o-mini-rag",
+            prompt_version="rag-v1",
+        )
+        db.add(interp_record)
+
+    # Process aspects (limited by settings)
+    aspects_list = chart_data.get("aspects", [])
+    max_aspects = settings.RAG_MAX_ASPECTS
+
+    for aspect in aspects_list[:max_aspects]:
+        planet1 = aspect.get("planet1", "")
+        planet2 = aspect.get("planet2", "")
+        aspect_name = aspect.get("aspect", "")
+        orb = aspect.get("orb", 0.0)
+
+        if not all([planet1, planet2, aspect_name]):
+            continue
+
+        aspect_key = f"{planet1}-{aspect_name}-{planet2}"
+
+        planet1_data: dict[str, Any] = next(
+            (p for p in planets_data if p.get("name") == planet1), {}
+        )
+        planet2_data: dict[str, Any] = next(
+            (p for p in planets_data if p.get("name") == planet2), {}
+        )
+
+        sign1 = planet1_data.get("sign", "")
+        sign2 = planet2_data.get("sign", "")
+        dignities1 = planet1_data.get("dignities", {})
+        dignities2 = planet2_data.get("dignities", {})
+        applying = aspect.get("applying", False)
+
+        interpretation = await rag_service.generate_aspect_interpretation(
+            planet1=planet1,
+            planet2=planet2,
+            aspect=aspect_name,
+            sign1=sign1,
+            sign2=sign2,
+            orb=orb,
+            applying=applying,
+            sect=sect,
+            dignities1=dignities1,
+            dignities2=dignities2,
+        )
+
+        aspects[aspect_key] = interpretation
+
+        # Save to database
+        interp_record = PublicChartInterpretation(
+            chart_id=chart.id,
+            interpretation_type="aspect",
+            subject=aspect_key,
+            content=interpretation,
+            openai_model="gpt-4o-mini-rag",
+            prompt_version="rag-v1",
+        )
+        db.add(interp_record)
+
+    # Process Arabic Parts
+    for part_key, part_data in arabic_parts_data.items():
+        if part_key not in ARABIC_PARTS:
+            continue
+
+        part_sign = part_data.get("sign", "")
+        part_house = part_data.get("house", 1)
+        part_degree = part_data.get("degree", 0.0)
+
+        interpretation = await rag_service.generate_arabic_part_interpretation(
+            part_key=part_key,
+            sign=part_sign,
+            house=part_house,
+            degree=part_degree,
+            sect=sect,
+        )
+
+        arabic_parts[part_key] = interpretation
+
+        # Save to database
+        interp_record = PublicChartInterpretation(
+            chart_id=chart.id,
+            interpretation_type="arabic_part",
+            subject=part_key,
+            content=interpretation,
+            openai_model="gpt-4o-mini-rag",
+            prompt_version="rag-v1",
+        )
+        db.add(interp_record)
+
+    # Commit all interpretations
+    await db.commit()
+
+    logger.info(
+        f"Saved {len(planets)} planet, {len(houses)} house, "
+        f"{len(aspects)} aspect, and {len(arabic_parts)} Arabic Part "
+        f"interpretations for public chart {chart.id}"
+    )
+
+    return ChartInterpretationsResponse(
+        planets=planets,
+        houses=houses,
+        aspects=aspects,
+        arabic_parts=arabic_parts,
+        source="rag",
+    )
 
 
 # ============================================================================

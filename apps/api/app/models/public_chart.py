@@ -3,13 +3,17 @@ Public Chart model for famous people's birth charts.
 """
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from sqlalchemy import ARRAY, Boolean, DateTime, Integer, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.public_chart_interpretation import PublicChartInterpretation
 
 
 class PublicChart(Base):
@@ -104,6 +108,13 @@ class PublicChart(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,
+    )
+
+    # Relationships
+    interpretations: Mapped[list["PublicChartInterpretation"]] = relationship(
+        "PublicChartInterpretation",
+        back_populates="chart",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:

@@ -1,10 +1,14 @@
 /**
- * Privacy Policy page
+ * Privacy Policy page - Internationalized
  */
 
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft } from 'lucide-react';
 
 export function PrivacyPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -14,281 +18,198 @@ export function PrivacyPage() {
             to="/"
             className="text-primary hover:underline inline-flex items-center gap-2 mb-4"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Voltar
+            <ArrowLeft className="h-5 w-5" />
+            {t('legal.back')}
           </Link>
           <h1 className="text-4xl font-bold text-foreground">
-            Política de Privacidade
+            {t('privacy.title')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            Última atualização: 15 de novembro de 2025
+            {t('legal.lastUpdated', { date: '15/11/2025' })}
           </p>
         </div>
 
         {/* Content */}
         <div className="prose prose-slate dark:prose-invert max-w-none bg-card border border-border rounded-lg p-8">
-          <h2>1. Introdução</h2>
+          <h2>{t('privacy.intro.title')}</h2>
+          <p>{t('privacy.intro.content')}</p>
+
+          <h2>{t('privacy.controller.title')}</h2>
           <p>
-            O <strong>Real Astrology</strong> respeita sua privacidade e está
-            comprometido em proteger seus dados pessoais. Esta Política explica
-            como coletamos, usamos e protegemos suas informações conforme a{' '}
-            <strong>LGPD</strong> (Lei 13.709/2018) e o <strong>GDPR</strong>{' '}
-            (Regulamento UE 2016/679).
+            <strong>{t('privacy.controller.dataController')}</strong>: Real Astrology
+            <br />
+            <strong>{t('privacy.controller.dpo')}</strong>: dpo@astro-app.com
+            <br />
+            <strong>{t('privacy.controller.responseTime')}</strong>: {t('privacy.controller.responseTimeValue')}
           </p>
 
-          <h2>2. Controlador e DPO</h2>
-          <p>
-            <strong>Controlador de Dados</strong>: Real Astrology
-            <br />
-            <strong>DPO (Encarregado)</strong>: dpo@astro-app.com
-            <br />
-            <strong>Prazo de resposta</strong>: até 15 dias úteis
-          </p>
+          <h2>{t('privacy.dataCollected.title')}</h2>
 
-          <h2>3. Dados Coletados</h2>
-
-          <h3>3.1 Dados Pessoais Fornecidos</h3>
+          <h3>{t('privacy.dataCollected.personalTitle')}</h3>
           <ul>
             <li>
-              <strong>Nome completo</strong>: Identificação e personalização
+              <strong>{t('privacy.dataCollected.fullName')}</strong>: {t('privacy.dataCollected.fullNamePurpose')}
             </li>
             <li>
-              <strong>Email</strong>: Autenticação e comunicação
+              <strong>{t('privacy.dataCollected.email')}</strong>: {t('privacy.dataCollected.emailPurpose')}
             </li>
             <li>
-              <strong>Senha (hash bcrypt)</strong>: Autenticação segura
+              <strong>{t('privacy.dataCollected.password')}</strong>: {t('privacy.dataCollected.passwordPurpose')}
             </li>
             <li>
-              <strong>Data de nascimento</strong>: Cálculo de mapa natal
-              (consentimento explícito)
+              <strong>{t('privacy.dataCollected.birthDate')}</strong>: {t('privacy.dataCollected.birthDatePurpose')}
             </li>
             <li>
-              <strong>Hora de nascimento</strong>: Cálculo de mapa natal
-              (consentimento explícito)
+              <strong>{t('privacy.dataCollected.birthTime')}</strong>: {t('privacy.dataCollected.birthTimePurpose')}
             </li>
             <li>
-              <strong>Local de nascimento</strong>: Coordenadas geográficas
-              (consentimento explícito)
+              <strong>{t('privacy.dataCollected.birthPlace')}</strong>: {t('privacy.dataCollected.birthPlacePurpose')}
             </li>
           </ul>
 
-          <h3>3.2 Dados Coletados Automaticamente</h3>
+          <h3>{t('privacy.dataCollected.autoTitle')}</h3>
           <ul>
             <li>
-              <strong>Endereço IP</strong>: Segurança e rate limiting
+              <strong>{t('privacy.dataCollected.ip')}</strong>: {t('privacy.dataCollected.ipPurpose')}
             </li>
             <li>
-              <strong>User-Agent</strong>: Compatibilidade técnica
+              <strong>{t('privacy.dataCollected.userAgent')}</strong>: {t('privacy.dataCollected.userAgentPurpose')}
             </li>
             <li>
-              <strong>Cookies</strong>: Sessão e preferências (ver{' '}
+              <strong>{t('privacy.dataCollected.cookies')}</strong>: {t('privacy.dataCollected.cookiesPurpose')} (
               <Link to="/cookies" className="text-primary hover:underline">
-                Política de Cookies
+                {t('cookies.title')}
               </Link>
               )
             </li>
             <li>
-              <strong>Logs de acesso</strong>: Auditoria e segurança
+              <strong>{t('privacy.dataCollected.logs')}</strong>: {t('privacy.dataCollected.logsPurpose')}
             </li>
           </ul>
 
-          <h3>3.3 Dados de Terceiros (OAuth2)</h3>
-          <p>
-            Se você se cadastrar via <strong>Google</strong>,{' '}
-            <strong>GitHub</strong> ou <strong>Facebook</strong>:
-          </p>
+          <h3>{t('privacy.dataCollected.thirdPartyTitle')}</h3>
+          <p>{t('privacy.dataCollected.oauthInfo')}</p>
           <ul>
-            <li>Coletamos: ID da conta, email, nome, foto de perfil</li>
-            <li>Base legal: Consentimento (você autoriza via OAuth)</li>
-            <li>
-              <strong>Não armazenamos</strong> suas senhas de serviços de
-              terceiros
-            </li>
+            <li>{t('privacy.dataCollected.oauthCollect')}</li>
+            <li>{t('privacy.dataCollected.oauthLegal')}</li>
+            <li><strong>{t('privacy.dataCollected.oauthNoPassword')}</strong></li>
           </ul>
 
-          <h2>4. Como Usamos Seus Dados</h2>
+          <h2>{t('privacy.dataUse.title')}</h2>
           <ul>
             <li>
-              <strong>Fornecer o Serviço</strong>: Calcular mapas natais,
-              armazenar e exibir
+              <strong>{t('privacy.dataUse.provide')}</strong>: {t('privacy.dataUse.provideDesc')}
             </li>
             <li>
-              <strong>Autenticação</strong>: Validar login e manter sessões
+              <strong>{t('privacy.dataUse.auth')}</strong>: {t('privacy.dataUse.authDesc')}
             </li>
             <li>
-              <strong>Comunicação</strong>: Emails transacionais (confirmação,
-              reset de senha)
+              <strong>{t('privacy.dataUse.communication')}</strong>: {t('privacy.dataUse.communicationDesc')}
             </li>
             <li>
-              <strong>Melhorias</strong>: Análises agregadas e anonimizadas
+              <strong>{t('privacy.dataUse.improvements')}</strong>: {t('privacy.dataUse.improvementsDesc')}
             </li>
             <li>
-              <strong>Conformidade Legal</strong>: Logs de auditoria LGPD
+              <strong>{t('privacy.dataUse.legal')}</strong>: {t('privacy.dataUse.legalDesc')}
             </li>
           </ul>
 
           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-md border border-blue-200 dark:border-blue-800">
             <p className="text-sm">
-              <strong>Importante</strong>: Dados de nascimento são{' '}
-              <strong>dados sensíveis</strong>. Processamos exclusivamente com
-              seu <strong>consentimento explícito</strong>.
+              <strong>{t('privacy.dataUse.sensitiveNote')}</strong>
             </p>
           </div>
 
-          <h2>5. Compartilhamento de Dados</h2>
-          <p>
-            <strong>
-              Não vendemos, alugamos ou compartilhamos seus dados pessoais
-            </strong>
-            , exceto:
-          </p>
+          <h2>{t('privacy.sharing.title')}</h2>
+          <p><strong>{t('privacy.sharing.noSell')}</strong></p>
           <ul>
-            <li>
-              <strong>Provedores de nuvem</strong> (AWS, DigitalOcean):
-              Hospedagem
-            </li>
-            <li>
-              <strong>Serviços de email</strong> (SendGrid, Mailgun): Emails
-              transacionais
-            </li>
-            <li>
-              <strong>Geocoding</strong> (OpenCage): Conversão de cidades em
-              coordenadas
-            </li>
-            <li>
-              <strong>Autoridades legais</strong>: Cumprimento de ordens
-              judiciais
-            </li>
+            <li><strong>{t('privacy.sharing.cloud')}</strong></li>
+            <li><strong>{t('privacy.sharing.emailService')}</strong></li>
+            <li><strong>{t('privacy.sharing.geocoding')}</strong></li>
+            <li><strong>{t('privacy.sharing.authorities')}</strong></li>
           </ul>
 
-          <h2>6. Segurança</h2>
+          <h2>{t('privacy.security.title')}</h2>
           <ul>
-            <li>
-              <strong>Criptografia em trânsito</strong>: HTTPS/TLS 1.3
-            </li>
-            <li>
-              <strong>Senhas</strong>: Hash bcrypt com cost factor 12
-            </li>
-            <li>
-              <strong>Autenticação</strong>: JWT com tokens de curta duração
-            </li>
-            <li>
-              <strong>Rate limiting</strong>: Proteção contra ataques
-            </li>
+            <li><strong>{t('privacy.security.tls')}</strong></li>
+            <li><strong>{t('privacy.security.passwords')}</strong></li>
+            <li><strong>{t('privacy.security.jwt')}</strong></li>
+            <li><strong>{t('privacy.security.rateLimit')}</strong></li>
           </ul>
 
-          <h2>7. Retenção de Dados</h2>
+          <h2>{t('privacy.retention.title')}</h2>
           <ul>
-            <li>
-              <strong>Conta ativa</strong>: Enquanto você mantiver a conta
-            </li>
-            <li>
-              <strong>Conta inativa</strong>: 24 meses após último login
-            </li>
-            <li>
-              <strong>Conta excluída (soft delete)</strong>: 30 dias (permite
-              recuperação)
-            </li>
-            <li>
-              <strong>Hard delete</strong>: Dados removidos permanentemente após
-              30 dias
-            </li>
-            <li>
-              <strong>Logs de auditoria</strong>: 5 anos (obrigação legal LGPD)
-            </li>
+            <li><strong>{t('privacy.retention.active')}</strong></li>
+            <li><strong>{t('privacy.retention.inactive')}</strong></li>
+            <li><strong>{t('privacy.retention.softDelete')}</strong></li>
+            <li><strong>{t('privacy.retention.hardDelete')}</strong></li>
+            <li><strong>{t('privacy.retention.audit')}</strong></li>
           </ul>
 
-          <h2>8. Seus Direitos (LGPD e GDPR)</h2>
+          <h2>{t('privacy.rights.title')}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
             <div className="p-4 bg-muted rounded-md">
-              <h4 className="font-semibold mb-2">✓ Direito de Acesso</h4>
+              <h4 className="font-semibold mb-2">✓ {t('privacy.rights.access')}</h4>
               <p className="text-sm">
-                Visualizar todos os dados que armazenamos sobre você.
+                {t('privacy.rights.accessDesc')}
                 <br />
-                <strong>Como exercer</strong>: Configurações → Privacidade →
-                Ver Dados
+                <strong>{t('privacy.rights.accessHow')}</strong>
               </p>
             </div>
 
             <div className="p-4 bg-muted rounded-md">
-              <h4 className="font-semibold mb-2">✓ Direito de Retificação</h4>
+              <h4 className="font-semibold mb-2">✓ {t('privacy.rights.rectification')}</h4>
               <p className="text-sm">
-                Corrigir dados incorretos ou desatualizados.
+                {t('privacy.rights.rectificationDesc')}
                 <br />
-                <strong>Como exercer</strong>: Configurações → Perfil → Editar
+                <strong>{t('privacy.rights.rectificationHow')}</strong>
               </p>
             </div>
 
             <div className="p-4 bg-muted rounded-md">
-              <h4 className="font-semibold mb-2">✓ Direito de Portabilidade</h4>
+              <h4 className="font-semibold mb-2">✓ {t('privacy.rights.portability')}</h4>
               <p className="text-sm">
-                Baixar todos os seus dados em formato JSON.
+                {t('privacy.rights.portabilityDesc')}
                 <br />
-                <strong>Como exercer</strong>: Configurações → Privacidade →
-                Exportar Dados
+                <strong>{t('privacy.rights.portabilityHow')}</strong>
               </p>
             </div>
 
             <div className="p-4 bg-muted rounded-md">
-              <h4 className="font-semibold mb-2">
-                ✓ Direito ao Esquecimento
-              </h4>
+              <h4 className="font-semibold mb-2">✓ {t('privacy.rights.erasure')}</h4>
               <p className="text-sm">
-                Solicitar remoção completa de seus dados.
+                {t('privacy.rights.erasureDesc')}
                 <br />
-                <strong>Como exercer</strong>: Configurações → Privacidade →
-                Excluir Conta
+                <strong>{t('privacy.rights.erasureHow')}</strong>
               </p>
             </div>
           </div>
 
-          <h2>9. Cookies</h2>
+          <h2>{t('privacy.cookiesSection.title')}</h2>
+          <p>{t('privacy.cookiesSection.content')}</p>
           <p>
-            Usamos cookies essenciais (autenticação), funcionais (tema,
-            idioma) e analíticos (Google Analytics anonimizado).
-          </p>
-          <p>
-            Consulte nossa{' '}
             <Link to="/cookies" className="text-primary hover:underline">
-              Política de Cookies
-            </Link>{' '}
-            para detalhes completos.
+              {t('privacy.cookiesSection.seePolicy')}
+            </Link>
           </p>
 
-          <h2>10. Menores de Idade</h2>
-          <p>
-            Nosso serviço <strong>NÃO é destinado a menores de 18 anos</strong>
-            . Se descobrirmos dados de menores, apagaremos imediatamente.
-          </p>
+          <h2>{t('privacy.minors.title')}</h2>
+          <p>{t('privacy.minors.content')}</p>
 
-          <h2>11. Mudanças nesta Política</h2>
-          <p>
-            Podemos atualizar esta Política periodicamente. Mudanças
-            significativas serão notificadas por email ou banner.
-          </p>
+          <h2>{t('privacy.changes.title')}</h2>
+          <p>{t('privacy.changes.content')}</p>
 
-          <h2>12. Contato e Reclamações</h2>
+          <h2>{t('privacy.contactSection.title')}</h2>
           <p>
-            <strong>Email</strong>: privacy@astro-app.com
+            <strong>{t('privacy.contactSection.email')}</strong>: privacy@astro-app.com
             <br />
-            <strong>DPO</strong>: dpo@astro-app.com
+            <strong>{t('privacy.contactSection.dpo')}</strong>: dpo@astro-app.com
           </p>
           <p>
-            <strong>Reclamações</strong>:
+            <strong>{t('privacy.contactSection.complaints')}</strong>:
             <br />
-            Brasil:{' '}
+            {t('privacy.contactSection.brazil')}:{' '}
             <a
               href="https://www.gov.br/anpd"
               className="text-primary hover:underline"
@@ -298,29 +219,21 @@ export function PrivacyPage() {
               ANPD
             </a>
             <br />
-            UE:{' '}
+            {t('privacy.contactSection.eu')}:{' '}
             <a
               href="https://edpb.europa.eu/about-edpb/board/members_pt"
               className="text-primary hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Autoridade Local
+              {t('privacy.contactSection.localAuthority')}
             </a>
           </p>
 
           <div className="mt-8 p-4 bg-muted rounded-md">
             <p className="text-sm">
-              <strong>Documento completo</strong>: Consulte{' '}
-              <a
-                href="/docs/PRIVACY_POLICY.md"
-                className="text-primary hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                PRIVACY_POLICY.md
-              </a>{' '}
-              para versão integral (14 seções, 450+ linhas).
+              <strong>{t('legal.fullDocument')}</strong>:{' '}
+              {t('legal.seeFullVersion', { file: 'PRIVACY_POLICY.md' })}
             </p>
           </div>
         </div>
@@ -328,11 +241,11 @@ export function PrivacyPage() {
         {/* Footer Links */}
         <div className="mt-8 text-center text-sm text-muted-foreground">
           <Link to="/terms" className="hover:text-primary">
-            Termos de Uso
+            {t('terms.title')}
           </Link>
           {' • '}
           <Link to="/cookies" className="hover:text-primary">
-            Política de Cookies
+            {t('cookies.title')}
           </Link>
         </div>
       </div>

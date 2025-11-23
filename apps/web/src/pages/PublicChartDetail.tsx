@@ -226,7 +226,7 @@ export function PublicChartDetailPage() {
               )}
               <span className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
-                {chart.view_count} visualizações
+                {chart.view_count} {t('publicCharts.views', 'visualizações')}
               </span>
             </div>
 
@@ -235,17 +235,17 @@ export function PublicChartDetailPage() {
               <div className="flex flex-wrap gap-3 mt-4">
                 <Badge variant="outline" className="flex items-center gap-1 px-3 py-1">
                   <Sun className="h-4 w-4 text-yellow-500" />
-                  <span className="font-medium">Sol:</span>
+                  <span className="font-medium">{t('chartDetail.sun', 'Sol')}:</span>
                   <span>{getSignSymbol(sunData.sign)} {sunData.sign}</span>
                 </Badge>
                 <Badge variant="outline" className="flex items-center gap-1 px-3 py-1">
                   <Moon className="h-4 w-4 text-slate-400" />
-                  <span className="font-medium">Lua:</span>
+                  <span className="font-medium">{t('chartDetail.moon', 'Lua')}:</span>
                   <span>{getSignSymbol(moonData.sign)} {moonData.sign}</span>
                 </Badge>
                 <Badge variant="outline" className="flex items-center gap-1 px-3 py-1">
                   <Compass className="h-4 w-4 text-purple-500" />
-                  <span className="font-medium">Asc:</span>
+                  <span className="font-medium">{t('chartDetail.ascendant', 'Asc')}:</span>
                   <span>{getSignSymbol(ascendantSign)} {ascendantSign}</span>
                 </Badge>
               </div>

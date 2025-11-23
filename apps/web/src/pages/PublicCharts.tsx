@@ -292,6 +292,7 @@ export function PublicChartsPage() {
 }
 
 function PublicChartCard({ chart }: { chart: PublicChartPreview }) {
+  const { t } = useTranslation();
   return (
     <Link to={`/public-charts/${chart.slug}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
@@ -325,7 +326,7 @@ function PublicChartCard({ chart }: { chart: PublicChartPreview }) {
           )}
           {chart.view_count > 0 && (
             <p className="text-xs text-muted-foreground mt-2">
-              {chart.view_count} visualizações
+              {chart.view_count} {t('publicCharts.views', 'visualizações')}
             </p>
           )}
         </CardContent>

@@ -11,6 +11,14 @@ from app.models.public_chart import PublicChart
 from app.repositories.base import BaseRepository
 
 
+def _escape_like_pattern(value: str) -> str:
+    """Escape special characters for LIKE/ILIKE patterns.
+
+    This prevents users from using SQL wildcards (% and _) in search terms.
+    """
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 class PublicChartRepository(BaseRepository[PublicChart]):
     """Repository for PublicChart model."""
 
@@ -76,7 +84,8 @@ class PublicChartRepository(BaseRepository[PublicChart]):
             conditions.append(PublicChart.category == category)
 
         if search:
-            conditions.append(PublicChart.full_name.ilike(f"%{search}%"))
+            escaped_search = _escape_like_pattern(search)
+            conditions.append(PublicChart.full_name.ilike(f"%{escaped_search}%"))
 
         stmt = select(PublicChart).where(*conditions)
 
@@ -114,7 +123,8 @@ class PublicChartRepository(BaseRepository[PublicChart]):
             conditions.append(PublicChart.category == category)
 
         if search:
-            conditions.append(PublicChart.full_name.ilike(f"%{search}%"))
+            escaped_search = _escape_like_pattern(search)
+            conditions.append(PublicChart.full_name.ilike(f"%{escaped_search}%"))
 
         stmt = select(func.count()).select_from(PublicChart).where(*conditions)
         result = await self.db.execute(stmt)

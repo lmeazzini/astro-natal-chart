@@ -20,6 +20,8 @@ import { CookiesPage } from './pages/Cookies';
 import { ConsentPage } from './pages/Consent';
 import { LandingPage } from './pages/Landing';
 import { MethodologyPage } from './pages/Methodology';
+import { PublicChartsPage } from './pages/PublicCharts';
+import { PublicChartDetailPage } from './pages/PublicChartDetail';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
@@ -60,6 +62,9 @@ function App() {
           <Route path="/consent" element={<ConsentPage />} />
           {/* About Pages */}
           <Route path="/about/methodology" element={<MethodologyPage />} />
+          {/* Public Charts */}
+          <Route path="/public-charts" element={<PublicChartsPage />} />
+          <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <CookieBanner />

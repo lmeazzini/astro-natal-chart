@@ -25,35 +25,50 @@ LATEX_SPECIAL_CHARS = {
     '\\': r'\textbackslash{}',
 }
 
-# Planet symbols mapping
-# Note: Using text instead of Unicode symbols for LaTeX compatibility
+# Planet symbols mapping - LaTeX commands from marvosym package
 PLANET_SYMBOLS = {
-    'Sun': '',
-    'Moon': '',
-    'Mercury': '',
-    'Venus': '',
-    'Mars': '',
-    'Jupiter': '',
-    'Saturn': '',
-    'Uranus': '',
-    'Neptune': '',
-    'Pluto': '',
+    'Sun': r'\Sun',
+    'Moon': r'\Moon',
+    'Mercury': r'\Mercury',
+    'Venus': r'\Venus',
+    'Mars': r'\Mars',
+    'Jupiter': r'\Jupiter',
+    'Saturn': r'\Saturn',
+    'Uranus': r'\Uranus',
+    'Neptune': r'\Neptune',
+    'Pluto': r'\Pluto',
+    'North Node': r'\NorthNode',
+    'South Node': r'\SouthNode',
+    'Chiron': r'\Chiron',
 }
 
-# Sign symbols mapping
+# Sign symbols mapping - LaTeX commands from wasysym package
 SIGN_SYMBOLS = {
-    'Aries': '♈',
-    'Taurus': '♉',
-    'Gemini': '♊',
-    'Cancer': '♋',
-    'Leo': '♌',
-    'Virgo': '♍',
-    'Libra': '♎',
-    'Scorpio': '♏',
-    'Sagittarius': '♐',
-    'Capricorn': '♑',
-    'Aquarius': '♒',
-    'Pisces': '♓',
+    'Aries': r'\Aries',
+    'Taurus': r'\Taurus',
+    'Gemini': r'\Gemini',
+    'Cancer': r'\Cancer',
+    'Leo': r'\Leo',
+    'Virgo': r'\Virgo',
+    'Libra': r'\Libra',
+    'Scorpio': r'\Scorpio',
+    'Sagittarius': r'\Sagittarius',
+    'Capricorn': r'\Capricorn',
+    'Aquarius': r'\Aquarius',
+    'Pisces': r'\Pisces',
+}
+
+# Aspect symbols mapping - LaTeX commands
+ASPECT_SYMBOLS = {
+    'conjunction': r'\conjunction',
+    'opposition': r'\opposition',
+    'trine': r'\trine',
+    'square': r'\square',
+    'sextile': r'\sextile',
+    'quincunx': r'\quincunx',
+    'semisextile': r'$\angle$',
+    'semisquare': r'$\angle$',
+    'sesquiquadrate': r'$\angle$',
 }
 
 
@@ -129,6 +144,7 @@ class PDFService:
             'name': self.escape_latex(name),
             'symbol': PLANET_SYMBOLS.get(name, ''),
             'sign': self.escape_latex(sign),
+            'sign_symbol': SIGN_SYMBOLS.get(sign, ''),
             'degree': f"{degree:.2f}",
             'house': str(house),
             'dignity': self.escape_latex(dignity_text),
@@ -153,6 +169,7 @@ class PDFService:
         return {
             'number': str(number),
             'sign': self.escape_latex(sign),
+            'sign_symbol': SIGN_SYMBOLS.get(sign, ''),
             'degree': f"{cusp:.2f}",
             'interpretation': self.escape_latex(house.get('interpretation', ''))
         }
@@ -167,10 +184,16 @@ class PDFService:
         Returns:
             Formatted aspect data
         """
+        aspect_name = aspect['aspect'].lower()
+        aspect_symbol = ASPECT_SYMBOLS.get(aspect_name, '')
+
         return {
             'planet1': self.escape_latex(aspect['planet1']),
+            'planet1_symbol': PLANET_SYMBOLS.get(aspect['planet1'], ''),
             'planet2': self.escape_latex(aspect['planet2']),
+            'planet2_symbol': PLANET_SYMBOLS.get(aspect['planet2'], ''),
             'aspect': self.escape_latex(aspect['aspect']),
+            'aspect_symbol': aspect_symbol,
             'orb': f"{aspect['orb']:.2f}",
             'interpretation': self.escape_latex(aspect.get('interpretation', ''))
         }

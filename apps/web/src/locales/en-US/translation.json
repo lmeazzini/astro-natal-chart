@@ -170,7 +170,31 @@
     "newChartButton": "+ New Birth Chart",
     "myChartsCard": "My Charts",
     "myChartsDescription": "Access all your saved birth charts, view details, and perform astrological analyses.",
-    "viewMyCharts": "View My Charts"
+    "viewMyCharts": "View My Charts",
+    "famousChartsCard": "Famous People Charts",
+    "famousChartsDescription": "Explore birth charts of historical and contemporary personalities with detailed interpretations.",
+    "viewFamousCharts": "Explore Famous Charts",
+    "ragKnowledgeBase": "RAG Knowledge Base",
+    "ragKnowledgeBaseDescription": "Documents used for AI-enhanced astrological interpretations.",
+    "viewRagDocuments": "View Documents"
+  },
+  "ragDocuments": {
+    "title": "RAG Knowledge Base",
+    "description": "Documents used for AI-enhanced astrological interpretations",
+    "totalDocuments": "Total Documents",
+    "indexedDocuments": "Indexed",
+    "textDocs": "Text Documents",
+    "pdfDocs": "PDF Documents",
+    "filterAll": "All",
+    "filterText": "Text",
+    "filterPdf": "PDF",
+    "noDocuments": "No documents found",
+    "page": "Page",
+    "indexed": "Indexed",
+    "pending": "Pending",
+    "createdAt": "Created",
+    "showing": "Showing",
+    "of": "of"
   },
   "newChart": {
     "title": "New Birth Chart",
@@ -263,7 +287,7 @@
     "sunAbove": "Sun above horizon",
     "sunBelow": "Sun below horizon",
     "tabs": {
-      "visual": "Visual",
+      "visual": "Overview",
       "planets": "Planets",
       "houses": "Houses",
       "aspects": "Aspects",
@@ -331,6 +355,21 @@
       "generateFailed": "Error Generating Chart",
       "processError": "An error occurred while processing your birth chart.",
       "notFound": "Birth chart not found"
+    },
+    "rag": {
+      "errorTitle": "RAG Error",
+      "errorDesc": "Failed to load RAG-enhanced interpretations",
+      "toggleTitle": "Interpretation Mode",
+      "loading": "Loading RAG interpretations...",
+      "standard": "Standard",
+      "modeActive": "RAG Mode Active (A/B Testing)",
+      "documentsUsed": "{{count}} documents used for context",
+      "switchToStandard": "Switch back to standard interpretations",
+      "sources": "RAG Sources",
+      "sourcesDesc": "Documents used for this interpretation",
+      "noSources": "No documentary sources",
+      "relevance": "Relevance",
+      "page": "Page"
     }
   },
   "profile": {
@@ -879,6 +918,25 @@
       "backToLogin": "Back to Login",
       "processing": "Processing authentication..."
     },
+    "publicCharts": {
+      "title": "Famous People's Charts",
+      "subtitle": "Explore natal charts of historical and contemporary personalities with our AI interpretations.",
+      "searchPlaceholder": "Search by name...",
+      "sortName": "A-Z",
+      "sortDate": "Date",
+      "sortViews": "Popular",
+      "allCategories": "All",
+      "resultsCount": "{{count}} charts found",
+      "noResults": "No charts found.",
+      "views": "views",
+      "highlights": "Astrological Highlights",
+      "notFound": "Chart not found",
+      "ctaTitle": "Create Your Own Natal Chart",
+      "ctaTitleLoggedIn": "Create More Natal Charts",
+      "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
+      "ctaButton": "Start Free",
+      "ctaButtonLoggedIn": "Create New Chart"
+    },
     "consent": {
       "title": "Consent and Privacy",
       "subtitle": "To use Real Astrology, you need to accept our terms and policies",
@@ -913,5 +971,18 @@
       "acceptAndContinue": "Accept and Continue",
       "questions": "Questions?"
     }
+  },
+  "verification": {
+    "required": "Verification Required",
+    "chartLimitTitle": "Chart Limit Reached",
+    "chartLimitMessage": "You have reached the limit of {{limit}} charts for unverified accounts.",
+    "pdfBlockedTitle": "PDF Blocked",
+    "pdfBlockedMessage": "PDF generation is only available for verified accounts.",
+    "verifyEmail": "Verify your email to unlock all features.",
+    "resendVerification": "Resend verification email",
+    "chartsRemaining": "{{remaining}} of {{limit}} charts remaining",
+    "verifyToUnlock": "Verify your email to create unlimited charts",
+    "emailNotVerified": "Email not verified",
+    "verifyNow": "Verify now"
   }
 }

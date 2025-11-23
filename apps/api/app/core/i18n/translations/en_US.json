@@ -43,7 +43,9 @@
     "calculation_error": "Error calculating birth chart",
     "pdf_generating": "PDF is being generated. Please wait.",
     "pdf_ready": "PDF ready for download",
-    "pdf_failed": "Failed to generate PDF"
+    "pdf_failed": "Failed to generate PDF",
+    "unverified_chart_limit": "You have reached the limit of {limit} charts for unverified accounts. Please verify your email to create more charts.",
+    "unverified_pdf_blocked": "PDF generation is only available for verified accounts. Please verify your email to unlock this feature."
   },
   "user": {
     "profile_updated": "Profile updated successfully",

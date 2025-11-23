@@ -165,6 +165,9 @@ class Settings(BaseSettings):
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"  # CSRF protection
     COOKIE_DOMAIN: str | None = None  # Cookie domain (None = current domain)
 
+    # Unverified User Limits
+    UNVERIFIED_USER_CHART_LIMIT: int = 5  # Max charts for unverified users
+
     @property
     def database_url_sync(self) -> str:
         """Get synchronous database URL for Alembic."""

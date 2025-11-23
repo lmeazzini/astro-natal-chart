@@ -43,7 +43,9 @@
     "calculation_error": "Erro ao calcular mapa natal",
     "pdf_generating": "PDF em geração. Aguarde alguns instantes.",
     "pdf_ready": "PDF pronto para download",
-    "pdf_failed": "Falha ao gerar PDF"
+    "pdf_failed": "Falha ao gerar PDF",
+    "unverified_chart_limit": "Você atingiu o limite de {limit} mapas para contas não verificadas. Verifique seu email para criar mais mapas.",
+    "unverified_pdf_blocked": "A geração de PDF está disponível apenas para contas verificadas. Verifique seu email para desbloquear esta funcionalidade."
   },
   "user": {
     "profile_updated": "Perfil atualizado com sucesso",

@@ -64,6 +64,8 @@ class ChartMessages(StrEnum):
     PDF_GENERATING = "chart.pdf_generating"
     PDF_READY = "chart.pdf_ready"
     PDF_FAILED = "chart.pdf_failed"
+    UNVERIFIED_CHART_LIMIT = "chart.unverified_chart_limit"
+    UNVERIFIED_PDF_BLOCKED = "chart.unverified_pdf_blocked"
 
 
 class UserMessages(StrEnum):

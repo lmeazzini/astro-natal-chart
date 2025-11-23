@@ -170,7 +170,31 @@
     "newChartButton": "+ Novo Mapa Natal",
     "myChartsCard": "Meus Mapas",
     "myChartsDescription": "Acesse todos os seus mapas natais salvos, visualize detalhes e faça análises astrológicas.",
-    "viewMyCharts": "Ver Meus Mapas"
+    "viewMyCharts": "Ver Meus Mapas",
+    "famousChartsCard": "Mapas de Pessoas Famosas",
+    "famousChartsDescription": "Explore mapas natais de personalidades históricas e contemporâneas com interpretações detalhadas.",
+    "viewFamousCharts": "Explorar Mapas Famosos",
+    "ragKnowledgeBase": "Base de Conhecimento RAG",
+    "ragKnowledgeBaseDescription": "Documentos usados para interpretações astrológicas com IA.",
+    "viewRagDocuments": "Ver Documentos"
+  },
+  "ragDocuments": {
+    "title": "Base de Conhecimento RAG",
+    "description": "Documentos usados para interpretações astrológicas com IA",
+    "totalDocuments": "Total de Documentos",
+    "indexedDocuments": "Indexados",
+    "textDocs": "Documentos de Texto",
+    "pdfDocs": "Documentos PDF",
+    "filterAll": "Todos",
+    "filterText": "Texto",
+    "filterPdf": "PDF",
+    "noDocuments": "Nenhum documento encontrado",
+    "page": "Página",
+    "indexed": "Indexado",
+    "pending": "Pendente",
+    "createdAt": "Criado",
+    "showing": "Exibindo",
+    "of": "de"
   },
   "newChart": {
     "title": "Novo Mapa Natal",
@@ -263,7 +287,7 @@
     "sunAbove": "Sol acima do horizonte",
     "sunBelow": "Sol abaixo do horizonte",
     "tabs": {
-      "visual": "Visualização",
+      "visual": "Visão Geral",
       "planets": "Planetas",
       "houses": "Casas",
       "aspects": "Aspectos",
@@ -331,6 +355,21 @@
       "generateFailed": "Erro ao Gerar Mapa",
       "processError": "Ocorreu um erro ao processar seu mapa natal.",
       "notFound": "Mapa natal não encontrado"
+    },
+    "rag": {
+      "errorTitle": "Erro RAG",
+      "errorDesc": "Falha ao carregar interpretações aprimoradas por RAG",
+      "toggleTitle": "Modo de Interpretação",
+      "loading": "Carregando interpretações RAG...",
+      "standard": "Padrão",
+      "modeActive": "Modo RAG Ativo (Teste A/B)",
+      "documentsUsed": "{{count}} documentos usados para contexto",
+      "switchToStandard": "Voltar para interpretações padrão",
+      "sources": "Fontes RAG",
+      "sourcesDesc": "Documentos usados para esta interpretação",
+      "noSources": "Sem fontes documentais",
+      "relevance": "Relevância",
+      "page": "Página"
     }
   },
   "profile": {
@@ -879,6 +918,25 @@
       "backToLogin": "Voltar para Login",
       "processing": "Processando autenticação..."
     },
+    "publicCharts": {
+      "title": "Mapas de Pessoas Famosas",
+      "subtitle": "Explore mapas natais de personalidades históricas e avalie nossas interpretações com IA.",
+      "searchPlaceholder": "Buscar por nome...",
+      "sortName": "A-Z",
+      "sortDate": "Data",
+      "sortViews": "Populares",
+      "allCategories": "Todos",
+      "resultsCount": "{{count}} mapas encontrados",
+      "noResults": "Nenhum mapa encontrado.",
+      "views": "visualizações",
+      "highlights": "Destaques Astrológicos",
+      "notFound": "Mapa não encontrado",
+      "ctaTitle": "Crie Seu Próprio Mapa Natal",
+      "ctaTitleLoggedIn": "Crie Mais Mapas Natais",
+      "ctaDescription": "Descubra os segredos do seu mapa astrológico com análise profissional e interpretações IA.",
+      "ctaButton": "Começar Grátis",
+      "ctaButtonLoggedIn": "Criar Novo Mapa"
+    },
     "consent": {
       "title": "Consentimento e Privacidade",
       "subtitle": "Para usar o Real Astrology, você precisa aceitar nossos termos e políticas",
@@ -913,5 +971,18 @@
       "acceptAndContinue": "Aceitar e Continuar",
       "questions": "Dúvidas?"
     }
+  },
+  "verification": {
+    "required": "Verificação Necessária",
+    "chartLimitTitle": "Limite de Mapas Atingido",
+    "chartLimitMessage": "Você atingiu o limite de {{limit}} mapas para contas não verificadas.",
+    "pdfBlockedTitle": "PDF Bloqueado",
+    "pdfBlockedMessage": "A geração de PDF está disponível apenas para contas verificadas.",
+    "verifyEmail": "Verifique seu email para desbloquear todas as funcionalidades.",
+    "resendVerification": "Reenviar email de verificação",
+    "chartsRemaining": "{{remaining}} de {{limit}} mapas restantes",
+    "verifyToUnlock": "Verifique seu email para criar mapas ilimitados",
+    "emailNotVerified": "Email não verificado",
+    "verifyNow": "Verificar agora"
   }
 }

@@ -9,21 +9,26 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChartCreate } from '../services/charts';
+import { useAuth } from '@/contexts/AuthContext';
+import { getToken } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check, Mail, AlertTriangle } from 'lucide-react';
 import { TimezoneSelect } from '@/components/TimezoneSelect';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+
+// Chart limit for unverified users (must match backend setting)
+const UNVERIFIED_USER_CHART_LIMIT = 5;
 
 // Configure dayjs plugins for timezone handling
 dayjs.extend(utc);
@@ -59,6 +64,9 @@ type ChartFormValues = {
 export function NewChartPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [chartCount, setChartCount] = useState<number | null>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Zod schema inside component to access t()
   const chartFormSchema = z.object({
@@ -120,6 +128,29 @@ export function NewChartPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Load chart count for unverified users
+  useEffect(() => {
+    async function loadChartCount() {
+      if (!user?.email_verified) {
+        const token = getToken();
+        if (token) {
+          try {
+            const count = await chartsService.getCount(token);
+            setChartCount(count);
+          } catch (error) {
+            console.error('Failed to load chart count:', error);
+          }
+        }
+      }
+    }
+    loadChartCount();
+  }, [user?.email_verified]);
+
+  // Computed values for limit display
+  const isUnverified = user && !user.email_verified;
+  const remainingCharts = chartCount !== null ? UNVERIFIED_USER_CHART_LIMIT - chartCount : null;
+  const hasReachedLimit = remainingCharts !== null && remainingCharts <= 0;
 
   async function searchLocation(query: string) {
     if (query.length < 3) {
@@ -195,9 +226,14 @@ export function NewChartPage() {
       await chartsService.create(chartData, token);
       navigate('/charts');
     } catch (error) {
-      setGeneralError(
-        error instanceof Error ? error.message : t('newChart.error')
-      );
+      const errorMessage = error instanceof Error ? error.message : t('newChart.error');
+
+      // Check if it's a chart limit error (403)
+      if (errorMessage.includes('limit') || errorMessage.includes('limite')) {
+        setShowLimitModal(true);
+      } else {
+        setGeneralError(errorMessage);
+      }
     }
   }
 
@@ -257,8 +293,84 @@ export function NewChartPage() {
         </div>
       </nav>
 
+      {/* Limit Modal for unverified users */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <Card className="max-w-md mx-4 animate-fade-in">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <CardTitle>{t('verification.chartLimitTitle')}</CardTitle>
+              <CardDescription>
+                {t('verification.chartLimitMessage', { limit: UNVERIFIED_USER_CHART_LIMIT })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="border-primary/20 bg-primary/5">
+                <Mail className="h-4 w-4 text-primary" />
+                <AlertDescription>
+                  {t('verification.verifyEmail')}
+                </AlertDescription>
+              </Alert>
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => navigate('/profile')}
+                  className="w-full"
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  {t('verification.resendVerification')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLimitModal(false)}
+                  className="w-full"
+                >
+                  {t('common.close')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Form */}
       <div className="max-w-4xl mx-auto py-12 px-4">
+        {/* Verification Warning Banner for unverified users */}
+        {isUnverified && remainingCharts !== null && (
+          <Alert
+            variant={hasReachedLimit ? 'destructive' : 'default'}
+            className={`mb-6 ${hasReachedLimit ? '' : 'border-amber-500/50 bg-amber-50 dark:bg-amber-900/20'}`}
+          >
+            {hasReachedLimit ? (
+              <AlertTriangle className="h-4 w-4" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            )}
+            <AlertTitle className={hasReachedLimit ? '' : 'text-amber-800 dark:text-amber-200'}>
+              {hasReachedLimit
+                ? t('verification.chartLimitTitle')
+                : t('verification.emailNotVerified')}
+            </AlertTitle>
+            <AlertDescription className={hasReachedLimit ? '' : 'text-amber-700 dark:text-amber-300'}>
+              {hasReachedLimit ? (
+                t('verification.chartLimitMessage', { limit: UNVERIFIED_USER_CHART_LIMIT })
+              ) : (
+                <>
+                  {t('verification.chartsRemaining', {
+                    remaining: remainingCharts,
+                    limit: UNVERIFIED_USER_CHART_LIMIT,
+                  })}
+                  {' • '}
+                  <Link to="/profile" className="underline font-medium hover:text-primary">
+                    {t('verification.verifyNow')}
+                  </Link>
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Progress Indicators */}
         <div className="flex justify-center items-center gap-4 mb-12">
           {STEPS.map((step, index) => (

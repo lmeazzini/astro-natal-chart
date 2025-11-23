@@ -174,12 +174,29 @@ export interface ChartStatus {
   task_id: string | null;
 }
 
+export interface ChartLimitInfo {
+  chart_count: number;
+  limit: number;
+  is_verified: boolean;
+}
+
 export const chartsService = {
   /**
    * Create a new birth chart
    */
   async create(data: BirthChartCreate, token: string): Promise<BirthChart> {
     return apiClient.post<BirthChart>('/api/v1/charts/', data, token);
+  },
+
+  /**
+   * Get chart count for the current user (for limit checking)
+   */
+  async getCount(token: string): Promise<number> {
+    const result = await apiClient.get<BirthChartList>(
+      '/api/v1/charts/?page=1&page_size=1',
+      token
+    );
+    return result.total;
   },
 
   /**

@@ -80,3 +80,10 @@ class RateLimits:
 
     # Avatar Upload (by user_id - heavier operation)
     AVATAR_UPLOAD = "10/hour"  # 10 avatar uploads per hour
+
+    # RAG endpoints (by user_id - resource intensive)
+    RAG_SEARCH = "30/minute"  # 30 searches per minute
+    RAG_INGEST_TEXT = "20/hour"  # 20 text ingestions per hour
+    RAG_INGEST_PDF = "10/hour"  # 10 PDF ingestions per hour (heavy operation)
+    RAG_DELETE = "30/hour"  # 30 document deletions per hour
+    RAG_STATS = "60/minute"  # 60 stats requests per minute

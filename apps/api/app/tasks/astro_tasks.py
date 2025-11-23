@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 from app.core.database import AsyncSessionLocal
 from app.repositories.chart_repository import ChartRepository
 from app.services.astro_service import calculate_birth_chart
-from app.services.interpretation_service import InterpretationService
+from app.services.interpretation_service_rag import InterpretationServiceRAG
 
 
 @celery_app.task(bind=True, name="astro.generate_birth_chart", max_retries=3)
@@ -88,16 +88,11 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             await db.commit()
             logger.info(f"Preparing AI interpretations for {chart_id}")
 
-            # Create progress callback
-            async def update_progress(progress: int) -> None:
-                chart.progress = progress
-                await db.commit()
-
-            interpretation_service = InterpretationService(db)
-            await interpretation_service.generate_all_interpretations(
-                chart_id=UUID(chart_id),
+            # Generate RAG-enhanced interpretations
+            rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+            await rag_service.generate_all_rag_interpretations(
+                chart=chart,
                 chart_data=calculated_data,
-                progress_callback=update_progress,
             )
 
             # Step 4: Mark as completed

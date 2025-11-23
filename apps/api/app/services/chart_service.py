@@ -13,7 +13,7 @@ from app.repositories.audit_repository import AuditRepository
 from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import BirthChartCreate, BirthChartUpdate
 from app.services.astro_service import calculate_birth_chart
-from app.services.interpretation_service import InterpretationService
+from app.services.interpretation_service_rag import InterpretationServiceRAG
 
 
 class ChartNotFoundError(Exception):
@@ -84,18 +84,18 @@ async def create_birth_chart(
 
     created_chart = await chart_repo.create(chart)
 
-    # Generate AI interpretations automatically (classical 7 planets only)
+    # Generate AI interpretations automatically using RAG
     if generate_interpretations:
         try:
-            interpretation_service = InterpretationService(db)
-            await interpretation_service.generate_all_interpretations(
-                chart_id=UUID(str(created_chart.id)),
+            rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+            await rag_service.generate_all_rag_interpretations(
+                chart=created_chart,
                 chart_data=calculated_data,
             )
-            logger.info(f"Generated interpretations for chart {created_chart.id}")
+            logger.info(f"Generated RAG interpretations for chart {created_chart.id}")
         except Exception as e:
             # Log error but don't fail chart creation
-            logger.error(f"Failed to generate interpretations for chart {created_chart.id}: {e}")
+            logger.error(f"Failed to generate RAG interpretations for chart {created_chart.id}: {e}")
 
     return created_chart
 
@@ -304,17 +304,17 @@ async def update_birth_chart(
 
         chart.chart_data = calculated_data
 
-        # Regenerate interpretations for recalculated chart
+        # Regenerate RAG-enhanced interpretations for recalculated chart
         try:
-            interpretation_service = InterpretationService(db)
-            await interpretation_service.generate_all_interpretations(
-                chart_id=UUID(str(chart.id)),
+            rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+            await rag_service.generate_all_rag_interpretations(
+                chart=chart,
                 chart_data=calculated_data,
             )
-            logger.info(f"Regenerated interpretations for chart {chart.id}")
+            logger.info(f"Regenerated RAG interpretations for chart {chart.id}")
         except Exception as e:
             # Log error but don't fail update
-            logger.error(f"Failed to regenerate interpretations for chart {chart.id}: {e}")
+            logger.error(f"Failed to regenerate RAG interpretations for chart {chart.id}: {e}")
 
     chart.updated_at = datetime.now(UTC)
 

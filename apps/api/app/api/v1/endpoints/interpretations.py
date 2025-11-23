@@ -5,41 +5,40 @@ Chart interpretation endpoints for AI-generated astrological interpretations.
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.dependencies import get_current_user, get_db, require_admin
-from app.core.rate_limit import RateLimits, limiter
+from app.core.dependencies import get_current_user, get_db
 from app.models.chart import BirthChart
+from app.models.interpretation import ChartInterpretation
 from app.models.user import User
+from app.repositories.interpretation_repository import InterpretationRepository
 from app.schemas.interpretation import (
-    ChartInterpretationsResponse,
     InterpretationItem,
     RAGInterpretationsResponse,
     RAGSourceInfo,
 )
 from app.services import chart_service
-from app.services.interpretation_service import InterpretationService
-from app.services.interpretation_service_rag import InterpretationServiceRAG
+from app.services.interpretation_service_rag import ARABIC_PARTS, InterpretationServiceRAG
 
 router = APIRouter()
 
 
 @router.get(
     "/charts/{chart_id}/interpretations",
-    response_model=ChartInterpretationsResponse,
+    response_model=RAGInterpretationsResponse,
     summary="Get chart interpretations",
-    description="Get all AI-generated interpretations for a birth chart (classical 7 planets only).",
+    description="Get all AI-generated interpretations for a birth chart with RAG enhancement.",
 )
 async def get_chart_interpretations(
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> ChartInterpretationsResponse:
+) -> RAGInterpretationsResponse:
     """
-    Get all interpretations for a birth chart.
+    Get all interpretations for a birth chart using RAG-enhanced AI.
 
     Args:
         chart_id: Chart UUID
@@ -47,71 +46,7 @@ async def get_chart_interpretations(
         db: Database session
 
     Returns:
-        Chart interpretations grouped by type (planets, houses, aspects)
-
-    Raises:
-        HTTPException: If chart not found or user unauthorized
-    """
-    try:
-        # Verify user owns the chart
-        await chart_service.get_chart_by_id(
-            db=db,
-            chart_id=chart_id,
-            user_id=UUID(str(current_user.id)),
-        )
-
-        # Get interpretations
-        interpretation_service = InterpretationService(db)
-        interpretations = await interpretation_service.get_interpretations_by_chart(chart_id)
-
-        return ChartInterpretationsResponse(**interpretations)
-
-    except chart_service.ChartNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except chart_service.UnauthorizedAccessError as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        logger.error(f"Error retrieving interpretations for chart {chart_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error retrieving interpretations",
-        ) from e
-
-
-@router.post(
-    "/charts/{chart_id}/interpretations/regenerate",
-    response_model=ChartInterpretationsResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Regenerate chart interpretations",
-    description="Delete existing interpretations and generate new ones using OpenAI.",
-)
-async def regenerate_chart_interpretations(
-    chart_id: UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> ChartInterpretationsResponse:
-    """
-    Regenerate all interpretations for a birth chart.
-
-    This endpoint:
-    1. Verifies user owns the chart
-    2. Deletes existing interpretations
-    3. Generates new interpretations using OpenAI
-    4. Returns the new interpretations
-
-    Args:
-        chart_id: Chart UUID
-        current_user: Current authenticated user
-        db: Database session
-
-    Returns:
-        Newly generated chart interpretations
+        RAG-enhanced chart interpretations grouped by type (planets, houses, aspects, arabic_parts)
 
     Raises:
         HTTPException: If chart not found or user unauthorized
@@ -124,29 +59,75 @@ async def regenerate_chart_interpretations(
             user_id=UUID(str(current_user.id)),
         )
 
-        interpretation_service = InterpretationService(db)
-
-        # Check if chart data is available (not still processing)
         if not chart.chart_data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Chart is still processing. Please wait until calculations are complete.",
             )
 
-        # Delete existing interpretations
-        deleted_count = await interpretation_service.repository.delete_by_chart_id(chart_id)
-        logger.info(f"Deleted {deleted_count} existing interpretations for chart {chart_id}")
+        # Use RAG-enhanced interpretation service with caching
+        rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
 
-        # Generate new interpretations
-        await interpretation_service.generate_all_interpretations(
-            chart_id=chart_id,
-            chart_data=chart.chart_data,
+        # Check if RAG interpretations already exist for this chart
+        repo = InterpretationRepository(db)
+        existing = await repo.get_by_chart_id(chart_id)
+        rag_existing = [i for i in existing if i.prompt_version == "rag-v1"]
+
+        if rag_existing:
+            # Return existing interpretations from database
+            logger.info(
+                f"Returning {len(rag_existing)} existing RAG interpretations for chart {chart_id}"
+            )
+            planets_data: dict[str, InterpretationItem] = {}
+            houses_data: dict[str, InterpretationItem] = {}
+            aspects_data: dict[str, InterpretationItem] = {}
+            arabic_parts_data: dict[str, InterpretationItem] = {}
+
+            total_documents = 0
+            for interp in rag_existing:
+                # Load rag_sources from database
+                rag_sources_data = interp.rag_sources or []
+                rag_sources_list = [
+                    RAGSourceInfo(**src) for src in rag_sources_data
+                ]
+                total_documents += len(rag_sources_list)
+
+                item = InterpretationItem(
+                    content=interp.content,
+                    source="rag",
+                    rag_sources=rag_sources_list,
+                )
+                if interp.interpretation_type == "planet":
+                    planets_data[interp.subject] = item
+                elif interp.interpretation_type == "house":
+                    # Convert legacy "House X" format to just "X" for frontend compatibility
+                    house_key = interp.subject
+                    if house_key.startswith("House "):
+                        house_key = house_key.replace("House ", "")
+                    houses_data[house_key] = item
+                elif interp.interpretation_type == "aspect":
+                    aspects_data[interp.subject] = item
+                elif interp.interpretation_type == "arabic_part":
+                    arabic_parts_data[interp.subject] = item
+
+            return RAGInterpretationsResponse(
+                planets=planets_data,
+                houses=houses_data,
+                aspects=aspects_data,
+                arabic_parts=arabic_parts_data,
+                source="rag",
+                documents_used=total_documents,
+            )
+
+        # Generate new interpretations and save to DB
+        response = await _generate_rag_interpretations(chart, rag_service, db, save_to_db=True)
+
+        logger.info(
+            f"Generated RAG interpretations for chart {chart_id} "
+            f"(user: {current_user.email}, documents used: {response.documents_used})"
         )
 
-        # Get and return new interpretations
-        interpretations = await interpretation_service.get_interpretations_by_chart(chart_id)
-
-        return ChartInterpretationsResponse(**interpretations)
+        return response
 
     except chart_service.ChartNotFoundError as e:
         raise HTTPException(
@@ -158,6 +139,99 @@ async def regenerate_chart_interpretations(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e),
         ) from e
+    except HTTPException:
+        # Re-raise HTTP exceptions (e.g., 400 for processing chart)
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving interpretations for chart {chart_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error retrieving interpretations",
+        ) from e
+
+
+@router.post(
+    "/charts/{chart_id}/interpretations/regenerate",
+    response_model=RAGInterpretationsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Regenerate chart interpretations",
+    description="Delete existing interpretations and generate new ones using RAG-enhanced AI.",
+)
+async def regenerate_chart_interpretations(
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> RAGInterpretationsResponse:
+    """
+    Regenerate all RAG-enhanced interpretations for a birth chart.
+
+    This endpoint:
+    1. Verifies user owns the chart
+    2. Deletes existing interpretations
+    3. Generates new RAG-enhanced interpretations using OpenAI
+    4. Returns the new interpretations
+
+    Args:
+        chart_id: Chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        Newly generated RAG-enhanced chart interpretations
+
+    Raises:
+        HTTPException: If chart not found or user unauthorized
+    """
+    try:
+        # Verify user owns the chart
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+        )
+
+        # Check if chart data is available (not still processing)
+        if not chart.chart_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Chart is still processing. Please wait until calculations are complete.",
+            )
+
+        # Use RAG service with cache disabled for regeneration
+        rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+
+        # Delete existing interpretations for this chart
+        repo = InterpretationRepository(db)
+        existing = await repo.get_by_chart_id(chart_id)
+        for interp in existing:
+            await repo.delete(interp)
+        if existing:
+            await db.commit()
+            logger.info(f"Deleted {len(existing)} existing interpretations for chart {chart_id}")
+
+        # Generate new interpretations and save to DB
+        response = await _generate_rag_interpretations(chart, rag_service, db, save_to_db=True)
+
+        logger.info(
+            f"Regenerated RAG interpretations for chart {chart_id} "
+            f"(user: {current_user.email}, documents used: {response.documents_used})"
+        )
+
+        return response
+
+    except chart_service.ChartNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except chart_service.UnauthorizedAccessError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        ) from e
+    except HTTPException:
+        # Re-raise HTTP exceptions (e.g., 400 for processing chart)
+        raise
     except Exception as e:
         logger.error(f"Error regenerating interpretations for chart {chart_id}: {e}")
         raise HTTPException(
@@ -167,13 +241,15 @@ async def regenerate_chart_interpretations(
 
 
 # ============================================================================
-# RAG Interpretation Endpoints (Admin Only - A/B Testing)
+# RAG Interpretation Helper Function
 # ============================================================================
 
 
 async def _generate_rag_interpretations(
     chart: BirthChart,
     rag_service: InterpretationServiceRAG,
+    db: AsyncSession,
+    save_to_db: bool = True,
 ) -> RAGInterpretationsResponse:
     """
     Generate RAG-enhanced interpretations for a birth chart.
@@ -184,6 +260,8 @@ async def _generate_rag_interpretations(
     Args:
         chart: The birth chart with chart_data
         rag_service: Configured RAG interpretation service
+        db: Database session for saving interpretations
+        save_to_db: Whether to save interpretations to the database
 
     Returns:
         RAGInterpretationsResponse with planets, houses, and aspects interpretations
@@ -191,7 +269,11 @@ async def _generate_rag_interpretations(
     planets_data: dict[str, InterpretationItem] = {}
     houses_data: dict[str, InterpretationItem] = {}
     aspects_data: dict[str, InterpretationItem] = {}
+    arabic_parts_data: dict[str, InterpretationItem] = {}
     total_documents_used = 0
+
+    # Initialize repository for saving interpretations
+    repo = InterpretationRepository(db) if save_to_db else None
 
     # chart_data is guaranteed to be non-None by the calling endpoints
     chart_data = chart.chart_data
@@ -199,6 +281,7 @@ async def _generate_rag_interpretations(
 
     planets = chart_data.get("planets", [])
     houses = chart_data.get("houses", [])
+    arabic_parts = chart_data.get("arabic_parts", {})
 
     # Get chart sect for interpretations
     sect = chart_data.get("sect", "diurnal")
@@ -244,18 +327,45 @@ async def _generate_rag_interpretations(
             rag_sources=rag_sources,
         )
 
+        # Save planet interpretation to database
+        if repo:
+            planet_interpretation = ChartInterpretation(
+                chart_id=chart.id,
+                interpretation_type="planet",
+                subject=planet_name,
+                content=interpretation,
+                openai_model="gpt-4o-mini-rag",
+                prompt_version="rag-v1",
+                rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
+            )
+            await repo.create(planet_interpretation)
+
     # Process houses
     for house in houses:
-        house_number = house.get("number", 0)
+        # The house data uses "house" key (not "number") for the house number
+        house_number = house.get("house", 0) or house.get("number", 0)
         house_sign = house.get("sign", "")
 
         if not house_number or not house_sign:
             continue
 
-        house_key = f"House {house_number}"
+        # Use just the number as key to match frontend expectations
+        house_key = str(house_number)
+
+        # Get ruler from dignities module
+        from app.astro.dignities import get_sign_ruler
+
+        ruler = get_sign_ruler(house_sign) or "Unknown"
+
+        # Find ruler's dignities from planet data
+        ruler_dignities: dict[str, Any] = {}
+        for planet_data in planets:
+            if planet_data.get("name") == ruler:
+                ruler_dignities = planet_data.get("dignities", {})
+                break
 
         # Build search query for house interpretation
-        search_query = f"house {house_number} in {house_sign}"
+        search_query = f"house {house_number} in {house_sign} ruled by {ruler}"
 
         # Retrieve context documents
         documents = await rag_service._retrieve_context(
@@ -266,21 +376,33 @@ async def _generate_rag_interpretations(
         rag_sources = _format_rag_sources(documents)
         total_documents_used += len(documents)
 
-        # Generate house interpretation using the context
-        # Note: Houses use a simpler interpretation since there's no dedicated method
-        context = await rag_service._format_rag_context(documents)
-        house_interpretation = (
-            f"House {house_number} ({house_sign}): "
-            f"This house governs specific life areas as indicated by its position in {house_sign}."
+        # Generate house interpretation using the RAG-enhanced method
+        house_interpretation = await rag_service.generate_house_interpretation(
+            house=house_number,
+            sign=house_sign,
+            ruler=ruler,
+            ruler_dignities=ruler_dignities,
+            sect=sect,
         )
-        if context:
-            house_interpretation = context[:500] if len(context) > 500 else context
 
         houses_data[house_key] = InterpretationItem(
             content=house_interpretation,
             source="rag",
             rag_sources=rag_sources,
         )
+
+        # Save house interpretation to database
+        if repo:
+            house_interpretation_record = ChartInterpretation(
+                chart_id=chart.id,
+                interpretation_type="house",
+                subject=house_key,
+                content=house_interpretation,
+                openai_model="gpt-4o-mini-rag",
+                prompt_version="rag-v1",
+                rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
+            )
+            await repo.create(house_interpretation_record)
 
     # Process aspects (limited by RAG_MAX_ASPECTS setting)
     aspects = chart_data.get("aspects", [])
@@ -342,179 +464,85 @@ async def _generate_rag_interpretations(
             rag_sources=rag_sources,
         )
 
+        # Save aspect interpretation to database
+        if repo:
+            aspect_interpretation = ChartInterpretation(
+                chart_id=chart.id,
+                interpretation_type="aspect",
+                subject=aspect_key,
+                content=interpretation,
+                openai_model="gpt-4o-mini-rag",
+                prompt_version="rag-v1",
+                rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
+            )
+            await repo.create(aspect_interpretation)
+
+    # Process Arabic Parts
+    for part_key, part_data in arabic_parts.items():
+        if part_key not in ARABIC_PARTS:
+            continue
+
+        # Build search query
+        part_name = ARABIC_PARTS[part_key]["name"]
+        part_sign = part_data.get("sign", "")
+        part_house = part_data.get("house", 1)
+        part_degree = part_data.get("degree", 0.0)
+
+        search_query = f"{part_name} in {part_sign} house {part_house}"
+
+        # Retrieve context documents
+        documents = await rag_service._retrieve_context(
+            query=search_query,
+            filters={"document_type": ["text", "pdf", "interpretation"]},
+        )
+
+        rag_sources = _format_rag_sources(documents)
+        total_documents_used += len(documents)
+
+        interpretation = await rag_service.generate_arabic_part_interpretation(
+            part_key=part_key,
+            sign=part_sign,
+            house=part_house,
+            degree=part_degree,
+            sect=sect,
+        )
+
+        arabic_parts_data[part_key] = InterpretationItem(
+            content=interpretation,
+            source="rag",
+            rag_sources=rag_sources,
+        )
+
+        # Save Arabic Part interpretation to database
+        if repo:
+            arabic_part_interpretation = ChartInterpretation(
+                chart_id=chart.id,
+                interpretation_type="arabic_part",
+                subject=part_key,
+                content=interpretation,
+                openai_model="gpt-4o-mini-rag",
+                prompt_version="rag-v1",
+                rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
+            )
+            await repo.create(arabic_part_interpretation)
+
+    # Commit all interpretations to database
+    if repo:
+        await db.commit()
+        logger.info(
+            f"Saved {len(planets_data)} planet, {len(houses_data)} house, "
+            f"{len(aspects_data)} aspect, and {len(arabic_parts_data)} Arabic Part "
+            f"RAG interpretations to database for chart {chart.id}"
+        )
+
     return RAGInterpretationsResponse(
         planets=planets_data,
         houses=houses_data,
         aspects=aspects_data,
+        arabic_parts=arabic_parts_data,
         source="rag",
         documents_used=total_documents_used,
     )
-
-
-@router.get(
-    "/charts/{chart_id}/interpretations/rag",
-    response_model=RAGInterpretationsResponse,
-    summary="Get RAG-enhanced interpretations (Admin Only)",
-    description=(
-        "Get AI-generated interpretations enhanced with RAG (Retrieval-Augmented "
-        "Generation) for A/B testing. Only available to admin users."
-    ),
-    tags=["RAG", "Admin"],
-)
-@limiter.limit(RateLimits.RAG_SEARCH)
-async def get_chart_interpretations_rag(
-    chart_id: UUID,
-    request: Request,
-    admin_user: Annotated[User, Depends(require_admin)],
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> RAGInterpretationsResponse:
-    """
-    Get RAG-enhanced interpretations for a birth chart.
-
-    This endpoint is only available to admin users for A/B testing purposes.
-    It returns interpretations generated using RAG (Retrieval-Augmented Generation),
-    which retrieves relevant astrological knowledge from the vector database
-    before generating interpretations.
-
-    Args:
-        chart_id: Chart UUID
-        request: FastAPI request object (for rate limiting)
-        admin_user: Current admin user (enforced by require_admin dependency)
-        db: Database session
-
-    Returns:
-        RAG-enhanced chart interpretations with source information
-
-    Raises:
-        HTTPException: If chart not found, user unauthorized, or not admin
-    """
-    try:
-        # Verify user owns the chart
-        chart = await chart_service.get_chart_by_id(
-            db=db,
-            chart_id=chart_id,
-            user_id=UUID(str(admin_user.id)),
-        )
-
-        if not chart.chart_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Chart is still processing. Please wait until calculations are complete.",
-            )
-
-        # Use RAG-enhanced interpretation service with caching
-        rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
-
-        # Generate interpretations using common helper
-        response = await _generate_rag_interpretations(chart, rag_service)
-
-        logger.info(
-            f"Generated RAG interpretations for chart {chart_id} "
-            f"(admin: {admin_user.email}, documents used: {response.documents_used})"
-        )
-
-        return response
-
-    except chart_service.ChartNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except chart_service.UnauthorizedAccessError as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(e),
-        ) from e
-    except HTTPException:
-        # Re-raise HTTP exceptions (e.g., 400 for processing chart)
-        raise
-    except Exception as e:
-        logger.error(f"Error generating RAG interpretations for chart {chart_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error generating RAG interpretations",
-        ) from e
-
-
-@router.post(
-    "/charts/{chart_id}/interpretations/rag/regenerate",
-    response_model=RAGInterpretationsResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Regenerate RAG interpretations (Admin Only)",
-    description="Force regenerate RAG-enhanced interpretations. Only available to admin users.",
-    tags=["RAG", "Admin"],
-)
-@limiter.limit(RateLimits.RAG_SEARCH)
-async def regenerate_chart_interpretations_rag(
-    chart_id: UUID,
-    request: Request,
-    admin_user: Annotated[User, Depends(require_admin)],
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> RAGInterpretationsResponse:
-    """
-    Regenerate RAG-enhanced interpretations for a birth chart.
-
-    This endpoint forces regeneration of RAG interpretations by bypassing cache.
-    Only available to admin users for A/B testing purposes.
-
-    Args:
-        chart_id: Chart UUID
-        request: FastAPI request object (for rate limiting)
-        admin_user: Current admin user (enforced by require_admin dependency)
-        db: Database session
-
-    Returns:
-        Newly generated RAG-enhanced chart interpretations
-
-    Raises:
-        HTTPException: If chart not found, user unauthorized, or not admin
-    """
-    try:
-        # Verify user owns the chart
-        chart = await chart_service.get_chart_by_id(
-            db=db,
-            chart_id=chart_id,
-            user_id=UUID(str(admin_user.id)),
-        )
-
-        if not chart.chart_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Chart is still processing. Please wait until calculations are complete.",
-            )
-
-        # Use RAG service with cache disabled for regeneration
-        rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
-
-        # Generate interpretations using common helper
-        response = await _generate_rag_interpretations(chart, rag_service)
-
-        logger.info(
-            f"Regenerated RAG interpretations for chart {chart_id} "
-            f"(admin: {admin_user.email}, documents used: {response.documents_used})"
-        )
-
-        return response
-
-    except chart_service.ChartNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except chart_service.UnauthorizedAccessError as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(e),
-        ) from e
-    except HTTPException:
-        # Re-raise HTTP exceptions (e.g., 400 for processing chart)
-        raise
-    except Exception as e:
-        logger.error(f"Error regenerating RAG interpretations for chart {chart_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error regenerating RAG interpretations",
-        ) from e
 
 
 def _format_rag_sources(documents: list[dict[str, Any]]) -> list[RAGSourceInfo]:

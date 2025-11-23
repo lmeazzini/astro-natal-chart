@@ -16,7 +16,8 @@ from sqlalchemy.orm import sessionmaker
 # Import all models to configure relationships
 from app.models import chart, interpretation, user  # noqa: F401
 from app.models.chart import BirthChart
-from app.services.interpretation_service import InterpretationService
+from app.models.interpretation import ChartInterpretation
+from app.services.interpretation_service_rag import InterpretationServiceRAG
 from app.services.pdf_service import PDFService
 
 
@@ -49,28 +50,40 @@ async def test_pdf_compilation():
 
         # Initialize services
         pdf_service = PDFService()
-        interpretation_service = InterpretationService(db)
+        rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
 
-        # Get interpretations
+        # Get interpretations from database
         print("\n🔄 Fetching interpretations...")
-        interpretations = await interpretation_service.get_interpretations_by_chart(chart_id)
+        stmt = select(ChartInterpretation).where(ChartInterpretation.chart_id == chart_id)
+        interp_result = await db.execute(stmt)
+        existing_interps = interp_result.scalars().all()
+
+        # Build interpretations dict
+        interpretations: dict[str, dict[str, str]] = {
+            'planets': {},
+            'houses': {},
+            'aspects': {},
+            'arabic_parts': {},
+        }
+        for interp in existing_interps:
+            if interp.interpretation_type in interpretations:
+                interpretations[interp.interpretation_type][interp.subject] = interp.content or ""
 
         has_planet_interps = bool(interpretations.get('planets'))
         has_house_interps = bool(interpretations.get('houses'))
         has_aspect_interps = bool(interpretations.get('aspects'))
 
-        print(f"   Planets: {len(interpretations.get('planets', []))} interpretations")
-        print(f"   Houses: {len(interpretations.get('houses', []))} interpretations")
-        print(f"   Aspects: {len(interpretations.get('aspects', []))} interpretations")
+        print(f"   Planets: {len(interpretations.get('planets', {}))} interpretations")
+        print(f"   Houses: {len(interpretations.get('houses', {}))} interpretations")
+        print(f"   Aspects: {len(interpretations.get('aspects', {}))} interpretations")
 
         if not (has_planet_interps and has_house_interps and has_aspect_interps):
-            print("\n⚠️  Missing interpretations. Generating...")
-            await interpretation_service.generate_all_interpretations(
-                chart_id=chart_id,
+            print("\n⚠️  Missing interpretations. Generating RAG interpretations...")
+            interpretations = await rag_service.generate_all_rag_interpretations(
+                chart=birth_chart,
                 chart_data=birth_chart.chart_data,
             )
-            interpretations = await interpretation_service.get_interpretations_by_chart(chart_id)
-            print("✅ Interpretations generated successfully")
+            print("✅ RAG interpretations generated successfully")
 
         # Prepare template data
         print("\n🔄 Preparing template data...")

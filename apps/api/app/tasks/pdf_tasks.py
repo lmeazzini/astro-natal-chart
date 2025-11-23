@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.celery_app import celery_app
 from app.core.database import AsyncSessionLocal
 from app.models.chart import BirthChart
-from app.services.interpretation_service import InterpretationService
+from app.services.interpretation_service_rag import InterpretationServiceRAG
 from app.services.pdf_service import PDFService
 from app.services.s3_service import s3_service
 
@@ -124,10 +124,27 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
             if chart.pdf_url:
                 logger.info(f"Will overwrite existing PDF: {chart.pdf_url}")
 
-            # 2. Check interpretations, generate if missing
+            # 2. Check interpretations, generate if missing using RAG
             logger.info(f"Checking interpretations for chart {chart_id}")
-            interpretation_service = InterpretationService(db)
-            interpretations = await interpretation_service.get_interpretations_by_chart(chart_id)
+            from sqlalchemy import select as sql_select
+
+            from app.models.interpretation import ChartInterpretation
+
+            # Check if interpretations exist
+            interp_stmt = sql_select(ChartInterpretation).where(ChartInterpretation.chart_id == chart_id)
+            interp_result = await db.execute(interp_stmt)
+            existing_interps = interp_result.scalars().all()
+
+            # Build interpretations dict from existing records
+            interpretations: dict[str, dict[str, str]] = {
+                'planets': {},
+                'houses': {},
+                'aspects': {},
+                'arabic_parts': {},
+            }
+            for interp in existing_interps:
+                if interp.interpretation_type in interpretations:
+                    interpretations[interp.interpretation_type][interp.subject] = interp.content or ""
 
             # Check if we need to generate interpretations
             has_planet_interps = bool(interpretations.get('planets'))
@@ -136,13 +153,12 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
 
             if not (has_planet_interps and has_house_interps and has_aspect_interps):
                 logger.info(f"Generating missing interpretations for chart {chart_id}")
-                await interpretation_service.generate_all_interpretations(
-                    chart_id=chart_id,
+                rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+                interpretations = await rag_service.generate_all_rag_interpretations(
+                    chart=chart,
                     chart_data=chart.chart_data,
                 )
-                # Re-fetch interpretations
-                interpretations = await interpretation_service.get_interpretations_by_chart(chart_id)
-                logger.info("Interpretations generated successfully")
+                logger.info("RAG interpretations generated successfully")
 
             # 3. Optionally generate chart wheel image
             # TODO: Implement chart SVG generation from chart_data

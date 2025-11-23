@@ -7,18 +7,74 @@ interpretations, resulting in more accurate and contextually grounded responses.
 """
 
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import yaml
 from loguru import logger
 from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
 from app.models.chart import BirthChart
 from app.models.interpretation import ChartInterpretation
 from app.services.interpretation_cache_service import InterpretationCacheService
 from app.services.rag import hybrid_search_service
+
+# =============================================================================
+# Constants
+# =============================================================================
+
+# RAG model and version identifiers
+RAG_MODEL_ID = "gpt-4o-mini-rag"
+RAG_PROMPT_VERSION = "rag-v1"
+
+
+# =============================================================================
+# Type Definitions
+# =============================================================================
+
+
+class PlanetData(TypedDict, total=False):
+    """Type definition for planet data structure."""
+
+    name: str
+    sign: str
+    house: int
+    longitude: float
+    latitude: float
+    speed: float
+    retrograde: bool
+    dignities: dict[str, Any]
+
+
+class HouseData(TypedDict, total=False):
+    """Type definition for house data structure."""
+
+    house: int
+    number: int  # Alternative key for house number
+    sign: str
+    cusp: float
+
+
+class AspectData(TypedDict, total=False):
+    """Type definition for aspect data structure."""
+
+    planet1: str
+    planet2: str
+    aspect: str
+    orb: float
+    applying: bool
+
+
+class ArabicPartData(TypedDict, total=False):
+    """Type definition for Arabic Part data structure."""
+
+    longitude: float
+    sign: str
+    degree: float
+    house: int
+
 
 # Arabic Parts definitions
 ARABIC_PARTS: dict[str, dict[str, str]] = {
@@ -181,7 +237,7 @@ class InterpretationServiceRAG:
             logger.error(f"Failed to generate embedding: {e}")
             return None
 
-    async def _retrieve_context(
+    async def retrieve_context(
         self,
         query: str,
         filters: dict[str, Any] | None = None,
@@ -189,12 +245,15 @@ class InterpretationServiceRAG:
         """
         Retrieve relevant context using hybrid search.
 
+        This method performs a hybrid search combining semantic and keyword search
+        to find relevant astrological documents for interpretation context.
+
         Args:
-            query: Search query
-            filters: Optional metadata filters
+            query: Search query describing the astrological element to interpret
+            filters: Optional metadata filters (e.g., {"document_type": ["text", "pdf"]})
 
         Returns:
-            List of relevant documents
+            List of relevant documents with scores and metadata
         """
         if not self.use_rag:
             return []
@@ -313,7 +372,7 @@ class InterpretationServiceRAG:
             search_query += " retrograde"
 
         # Retrieve relevant context
-        documents = await self._retrieve_context(
+        documents = await self.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -403,7 +462,7 @@ class InterpretationServiceRAG:
         search_query = f"house {house} in {sign} ruled by {ruler}"
 
         # Retrieve context
-        documents = await self._retrieve_context(
+        documents = await self.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -490,7 +549,7 @@ class InterpretationServiceRAG:
         search_query = f"{planet1} {aspect} {planet2} in {sign1} and {sign2}"
 
         # Retrieve context
-        documents = await self._retrieve_context(
+        documents = await self.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -572,7 +631,7 @@ class InterpretationServiceRAG:
         search_query = f"{part_name} {part_name_pt} in {sign} house {house}"
 
         # Retrieve relevant context
-        documents = await self._retrieve_context(
+        documents = await self.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -580,9 +639,7 @@ class InterpretationServiceRAG:
         # Format RAG context
         rag_context = await self._format_rag_context(documents)
 
-        # Get sign ruler
-        from app.astro.dignities import get_sign_ruler
-
+        # Get sign ruler (imported at module level)
         sign_ruler = get_sign_ruler(sign) or "Unknown"
 
         # Build prompt
@@ -685,8 +742,8 @@ class InterpretationServiceRAG:
                     interpretation_type="planet",
                     subject=planet_name,
                     content=interpretation,
-                    openai_model="gpt-4o-mini-rag",
-                    prompt_version="rag-v1",
+                    openai_model=RAG_MODEL_ID,
+                    prompt_version=RAG_PROMPT_VERSION,
                 )
                 self.db.add(interp_record)
             except Exception as e:
@@ -704,8 +761,7 @@ class InterpretationServiceRAG:
             house_key = f"House {house_number}"
 
             try:
-                # Get ruler for the house sign
-                from app.astro.dignities import get_sign_ruler
+                # Get ruler for the house sign (imported at module level)
                 ruler = get_sign_ruler(house_sign) or "Unknown"
 
                 # Generate house interpretation using the proper method
@@ -730,8 +786,8 @@ class InterpretationServiceRAG:
                     interpretation_type="house",
                     subject=house_key,
                     content=interpretation,
-                    openai_model="gpt-4o-mini-rag",
-                    prompt_version="rag-v1",
+                    openai_model=RAG_MODEL_ID,
+                    prompt_version=RAG_PROMPT_VERSION,
                 )
                 self.db.add(interp_record)
             except Exception as e:
@@ -775,8 +831,8 @@ class InterpretationServiceRAG:
                     interpretation_type="aspect",
                     subject=aspect_key,
                     content=interpretation,
-                    openai_model="gpt-4o-mini-rag",
-                    prompt_version="rag-v1",
+                    openai_model=RAG_MODEL_ID,
+                    prompt_version=RAG_PROMPT_VERSION,
                 )
                 self.db.add(interp_record)
             except Exception as e:
@@ -803,8 +859,8 @@ class InterpretationServiceRAG:
                     interpretation_type="arabic_part",
                     subject=part_key,
                     content=interpretation,
-                    openai_model="gpt-4o-mini-rag",
-                    prompt_version="rag-v1",
+                    openai_model=RAG_MODEL_ID,
+                    prompt_version=RAG_PROMPT_VERSION,
                 )
                 self.db.add(interp_record)
             except Exception as e:

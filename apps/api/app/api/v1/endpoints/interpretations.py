@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
 from app.core.dependencies import get_current_user, get_db
 from app.models.chart import BirthChart
@@ -21,7 +22,13 @@ from app.schemas.interpretation import (
     RAGSourceInfo,
 )
 from app.services import chart_service
-from app.services.interpretation_service_rag import ARABIC_PARTS, InterpretationServiceRAG
+from app.services.interpretation_service_rag import (
+    ARABIC_PARTS,
+    RAG_MODEL_ID,
+    RAG_PROMPT_VERSION,
+    InterpretationServiceRAG,
+    PlanetData,
+)
 
 router = APIRouter()
 
@@ -71,7 +78,7 @@ async def get_chart_interpretations(
         # Check if RAG interpretations already exist for this chart
         repo = InterpretationRepository(db)
         existing = await repo.get_by_chart_id(chart_id)
-        rag_existing = [i for i in existing if i.prompt_version == "rag-v1"]
+        rag_existing = [i for i in existing if i.prompt_version == RAG_PROMPT_VERSION]
 
         if rag_existing:
             # Return existing interpretations from database
@@ -303,7 +310,7 @@ async def _generate_rag_interpretations(
             search_query += " retrograde"
 
         # Retrieve context documents
-        documents = await rag_service._retrieve_context(
+        documents = await rag_service.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -334,8 +341,8 @@ async def _generate_rag_interpretations(
                 interpretation_type="planet",
                 subject=planet_name,
                 content=interpretation,
-                openai_model="gpt-4o-mini-rag",
-                prompt_version="rag-v1",
+                openai_model=RAG_MODEL_ID,
+                prompt_version=RAG_PROMPT_VERSION,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(planet_interpretation)
@@ -352,14 +359,12 @@ async def _generate_rag_interpretations(
         # Use just the number as key to match frontend expectations
         house_key = str(house_number)
 
-        # Get ruler from dignities module
-        from app.astro.dignities import get_sign_ruler
-
+        # Get ruler (imported at module level)
         ruler = get_sign_ruler(house_sign) or "Unknown"
 
         # Find ruler's dignities from planet data
         ruler_dignities: dict[str, Any] = {}
-        for planet_data in planets:
+        for planet_data in planets:  # type: PlanetData
             if planet_data.get("name") == ruler:
                 ruler_dignities = planet_data.get("dignities", {})
                 break
@@ -368,7 +373,7 @@ async def _generate_rag_interpretations(
         search_query = f"house {house_number} in {house_sign} ruled by {ruler}"
 
         # Retrieve context documents
-        documents = await rag_service._retrieve_context(
+        documents = await rag_service.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -398,8 +403,8 @@ async def _generate_rag_interpretations(
                 interpretation_type="house",
                 subject=house_key,
                 content=house_interpretation,
-                openai_model="gpt-4o-mini-rag",
-                prompt_version="rag-v1",
+                openai_model=RAG_MODEL_ID,
+                prompt_version=RAG_PROMPT_VERSION,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(house_interpretation_record)
@@ -423,7 +428,7 @@ async def _generate_rag_interpretations(
         search_query = f"{planet1} {aspect_name} {planet2}"
 
         # Retrieve context documents
-        documents = await rag_service._retrieve_context(
+        documents = await rag_service.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -432,10 +437,10 @@ async def _generate_rag_interpretations(
         total_documents_used += len(documents)
 
         # Get signs and dignities for additional context
-        planet1_data: dict[str, Any] = next(
+        planet1_data: PlanetData = next(
             (p for p in planets if p.get("name") == planet1), {}
         )
-        planet2_data: dict[str, Any] = next(
+        planet2_data: PlanetData = next(
             (p for p in planets if p.get("name") == planet2), {}
         )
 
@@ -471,8 +476,8 @@ async def _generate_rag_interpretations(
                 interpretation_type="aspect",
                 subject=aspect_key,
                 content=interpretation,
-                openai_model="gpt-4o-mini-rag",
-                prompt_version="rag-v1",
+                openai_model=RAG_MODEL_ID,
+                prompt_version=RAG_PROMPT_VERSION,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(aspect_interpretation)
@@ -491,7 +496,7 @@ async def _generate_rag_interpretations(
         search_query = f"{part_name} in {part_sign} house {part_house}"
 
         # Retrieve context documents
-        documents = await rag_service._retrieve_context(
+        documents = await rag_service.retrieve_context(
             query=search_query,
             filters={"document_type": ["text", "pdf", "interpretation"]},
         )
@@ -520,8 +525,8 @@ async def _generate_rag_interpretations(
                 interpretation_type="arabic_part",
                 subject=part_key,
                 content=interpretation,
-                openai_model="gpt-4o-mini-rag",
-                prompt_version="rag-v1",
+                openai_model=RAG_MODEL_ID,
+                prompt_version=RAG_PROMPT_VERSION,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(arabic_part_interpretation)

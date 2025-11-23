@@ -7,12 +7,13 @@ by storing and reusing interpretations for identical inputs.
 
 import hashlib
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
 from loguru import logger
 from sqlalchemy import delete, func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -142,16 +143,6 @@ class InterpretationCacheService:
             interpretation_type, parameters, model, prompt_version
         )
 
-        # Check if entry already exists (race condition protection)
-        existing = await self.db.execute(
-            select(InterpretationCache).where(
-                InterpretationCache.cache_key == cache_key
-            )
-        )
-        if existing.scalar_one_or_none():
-            logger.debug(f"Cache entry already exists for key {cache_key[:8]}...")
-            return existing.scalar_one()
-
         cache_entry = InterpretationCache(
             cache_key=cache_key,
             interpretation_type=interpretation_type,
@@ -162,14 +153,32 @@ class InterpretationCacheService:
             prompt_version=prompt_version,
         )
 
-        self.db.add(cache_entry)
-        await self.db.commit()
-        await self.db.refresh(cache_entry)
+        try:
+            self.db.add(cache_entry)
+            await self.db.commit()
+            await self.db.refresh(cache_entry)
 
-        logger.info(
-            f"Cached new interpretation for {interpretation_type}: {subject}"
-        )
-        return cache_entry
+            logger.info(
+                f"Cached new interpretation for {interpretation_type}: {subject}"
+            )
+            return cache_entry
+        except IntegrityError:
+            # Race condition: another request already created this entry
+            await self.db.rollback()
+            logger.debug(f"Cache entry already exists for key {cache_key[:8]}... (race condition)")
+
+            # Fetch and return the existing entry
+            existing = await self.db.execute(
+                select(InterpretationCache).where(
+                    InterpretationCache.cache_key == cache_key
+                )
+            )
+            existing_entry = existing.scalar_one_or_none()
+            if existing_entry:
+                return existing_entry
+
+            # If somehow still not found, re-raise (shouldn't happen)
+            raise
 
     async def delete(self, cache_id: UUID) -> bool:
         """
@@ -201,7 +210,7 @@ class InterpretationCacheService:
             Number of entries deleted
         """
         ttl = ttl_days or self.DEFAULT_TTL_DAYS
-        cutoff_date = datetime.utcnow() - timedelta(days=ttl)
+        cutoff_date = datetime.now(UTC) - timedelta(days=ttl)
 
         stmt = delete(InterpretationCache).where(
             InterpretationCache.last_accessed_at < cutoff_date

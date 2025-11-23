@@ -87,3 +87,7 @@ class RateLimits:
     RAG_INGEST_PDF = "10/hour"  # 10 PDF ingestions per hour (heavy operation)
     RAG_DELETE = "30/hour"  # 30 document deletions per hour
     RAG_STATS = "60/minute"  # 60 stats requests per minute
+
+    # Cache management endpoints (by user_id - admin only)
+    CACHE_STATS = "60/minute"  # 60 stats requests per minute
+    CACHE_CLEAR = "10/hour"  # 10 clear operations per hour (destructive)

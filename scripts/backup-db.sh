@@ -1,8 +1,9 @@
 #!/bin/bash
 # Database Backup Script for Astro Application
 # Performs full PostgreSQL backup with compression and optional S3 upload
+# Also backs up Qdrant vector database snapshots
 # Author: Astro DevOps Team
-# Version: 1.0.0
+# Version: 1.1.0
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
@@ -38,6 +39,12 @@ DB_PASSWORD="${DB_PASSWORD:-}"
 # S3 configuration (optional - for offsite backups)
 S3_BUCKET="${BACKUP_S3_BUCKET:-}"
 S3_PREFIX="${BACKUP_S3_PREFIX:-backups}"
+
+# Qdrant configuration
+QDRANT_HOST="${QDRANT_HOST:-localhost}"
+QDRANT_PORT="${QDRANT_PORT:-6333}"
+QDRANT_COLLECTION="${QDRANT_COLLECTION:-astrology_knowledge}"
+QDRANT_BACKUP_FILE="qdrant_backup_${TIMESTAMP}.snapshot"
 
 # Healthcheck URL (optional - for monitoring)
 HEALTHCHECK_URL="${BACKUP_HEALTHCHECK_URL:-}"
@@ -187,16 +194,131 @@ check_disk_space() {
     return 0
 }
 
+backup_qdrant() {
+    log "Starting Qdrant vector database backup..."
+
+    local qdrant_url="http://${QDRANT_HOST}:${QDRANT_PORT}"
+    local qdrant_backup_path="$BACKUP_DIR/$QDRANT_BACKUP_FILE"
+
+    # Check if Qdrant is reachable
+    if ! curl -sf "${qdrant_url}/healthz" >/dev/null 2>&1; then
+        log "Qdrant not reachable at ${qdrant_url}, skipping Qdrant backup"
+        return 0
+    fi
+
+    # Check if collection exists
+    local collection_info
+    collection_info=$(curl -sf "${qdrant_url}/collections/${QDRANT_COLLECTION}" 2>/dev/null)
+    if [ -z "$collection_info" ]; then
+        log "Qdrant collection '${QDRANT_COLLECTION}' not found, skipping Qdrant backup"
+        return 0
+    fi
+
+    local points_count
+    points_count=$(echo "$collection_info" | grep -o '"points_count":[0-9]*' | cut -d: -f2)
+    log "Qdrant collection '${QDRANT_COLLECTION}' has ${points_count:-0} vectors"
+
+    # Create snapshot via Qdrant API
+    log "Creating Qdrant snapshot..."
+    local snapshot_response
+    snapshot_response=$(curl -sf -X POST "${qdrant_url}/collections/${QDRANT_COLLECTION}/snapshots" 2>&1)
+
+    if [ -z "$snapshot_response" ]; then
+        error "Failed to create Qdrant snapshot"
+        return 1
+    fi
+
+    # Extract snapshot name from response
+    local snapshot_name
+    snapshot_name=$(echo "$snapshot_response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
+
+    if [ -z "$snapshot_name" ]; then
+        error "Could not extract snapshot name from Qdrant response: $snapshot_response"
+        return 1
+    fi
+
+    log "Qdrant snapshot created: $snapshot_name"
+
+    # Download the snapshot
+    log "Downloading Qdrant snapshot..."
+    local download_url="${qdrant_url}/collections/${QDRANT_COLLECTION}/snapshots/${snapshot_name}"
+
+    if curl -sf -o "$qdrant_backup_path" "$download_url"; then
+        local file_size=$(stat -c%s "$qdrant_backup_path" 2>/dev/null || stat -f%z "$qdrant_backup_path" 2>/dev/null)
+        log "Qdrant snapshot downloaded: $QDRANT_BACKUP_FILE ($(numfmt --to=iec-i --suffix=B $file_size 2>/dev/null || echo ${file_size}B)) ✓"
+    else
+        error "Failed to download Qdrant snapshot"
+        return 1
+    fi
+
+    # Clean up old Qdrant snapshots on server (keep last 3)
+    log "Cleaning up old Qdrant snapshots on server..."
+    local snapshots_list
+    snapshots_list=$(curl -sf "${qdrant_url}/collections/${QDRANT_COLLECTION}/snapshots" 2>/dev/null)
+
+    if [ -n "$snapshots_list" ]; then
+        # Get all snapshot names except the latest 3
+        local old_snapshots
+        old_snapshots=$(echo "$snapshots_list" | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | sort -r | tail -n +4)
+
+        for old_snap in $old_snapshots; do
+            log "Deleting old Qdrant snapshot: $old_snap"
+            curl -sf -X DELETE "${qdrant_url}/collections/${QDRANT_COLLECTION}/snapshots/${old_snap}" >/dev/null 2>&1 || true
+        done
+    fi
+
+    # Clean up old local Qdrant backups
+    if [ -d "$BACKUP_DIR" ]; then
+        find "$BACKUP_DIR" -name "qdrant_backup_*.snapshot" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
+    fi
+
+    log "Qdrant backup completed successfully ✓"
+    return 0
+}
+
+upload_qdrant_to_s3() {
+    local qdrant_backup_path="$BACKUP_DIR/$QDRANT_BACKUP_FILE"
+
+    if [ ! -f "$qdrant_backup_path" ]; then
+        log "No Qdrant backup file to upload"
+        return 0
+    fi
+
+    if [ -z "$BACKUP_S3_BUCKET" ]; then
+        log "S3 upload for Qdrant skipped (BACKUP_S3_BUCKET not configured)"
+        return 0
+    fi
+
+    log "Uploading Qdrant backup to S3..."
+
+    # Use aws cli or Python service
+    if command -v aws >/dev/null 2>&1; then
+        local s3_key="${S3_PREFIX}/qdrant/${QDRANT_BACKUP_FILE}"
+        if aws s3 cp "$qdrant_backup_path" "s3://${BACKUP_S3_BUCKET}/${s3_key}" --quiet; then
+            log "Qdrant backup uploaded to S3: s3://${BACKUP_S3_BUCKET}/${s3_key} ✓"
+            return 0
+        else
+            error "Failed to upload Qdrant backup to S3"
+            return 1
+        fi
+    else
+        log "AWS CLI not available, skipping Qdrant S3 upload"
+        return 0
+    fi
+}
+
 # ============================================================================
 # Main Backup Process
 # ============================================================================
 
 main() {
     log "=========================================="
-    log "Starting database backup"
+    log "Starting database backup (PostgreSQL + Qdrant)"
     log "=========================================="
-    log "Database: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
-    log "Backup file: ${BACKUP_FILE}"
+    log "PostgreSQL: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
+    log "Qdrant: ${QDRANT_HOST}:${QDRANT_PORT} (collection: ${QDRANT_COLLECTION})"
+    log "PostgreSQL backup file: ${BACKUP_FILE}"
+    log "Qdrant backup file: ${QDRANT_BACKUP_FILE}"
     log "Retention: ${RETENTION_DAYS} days"
 
     # Check prerequisites
@@ -246,20 +368,40 @@ main() {
         exit 1
     fi
 
-    # Upload to S3 (offsite)
+    # Upload PostgreSQL backup to S3 (offsite)
     upload_to_s3 "$backup_path"
 
-    # Cleanup old backups
+    # Cleanup old PostgreSQL backups
     cleanup_old_backups
+
+    # ==========================================
+    # Qdrant Vector Database Backup
+    # ==========================================
+    log ""
+    log "=========================================="
+    log "Starting Qdrant vector database backup"
+    log "=========================================="
+
+    # Backup Qdrant
+    if backup_qdrant; then
+        # Upload Qdrant backup to S3
+        upload_qdrant_to_s3
+    else
+        log "Qdrant backup skipped or failed (non-fatal)"
+    fi
 
     # Send healthcheck ping
     send_healthcheck
 
     # Summary
+    log ""
     log "=========================================="
-    log "Backup completed successfully"
+    log "All backups completed successfully"
     log "=========================================="
-    log "Backup file: $backup_path"
+    log "PostgreSQL backup: $backup_path"
+    if [ -f "$BACKUP_DIR/$QDRANT_BACKUP_FILE" ]; then
+        log "Qdrant backup: $BACKUP_DIR/$QDRANT_BACKUP_FILE"
+    fi
     log "Next backup: $(date -d '+1 day' +'%Y-%m-%d %H:%M:%S' 2>/dev/null || date -v+1d +'%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'tomorrow')"
 }
 

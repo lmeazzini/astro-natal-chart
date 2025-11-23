@@ -1036,7 +1036,7 @@
     "privacy": {
       "title": "6. Privacy and Data Protection",
       "content": "We comply with LGPD (Brazil's General Data Protection Law) and GDPR (General Data Protection Regulation).",
-      "seePolicy": "For more details, see our Privacy Policy.",
+      "seePolicy": "For more details, see our <link>Privacy Policy</link>.",
       "rightsTitle": "Your LGPD/GDPR Rights:",
       "access": "Access: download all your data (JSON export)",
       "rectification": "Rectification: correct inaccurate information",

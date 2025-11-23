@@ -1036,7 +1036,7 @@
     "privacy": {
       "title": "6. Privacidade e Proteção de Dados",
       "content": "Estamos em conformidade com a LGPD (Lei Geral de Proteção de Dados) e o GDPR (General Data Protection Regulation).",
-      "seePolicy": "Para mais detalhes, consulte nossa Política de Privacidade.",
+      "seePolicy": "Para mais detalhes, consulte nossa <link>Política de Privacidade</link>.",
       "rightsTitle": "Seus Direitos LGPD/GDPR:",
       "access": "Acesso: baixar todos os seus dados (exportação JSON)",
       "rectification": "Retificação: corrigir informações incorretas",

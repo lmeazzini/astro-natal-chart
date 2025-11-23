@@ -3,7 +3,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 
 export function TermsPage() {
@@ -79,11 +79,12 @@ export function TermsPage() {
           <h2>{t('terms.privacy.title')}</h2>
           <p>{t('terms.privacy.content')}</p>
           <p>
-            {t('terms.privacy.seePolicy').split('Política de Privacidade')[0]}
-            <Link to="/privacy" className="text-primary hover:underline">
-              {t('privacy.title')}
-            </Link>
-            .
+            <Trans
+              i18nKey="terms.privacy.seePolicy"
+              components={{
+                link: <Link to="/privacy" className="text-primary hover:underline" />
+              }}
+            />
           </p>
 
           <h3>{t('terms.privacy.rightsTitle')}</h3>

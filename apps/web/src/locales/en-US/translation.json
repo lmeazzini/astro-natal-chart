@@ -984,5 +984,387 @@
     "verifyToUnlock": "Verify your email to create unlimited charts",
     "emailNotVerified": "Email not verified",
     "verifyNow": "Verify now"
+  },
+  "legal": {
+    "back": "Back",
+    "lastUpdated": "Last updated: {{date}}",
+    "fullDocument": "Full document",
+    "seeFullVersion": "See {{file}} for full version."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "acceptance": {
+      "title": "1. Acceptance of Terms",
+      "content": "By accessing and using Real Astrology (\"Service\", \"Platform\", \"we\"), you (\"User\", \"you\") agree to be bound by these Terms of Service. If you do not agree with any part of these terms, do not use our Service."
+    },
+    "description": {
+      "title": "2. Service Description",
+      "intro": "Real Astrology is a digital platform that provides:",
+      "item1": "Birth chart calculations using precise astronomical data (Swiss Ephemeris)",
+      "item2": "Graphical visualization of astrological charts",
+      "item3": "Astrological interpretations based on traditional methods",
+      "item4": "Secure storage of personal birth data"
+    },
+    "account": {
+      "title": "3. User Registration and Account",
+      "requirementsTitle": "3.1 Requirements",
+      "req1": "You must be at least 18 years old",
+      "req2": "Provide true, complete, and up-to-date information",
+      "req3": "Maintain the confidentiality of your access credentials",
+      "responsibilitiesTitle": "3.2 User Responsibilities",
+      "resp1": "You are responsible for all activities on your account",
+      "resp2": "Notify us immediately of any unauthorized use",
+      "resp3": "Do not share your credentials with third parties"
+    },
+    "acceptableUse": {
+      "title": "4. Acceptable Use",
+      "canTitle": "You MAY:",
+      "can1": "Create birth charts for personal or professional use",
+      "can2": "Share exported charts following our guidelines",
+      "can3": "Use the services for educational purposes",
+      "cannotTitle": "You MAY NOT:",
+      "cannot1": "Use the Service for illegal or unauthorized purposes",
+      "cannot2": "Attempt to access restricted areas of the system",
+      "cannot3": "Reverse engineer, decompile, or modify our software",
+      "cannot4": "Collect data from other users without consent",
+      "cannot5": "Overload our servers (scraping, bots, etc.)"
+    },
+    "intellectualProperty": {
+      "title": "5. Intellectual Property",
+      "content": "The code, design, algorithms, and content of Real Astrology are our property. You receive a limited, non-exclusive, revocable license to use the Service."
+    },
+    "privacy": {
+      "title": "6. Privacy and Data Protection",
+      "content": "We comply with LGPD (Brazil's General Data Protection Law) and GDPR (General Data Protection Regulation).",
+      "seePolicy": "For more details, see our Privacy Policy.",
+      "rightsTitle": "Your LGPD/GDPR Rights:",
+      "access": "Access: download all your data (JSON export)",
+      "rectification": "Rectification: correct inaccurate information",
+      "deletion": "Deletion: request complete removal (right to be forgotten)",
+      "portability": "Portability: export data in structured format"
+    },
+    "limitations": {
+      "title": "7. Limitations and Warranties",
+      "disclaimerTitle": "Astrological Disclaimer",
+      "content": "Birth charts are generated for educational and entertainment purposes. They do not replace medical, psychological, legal, or financial advice."
+    },
+    "modifications": {
+      "title": "8. Modifications to Terms",
+      "content": "We may update these Terms periodically. We will notify you of significant changes by email or dashboard notification."
+    },
+    "law": {
+      "title": "9. Applicable Law",
+      "content": "These Terms are governed by the laws of Brazil. Jurisdiction: São Paulo/SP Court."
+    },
+    "contact": {
+      "title": "10. Contact",
+      "email": "Email",
+      "dpo": "DPO (LGPD)"
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": {
+      "title": "1. Introduction",
+      "content": "Real Astrology respects your privacy and is committed to protecting your personal data. This Policy explains how we collect, use, and protect your information in accordance with LGPD (Law 13.709/2018) and GDPR (EU Regulation 2016/679)."
+    },
+    "controller": {
+      "title": "2. Controller and DPO",
+      "dataController": "Data Controller",
+      "dpo": "DPO (Data Protection Officer)",
+      "responseTime": "Response time",
+      "responseTimeValue": "up to 15 business days"
+    },
+    "dataCollected": {
+      "title": "3. Data Collected",
+      "personalTitle": "3.1 Personal Data Provided",
+      "fullName": "Full name",
+      "fullNamePurpose": "Identification and personalization",
+      "email": "Email",
+      "emailPurpose": "Authentication and communication",
+      "password": "Password (bcrypt hash)",
+      "passwordPurpose": "Secure authentication",
+      "birthDate": "Date of birth",
+      "birthDatePurpose": "Birth chart calculation (explicit consent)",
+      "birthTime": "Time of birth",
+      "birthTimePurpose": "Birth chart calculation (explicit consent)",
+      "birthPlace": "Place of birth",
+      "birthPlacePurpose": "Geographic coordinates (explicit consent)",
+      "autoTitle": "3.2 Automatically Collected Data",
+      "ip": "IP Address",
+      "ipPurpose": "Security and rate limiting",
+      "userAgent": "User-Agent",
+      "userAgentPurpose": "Technical compatibility",
+      "cookies": "Cookies",
+      "cookiesPurpose": "Session and preferences",
+      "logs": "Access logs",
+      "logsPurpose": "Audit and security",
+      "thirdPartyTitle": "3.3 Third-Party Data (OAuth2)",
+      "oauthInfo": "If you sign up via Google, GitHub, or Facebook:",
+      "oauthCollect": "We collect: Account ID, email, name, profile photo",
+      "oauthLegal": "Legal basis: Consent (you authorize via OAuth)",
+      "oauthNoPassword": "We do not store your third-party service passwords"
+    },
+    "dataUse": {
+      "title": "4. How We Use Your Data",
+      "provide": "Provide the Service",
+      "provideDesc": "Calculate birth charts, store and display",
+      "auth": "Authentication",
+      "authDesc": "Validate login and maintain sessions",
+      "communication": "Communication",
+      "communicationDesc": "Transactional emails (confirmation, password reset)",
+      "improvements": "Improvements",
+      "improvementsDesc": "Aggregated and anonymized analytics",
+      "legal": "Legal Compliance",
+      "legalDesc": "LGPD audit logs",
+      "sensitiveNote": "Important: Birth data is sensitive data. We process it exclusively with your explicit consent."
+    },
+    "sharing": {
+      "title": "5. Data Sharing",
+      "noSell": "We do not sell, rent, or share your personal data, except:",
+      "cloud": "Cloud providers (AWS, DigitalOcean): Hosting",
+      "emailService": "Email services (SendGrid, Mailgun): Transactional emails",
+      "geocoding": "Geocoding (OpenCage): City to coordinates conversion",
+      "authorities": "Legal authorities: Compliance with court orders"
+    },
+    "security": {
+      "title": "6. Security",
+      "tls": "Encryption in transit: HTTPS/TLS 1.3",
+      "passwords": "Passwords: bcrypt hash with cost factor 12",
+      "jwt": "Authentication: JWT with short-lived tokens",
+      "rateLimit": "Rate limiting: Attack protection"
+    },
+    "retention": {
+      "title": "7. Data Retention",
+      "active": "Active account: As long as you maintain the account",
+      "inactive": "Inactive account: 24 months after last login",
+      "softDelete": "Deleted account (soft delete): 30 days (allows recovery)",
+      "hardDelete": "Hard delete: Data permanently removed after 30 days",
+      "audit": "Audit logs: 5 years (LGPD legal requirement)"
+    },
+    "rights": {
+      "title": "8. Your Rights (LGPD and GDPR)",
+      "access": "Right of Access",
+      "accessDesc": "View all data we store about you.",
+      "accessHow": "How to exercise: Settings → Privacy → View Data",
+      "rectification": "Right of Rectification",
+      "rectificationDesc": "Correct incorrect or outdated data.",
+      "rectificationHow": "How to exercise: Settings → Profile → Edit",
+      "portability": "Right to Portability",
+      "portabilityDesc": "Download all your data in JSON format.",
+      "portabilityHow": "How to exercise: Settings → Privacy → Export Data",
+      "erasure": "Right to Erasure",
+      "erasureDesc": "Request complete removal of your data.",
+      "erasureHow": "How to exercise: Settings → Privacy → Delete Account"
+    },
+    "cookiesSection": {
+      "title": "9. Cookies",
+      "content": "We use essential cookies (authentication), functional cookies (theme, language), and analytical cookies (anonymized Google Analytics).",
+      "seePolicy": "See our Cookie Policy for full details."
+    },
+    "minors": {
+      "title": "10. Minors",
+      "content": "Our service is NOT intended for persons under 18 years of age. If we discover data from minors, we will delete it immediately."
+    },
+    "changes": {
+      "title": "11. Changes to this Policy",
+      "content": "We may update this Policy periodically. Significant changes will be notified by email or banner."
+    },
+    "contactSection": {
+      "title": "12. Contact and Complaints",
+      "email": "Email",
+      "dpo": "DPO",
+      "complaints": "Complaints",
+      "brazil": "Brazil",
+      "eu": "EU",
+      "localAuthority": "Local Authority"
+    }
+  },
+  "cookies": {
+    "title": "Cookie Policy",
+    "what": {
+      "title": "1. What are Cookies?",
+      "content": "Cookies are small text files stored in your browser when you visit a website. They allow the site to \"remember\" you between visits, improving your experience."
+    },
+    "types": {
+      "title": "2. Cookies We Use",
+      "essentialTitle": "2.1 Essential Cookies (Required)",
+      "essentialDesc": "These cookies are strictly necessary and cannot be disabled:",
+      "functionalTitle": "2.2 Functional Cookies (Optional)",
+      "functionalDesc": "Improve your experience but can be disabled:",
+      "analyticalTitle": "2.3 Analytical Cookies (Optional)",
+      "analyticalDesc": "We use them to understand how you use the site (anonymized data):",
+      "marketingTitle": "2.4 Marketing Cookies",
+      "marketingDesc": "Currently, we do not use advertising, remarketing, or third-party tracking cookies (Facebook Pixel, Google Ads, etc.)."
+    },
+    "table": {
+      "cookie": "Cookie",
+      "purpose": "Purpose",
+      "duration": "Duration",
+      "provider": "Provider",
+      "session": "Session",
+      "jwtAuth": "JWT Authentication",
+      "refreshAuth": "Authentication renewal",
+      "sessionId": "Session identification",
+      "csrfProtection": "CSRF Protection",
+      "language": "Language preference",
+      "theme": "Theme (light/dark)",
+      "timezone": "Preferred timezone",
+      "consentRecord": "Consent record",
+      "distinguishUsers": "Distinguish users",
+      "rateLimit": "Rate limiting"
+    },
+    "thirdParty": {
+      "title": "3. Third-Party Cookies",
+      "oauthTitle": "3.1 OAuth2 (Social Login)",
+      "oauthDesc": "When logging in via Google, GitHub, or Facebook, these services may set their own cookies:"
+    },
+    "manage": {
+      "title": "4. How to Manage Cookies",
+      "inAppTitle": "4.1 In Real Astrology",
+      "step1": "Go to Settings → Privacy → Manage Cookies",
+      "step2": "Enable/disable optional cookies (functional, analytical)",
+      "step3": "Essential cookies cannot be disabled",
+      "browserTitle": "4.2 In Your Browser",
+      "chrome": "Chrome: Settings → Privacy and security → Cookies",
+      "firefox": "Firefox: Settings → Privacy and security → Cookies",
+      "safari": "Safari: Preferences → Privacy → Manage data",
+      "edge": "Edge: Settings → Privacy → Cookies",
+      "warning": "⚠️ Warning: Disabling essential cookies will prevent login and service use.",
+      "dntTitle": "4.3 Do Not Track (DNT)",
+      "dntDesc": "We respect the Do Not Track browser signal:",
+      "dntOn": "If DNT is enabled, we automatically disable analytical cookies",
+      "dntEssential": "Essential cookies continue working (required for authentication)"
+    },
+    "lgpdGdpr": {
+      "title": "5. LGPD/GDPR",
+      "content": "In accordance with Art. 7, I of LGPD and Art. 4, 11 of GDPR:",
+      "consent": "We request consent via cookie banner on first visit",
+      "revoke": "You can revoke consent at any time",
+      "essential": "Essential cookies do not require consent (legitimate interest)"
+    },
+    "otherTech": {
+      "title": "6. Other Technologies",
+      "storageTitle": "Local Storage and Session Storage",
+      "storageDesc": "In addition to cookies, we use:",
+      "localStorage": "Local Storage: UI preferences (theme, font size)",
+      "sessionStorage": "Session Storage: Temporary tokens (OAuth)",
+      "noSensitive": "Does not contain sensitive data. You can clear it in: Browser → Developer tools → Application → Storage."
+    },
+    "contact": {
+      "title": "7. Contact",
+      "questions": "Questions about cookies?",
+      "email": "Email",
+      "dpo": "DPO"
+    }
+  },
+  "methodology": {
+    "title": "Our Methodology",
+    "backToHome": "Home Page",
+    "hero": {
+      "title": "Traditional Astrology with Astronomical Precision",
+      "subtitle": "Discover how we combine millennia-old classical astrology techniques with cutting-edge astronomical calculation technology to offer precise and reliable birth charts."
+    },
+    "traditional": {
+      "title": "Traditional Astrology",
+      "subtitle": "Classical techniques validated by centuries of practice",
+      "whatIs": "What is Traditional Astrology?",
+      "desc1": "Traditional Astrology describes astrological practices developed in classical antiquity (Greece and Rome) and refined during the Middle Ages and Renaissance. Unlike modern astrology (post-20th century), which emphasizes psychological aspects and self-knowledge, traditional astrology is objective, predictive, and based on planetary dignities.",
+      "desc2": "Our platform implements techniques from Hellenistic Astrology (Greco-Roman period, 100 BC - 600 AD) and Medieval Astrology (European and Arab medieval period, 700 AD - 1700 AD), following texts from classical authors such as Ptolemy, Vettius Valens, Dorotheus of Sidon, Abu Ma'shar, and William Lilly.",
+      "techniques": "Implemented Techniques",
+      "dignities": {
+        "title": "1. Essential Dignities",
+        "desc": "Scoring system that evaluates a planet's strength and quality in a sign:",
+        "domicile": "Domicile (+5): Planet in its own sign (e.g., Mars in Aries)",
+        "exaltation": "Exaltation (+4): Planet in its exaltation sign (e.g., Sun in Aries)",
+        "triplicity": "Triplicity (+3): Planet ruling the sign's element",
+        "term": "Term (+2): Planet has dominion over specific degrees",
+        "face": "Face (+1): Planet governs decan (10°) of the sign",
+        "peregrine": "Peregrine (0): Planet without dignities or debilities",
+        "detriment": "Detriment (-5): Planet in the sign opposite its domicile",
+        "fall": "Fall (-4): Planet in the sign opposite its exaltation"
+      },
+      "sect": {
+        "title": "2. Sect Analysis (Day/Night)",
+        "desc": "We determine if the chart is diurnal (Sun above horizon) or nocturnal (Sun below horizon). Planets are classified as:",
+        "diurnal": "Diurnal: Sun, Jupiter, Saturn (better performance in diurnal charts)",
+        "nocturnal": "Nocturnal: Moon, Venus, Mars (better performance in nocturnal charts)",
+        "neutral": "Neutral: Mercury (adapts to context)",
+        "note": "Planets in sect (aligned with chart type) express themselves more harmoniously. Malefics out of sect (e.g., Saturn in a nocturnal chart) may cause more difficulties."
+      },
+      "temperament": {
+        "title": "3. Temperament Analysis",
+        "desc": "We calculate the dominant temperament of the nativity based on the 4 elements (Fire, Earth, Air, Water) and 4 qualities (Hot, Cold, Dry, Moist). Temperament reveals innate physical, emotional, and behavioral characteristics.",
+        "choleric": "Choleric (Fire): Hot and Dry - energetic, impulsive, assertive",
+        "melancholic": "Melancholic (Earth): Cold and Dry - pragmatic, stable, introspective",
+        "sanguine": "Sanguine (Air): Hot and Moist - sociable, optimistic, adaptable",
+        "phlegmatic": "Phlegmatic (Water): Cold and Moist - emotional, empathetic, intuitive"
+      },
+      "lord": {
+        "title": "4. Lord of the Nativity",
+        "desc": "We identify the planet that governs the nativity through a scoring algorithm that considers: essential dignities, Ascendant rulership, Moon rulership, Sun rulership (in diurnal charts), Part of Fortune rulership, and angular planets. The Lord of the Nativity represents central themes and dominant characteristics of the native's life."
+      },
+      "comparison": {
+        "title": "Traditional vs. Modern Astrology",
+        "traditional": "Traditional: Objective, predictive, based on dignities and dispositions",
+        "modern": "Modern: Psychological, interpretive, focuses on archetypes and self-knowledge",
+        "approach": "Our approach: We prioritize traditional techniques because they are mathematically defined and empirically tested over centuries, offering greater precision and consistency in interpretations."
+      }
+    },
+    "swissEph": {
+      "title": "Swiss Ephemeris",
+      "subtitle": "The world's most precise ephemeris library",
+      "whatIs": "What is Swiss Ephemeris?",
+      "desc1": "Swiss Ephemeris is an open-source library developed by Astrodienst AG (Switzerland) that provides ultra-high precision planetary positions. It is the standard tool used by professional astrologers, astronomical researchers, and astrological software developers worldwide.",
+      "desc2": "The library is based on NASA/JPL's JPL DE431 ephemeris (Jet Propulsion Laboratory), the same used in real space missions like Voyager, Cassini, and Mars Rovers. This ensures our calculations have the same reliability level used in space exploration.",
+      "specs": "Technical Specifications",
+      "precision": "Sub-Arcsecond Precision",
+      "precisionDesc": "Average positioning error < 0.001° (less than 1 arcsecond). For comparison, the apparent Moon in the sky is 1800 arcseconds in diameter - our precision is 1800× smaller than that.",
+      "coverage": "13,000-Year Time Coverage",
+      "coverageDesc": "Valid calculations from 10,000 BC to 10,000 AD, allowing historical analysis of ancient events and long-term future predictions.",
+      "jpl": "JPL DE431 Ephemeris (NASA)",
+      "jplDesc": "Uses the same numerical integration data of the solar system developed by NASA's Jet Propulsion Laboratory, including adjustments for Einstein's General Relativity, asteroid gravitational perturbations, and tidal effects.",
+      "openSource": "Open Source and Auditable",
+      "openSourceDesc": "Swiss Ephemeris is free software under GPL/AGPL license, allowing anyone to verify algorithms and validate calculations. No \"secret algorithms\" or \"black boxes\".",
+      "validation": "Scientific Validation",
+      "validationDesc": "Comparisons with real astronomical observations (occultations, eclipses, transits) confirm prediction accuracy. Residual errors are in the order of milliarcseconds."
+    },
+    "implementation": {
+      "title": "Implementation Details",
+      "subtitle": "Full transparency about our calculation techniques",
+      "houseSystems": "Supported House Systems",
+      "placidus": "Placidus (default): Most popular system, time-based division",
+      "koch": "Koch: Similar to Placidus, popular in Europe",
+      "equal": "Equal House: Equal 30° division from Ascendant",
+      "wholeSigns": "Whole Sign: Traditional Hellenistic system (whole signs)",
+      "campanus": "Campanus: Based on prime vertical",
+      "regiomontanus": "Regiomontanus: Medieval system, preserves angles",
+      "planets": "Calculated Planets",
+      "planetsList": "Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, North Node (True Node)",
+      "planetsNote": "Note: Modern planets (Uranus, Neptune, Pluto) are calculated but not used in traditional dignity and sect techniques (which consider only the 7 classical planets).",
+      "aspects": "Detected Aspects",
+      "majorAspects": "Major: Conjunction (0°), Opposition (180°), Trine (120°), Square (90°), Sextile (60°)",
+      "minorAspects": "Minor: Quincunx (150°), Semi-sextile (30°), Semi-square (45°), Sesquiquadrate (135°)",
+      "orbs": "Orbs: 8° for major aspects, 3° for minor aspects (configurable)",
+      "applying": "Applying/Separating: Determined by relative planet speeds",
+      "future": "Future Features",
+      "future1": "Part of Fortune and other Arabic Parts calculation",
+      "future2": "Fixed stars and their conjunctions with planets",
+      "future3": "Primary and Secondary Directions",
+      "future4": "Solar and Lunar Returns",
+      "future5": "Synastry (chart comparison) with traditional techniques"
+    },
+    "references": {
+      "title": "References and Recommended Reading",
+      "classicTexts": "Classic Astrology Texts",
+      "techDocs": "Technical Documentation",
+      "contemporaryAuthors": "Contemporary Authors"
+    },
+    "cta": {
+      "title": "Ready to Explore Your Birth Chart?",
+      "subtitle": "Experience the combination of traditional astrology with professional astronomical precision. Create your free account and discover the secrets of your birth sky.",
+      "createAccount": "Create Free Account",
+      "seeExample": "See Chart Example"
+    }
   }
 }

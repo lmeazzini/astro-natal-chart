@@ -984,5 +984,387 @@
     "verifyToUnlock": "Verifique seu email para criar mapas ilimitados",
     "emailNotVerified": "Email não verificado",
     "verifyNow": "Verificar agora"
+  },
+  "legal": {
+    "back": "Voltar",
+    "lastUpdated": "Última atualização: {{date}}",
+    "fullDocument": "Documento completo",
+    "seeFullVersion": "Consulte {{file}} para versão integral."
+  },
+  "terms": {
+    "title": "Termos de Uso",
+    "acceptance": {
+      "title": "1. Aceitação dos Termos",
+      "content": "Ao acessar e usar o Real Astrology (\"Serviço\", \"Plataforma\", \"nós\"), você (\"Usuário\", \"você\") concorda em estar vinculado a estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não use nosso Serviço."
+    },
+    "description": {
+      "title": "2. Descrição do Serviço",
+      "intro": "O Real Astrology é uma plataforma digital que fornece:",
+      "item1": "Cálculo de mapas natais usando dados astronômicos precisos (Swiss Ephemeris)",
+      "item2": "Visualização gráfica de mapas astrológicos",
+      "item3": "Interpretações astrológicas baseadas em métodos tradicionais",
+      "item4": "Armazenamento seguro de dados pessoais de nascimento"
+    },
+    "account": {
+      "title": "3. Cadastro e Conta de Usuário",
+      "requirementsTitle": "3.1 Requisitos",
+      "req1": "Você deve ter pelo menos 18 anos de idade",
+      "req2": "Fornecer informações verdadeiras, completas e atualizadas",
+      "req3": "Manter a confidencialidade de suas credenciais de acesso",
+      "responsibilitiesTitle": "3.2 Responsabilidades do Usuário",
+      "resp1": "Você é responsável por todas as atividades em sua conta",
+      "resp2": "Notificar-nos imediatamente sobre qualquer uso não autorizado",
+      "resp3": "Não compartilhar suas credenciais com terceiros"
+    },
+    "acceptableUse": {
+      "title": "4. Uso Aceitável",
+      "canTitle": "Você PODE:",
+      "can1": "Criar mapas natais para uso pessoal ou profissional",
+      "can2": "Compartilhar mapas exportados seguindo nossas diretrizes",
+      "can3": "Utilizar os serviços para fins educacionais",
+      "cannotTitle": "Você NÃO PODE:",
+      "cannot1": "Usar o Serviço para fins ilegais ou não autorizados",
+      "cannot2": "Tentar acessar áreas restritas do sistema",
+      "cannot3": "Fazer engenharia reversa, descompilar ou modificar nosso software",
+      "cannot4": "Coletar dados de outros usuários sem consentimento",
+      "cannot5": "Sobrecarregar nossos servidores (scraping, bots, etc.)"
+    },
+    "intellectualProperty": {
+      "title": "5. Propriedade Intelectual",
+      "content": "O código, design, algoritmos e conteúdo do Real Astrology são de nossa propriedade. Você recebe uma licença limitada, não exclusiva e revogável para usar o Serviço."
+    },
+    "privacy": {
+      "title": "6. Privacidade e Proteção de Dados",
+      "content": "Estamos em conformidade com a LGPD (Lei Geral de Proteção de Dados) e o GDPR (General Data Protection Regulation).",
+      "seePolicy": "Para mais detalhes, consulte nossa Política de Privacidade.",
+      "rightsTitle": "Seus Direitos LGPD/GDPR:",
+      "access": "Acesso: baixar todos os seus dados (exportação JSON)",
+      "rectification": "Retificação: corrigir informações incorretas",
+      "deletion": "Exclusão: solicitar remoção completa (direito ao esquecimento)",
+      "portability": "Portabilidade: exportar dados em formato estruturado"
+    },
+    "limitations": {
+      "title": "7. Limitações e Garantias",
+      "disclaimerTitle": "Disclaimer Astrológico",
+      "content": "Os mapas natais são gerados para fins educacionais e de entretenimento. Não substituem aconselhamento médico, psicológico, jurídico ou financeiro."
+    },
+    "modifications": {
+      "title": "8. Modificações nos Termos",
+      "content": "Podemos atualizar estes Termos periodicamente. Notificaremos sobre mudanças significativas por email ou notificação no painel."
+    },
+    "law": {
+      "title": "9. Lei Aplicável",
+      "content": "Estes Termos são regidos pelas leis do Brasil. Foro: Comarca de São Paulo/SP."
+    },
+    "contact": {
+      "title": "10. Contato",
+      "email": "Email",
+      "dpo": "DPO (LGPD)"
+    }
+  },
+  "privacy": {
+    "title": "Política de Privacidade",
+    "intro": {
+      "title": "1. Introdução",
+      "content": "O Real Astrology respeita sua privacidade e está comprometido em proteger seus dados pessoais. Esta Política explica como coletamos, usamos e protegemos suas informações conforme a LGPD (Lei 13.709/2018) e o GDPR (Regulamento UE 2016/679)."
+    },
+    "controller": {
+      "title": "2. Controlador e DPO",
+      "dataController": "Controlador de Dados",
+      "dpo": "DPO (Encarregado)",
+      "responseTime": "Prazo de resposta",
+      "responseTimeValue": "até 15 dias úteis"
+    },
+    "dataCollected": {
+      "title": "3. Dados Coletados",
+      "personalTitle": "3.1 Dados Pessoais Fornecidos",
+      "fullName": "Nome completo",
+      "fullNamePurpose": "Identificação e personalização",
+      "email": "Email",
+      "emailPurpose": "Autenticação e comunicação",
+      "password": "Senha (hash bcrypt)",
+      "passwordPurpose": "Autenticação segura",
+      "birthDate": "Data de nascimento",
+      "birthDatePurpose": "Cálculo de mapa natal (consentimento explícito)",
+      "birthTime": "Hora de nascimento",
+      "birthTimePurpose": "Cálculo de mapa natal (consentimento explícito)",
+      "birthPlace": "Local de nascimento",
+      "birthPlacePurpose": "Coordenadas geográficas (consentimento explícito)",
+      "autoTitle": "3.2 Dados Coletados Automaticamente",
+      "ip": "Endereço IP",
+      "ipPurpose": "Segurança e rate limiting",
+      "userAgent": "User-Agent",
+      "userAgentPurpose": "Compatibilidade técnica",
+      "cookies": "Cookies",
+      "cookiesPurpose": "Sessão e preferências",
+      "logs": "Logs de acesso",
+      "logsPurpose": "Auditoria e segurança",
+      "thirdPartyTitle": "3.3 Dados de Terceiros (OAuth2)",
+      "oauthInfo": "Se você se cadastrar via Google, GitHub ou Facebook:",
+      "oauthCollect": "Coletamos: ID da conta, email, nome, foto de perfil",
+      "oauthLegal": "Base legal: Consentimento (você autoriza via OAuth)",
+      "oauthNoPassword": "Não armazenamos suas senhas de serviços de terceiros"
+    },
+    "dataUse": {
+      "title": "4. Como Usamos Seus Dados",
+      "provide": "Fornecer o Serviço",
+      "provideDesc": "Calcular mapas natais, armazenar e exibir",
+      "auth": "Autenticação",
+      "authDesc": "Validar login e manter sessões",
+      "communication": "Comunicação",
+      "communicationDesc": "Emails transacionais (confirmação, reset de senha)",
+      "improvements": "Melhorias",
+      "improvementsDesc": "Análises agregadas e anonimizadas",
+      "legal": "Conformidade Legal",
+      "legalDesc": "Logs de auditoria LGPD",
+      "sensitiveNote": "Importante: Dados de nascimento são dados sensíveis. Processamos exclusivamente com seu consentimento explícito."
+    },
+    "sharing": {
+      "title": "5. Compartilhamento de Dados",
+      "noSell": "Não vendemos, alugamos ou compartilhamos seus dados pessoais, exceto:",
+      "cloud": "Provedores de nuvem (AWS, DigitalOcean): Hospedagem",
+      "emailService": "Serviços de email (SendGrid, Mailgun): Emails transacionais",
+      "geocoding": "Geocoding (OpenCage): Conversão de cidades em coordenadas",
+      "authorities": "Autoridades legais: Cumprimento de ordens judiciais"
+    },
+    "security": {
+      "title": "6. Segurança",
+      "tls": "Criptografia em trânsito: HTTPS/TLS 1.3",
+      "passwords": "Senhas: Hash bcrypt com cost factor 12",
+      "jwt": "Autenticação: JWT com tokens de curta duração",
+      "rateLimit": "Rate limiting: Proteção contra ataques"
+    },
+    "retention": {
+      "title": "7. Retenção de Dados",
+      "active": "Conta ativa: Enquanto você mantiver a conta",
+      "inactive": "Conta inativa: 24 meses após último login",
+      "softDelete": "Conta excluída (soft delete): 30 dias (permite recuperação)",
+      "hardDelete": "Hard delete: Dados removidos permanentemente após 30 dias",
+      "audit": "Logs de auditoria: 5 anos (obrigação legal LGPD)"
+    },
+    "rights": {
+      "title": "8. Seus Direitos (LGPD e GDPR)",
+      "access": "Direito de Acesso",
+      "accessDesc": "Visualizar todos os dados que armazenamos sobre você.",
+      "accessHow": "Como exercer: Configurações → Privacidade → Ver Dados",
+      "rectification": "Direito de Retificação",
+      "rectificationDesc": "Corrigir dados incorretos ou desatualizados.",
+      "rectificationHow": "Como exercer: Configurações → Perfil → Editar",
+      "portability": "Direito de Portabilidade",
+      "portabilityDesc": "Baixar todos os seus dados em formato JSON.",
+      "portabilityHow": "Como exercer: Configurações → Privacidade → Exportar Dados",
+      "erasure": "Direito ao Esquecimento",
+      "erasureDesc": "Solicitar remoção completa de seus dados.",
+      "erasureHow": "Como exercer: Configurações → Privacidade → Excluir Conta"
+    },
+    "cookiesSection": {
+      "title": "9. Cookies",
+      "content": "Usamos cookies essenciais (autenticação), funcionais (tema, idioma) e analíticos (Google Analytics anonimizado).",
+      "seePolicy": "Consulte nossa Política de Cookies para detalhes completos."
+    },
+    "minors": {
+      "title": "10. Menores de Idade",
+      "content": "Nosso serviço NÃO é destinado a menores de 18 anos. Se descobrirmos dados de menores, apagaremos imediatamente."
+    },
+    "changes": {
+      "title": "11. Mudanças nesta Política",
+      "content": "Podemos atualizar esta Política periodicamente. Mudanças significativas serão notificadas por email ou banner."
+    },
+    "contactSection": {
+      "title": "12. Contato e Reclamações",
+      "email": "Email",
+      "dpo": "DPO",
+      "complaints": "Reclamações",
+      "brazil": "Brasil",
+      "eu": "UE",
+      "localAuthority": "Autoridade Local"
+    }
+  },
+  "cookies": {
+    "title": "Política de Cookies",
+    "what": {
+      "title": "1. O que são Cookies?",
+      "content": "Cookies são pequenos arquivos de texto armazenados no seu navegador quando você visita um site. Eles permitem que o site \"lembre\" de você entre visitas, melhorando sua experiência."
+    },
+    "types": {
+      "title": "2. Cookies que Usamos",
+      "essentialTitle": "2.1 Cookies Essenciais (Obrigatórios)",
+      "essentialDesc": "Estes cookies são estritamente necessários e não podem ser desativados:",
+      "functionalTitle": "2.2 Cookies Funcionais (Opcionais)",
+      "functionalDesc": "Melhoram sua experiência, mas podem ser desativados:",
+      "analyticalTitle": "2.3 Cookies Analíticos (Opcionais)",
+      "analyticalDesc": "Usamos para entender como você usa o site (dados anonimizados):",
+      "marketingTitle": "2.4 Cookies de Marketing",
+      "marketingDesc": "Atualmente, não usamos cookies de publicidade, remarketing ou rastreamento de terceiros (Facebook Pixel, Google Ads, etc.)."
+    },
+    "table": {
+      "cookie": "Cookie",
+      "purpose": "Finalidade",
+      "duration": "Duração",
+      "provider": "Provedor",
+      "session": "Sessão",
+      "jwtAuth": "Autenticação JWT",
+      "refreshAuth": "Renovação de autenticação",
+      "sessionId": "Identificação de sessão",
+      "csrfProtection": "Proteção CSRF",
+      "language": "Preferência de idioma",
+      "theme": "Tema (claro/escuro)",
+      "timezone": "Fuso horário preferido",
+      "consentRecord": "Registro de consentimento",
+      "distinguishUsers": "Distinguir usuários",
+      "rateLimit": "Limitar taxa"
+    },
+    "thirdParty": {
+      "title": "3. Cookies de Terceiros",
+      "oauthTitle": "3.1 OAuth2 (Login Social)",
+      "oauthDesc": "Ao fazer login via Google, GitHub ou Facebook, esses serviços podem definir seus próprios cookies:"
+    },
+    "manage": {
+      "title": "4. Como Gerenciar Cookies",
+      "inAppTitle": "4.1 No Real Astrology",
+      "step1": "Acesse Configurações → Privacidade → Gerenciar Cookies",
+      "step2": "Ative/desative cookies opcionais (funcionais, analíticos)",
+      "step3": "Cookies essenciais não podem ser desativados",
+      "browserTitle": "4.2 No Navegador",
+      "chrome": "Chrome: Configurações → Privacidade e segurança → Cookies",
+      "firefox": "Firefox: Configurações → Privacidade e segurança → Cookies",
+      "safari": "Safari: Preferências → Privacidade → Gerenciar dados",
+      "edge": "Edge: Configurações → Privacidade → Cookies",
+      "warning": "⚠️ Aviso: Desativar cookies essenciais impedirá o login e uso do serviço.",
+      "dntTitle": "4.3 Do Not Track (DNT)",
+      "dntDesc": "Respeitamos o sinal Do Not Track do navegador:",
+      "dntOn": "Se DNT estiver ativado, desabilitamos cookies analíticos automaticamente",
+      "dntEssential": "Cookies essenciais continuam funcionando (necessários para autenticação)"
+    },
+    "lgpdGdpr": {
+      "title": "5. LGPD/GDPR",
+      "content": "Conforme Art. 7º, I da LGPD e Art. 4º, 11 do GDPR:",
+      "consent": "Solicitamos consentimento via banner de cookies na primeira visita",
+      "revoke": "Você pode revogar consentimento a qualquer momento",
+      "essential": "Cookies essenciais não requerem consentimento (interesse legítimo)"
+    },
+    "otherTech": {
+      "title": "6. Outras Tecnologias",
+      "storageTitle": "Local Storage e Session Storage",
+      "storageDesc": "Além de cookies, usamos:",
+      "localStorage": "Local Storage: Preferências da UI (tema, tamanho de fonte)",
+      "sessionStorage": "Session Storage: Tokens temporários (OAuth)",
+      "noSensitive": "Não contém dados sensíveis. Você pode limpar em: Navegador → Ferramentas do desenvolvedor → Application → Storage."
+    },
+    "contact": {
+      "title": "7. Contato",
+      "questions": "Dúvidas sobre cookies?",
+      "email": "Email",
+      "dpo": "DPO"
+    }
+  },
+  "methodology": {
+    "title": "Nossa Metodologia",
+    "backToHome": "Página Inicial",
+    "hero": {
+      "title": "Astrologia Tradicional com Precisão Astronômica",
+      "subtitle": "Descubra como combinamos técnicas milenares da astrologia clássica com a tecnologia mais avançada de cálculos astronômicos para oferecer mapas natais precisos e confiáveis."
+    },
+    "traditional": {
+      "title": "Astrologia Tradicional",
+      "subtitle": "Técnicas clássicas validadas por séculos de prática",
+      "whatIs": "O que é Astrologia Tradicional?",
+      "desc1": "Astrologia Tradicional é o termo usado para descrever as práticas astrológicas desenvolvidas na antiguidade clássica (Grécia e Roma) e aperfeiçoadas durante a Idade Média e Renascimento. Diferentemente da astrologia moderna (pós-século XX), que enfatiza aspectos psicológicos e de autoconhecimento, a astrologia tradicional é objetiva, preditiva e baseada em dignidades planetárias.",
+      "desc2": "Nossa plataforma implementa técnicas da Astrologia Helenística (período greco-romano, 100 a.C. - 600 d.C.) e Astrologia Medieval (período medieval europeu e árabe, 700 d.C. - 1700 d.C.), seguindo textos de autores clássicos como Ptolemeu, Vettius Valens, Dorotheus de Sidon, Abu Ma'shar e William Lilly.",
+      "techniques": "Técnicas Implementadas",
+      "dignities": {
+        "title": "1. Dignidades Essenciais",
+        "desc": "Sistema de pontuação que avalia a força e qualidade de um planeta em um signo:",
+        "domicile": "Domicílio (+5): Planeta em seu próprio signo (ex: Marte em Áries)",
+        "exaltation": "Exaltação (+4): Planeta em seu signo de exaltação (ex: Sol em Áries)",
+        "triplicity": "Triplicidade (+3): Planeta regente do elemento do signo",
+        "term": "Termo (+2): Planeta tem domínio sobre graus específicos",
+        "face": "Face (+1): Planeta governa decano (10°) do signo",
+        "peregrine": "Peregrino (0): Planeta sem dignidades ou debilidades",
+        "detriment": "Detrimento (-5): Planeta no signo oposto ao seu domicílio",
+        "fall": "Queda (-4): Planeta no signo oposto à sua exaltação"
+      },
+      "sect": {
+        "title": "2. Análise de Seita (Dia/Noite)",
+        "desc": "Determinamos se o mapa é diurno (Sol acima do horizonte) ou noturno (Sol abaixo do horizonte). Planetas são classificados como:",
+        "diurnal": "Diurnos: Sol, Júpiter, Saturno (melhor performance em mapas diurnos)",
+        "nocturnal": "Noturnos: Lua, Vênus, Marte (melhor performance em mapas noturnos)",
+        "neutral": "Neutros: Mercúrio (adapta-se ao contexto)",
+        "note": "Planetas em seita (alinhados com o tipo de mapa) expressam-se de forma mais harmônica. Maléficos fora de seita (ex: Saturno em mapa noturno) podem causar mais dificuldades."
+      },
+      "temperament": {
+        "title": "3. Análise de Temperamento",
+        "desc": "Calculamos o temperamento dominante da natividade baseado nos 4 elementos (Fogo, Terra, Ar, Água) e 4 qualidades (Quente, Frio, Seco, Úmido). O temperamento revela características físicas, emocionais e comportamentais inatas.",
+        "choleric": "Colérico (Fogo): Quente e Seco - enérgico, impulsivo, assertivo",
+        "melancholic": "Melancólico (Terra): Frio e Seco - pragmático, estável, introspectivo",
+        "sanguine": "Sanguíneo (Ar): Quente e Úmido - sociável, otimista, adaptável",
+        "phlegmatic": "Fleumático (Água): Frio e Úmido - emocional, empático, intuitivo"
+      },
+      "lord": {
+        "title": "4. Senhor da Natividade (Lord of the Nativity)",
+        "desc": "Identificamos o planeta que governa a natividade através de um algoritmo de pontuação que considera: dignidades essenciais, regência do Ascendente, regência da Lua, regência do Sol (em mapas diurnos), regência da Parte da Fortuna, e planetas angulares. O Senhor da Natividade representa temas centrais e características dominantes da vida do nativo."
+      },
+      "comparison": {
+        "title": "Astrologia Tradicional vs. Moderna",
+        "traditional": "Tradicional: Objetiva, preditiva, baseada em dignidades e disposições",
+        "modern": "Moderna: Psicológica, interpretativa, foca em arquétipos e autoconhecimento",
+        "approach": "Nossa abordagem: Priorizamos técnicas tradicionais por serem matematicamente definidas e empiricamente testadas ao longo de séculos, oferecendo maior precisão e consistência nas interpretações."
+      }
+    },
+    "swissEph": {
+      "title": "Swiss Ephemeris",
+      "subtitle": "A biblioteca de efemérides mais precisa do mundo",
+      "whatIs": "O que é Swiss Ephemeris?",
+      "desc1": "Swiss Ephemeris é uma biblioteca de código aberto desenvolvida pela Astrodienst AG (Suíça) que fornece posições planetárias de altíssima precisão. É a ferramenta padrão utilizada por astrólogos profissionais, pesquisadores astronômicos e desenvolvedores de software astrológico em todo o mundo.",
+      "desc2": "A biblioteca é baseada nas efemérides JPL DE431 da NASA/JPL (Jet Propulsion Laboratory), as mesmas utilizadas em missões espaciais reais como Voyager, Cassini e Mars Rovers. Isso garante que nossos cálculos tenham o mesmo nível de confiabilidade usado pela exploração espacial.",
+      "specs": "Especificações Técnicas",
+      "precision": "Precisão Inferior a 1 Arcsecond",
+      "precisionDesc": "Erro médio de posicionamento < 0.001° (menos de 1 segundo de arco). Para comparação, a Lua aparente no céu tem 1800 arcseconds de diâmetro - nossa precisão é 1800× menor que isso.",
+      "coverage": "Cobertura Temporal de 13.000 Anos",
+      "coverageDesc": "Cálculos válidos de 10.000 a.C. até 10.000 d.C., permitindo análise histórica de eventos antigos (nascimento de Jesus Cristo, fundação de Roma) e previsões futuras de longo prazo.",
+      "jpl": "Efemérides JPL DE431 (NASA)",
+      "jplDesc": "Utiliza os mesmos dados de integração numérica do sistema solar desenvolvidos pelo Jet Propulsion Laboratory da NASA, incluindo ajustes para Relatividade Geral de Einstein, perturbações gravitacionais de asteroides e efeitos de maré.",
+      "openSource": "Código Aberto e Auditável",
+      "openSourceDesc": "Swiss Ephemeris é software livre sob licença GPL/AGPL, permitindo que qualquer pessoa verifique os algoritmos e validação dos cálculos. Nenhum \"algoritmo secreto\" ou \"caixa-preta\".",
+      "validation": "Validação Científica",
+      "validationDesc": "Comparações com observações astronômicas reais (ocultações, eclipses, trânsitos) confirmam a precisão das previsões. Erros residuais são da ordem de milissegundos de arco."
+    },
+    "implementation": {
+      "title": "Detalhes de Implementação",
+      "subtitle": "Transparência total sobre nossas técnicas de cálculo",
+      "houseSystems": "Sistemas de Casas Suportados",
+      "placidus": "Placidus (padrão): Sistema mais popular, baseado em divisão de tempo",
+      "koch": "Koch: Similar a Placidus, popular na Europa",
+      "equal": "Equal House: Divisão igual de 30° a partir do Ascendente",
+      "wholeSigns": "Whole Sign: Sistema tradicional helenístico (signos inteiros)",
+      "campanus": "Campanus: Baseado em círculo primário",
+      "regiomontanus": "Regiomontanus: Sistema medieval, preserva ângulos",
+      "planets": "Planetas Calculados",
+      "planetsList": "Sol, Lua, Mercúrio, Vênus, Marte, Júpiter, Saturno, Urano, Netuno, Plutão, Nodo Norte (True Node)",
+      "planetsNote": "Nota: Planetas modernos (Urano, Netuno, Plutão) são calculados mas não utilizados em técnicas tradicionais de dignidades e seita (que consideram apenas os 7 planetas clássicos).",
+      "aspects": "Aspectos Detectados",
+      "majorAspects": "Maiores: Conjunção (0°), Oposição (180°), Trígono (120°), Quadratura (90°), Sextil (60°)",
+      "minorAspects": "Menores: Quincunx (150°), Semisextil (30°), Semiquadratura (45°), Sesquiquadrado (135°)",
+      "orbs": "Orbes: 8° para aspectos maiores, 3° para aspectos menores (configurável)",
+      "applying": "Aplicando/Separando: Determinado pela velocidade relativa dos planetas",
+      "future": "Funcionalidades Futuras",
+      "future1": "Cálculo da Parte da Fortuna e outras partes árabes",
+      "future2": "Estrelas fixas e suas conjunções com planetas",
+      "future3": "Direções Primárias e Secundárias",
+      "future4": "Retornos Solares e Lunares",
+      "future5": "Sinastria (comparação de mapas) com técnicas tradicionais"
+    },
+    "references": {
+      "title": "Referências e Leituras Recomendadas",
+      "classicTexts": "Textos Clássicos de Astrologia",
+      "techDocs": "Documentação Técnica",
+      "contemporaryAuthors": "Autores Contemporâneos"
+    },
+    "cta": {
+      "title": "Pronto para Explorar Seu Mapa Natal?",
+      "subtitle": "Experimente a combinação de astrologia tradicional com precisão astronômica profissional. Crie sua conta gratuitamente e descubra os segredos do seu céu de nascimento.",
+      "createAccount": "Criar Conta Grátis",
+      "seeExample": "Ver Exemplo de Mapa"
+    }
   }
 }

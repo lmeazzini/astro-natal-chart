@@ -130,8 +130,9 @@ async def test_get_public_chart_not_found(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_endpoints_require_auth(client: AsyncClient):
-    """Test that admin endpoints require authentication."""
-    # Try to create without auth
+    """Test that admin endpoints require authentication/authorization."""
+    # Try to create without auth - returns 403 (Forbidden) because
+    # require_admin dependency checks for admin role after authentication
     response = await client.post(
         "/api/v1/admin/public-charts",
         json={
@@ -143,11 +144,11 @@ async def test_admin_endpoints_require_auth(client: AsyncClient):
             "longitude": 0,
         },
     )
-    assert response.status_code == 401
+    assert response.status_code == 403
 
     # Try to list admin without auth
     response = await client.get("/api/v1/admin/public-charts")
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 @pytest.mark.asyncio

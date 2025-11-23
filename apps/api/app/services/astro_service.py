@@ -369,6 +369,14 @@ def calculate_sect(ascendant: float, sun_longitude: float) -> str:
     - Diurnal (day chart): Sun is above the horizon (houses 7-12)
     - Nocturnal (night chart): Sun is below the horizon (houses 1-6)
 
+    The horizon is defined by the ASC-DSC axis:
+    - Sun between ASC and DSC (going through IC, increasing degrees) = BELOW horizon
+    - Sun between DSC and ASC (going through MC, decreasing/wrapping degrees) = ABOVE horizon
+
+    Edge cases:
+    - Sun exactly on ASC (sunrise): counted as diurnal (start of day)
+    - Sun exactly on DSC (sunset): counted as nocturnal (start of night)
+
     Args:
         ascendant: Ascendant degree (0-360)
         sun_longitude: Sun's ecliptic longitude (0-360)
@@ -382,16 +390,18 @@ def calculate_sect(ascendant: float, sun_longitude: float) -> str:
     # Normalize sun longitude
     sun_lon = sun_longitude % 360
 
-    # Check if Sun is between Ascendant and Descendant (going through MC)
-    # This determines if Sun is above horizon (day chart)
+    # Determine if Sun is BELOW the horizon (between ASC and DSC going through IC)
+    # If Sun is below horizon, it's a night chart; otherwise it's a day chart
     if ascendant < descendant:
         # Normal case: ASC is at smaller degree than DSC
-        is_day_chart = ascendant <= sun_lon <= descendant
+        # Sun between ASC and DSC (exclusive of DSC) = below horizon = nocturnal
+        sun_below_horizon = ascendant <= sun_lon < descendant
     else:
-        # Wrapped case: ASC crosses 0° Aries
-        is_day_chart = sun_lon >= ascendant or sun_lon <= descendant
+        # Wrapped case: ASC crosses 0° (e.g., ASC=350, DSC=170)
+        # Sun is below horizon if it's >= ASC (going to 360) OR < DSC (from 0)
+        sun_below_horizon = sun_lon >= ascendant or sun_lon < descendant
 
-    return "diurnal" if is_day_chart else "nocturnal"
+    return "nocturnal" if sun_below_horizon else "diurnal"
 
 
 def get_planet_sect_status(planet_name: str, chart_sect: str) -> dict[str, Any]:

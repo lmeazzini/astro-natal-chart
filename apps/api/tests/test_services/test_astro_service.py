@@ -464,33 +464,90 @@ class TestIsAspectApplying:
 
 
 class TestCalculateSect:
-    """Tests for day/night chart determination."""
+    """Tests for day/night chart determination.
 
-    def test_day_chart_sun_above_horizon(self):
-        """Test that chart is diurnal when Sun is above horizon."""
-        # Ascendant at 0° (Aries rising)
-        # Sun at 90° (MC area) - above horizon
-        sect = calculate_sect(ascendant=0.0, sun_longitude=90.0)
-        assert sect == "diurnal"
+    In traditional astrology:
+    - DIURNAL (day chart): Sun is ABOVE the horizon (houses 7-12)
+    - NOCTURNAL (night chart): Sun is BELOW the horizon (houses 1-6)
+
+    The horizon is defined by ASC-DSC axis:
+    - ASC to DSC (through IC, increasing degrees) = BELOW horizon
+    - DSC to ASC (through MC, wrapping degrees) = ABOVE horizon
+    """
 
     def test_night_chart_sun_below_horizon(self):
-        """Test that chart is nocturnal when Sun is below horizon."""
-        # Ascendant at 0° (Aries rising)
-        # Sun at 270° (IC area) - below horizon
-        sect = calculate_sect(ascendant=0.0, sun_longitude=270.0)
+        """Test that chart is nocturnal when Sun is below horizon.
+
+        ASC=0, DSC=180
+        Sun at 90 is between ASC(0) and DSC(180), going through IC
+        This is BELOW the horizon = NOCTURNAL
+        """
+        sect = calculate_sect(ascendant=0.0, sun_longitude=90.0)
         assert sect == "nocturnal"
 
-    def test_sect_at_sunrise(self):
-        """Test sect calculation at sunrise (Sun at ASC)."""
-        sect = calculate_sect(ascendant=100.0, sun_longitude=100.0)
-        # Sun exactly at ASC - technically still day
+    def test_day_chart_sun_above_horizon(self):
+        """Test that chart is diurnal when Sun is above horizon.
+
+        ASC=0, DSC=180
+        Sun at 270 is between DSC(180) and ASC(360/0), going through MC
+        This is ABOVE the horizon = DIURNAL
+        """
+        sect = calculate_sect(ascendant=0.0, sun_longitude=270.0)
         assert sect == "diurnal"
 
+    def test_sect_at_sunrise(self):
+        """Test sect calculation at sunrise (Sun exactly at ASC).
+
+        Sun exactly at ASC marks the start of day.
+        Traditionally counted as NOCTURNAL (Sun just rising, technically still below)
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=100.0)
+        assert sect == "nocturnal"
+
     def test_sect_at_sunset(self):
-        """Test sect calculation at sunset (Sun at DSC)."""
-        # For a clear nocturnal chart, Sun should be clearly below horizon
-        # ASC=100, DSC=280, Sun at 50 is clearly in the lower hemisphere
-        sect = calculate_sect(ascendant=100.0, sun_longitude=50.0)
+        """Test sect calculation at sunset (Sun at DSC).
+
+        ASC=100, DSC=280
+        Sun at 280 is exactly at DSC (sunset)
+        Traditionally counted as DIURNAL (Sun just setting, last moment above)
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=280.0)
+        assert sect == "diurnal"
+
+    def test_sun_clearly_below_horizon(self):
+        """Test Sun clearly below horizon (near IC).
+
+        ASC=100, DSC=280, IC≈10
+        Sun at 150 is between ASC(100) and DSC(280) = below horizon
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=150.0)
+        assert sect == "nocturnal"
+
+    def test_sun_clearly_above_horizon(self):
+        """Test Sun clearly above horizon (near MC).
+
+        ASC=100, DSC=280, MC≈190
+        Sun at 350 is between DSC(280) and ASC(460/100) = above horizon
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=350.0)
+        assert sect == "diurnal"
+
+    def test_wrapped_ascendant_day_chart(self):
+        """Test sect with ASC crossing 0° - day chart.
+
+        ASC=350, DSC=170
+        Sun at 260 is between DSC(170) and ASC(350) = above horizon
+        """
+        sect = calculate_sect(ascendant=350.0, sun_longitude=260.0)
+        assert sect == "diurnal"
+
+    def test_wrapped_ascendant_night_chart(self):
+        """Test sect with ASC crossing 0° - night chart.
+
+        ASC=350, DSC=170
+        Sun at 50 is between ASC(350->0->50) or <DSC(170) = below horizon
+        """
+        sect = calculate_sect(ascendant=350.0, sun_longitude=50.0)
         assert sect == "nocturnal"
 
 

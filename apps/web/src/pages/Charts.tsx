@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
+import { interpretationsService } from '../services/interpretations';
 import { getToken } from '../services/api';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
@@ -14,7 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles } from 'lucide-react';
+import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles, RefreshCw, Pencil } from 'lucide-react';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { EducationalBanner } from '@/components/EducationalBanner';
 
@@ -25,6 +26,7 @@ export function ChartsPage() {
   const [charts, setCharts] = useState<BirthChart[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [recalculatingChartId, setRecalculatingChartId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCharts();
@@ -64,6 +66,35 @@ export function ChartsPage() {
     }
   }
 
+  async function handleRecalculate(chartId: string) {
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      setRecalculatingChartId(chartId);
+      setError('');
+
+      // Recalculate chart data
+      const updatedChart = await chartsService.recalculate(chartId, token);
+
+      // Regenerate standard interpretations
+      await interpretationsService.regenerate(chartId, token);
+
+      // Try to regenerate RAG interpretations (may fail if not admin)
+      try {
+        await interpretationsService.regenerateRAG(chartId, token);
+      } catch {
+        // RAG regeneration is optional (admin only), ignore errors
+      }
+
+      // Update the chart in the list
+      setCharts(charts.map((c) => c.id === chartId ? updatedChart : c));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('charts.recalculateError', { defaultValue: 'Erro ao recalcular mapa' }));
+    } finally {
+      setRecalculatingChartId(null);
+    }
+  }
 
   function getSignFromLongitude(longitude: number): string {
     const signIndex = Math.floor(longitude / 30);
@@ -167,14 +198,36 @@ export function ChartsPage() {
                         <CardDescription className="text-sm mt-1">{chart.gender}</CardDescription>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(chart.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 -mr-2 -mt-1"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1 -mr-2 -mt-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(`/charts/${chart.id}/edit`)}
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        title={t('charts.edit', { defaultValue: 'Editar mapa' })}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRecalculate(chart.id)}
+                        disabled={recalculatingChartId === chart.id}
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        title={t('charts.recalculate', { defaultValue: 'Recalcular mapa e interpretações' })}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${recalculatingChartId === chart.id ? 'animate-spin' : ''}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(chart.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title={t('charts.delete', { defaultValue: 'Excluir mapa' })}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
 

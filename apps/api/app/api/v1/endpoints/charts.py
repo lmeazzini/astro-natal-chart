@@ -608,3 +608,73 @@ async def download_chart_pdf(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
         ) from None
+
+
+# ============================================================
+# RECALCULATE ENDPOINT
+# ============================================================
+
+
+@router.post(
+    "/{chart_id}/recalculate",
+    response_model=BirthChartRead,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Recalculate birth chart",
+    description="Force recalculation of all chart data and interpretations.",
+)
+@limiter.limit(RateLimits.CHART_UPDATE)
+async def recalculate_chart(
+    request: Request,
+    response: Response,
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> BirthChartRead:
+    """
+    Force recalculation of a birth chart.
+
+    This endpoint triggers a full recalculation of the chart data,
+    including all planetary positions, houses, aspects, dignities,
+    sect analysis, and other traditional calculations.
+
+    Use this when you want to regenerate the chart with potentially
+    updated calculation logic or to refresh cached data.
+
+    Args:
+        chart_id: Birth chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        Updated birth chart with recalculated data
+    """
+    try:
+        # Verify access and get the chart
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+            is_admin=current_user.is_admin,
+        )
+
+        # Update status to processing
+        chart.status = "processing"
+        chart.progress = 0
+        await db.commit()
+        await db.refresh(chart)
+
+        # Dispatch Celery task to recalculate in background
+        generate_birth_chart_task.delay(str(chart_id))
+
+        return chart  # type: ignore[return-value]
+
+    except chart_service.ChartNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Birth chart not found",
+        ) from None
+    except chart_service.UnauthorizedAccessError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this birth chart",
+        ) from None

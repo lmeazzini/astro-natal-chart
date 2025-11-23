@@ -227,4 +227,12 @@ export const chartsService = {
       token
     );
   },
+
+  /**
+   * Recalculate a birth chart (forces recalculation of all chart data)
+   * This triggers the same recalculation as updating birth data
+   */
+  async recalculate(chartId: string, token: string): Promise<BirthChart> {
+    return apiClient.post<BirthChart>(`/api/v1/charts/${chartId}/recalculate`, {}, token);
+  },
 };

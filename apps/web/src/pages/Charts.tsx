@@ -77,15 +77,8 @@ export function ChartsPage() {
       // Recalculate chart data
       const updatedChart = await chartsService.recalculate(chartId, token);
 
-      // Regenerate standard interpretations
+      // Regenerate RAG interpretations (now default for all users)
       await interpretationsService.regenerate(chartId, token);
-
-      // Try to regenerate RAG interpretations (may fail if not admin)
-      try {
-        await interpretationsService.regenerateRAG(chartId, token);
-      } catch {
-        // RAG regeneration is optional (admin only), ignore errors
-      }
 
       // Update the chart in the list
       setCharts(charts.map((c) => c.id === chartId ? updatedChart : c));

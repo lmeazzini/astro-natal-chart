@@ -60,18 +60,4 @@ export const interpretationsService = {
       token
     );
   },
-
-  /**
-   * @deprecated Use getByChartId instead - all interpretations now use RAG
-   */
-  async getRAGByChartId(chartId: string, token: string): Promise<RAGInterpretations> {
-    return this.getByChartId(chartId, token);
-  },
-
-  /**
-   * @deprecated Use regenerate instead - all interpretations now use RAG
-   */
-  async regenerateRAG(chartId: string, token: string): Promise<RAGInterpretations> {
-    return this.regenerate(chartId, token);
-  },
 };

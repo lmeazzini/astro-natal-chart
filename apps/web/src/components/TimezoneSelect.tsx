@@ -114,15 +114,32 @@ const POPULAR_TIMEZONES: TimezoneInfo[] = [
   { id: 'UTC', name: 'UTC (Coordinated Universal Time)', region: 'Other', offset: 'UTC+00:00', offset_hours: 0, is_dst: false, abbreviation: 'UTC' },
 ];
 
-// Group timezones by region
+// Sort timezones by UTC offset (from UTC-12 to UTC+14)
+const sortByOffset = (a: TimezoneInfo, b: TimezoneInfo): number => {
+  // Primary sort: by offset hours
+  if (a.offset_hours !== b.offset_hours) {
+    return a.offset_hours - b.offset_hours;
+  }
+  // Secondary sort: alphabetically by name
+  return a.name.localeCompare(b.name);
+};
+
+// Group timezones by region and sort by offset within each group
 const groupTimezones = (timezones: TimezoneInfo[]): Record<string, TimezoneInfo[]> => {
-  return timezones.reduce((acc, tz) => {
+  const grouped = timezones.reduce((acc, tz) => {
     if (!acc[tz.region]) {
       acc[tz.region] = [];
     }
     acc[tz.region].push(tz);
     return acc;
   }, {} as Record<string, TimezoneInfo[]>);
+
+  // Sort timezones within each region by offset
+  Object.keys(grouped).forEach((region) => {
+    grouped[region].sort(sortByOffset);
+  });
+
+  return grouped;
 };
 
 export function TimezoneSelect({
@@ -266,34 +283,41 @@ export function TimezoneSelect({
               </CommandGroup>
             )}
 
-            {/* Grouped timezones */}
-            {Object.entries(filteredTimezones).map(([region, tzList]) => (
-              <CommandGroup key={region} heading={region}>
-                {tzList.map((tz) => (
-                  <CommandItem
-                    key={tz.id}
-                    value={tz.id}
-                    onSelect={() => {
-                      onChange(tz.id);
-                      setOpen(false);
-                      setSearchQuery('');
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        value === tz.id ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    <span className="flex-1">{tz.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {tz.offset}
-                      {tz.is_dst && ' (DST)'}
-                    </span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            ))}
+            {/* Grouped timezones - sorted by region's minimum offset */}
+            {Object.entries(filteredTimezones)
+              .sort(([, aList], [, bList]) => {
+                // Sort regions by their minimum offset (earliest timezone in each region)
+                const aMinOffset = Math.min(...aList.map(tz => tz.offset_hours));
+                const bMinOffset = Math.min(...bList.map(tz => tz.offset_hours));
+                return aMinOffset - bMinOffset;
+              })
+              .map(([region, tzList]) => (
+                <CommandGroup key={region} heading={region}>
+                  {tzList.map((tz) => (
+                    <CommandItem
+                      key={tz.id}
+                      value={tz.id}
+                      onSelect={() => {
+                        onChange(tz.id);
+                        setOpen(false);
+                        setSearchQuery('');
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          value === tz.id ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <span className="flex-1">{tz.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {tz.offset}
+                        {tz.is_dst && ' (DST)'}
+                      </span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
           </CommandList>
         </Command>
       </PopoverContent>

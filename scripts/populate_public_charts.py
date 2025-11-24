@@ -11,7 +11,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 # Add the api app directory to the path
-sys.path.insert(0, str(Path(__file__).parent / "apps" / "api"))
+# Script is at /astro/scripts/, api is at /astro/apps/api/
+sys.path.insert(0, str(Path(__file__).parent.parent / "apps" / "api"))
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine

@@ -756,10 +756,19 @@ export function PublicChartDetailPage() {
                     {/* RAG Badge */}
                     {interpretations.source === 'rag' && (
                       <div className="mt-6 pt-6 border-t border-border">
-                        <Badge variant="secondary" className="flex items-center gap-2 w-fit">
-                          <Sparkles className="h-3 w-3" />
-                          {t('chartDetail.interpretations.ragBadge', 'Aprimorado com RAG - Textos Tradicionais')}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="flex items-center gap-2 w-fit">
+                            <Sparkles className="h-3 w-3" />
+                            {t('rag.badge', 'Aprimorado com RAG')}
+                          </Badge>
+                          <InfoTooltip
+                            content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                            side="right"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {t('rag.description', 'Interpretações baseadas em textos clássicos de astrologia tradicional.')}
+                        </p>
                       </div>
                     )}
                   </div>

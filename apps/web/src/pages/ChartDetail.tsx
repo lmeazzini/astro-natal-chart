@@ -29,6 +29,7 @@ import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit } from 'lucide-react';
 
@@ -650,6 +651,18 @@ export function ChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <PlanetList
@@ -676,6 +689,18 @@ export function ChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <HouseTable
@@ -700,6 +725,18 @@ export function ChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <AspectGrid
@@ -727,6 +764,18 @@ export function ChartDetailPage() {
                   <CardDescription>
                     {t('chartDetail.arabicPartsDesc', { defaultValue: 'Sensitive points from Hellenistic astrological tradition' })}
                   </CardDescription>
+                  {interpretations && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <ArabicPartsTable

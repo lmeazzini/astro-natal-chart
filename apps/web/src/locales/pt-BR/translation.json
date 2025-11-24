@@ -1358,5 +1358,28 @@
       "createAccount": "Criar Conta Grátis",
       "seeExample": "Ver Exemplo de Mapa"
     }
+  },
+  "rag": {
+    "badge": "Aprimorado com RAG",
+    "description": "Interpretações baseadas em textos clássicos de astrologia tradicional.",
+    "tooltipShort": "Interpretações fundamentadas em livros clássicos de astrologia",
+    "tooltipLong": "RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.",
+    "whatIsRag": "O que é RAG?",
+    "whatIsRagDesc": "RAG (Retrieval-Augmented Generation) é uma técnica que aprimora a IA buscando informações relevantes em uma base de conhecimento antes de gerar respostas.",
+    "howItWorks": "Como funciona nas interpretações?",
+    "howItWorksDesc": "Quando você solicita uma interpretação, o sistema busca trechos relevantes de livros clássicos de astrologia. Esses trechos são fornecidos à IA como contexto, que então gera a interpretação baseando-se tanto em seu treinamento quanto nos textos tradicionais.",
+    "whyBetter": "Por que é melhor?",
+    "benefits": {
+      "sources": "Interpretações fundamentadas em fontes confiáveis",
+      "tradition": "Maior fidelidade à tradição astrológica",
+      "accuracy": "Reduz informações inventadas pela IA",
+      "citations": "Permite citar fontes específicas"
+    }
+  },
+  "arabicParts": {
+    "fortune": "Lote da Fortuna",
+    "spirit": "Lote do Espírito",
+    "eros": "Lote de Eros",
+    "necessity": "Lote da Necessidade"
   }
 }

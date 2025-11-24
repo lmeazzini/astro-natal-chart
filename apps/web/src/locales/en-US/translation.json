@@ -364,7 +364,11 @@
       "page": "Page"
     },
     "lunarPhase": "Lunar Phase",
-    "solarPhase": "Solar Phase"
+    "solarPhase": "Solar Phase",
+    "interpretations": "AI Interpretations",
+    "refreshInterpretations": "Refresh AI interpretations",
+    "refreshAI": "Refresh AI",
+    "verifyForInterpretations": "Verify your email to unlock AI interpretations"
   },
   "profile": {
     "title": "My Profile",
@@ -630,6 +634,14 @@
       "needAuth": "You need to be authenticated",
       "resendFailed": "Failed to resend email",
       "genericError": "Error resending email. Try again later."
+    },
+    "emailVerificationModal": {
+      "title": "Email verification required",
+      "message": "This feature requires email verification. Please verify your email to continue.",
+      "messageWithFeature": "To access {{feature}}, you need to verify your email first.",
+      "instructions": "Check your inbox for the verification email and click the link to verify your account.",
+      "checkSpam": "If you don't see it, check your spam folder.",
+      "resendButton": "Resend verification email"
     },
     "lunarPhase": {
       "sunMoonAngle": "Sun-Moon Angle",

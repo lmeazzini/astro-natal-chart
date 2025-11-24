@@ -52,8 +52,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ArrowLeft, Sparkles, Eye, BookOpen, Loader2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Eye } from 'lucide-react';
 
 // Type for chart_data from public charts API
 interface PublicChartData {
@@ -82,7 +81,6 @@ export function PublicChartDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [interpretations, setInterpretations] = useState<PublicChartInterpretations | null>(null);
-  const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
 
   const loadChart = useCallback(async () => {
     if (!slug) return;
@@ -103,15 +101,12 @@ export function PublicChartDetailPage() {
   const loadInterpretations = useCallback(async () => {
     if (!slug) return;
 
-    setIsLoadingInterpretations(true);
     try {
       const data = await getPublicChartInterpretations(slug);
       setInterpretations(data);
     } catch (err) {
       console.error('Failed to load interpretations:', err);
       // Silently fail - interpretations are optional
-    } finally {
-      setIsLoadingInterpretations(false);
     }
   }, [slug]);
 
@@ -343,11 +338,6 @@ export function PublicChartDetailPage() {
             <TabsTrigger value="arabic-parts">
               {t('chartDetail.tabs.arabicParts')} (4)
             </TabsTrigger>
-            <TabsTrigger value="interpretations" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              {t('chartDetail.tabs.interpretations', 'Interpretações')}
-              {isLoadingInterpretations && <Loader2 className="h-3 w-3 animate-spin" />}
-            </TabsTrigger>
           </TabsList>
 
           {/* Tab Content: Visual */}
@@ -506,12 +496,25 @@ export function PublicChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <PlanetList
                     planets={chartData.planets}
                     showOnlyClassical={true}
                     lordOfNativity={chartData.lord_of_nativity}
+                    interpretations={interpretations?.planets}
                   />
                 </CardContent>
               </Card>
@@ -530,9 +533,24 @@ export function PublicChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <HouseTable houses={chartData.houses} />
+                  <HouseTable
+                    houses={chartData.houses}
+                    interpretations={interpretations?.houses}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -550,9 +568,24 @@ export function PublicChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <AspectGrid aspects={chartData.aspects} />
+                  <AspectGrid
+                    aspects={chartData.aspects}
+                    interpretations={interpretations?.aspects}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -573,9 +606,24 @@ export function PublicChartDetailPage() {
                   <CardDescription>
                     {t('chartDetail.arabicPartsDesc', { defaultValue: 'Sensitive points from Hellenistic astrological tradition' })}
                   </CardDescription>
+                  {interpretations?.arabic_parts && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <ArabicPartsTable parts={chartData.arabic_parts} />
+                  <ArabicPartsTable
+                    parts={chartData.arabic_parts}
+                    interpretations={interpretations?.arabic_parts}
+                  />
 
                   {/* Educational Section */}
                   <div className="mt-8 p-6 bg-muted/50 rounded-lg space-y-4">
@@ -608,186 +656,6 @@ export function PublicChartDetailPage() {
             )}
           </TabsContent>
 
-          {/* Tab Content: Interpretations */}
-          <TabsContent value="interpretations" className="mt-0">
-            <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-h3 font-display flex items-center gap-2">
-                  <BookOpen className="h-6 w-6" />
-                  {t('chartDetail.interpretations.title', 'Interpretações Astrológicas')}
-                </CardTitle>
-                <CardDescription>
-                  {t('chartDetail.interpretations.description', 'Análises geradas por inteligência artificial com base em textos tradicionais de astrologia.')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingInterpretations ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-                      <p className="text-muted-foreground">
-                        {t('chartDetail.interpretations.loading', 'Gerando interpretações...')}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {t('chartDetail.interpretations.loadingHint', 'Isso pode levar alguns segundos na primeira vez.')}
-                      </p>
-                    </div>
-                  </div>
-                ) : interpretations ? (
-                  <div className="space-y-6">
-                    {/* Planet Interpretations */}
-                    {Object.keys(interpretations.planets).length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                          ☉ {t('chartDetail.interpretations.planets', 'Planetas')}
-                        </h3>
-                        <Accordion type="multiple" className="space-y-2">
-                          {Object.entries(interpretations.planets).map(([planet, content]) => (
-                            <AccordionItem key={planet} value={planet} className="border rounded-lg px-4">
-                              <AccordionTrigger className="hover:no-underline">
-                                <span className="text-left font-medium">{translatePlanet(planet)}</span>
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <div className="prose prose-sm max-w-none text-muted-foreground pb-4">
-                                  {content.split('\n').map((paragraph, i) => (
-                                    <p key={i} className="mb-2 last:mb-0">{paragraph}</p>
-                                  ))}
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          ))}
-                        </Accordion>
-                      </div>
-                    )}
-
-                    {/* House Interpretations */}
-                    {Object.keys(interpretations.houses).length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                          🏠 {t('chartDetail.interpretations.houses', 'Casas')}
-                        </h3>
-                        <Accordion type="multiple" className="space-y-2">
-                          {Object.entries(interpretations.houses)
-                            .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                            .map(([house, content]) => (
-                              <AccordionItem key={house} value={`house-${house}`} className="border rounded-lg px-4">
-                                <AccordionTrigger className="hover:no-underline">
-                                  <span className="text-left font-medium">
-                                    {t('chartDetail.interpretations.houseLabel', 'Casa {{number}}', { number: house })}
-                                  </span>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                  <div className="prose prose-sm max-w-none text-muted-foreground pb-4">
-                                    {content.split('\n').map((paragraph, i) => (
-                                      <p key={i} className="mb-2 last:mb-0">{paragraph}</p>
-                                    ))}
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            ))}
-                        </Accordion>
-                      </div>
-                    )}
-
-                    {/* Aspect Interpretations */}
-                    {Object.keys(interpretations.aspects).length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                          ✦ {t('chartDetail.interpretations.aspects', 'Aspectos')}
-                        </h3>
-                        <Accordion type="multiple" className="space-y-2">
-                          {Object.entries(interpretations.aspects).map(([aspect, content]) => {
-                            const parts = aspect.split('-');
-                            const displayName = parts.length === 3
-                              ? `${translatePlanet(parts[0])} ${parts[1]} ${translatePlanet(parts[2])}`
-                              : aspect;
-                            return (
-                              <AccordionItem key={aspect} value={aspect} className="border rounded-lg px-4">
-                                <AccordionTrigger className="hover:no-underline">
-                                  <span className="text-left font-medium">{displayName}</span>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                  <div className="prose prose-sm max-w-none text-muted-foreground pb-4">
-                                    {content.split('\n').map((paragraph, i) => (
-                                      <p key={i} className="mb-2 last:mb-0">{paragraph}</p>
-                                    ))}
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            );
-                          })}
-                        </Accordion>
-                      </div>
-                    )}
-
-                    {/* Arabic Parts Interpretations */}
-                    {interpretations.arabic_parts && Object.keys(interpretations.arabic_parts).length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                          ⚜ {t('chartDetail.interpretations.arabicParts', 'Partes Árabes')}
-                        </h3>
-                        <Accordion type="multiple" className="space-y-2">
-                          {Object.entries(interpretations.arabic_parts).map(([part, content]) => {
-                            const partNames: Record<string, string> = {
-                              fortune: t('arabicParts.fortune', 'Lote da Fortuna'),
-                              spirit: t('arabicParts.spirit', 'Lote do Espírito'),
-                              eros: t('arabicParts.eros', 'Lote de Eros'),
-                              necessity: t('arabicParts.necessity', 'Lote da Necessidade'),
-                            };
-                            return (
-                              <AccordionItem key={part} value={part} className="border rounded-lg px-4">
-                                <AccordionTrigger className="hover:no-underline">
-                                  <span className="text-left font-medium">{partNames[part] || part}</span>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                  <div className="prose prose-sm max-w-none text-muted-foreground pb-4">
-                                    {content.split('\n').map((paragraph, i) => (
-                                      <p key={i} className="mb-2 last:mb-0">{paragraph}</p>
-                                    ))}
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            );
-                          })}
-                        </Accordion>
-                      </div>
-                    )}
-
-                    {/* RAG Badge */}
-                    {interpretations.source === 'rag' && (
-                      <div className="mt-6 pt-6 border-t border-border">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="flex items-center gap-2 w-fit">
-                            <Sparkles className="h-3 w-3" />
-                            {t('rag.badge', 'Aprimorado com RAG')}
-                          </Badge>
-                          <InfoTooltip
-                            content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
-                            side="right"
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {t('rag.description', 'Interpretações baseadas em textos clássicos de astrologia tradicional.')}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>{t('chartDetail.interpretations.notAvailable', 'Interpretações não disponíveis.')}</p>
-                    <Button
-                      variant="outline"
-                      className="mt-4"
-                      onClick={loadInterpretations}
-                    >
-                      {t('chartDetail.interpretations.retry', 'Tentar novamente')}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
 
         {/* CTA */}

@@ -63,6 +63,8 @@ export function ChartDetailPage() {
     setShowModal: setShowVerificationModal,
     featureName: verificationFeatureName,
     requireEmailVerification,
+    checkVerificationStatus,
+    isCheckingStatus,
   } = useEmailVerification();
 
   useEffect(() => {
@@ -958,6 +960,8 @@ export function ChartDetailPage() {
         open={showVerificationModal}
         onOpenChange={handleVerificationModalClose}
         featureName={verificationFeatureName}
+        onCheckStatus={checkVerificationStatus}
+        isCheckingStatus={isCheckingStatus}
       />
     </div>
   );

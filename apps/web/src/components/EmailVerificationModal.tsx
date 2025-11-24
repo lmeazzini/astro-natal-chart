@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, ShieldCheck, Sparkles, FileDown, Loader2 } from 'lucide-react';
+import { Mail, ShieldCheck, Sparkles, FileDown, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,18 +25,25 @@ interface EmailVerificationModalProps {
   onOpenChange: (open: boolean) => void;
   /** The feature that triggered the modal (optional, for better UX) */
   featureName?: string;
+  /** Called to check verification status (refreshes user from API) */
+  onCheckStatus?: () => Promise<boolean>;
+  /** Whether currently checking status */
+  isCheckingStatus?: boolean;
 }
 
 export function EmailVerificationModal({
   open,
   onOpenChange,
   featureName,
+  onCheckStatus,
+  isCheckingStatus = false,
 }: EmailVerificationModalProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendError, setResendError] = useState('');
+  const [checkStatusMessage, setCheckStatusMessage] = useState('');
 
   async function handleResendEmail() {
     try {
@@ -59,6 +66,25 @@ export function EmailVerificationModal({
       }
     } finally {
       setIsResending(false);
+    }
+  }
+
+  async function handleCheckStatus() {
+    if (!onCheckStatus) return;
+
+    setCheckStatusMessage('');
+    const result = await onCheckStatus();
+
+    if (result) {
+      // User data was refreshed, check if email is now verified
+      // The modal will close automatically via the parent component
+      // if user.email_verified becomes true
+      setCheckStatusMessage(t('components.emailVerificationModal.statusChecked', {
+        defaultValue: 'Status updated. If you verified your email, the page will refresh.',
+      }));
+
+      // Clear message after 3 seconds
+      setTimeout(() => setCheckStatusMessage(''), 3000);
     }
   }
 
@@ -131,6 +157,12 @@ export function EmailVerificationModal({
               {resendError}
             </p>
           )}
+          {checkStatusMessage && (
+            <p className="text-sm text-blue-600 dark:text-blue-400 text-center flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              {checkStatusMessage}
+            </p>
+          )}
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
@@ -156,6 +188,26 @@ export function EmailVerificationModal({
               </>
             )}
           </Button>
+          {onCheckStatus && (
+            <Button
+              variant="secondary"
+              onClick={handleCheckStatus}
+              disabled={isCheckingStatus}
+              className="w-full"
+            >
+              {isCheckingStatus ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('components.emailVerificationModal.checking', { defaultValue: 'Checking...' })}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t('components.emailVerificationModal.checkStatus', { defaultValue: 'I already verified' })}
+                </>
+              )}
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

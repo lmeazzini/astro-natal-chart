@@ -641,7 +641,13 @@
       "messageWithFeature": "To access {{feature}}, you need to verify your email first.",
       "instructions": "Check your inbox for the verification email and click the link to verify your account.",
       "checkSpam": "If you don't see it, check your spam folder.",
-      "resendButton": "Resend verification email"
+      "resendButton": "Resend verification email",
+      "checkStatus": "I already verified",
+      "checking": "Checking...",
+      "statusChecked": "Status updated. If you verified your email, the page will refresh."
+    },
+    "emailVerificationBanner": {
+      "premiumHint": "Unlock AI interpretations and PDF export"
     },
     "lunarPhase": {
       "sunMoonAngle": "Sun-Moon Angle",

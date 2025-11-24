@@ -17,6 +17,8 @@ interface AuthContextData {
   register: (email: string, fullName: string, password: string, passwordConfirm: string, acceptTerms?: boolean) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
+  /** Refresh user data from API (e.g., after email verification in another tab) */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -119,6 +121,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  /**
+   * Refresh user data from API.
+   * Useful when user verifies email in another tab/window.
+   */
+  async function refreshUser() {
+    try {
+      const token = getToken();
+      if (token) {
+        const userData = await authService.getCurrentUser(token);
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -129,6 +147,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         register,
         logout,
         setUser,
+        refreshUser,
       }}
     >
       {children}

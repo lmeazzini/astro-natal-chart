@@ -1,21 +1,23 @@
 /**
- * Email verification banner - shown to users with unverified emails
+ * Email verification banner - shown to users with unverified emails.
+ * Reminds users to verify their email for premium features like AI interpretations.
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Mail, X } from 'lucide-react';
+import { AlertCircle, Mail, X, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { apiClient } from '@/services/api';
 
 interface EmailVerificationBannerProps {
   /** Called when banner is dismissed */
   onDismiss?: () => void;
+  /** Whether to show the premium features hint */
+  showPremiumHint?: boolean;
 }
 
-export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerProps) {
+export function EmailVerificationBanner({ onDismiss, showPremiumHint = true }: EmailVerificationBannerProps) {
   const { t } = useTranslation();
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
@@ -31,23 +33,7 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
       setIsResending(true);
       setResendError('');
 
-      const token = localStorage.getItem('astro_access_token');
-      if (!token) {
-        throw new Error(t('components.emailVerification.needAuth', { defaultValue: 'Você precisa estar autenticado' }));
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/auth/resend-verification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || t('components.emailVerification.resendFailed', { defaultValue: 'Falha ao reenviar email' }));
-      }
+      await apiClient.post('/api/v1/auth/resend-verification');
 
       setResendSuccess(true);
 
@@ -93,6 +79,12 @@ export function EmailVerificationBanner({ onDismiss }: EmailVerificationBannerPr
               {isResending ? t('components.emailVerification.sending', { defaultValue: 'Enviando...' }) : resendSuccess ? t('components.emailVerification.sent', { defaultValue: 'Email enviado!' }) : t('components.emailVerification.resend', { defaultValue: 'Reenviar' })}
             </button>
           </p>
+          {showPremiumHint && (
+            <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              {t('components.emailVerificationBanner.premiumHint', { defaultValue: 'Desbloqueie interpretações com IA e exportação em PDF' })}
+            </p>
+          )}
           {resendError && (
             <p className="text-sm text-red-600 dark:text-red-400 mt-1">
               {resendError}

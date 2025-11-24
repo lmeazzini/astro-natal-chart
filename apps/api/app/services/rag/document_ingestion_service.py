@@ -10,6 +10,7 @@ from loguru import logger
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.search_index import SearchIndex
 from app.models.vector_document import VectorDocument
 from app.services.rag.bm25_service import bm25_service
@@ -89,11 +90,14 @@ class DocumentIngestionService:
             metadata: Document metadata
 
         Returns:
-            Unique document ID
+            Unique document ID (UUID format for Qdrant compatibility)
         """
         # Create a unique hash from content and key metadata
         hash_input = f"{content[:1000]}{metadata.get('source', '')}{metadata.get('page', '')}"
-        return hashlib.sha256(hash_input.encode()).hexdigest()[:16]
+        # Generate a deterministic UUID from the hash (Qdrant requires UUID or integer)
+        hash_bytes = hashlib.sha256(hash_input.encode()).digest()[:16]
+        import uuid
+        return str(uuid.UUID(bytes=hash_bytes))
 
     async def ingest_text(
         self,
@@ -150,8 +154,9 @@ class DocumentIngestionService:
                 # Generate unique vector ID
                 doc.vector_id = self._generate_document_id(chunk, doc.doc_metadata)
 
-                # Save to database
+                # Save to database and flush to get the doc.id
                 db.add(doc)
+                await db.flush()  # Flush to generate doc.id
                 documents.append(doc)
 
                 # Add to BM25 index
@@ -175,7 +180,12 @@ class DocumentIngestionService:
 
                         if success:
                             doc.indexed_at = datetime.now(UTC)
-                            doc.embedding_model = "provided"
+                            doc.embedding_model = settings.OPENAI_EMBEDDING_MODEL
+                            logger.debug(f"Indexed chunk {i + 1}/{len(chunks)} for '{title}'")
+                        else:
+                            logger.warning(f"Failed to index chunk {i + 1}/{len(chunks)} for '{title}'")
+                    else:
+                        logger.warning(f"No embedding generated for chunk {i + 1}/{len(chunks)} of '{title}'")
 
                 # Create BM25 index entry
                 term_freqs = self.bm25.get_term_frequencies(chunk)

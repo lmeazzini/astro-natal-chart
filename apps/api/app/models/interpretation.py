@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -58,6 +58,12 @@ class ChartInterpretation(Base):
         String(20),
         nullable=False,
         comment="Prompt version for tracking changes",
+    )
+    rag_sources: Mapped[list | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=None,
+        comment="RAG document sources used for this interpretation",
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

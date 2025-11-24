@@ -44,7 +44,9 @@ async def get_embedding(text: str) -> list[float] | None:
             model=settings.OPENAI_EMBEDDING_MODEL,
             input=text[:8000],  # Truncate to avoid token limits
         )
-        return response.data[0].embedding
+        embedding = response.data[0].embedding
+        logger.debug(f"Generated embedding with {len(embedding)} dimensions")
+        return embedding
     except Exception as e:
         logger.error(f"Failed to generate embedding: {e}")
         return None

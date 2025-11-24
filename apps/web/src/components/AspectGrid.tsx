@@ -12,6 +12,7 @@ import {
   isMajorAspect,
 } from '../utils/astro';
 import { useAstroTranslation } from '../hooks/useAstroTranslation';
+import type { RAGSourceInfo } from '../services/interpretations';
 
 // shadcn/ui components
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,7 +21,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Info, BookOpen, ChevronDown } from 'lucide-react';
 
 export interface AspectData {
   planet1: string;
@@ -34,11 +37,13 @@ export interface AspectData {
 interface AspectGridProps {
   aspects: AspectData[];
   interpretations?: Record<string, string>;
+  ragSources?: Record<string, RAGSourceInfo[]>;
 }
 
 export function AspectGrid({
   aspects,
   interpretations,
+  ragSources,
 }: AspectGridProps) {
   const { t } = useTranslation();
   const { translatePlanet, translateAspect } = useAstroTranslation();
@@ -249,6 +254,7 @@ export function AspectGrid({
               if (parts.length !== 3) return null;
 
               const [planet1, aspect, planet2] = parts;
+              const sources = ragSources?.[aspectKey] || [];
 
               return (
                 <Card key={aspectKey}>
@@ -260,12 +266,50 @@ export function AspectGrid({
                       <span className="text-sm text-muted-foreground">-</span>
                       <span className="text-xl">{getPlanetSymbol(planet2)}</span>
                       <span className="text-sm">{translatePlanet(planet2)}</span>
+                      {sources.length > 0 && (
+                        <Badge variant="outline" className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20">
+                          <BookOpen className="h-3 w-3 mr-1" />
+                          {sources.length} {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
+                        </Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {interpretation}
                     </p>
+
+                    {/* RAG Sources */}
+                    {sources.length > 0 && (
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10">
+                            <span className="flex items-center gap-2">
+                              <BookOpen className="h-4 w-4" />
+                              {t('chartDetail.rag.sources', { defaultValue: 'Fontes RAG' })}
+                            </span>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2">
+                          <div className="space-y-2 p-3 bg-purple-500/5 rounded-lg border border-purple-500/10">
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {t('chartDetail.rag.sourcesDesc', { defaultValue: 'Documentos usados para esta interpretação' })}
+                            </p>
+                            {sources.map((source, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-2 bg-background rounded border text-xs">
+                                <span className="font-medium text-foreground">{source.source}</span>
+                                {source.page && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })} {source.page}
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
                   </CardContent>
                 </Card>
               );

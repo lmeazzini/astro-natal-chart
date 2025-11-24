@@ -122,26 +122,43 @@ export function ChartDetailPage() {
     }
   }
 
+  // Helper to extract content from interpretation item (handles both string and object formats)
+  function extractContent(item: unknown): string {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object' && 'content' in item) {
+      return (item as { content: string }).content;
+    }
+    return '';
+  }
+
   // Helper to get interpretations content from RAG format
   function getCurrentInterpretations(): { planets?: Record<string, string>; houses?: Record<string, string>; aspects?: Record<string, string>; arabic_parts?: Record<string, string> } | null {
     if (!interpretations) return null;
 
     return {
       planets: Object.fromEntries(
-        Object.entries(interpretations.planets).map(([key, item]) => [key, item.content])
+        Object.entries(interpretations.planets).map(([key, item]) => [key, extractContent(item)])
       ),
       houses: Object.fromEntries(
-        Object.entries(interpretations.houses).map(([key, item]) => [key, item.content])
+        Object.entries(interpretations.houses).map(([key, item]) => [key, extractContent(item)])
       ),
       aspects: Object.fromEntries(
-        Object.entries(interpretations.aspects).map(([key, item]) => [key, item.content])
+        Object.entries(interpretations.aspects).map(([key, item]) => [key, extractContent(item)])
       ),
       arabic_parts: interpretations.arabic_parts
         ? Object.fromEntries(
-            Object.entries(interpretations.arabic_parts).map(([key, item]) => [key, item.content])
+            Object.entries(interpretations.arabic_parts).map(([key, item]) => [key, extractContent(item)])
           )
         : undefined,
     };
+  }
+
+  // Helper to extract RAG sources from interpretation item (handles both formats)
+  function extractRAGSources(item: unknown): RAGSourceInfo[] {
+    if (item && typeof item === 'object' && 'rag_sources' in item) {
+      return (item as { rag_sources: RAGSourceInfo[] }).rag_sources || [];
+    }
+    return [];
   }
 
   // Helper to get RAG sources for interpretations
@@ -154,13 +171,13 @@ export function ChartDetailPage() {
 
     return {
       planets: Object.fromEntries(
-        Object.entries(interpretations.planets).map(([key, item]) => [key, item.rag_sources || []])
+        Object.entries(interpretations.planets).map(([key, item]) => [key, extractRAGSources(item)])
       ),
       houses: Object.fromEntries(
-        Object.entries(interpretations.houses).map(([key, item]) => [key, item.rag_sources || []])
+        Object.entries(interpretations.houses).map(([key, item]) => [key, extractRAGSources(item)])
       ),
       aspects: Object.fromEntries(
-        Object.entries(interpretations.aspects).map(([key, item]) => [key, item.rag_sources || []])
+        Object.entries(interpretations.aspects).map(([key, item]) => [key, extractRAGSources(item)])
       ),
     };
   }

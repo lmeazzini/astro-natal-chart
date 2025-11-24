@@ -71,6 +71,7 @@ services:
     volumes:
       - ./apps/api:/app
       - ./apps/api/media:/app/media  # PDF storage
+      - ./rag_docs:/app/rag_docs  # RAG documents
       - /app/__pycache__  # Prevent pycache from being mounted
       - /app/.venv  # Prevent venv from being watched
     ports:

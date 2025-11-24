@@ -16,9 +16,11 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
+import { useAuth } from '../contexts/AuthContext';
 
 export function PublicChartsPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [charts, setCharts] = React.useState<PublicChartPreview[]>([]);
@@ -122,12 +124,20 @@ export function PublicChartsPage() {
           <div className="flex items-center gap-4">
             <LanguageSelector />
             <ThemeToggle />
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/login">{t('nav.login')}</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/register">{t('nav.register')}</Link>
-            </Button>
+            {user ? (
+              <Button size="sm" asChild>
+                <Link to="/dashboard">{t('nav.dashboard')}</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/login">{t('nav.login')}</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/register">{t('nav.register')}</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -274,7 +284,10 @@ export function PublicChartsPage() {
         {/* CTA */}
         <div className="mt-12 bg-primary/10 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            {t('publicCharts.ctaTitle', 'Crie Seu Próprio Mapa Natal')}
+            {user
+              ? t('publicCharts.ctaTitleLoggedIn', 'Crie Mais Mapas Natais')
+              : t('publicCharts.ctaTitle', 'Crie Seu Próprio Mapa Natal')
+            }
           </h2>
           <p className="text-muted-foreground mb-6">
             {t(
@@ -283,7 +296,12 @@ export function PublicChartsPage() {
             )}
           </p>
           <Button size="lg" asChild>
-            <Link to="/register">{t('publicCharts.ctaButton', 'Começar Grátis')}</Link>
+            <Link to={user ? "/charts/new" : "/register"}>
+              {user
+                ? t('publicCharts.ctaButtonLoggedIn', 'Criar Novo Mapa')
+                : t('publicCharts.ctaButton', 'Começar Grátis')
+              }
+            </Link>
           </Button>
         </div>
       </div>

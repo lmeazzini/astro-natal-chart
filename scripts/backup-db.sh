@@ -23,8 +23,11 @@ BACKUP_DIR="${BACKUP_DIR:-/var/backups/astro-db}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 DATE_ONLY=$(date +"%Y%m%d")
 
+# Custom backup name (optional - use BACKUP_NAME env var for named backups like "initial")
+BACKUP_NAME="${BACKUP_NAME:-${TIMESTAMP}}"
+
 # Backup filename
-BACKUP_FILE="astro_backup_${TIMESTAMP}.sql.gz"
+BACKUP_FILE="astro_backup_${BACKUP_NAME}.sql.gz"
 
 # Retention period (days)
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
@@ -44,7 +47,7 @@ S3_PREFIX="${BACKUP_S3_PREFIX:-backups}"
 QDRANT_HOST="${QDRANT_HOST:-localhost}"
 QDRANT_PORT="${QDRANT_PORT:-6333}"
 QDRANT_COLLECTION="${QDRANT_COLLECTION:-astrology_knowledge}"
-QDRANT_BACKUP_FILE="qdrant_backup_${TIMESTAMP}.snapshot"
+QDRANT_BACKUP_FILE="qdrant_backup_${BACKUP_NAME}.snapshot"
 
 # Healthcheck URL (optional - for monitoring)
 HEALTHCHECK_URL="${BACKUP_HEALTHCHECK_URL:-}"

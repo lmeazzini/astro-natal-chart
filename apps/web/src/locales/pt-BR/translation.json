@@ -362,7 +362,9 @@
       "noSources": "Sem fontes documentais",
       "relevance": "Relevância",
       "page": "Página"
-    }
+    },
+    "lunarPhase": "Fase Lunar",
+    "solarPhase": "Fase Solar"
   },
   "profile": {
     "title": "Meu Perfil",

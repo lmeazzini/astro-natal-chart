@@ -47,11 +47,33 @@ export function useAstroTranslation() {
     return t(`houseSystems.${system}`, { defaultValue: system });
   };
 
+  /**
+   * Translate a lunar phase name
+   * @param phase - English lunar phase name (e.g., "New Moon", "Full Moon")
+   * @returns Translated lunar phase name
+   */
+  const translateLunarPhase = (phase: string): string => {
+    // Convert to key format (e.g., "New Moon" -> "newMoon")
+    const keyMap: Record<string, string> = {
+      'New Moon': 'newMoon',
+      'Waxing Crescent': 'waxingCrescent',
+      'First Quarter': 'firstQuarter',
+      'Waxing Gibbous': 'waxingGibbous',
+      'Full Moon': 'fullMoon',
+      'Waning Gibbous': 'waningGibbous',
+      'Last Quarter': 'lastQuarter',
+      'Waning Crescent': 'waningCrescent',
+    };
+    const key = keyMap[phase] || phase;
+    return t(`lunarPhase.${key}`, { defaultValue: phase });
+  };
+
   return {
     translateSign,
     translatePlanet,
     translateAspect,
     translateHouseSystem,
+    translateLunarPhase,
     t, // Export raw t function for other astrology translations
   };
 }

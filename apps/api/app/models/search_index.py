@@ -21,7 +21,7 @@ class SearchIndex(Base):
 
     # Index identification
     index_name: Mapped[str] = mapped_column(
-        String(100), nullable=False, unique=True, index=True
+        String(100), nullable=False, index=True
     )
     index_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default="bm25"

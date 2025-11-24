@@ -2,9 +2,11 @@
  * Lord of Nativity component - displays the planet with highest essential dignity
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getSignSymbol } from '@/utils/astro';
+import { useAstroTranslation } from '@/hooks/useAstroTranslation';
 
 export interface DignityDetail {
   type: string;
@@ -51,6 +53,9 @@ const classificationLabels: Record<string, string> = {
 };
 
 export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
+  const { t } = useTranslation();
+  const { translatePlanet, translateSign } = useAstroTranslation();
+
   const planetSymbol = planetSymbols[lordOfNativity.planet] || '★';
   const classificationColor = classificationColors[lordOfNativity.classification] ||
     'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20';
@@ -66,13 +71,13 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
           </span>
           <div className="flex-1">
             <div className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <span className="text-2xl" title={lordOfNativity.planet}>
+              <span className="text-2xl" title={translatePlanet(lordOfNativity.planet)}>
                 {planetSymbol}
               </span>
-              Senhor da Natividade: {lordOfNativity.planet}
+              {t('components.lordOfNativity.title', { defaultValue: 'Senhor da Natividade' })}: {translatePlanet(lordOfNativity.planet)}
             </div>
             <div className="text-xs text-muted-foreground font-normal mt-1">
-              A força vital dominante do seu mapa natal
+              {t('components.lordOfNativity.subtitle', { defaultValue: 'A força vital dominante do seu mapa natal' })}
             </div>
           </div>
         </CardTitle>
@@ -82,7 +87,7 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              Pontuação Total
+              {t('components.lordOfNativity.totalScore', { defaultValue: 'Pontuação Total' })}
             </p>
             <p className="text-2xl font-bold text-foreground">
               {lordOfNativity.score > 0 ? '+' : ''}{lordOfNativity.score}
@@ -90,7 +95,7 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              Status
+              {t('components.lordOfNativity.status', { defaultValue: 'Status' })}
             </p>
             <Badge
               variant="outline"
@@ -104,17 +109,17 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
         {/* Position */}
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            Posição
+            {t('components.lordOfNativity.position', { defaultValue: 'Posição' })}
           </p>
           <p className="text-sm font-semibold text-foreground">
-            {getSignSymbol(lordOfNativity.sign)} {lordOfNativity.sign} • Casa {lordOfNativity.house}
+            {getSignSymbol(lordOfNativity.sign)} {translateSign(lordOfNativity.sign)} • {t('components.lordOfNativity.house', { defaultValue: 'Casa' })} {lordOfNativity.house}
           </p>
         </div>
 
         {/* Dignity Breakdown */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            Dignidades Essenciais
+            {t('components.lordOfNativity.essentialDignities', { defaultValue: 'Dignidades Essenciais' })}
           </p>
           <div className="space-y-2">
             {lordOfNativity.dignity_details.map((detail, index) => (
@@ -148,9 +153,7 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            👑 O Senhor da Natividade é o planeta com maior dignidade essencial no seu mapa natal.
-            Segundo a astrologia tradicional, ele representa a força vital dominante que guia sua vida
-            e indica onde você tem maior potencial de realização e maestria.
+            👑 {t('components.lordOfNativity.note', { defaultValue: 'O Senhor da Natividade é o planeta com maior dignidade essencial no seu mapa natal. Segundo a astrologia tradicional, ele representa a força vital dominante que guia sua vida e indica onde você tem maior potencial de realização e maestria.' })}
           </p>
         </div>
       </CardContent>

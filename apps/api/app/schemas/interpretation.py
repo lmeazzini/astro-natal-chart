@@ -20,9 +20,12 @@ class RAGSourceInfo(BaseModel):
 class InterpretationBase(BaseModel):
     """Base schema for interpretation."""
 
-    interpretation_type: str = Field(..., description="Type: 'planet', 'house', or 'aspect'")
+    interpretation_type: str = Field(
+        ..., description="Type: 'planet', 'house', 'aspect', or 'arabic_part'"
+    )
     subject: str = Field(
-        ..., description="Subject of interpretation (e.g., 'Sun', '1', 'Sun-Trine-Moon')"
+        ...,
+        description="Subject of interpretation (e.g., 'Sun', '1', 'Sun-Trine-Moon', 'fortune')",
     )
     content: str = Field(..., description="AI-generated interpretation text")
     source: str = Field(
@@ -77,6 +80,10 @@ class ChartInterpretationsResponse(BaseModel):
     aspects: dict[str, str] = Field(
         default_factory=dict, description="Aspect interpretations by key"
     )
+    arabic_parts: dict[str, str] = Field(
+        default_factory=dict,
+        description="Arabic Parts interpretations by key (fortune, spirit, eros, necessity)",
+    )
     source: str = Field(
         default="standard",
         description="Interpretation source: 'standard' or 'rag'",
@@ -94,6 +101,10 @@ class RAGInterpretationsResponse(BaseModel):
     )
     aspects: dict[str, InterpretationItem] = Field(
         default_factory=dict, description="Aspect interpretations with metadata"
+    )
+    arabic_parts: dict[str, InterpretationItem] = Field(
+        default_factory=dict,
+        description="Arabic Parts interpretations with metadata (fortune, spirit, eros, necessity)",
     )
     source: str = Field(default="rag", description="Always 'rag' for this response")
     documents_used: int = Field(

@@ -1,7 +1,7 @@
 """add_public_charts_table
 
 Revision ID: a353cbccb342
-Revises: 5fb21e5a57d8
+Revises: time_format_183000
 Create Date: 2025-11-23 01:04:14.595978
 
 """
@@ -14,7 +14,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'a353cbccb342'
-down_revision: str | None = '5fb21e5a57d8'
+down_revision: str | None = 'time_format_183000'
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

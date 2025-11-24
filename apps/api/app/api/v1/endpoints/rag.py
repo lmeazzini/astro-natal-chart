@@ -298,6 +298,99 @@ async def ingest_pdf_document(
         ) from e
 
 
+class DocumentListItem(BaseModel):
+    """List item schema for document listing."""
+
+    id: str
+    title: str
+    document_type: str
+    content_preview: str
+    page: int | None
+    source: str | None
+    created_at: str
+    indexed: bool
+
+
+class DocumentListResponse(BaseModel):
+    """Response schema for document listing."""
+
+    documents: list[DocumentListItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+@router.get("/documents", response_model=DocumentListResponse)
+async def list_documents(
+    page: int = 1,
+    page_size: int = 20,
+    document_type: str | None = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DocumentListResponse:
+    """
+    List all documents in the RAG system.
+
+    Args:
+        page: Page number (1-indexed)
+        page_size: Number of documents per page (max 100)
+        document_type: Optional filter by document type (text, pdf)
+
+    Returns:
+        Paginated list of documents with metadata
+    """
+    from sqlalchemy import func, select
+
+    # Validate page_size
+    page_size = min(page_size, 100)
+    offset = (page - 1) * page_size
+
+    # Build query
+    query = select(VectorDocument)
+    count_query = select(func.count(VectorDocument.id))
+
+    if document_type:
+        query = query.where(VectorDocument.document_type == document_type)
+        count_query = count_query.where(VectorDocument.document_type == document_type)
+
+    # Get total count
+    total_result = await db.execute(count_query)
+    total = total_result.scalar() or 0
+
+    # Get documents with pagination
+    query = query.order_by(VectorDocument.created_at.desc()).offset(offset).limit(page_size)
+    result = await db.execute(query)
+    documents = result.scalars().all()
+
+    # Format response
+    doc_items = []
+    for doc in documents:
+        metadata = doc.doc_metadata or {}
+        doc_items.append(
+            DocumentListItem(
+                id=str(doc.id),
+                title=doc.title,
+                document_type=doc.document_type,
+                content_preview=doc.content[:150] + "..." if len(doc.content) > 150 else doc.content,
+                page=metadata.get("page"),
+                source=metadata.get("source") or metadata.get("original_filename"),
+                created_at=doc.created_at.isoformat(),
+                indexed=doc.indexed_at is not None,
+            )
+        )
+
+    total_pages = (total + page_size - 1) // page_size
+
+    return DocumentListResponse(
+        documents=doc_items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
+
+
 @router.get("/documents/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: UUID,
@@ -353,9 +446,7 @@ async def delete_document(
 
 
 @router.get("/stats", response_model=StatsResponse)
-@limiter.limit(RateLimits.RAG_STATS)
 async def get_rag_stats(
-    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> StatsResponse:

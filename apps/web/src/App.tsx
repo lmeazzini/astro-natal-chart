@@ -22,6 +22,7 @@ import { LandingPage } from './pages/Landing';
 import { MethodologyPage } from './pages/Methodology';
 import { PublicChartsPage } from './pages/PublicCharts';
 import { PublicChartDetailPage } from './pages/PublicChartDetail';
+import { RagDocumentsPage } from './pages/RagDocuments';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
@@ -65,6 +66,8 @@ function App() {
           {/* Public Charts */}
           <Route path="/public-charts" element={<PublicChartsPage />} />
           <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
+          {/* RAG Knowledge Base */}
+          <Route path="/rag-documents" element={<RagDocumentsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <CookieBanner />
@@ -173,6 +176,7 @@ function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Row 1: Stats */}
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboardPage.myCharts')}</CardTitle>
@@ -220,24 +224,6 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('dashboardPage.settings')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">{t('dashboardPage.language')}</p>
-                <p className="text-sm font-medium">{user.locale}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('dashboardPage.timezone')}</p>
-                <p className="text-sm font-medium">{user.timezone || t('dashboardPage.notConfigured')}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
               <CardTitle>{t('dashboardPage.createChart')}</CardTitle>
               <CardDescription>
                 {t('dashboardPage.createChartDescription')}
@@ -252,6 +238,7 @@ function DashboardPage() {
             </CardContent>
           </Card>
 
+          {/* Row 2: Navigation */}
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboardPage.myChartsCard')}</CardTitle>
@@ -263,6 +250,38 @@ function DashboardPage() {
               <Button variant="secondary" className="w-full" asChild>
                 <Link to="/charts">
                   {t('dashboardPage.viewMyCharts')}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('dashboardPage.famousChartsCard')}</CardTitle>
+              <CardDescription>
+                {t('dashboardPage.famousChartsDescription')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/public-charts">
+                  {t('dashboardPage.viewFamousCharts')}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('dashboardPage.ragKnowledgeBase', 'RAG Knowledge Base')}</CardTitle>
+              <CardDescription>
+                {t('dashboardPage.ragKnowledgeBaseDescription', 'Documents used for AI-enhanced interpretations')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/rag-documents">
+                  {t('dashboardPage.viewRagDocuments', 'View Documents')}
                 </Link>
               </Button>
             </CardContent>

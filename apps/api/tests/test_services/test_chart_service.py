@@ -249,7 +249,7 @@ class TestUpdateBirthChart:
             with patch("app.services.chart_service.calculate_birth_chart") as mock_calc:
                 mock_calc.return_value = mock_calculated_data
 
-                with patch("app.services.chart_service.InterpretationService") as MockInterp:
+                with patch("app.services.chart_service.InterpretationServiceRAG") as MockInterp:
                     mock_interp_instance = AsyncMock()
                     MockInterp.return_value = mock_interp_instance
 

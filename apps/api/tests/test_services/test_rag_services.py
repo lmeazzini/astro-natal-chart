@@ -363,7 +363,7 @@ class TestDocumentIngestionService:
 
         # Same input should generate same ID
         assert doc_id1 == doc_id2
-        assert len(doc_id1) == 16  # SHA256 truncated to 16 chars
+        assert len(doc_id1) == 36  # UUID format (Qdrant requires UUID)
 
         # Different input should generate different ID
         doc_id3 = service._generate_document_id("Different", metadata)

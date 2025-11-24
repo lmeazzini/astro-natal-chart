@@ -148,11 +148,25 @@ class Settings(BaseSettings):
     GITHUB_TOKEN: str | None = None  # Optional, increases rate limit from 60 to 5000/hour
     GITHUB_FEATURES_CACHE_TTL: int = 300  # Cache TTL in seconds (5 minutes)
 
+    # Qdrant Vector Database (RAG)
+    QDRANT_URL: str = "http://localhost:6333"
+    QDRANT_COLLECTION: str = "astrology_knowledge"
+    QDRANT_VECTOR_SIZE: int = 1536  # OpenAI ada-002 embedding size
+
+    # OpenAI Embeddings (for RAG)
+    OPENAI_EMBEDDING_MODEL: str = "text-embedding-ada-002"
+
+    # RAG Settings
+    RAG_MAX_ASPECTS: int = 10  # Maximum aspects to interpret in RAG mode
+
     # Cookie Security Settings
     COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
     COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"  # CSRF protection
     COOKIE_DOMAIN: str | None = None  # Cookie domain (None = current domain)
+
+    # Unverified User Limits
+    UNVERIFIED_USER_CHART_LIMIT: int = 5  # Max charts for unverified users
 
     @property
     def database_url_sync(self) -> str:

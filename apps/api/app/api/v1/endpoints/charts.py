@@ -10,8 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.dependencies import get_current_user, get_db
+from app.core.i18n import translate as _
+from app.core.i18n.messages import ChartMessages
 from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
+from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import (
     BirthChartCreate,
     BirthChartList,
@@ -68,6 +71,19 @@ async def create_chart(
         Created birth chart with status='processing' (no chart_data yet)
     """
     try:
+        # Check chart limit for unverified users
+        if not current_user.email_verified:
+            chart_repo = ChartRepository(db)
+            chart_count = await chart_repo.count_by_user(UUID(str(current_user.id)))
+            if chart_count >= settings.UNVERIFIED_USER_CHART_LIMIT:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=_(
+                        ChartMessages.UNVERIFIED_CHART_LIMIT,
+                        limit=settings.UNVERIFIED_USER_CHART_LIMIT,
+                    ),
+                )
+
         # Create initial chart record (no calculations yet)
         chart = await chart_service.create_birth_chart_async(
             db=db,
@@ -79,6 +95,8 @@ async def create_chart(
         generate_birth_chart_task.delay(str(chart.id))
 
         return chart  # type: ignore[return-value]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -365,6 +383,13 @@ async def generate_chart_pdf(
         Message with task status
     """
     try:
+        # Block PDF generation for unverified users
+        if not current_user.email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=_(ChartMessages.UNVERIFIED_PDF_BLOCKED),
+            )
+
         # Verify chart exists and user has access
         chart = await chart_service.get_chart_by_id(
             db=db,
@@ -400,6 +425,8 @@ async def generate_chart_pdf(
             "task_id": task.id,
         }
 
+    except HTTPException:
+        raise
     except chart_service.ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -597,6 +624,76 @@ async def download_chart_pdf(
             expires_in=None,  # Local files don't expire
             content_type="application/pdf",
         )
+
+    except chart_service.ChartNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Birth chart not found",
+        ) from None
+    except chart_service.UnauthorizedAccessError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this birth chart",
+        ) from None
+
+
+# ============================================================
+# RECALCULATE ENDPOINT
+# ============================================================
+
+
+@router.post(
+    "/{chart_id}/recalculate",
+    response_model=BirthChartRead,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Recalculate birth chart",
+    description="Force recalculation of all chart data and interpretations.",
+)
+@limiter.limit(RateLimits.CHART_UPDATE)
+async def recalculate_chart(
+    request: Request,
+    response: Response,
+    chart_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> BirthChartRead:
+    """
+    Force recalculation of a birth chart.
+
+    This endpoint triggers a full recalculation of the chart data,
+    including all planetary positions, houses, aspects, dignities,
+    sect analysis, and other traditional calculations.
+
+    Use this when you want to regenerate the chart with potentially
+    updated calculation logic or to refresh cached data.
+
+    Args:
+        chart_id: Birth chart UUID
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        Updated birth chart with recalculated data
+    """
+    try:
+        # Verify access and get the chart
+        chart = await chart_service.get_chart_by_id(
+            db=db,
+            chart_id=chart_id,
+            user_id=UUID(str(current_user.id)),
+            is_admin=current_user.is_admin,
+        )
+
+        # Update status to processing
+        chart.status = "processing"
+        chart.progress = 0
+        await db.commit()
+        await db.refresh(chart)
+
+        # Dispatch Celery task to recalculate in background
+        generate_birth_chart_task.delay(str(chart_id))
+
+        return chart  # type: ignore[return-value]
 
     except chart_service.ChartNotFoundError:
         raise HTTPException(

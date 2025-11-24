@@ -155,6 +155,37 @@ async def require_admin(
     return current_user
 
 
+async def require_verified_admin(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Require admin role AND verified email for endpoint access.
+
+    This is a security measure to ensure that admin accounts cannot be
+    exploited before email verification is complete.
+
+    Args:
+        current_user: Current user from get_current_user dependency
+
+    Returns:
+        User object
+
+    Raises:
+        HTTPException: If user is not admin or email not verified
+    """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=_(AuthMessages.NOT_ENOUGH_PRIVILEGES),
+        )
+    if not current_user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=_(AuthMessages.ADMIN_EMAIL_NOT_VERIFIED),
+        )
+    return current_user
+
+
 def require_role(required_role: UserRole) -> Any:
     """
     Factory that creates a dependency to check for a specific role.

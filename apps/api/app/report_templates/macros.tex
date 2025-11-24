@@ -1,6 +1,14 @@
 % LaTeX Macros for Natal Chart Reports
 % Astro Essence Design System Implementation
-% Version 2.0 - Following design system from ux/DESIGN_REFERENCE.md
+% Version 2.1 - Following design system from ux/DESIGN_REFERENCE.md
+% Added astrological symbols support (wasysym/marvosym)
+
+% ============================================================
+% ASTROLOGICAL SYMBOL PACKAGES
+% ============================================================
+\usepackage{wasysym}      % Provides \astmark, zodiac signs, etc.
+\usepackage{marvosym}     % Provides additional symbols
+\usepackage{textcomp}     % Additional text symbols
 
 % ============================================================
 % ASTRO ESSENCE COLOR PALETTE
@@ -184,41 +192,39 @@
 }
 
 % ============================================================
-% ASTROLOGICAL SYMBOLS (UTF-8)
+% ASTROLOGICAL SYMBOLS (LaTeX Native - wasysym/marvosym)
 % ============================================================
 
-% Zodiac sign symbols
-\newcommand{\aries}{♈}
-\newcommand{\taurus}{♉}
-\newcommand{\gemini}{♊}
-\newcommand{\cancer}{♋}
-\newcommand{\leo}{♌}
-\newcommand{\virgo}{♍}
-\newcommand{\libra}{♎}
-\newcommand{\scorpio}{♏}
-\newcommand{\sagittarius}{♐}
-\newcommand{\capricorn}{♑}
-\newcommand{\aquarius}{♒}
-\newcommand{\pisces}{♓}
+% Zodiac sign symbols (wasysym package)
+\newcommand{\aries}{\Aries}
+\newcommand{\taurus}{\Taurus}
+\newcommand{\gemini}{\Gemini}
+\newcommand{\cancer}{\Cancer}
+\newcommand{\leo}{\Leo}
+\newcommand{\virgo}{\Virgo}
+\newcommand{\libra}{\Libra}
+\newcommand{\scorpio}{\Scorpio}
+\newcommand{\sagittarius}{\Sagittarius}
+\newcommand{\capricorn}{\Capricorn}
+\newcommand{\aquarius}{\Aquarius}
+\newcommand{\pisces}{\Pisces}
 
-% Planet symbols
-\newcommand{\sun}{☉}
-\newcommand{\moon}{☽}
-\newcommand{\mercury}{☿}
-\newcommand{\venus}{♀}
-\newcommand{\mars}{♂}
-\newcommand{\jupiter}{♃}
-\newcommand{\saturn}{♄}
-\newcommand{\uranus}{⛢}
-\newcommand{\neptune}{♆}
-\newcommand{\pluto}{♇}
+% Planet symbols (marvosym package already defines these)
+% \Sun, \Moon, \Mercury, \Venus, \Mars, \Jupiter, \Saturn, \Uranus, \Neptune, \Pluto
+% are already available from marvosym package
+
+% Nodes (custom using symbols)
+\newcommand{\NorthNode}{$\Omega$}    % North Node (Omega)
+\newcommand{\SouthNode}{$\mho$}      % South Node (inverted Omega)
+\newcommand{\Chiron}{$\chi$}         % Chiron (chi)
 
 % Aspect symbols
-\newcommand{\conjunction}{☌}
-\newcommand{\opposition}{☍}
-\newcommand{\trine}{△}
-\newcommand{\square}{□}
-\newcommand{\sextile}{⚹}
+\newcommand{\conjunction}{\astmark{0}} % Circle (conjunction)
+\newcommand{\opposition}{$\oplus$}     % Circle with line (opposition)
+\newcommand{\trine}{$\triangle$}       % Triangle (trine)
+\newcommand{\square}{$\square$}        % Square
+\newcommand{\sextile}{$\star$}         % Star (sextile)
+\newcommand{\quincunx}{$\angle$}       % Angle (quincunx)
 
 % ============================================================
 % TABLE STYLING COMMANDS

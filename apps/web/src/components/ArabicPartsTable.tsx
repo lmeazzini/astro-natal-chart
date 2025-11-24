@@ -5,6 +5,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { getSignSymbol } from '@/utils/astro';
+import { useAstroTranslation } from '@/hooks/useAstroTranslation';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip } from '@/components/InfoTooltip';
 
@@ -22,16 +23,25 @@ export interface ArabicParts {
   necessity: ArabicPart;
 }
 
+interface ArabicPartsInterpretations {
+  fortune?: string;
+  spirit?: string;
+  eros?: string;
+  necessity?: string;
+}
+
 interface ArabicPartsTableProps {
   parts: ArabicParts;
+  interpretations?: ArabicPartsInterpretations;
 }
 
 function formatDegree(degree: number): string {
   return degree.toFixed(2);
 }
 
-export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
+export function ArabicPartsTable({ parts, interpretations }: ArabicPartsTableProps) {
   const { t, i18n } = useTranslation();
+  const { translateSign } = useAstroTranslation();
   const isEn = i18n.language === 'en-US' || i18n.language === 'en';
 
   // Translated parts info
@@ -112,7 +122,7 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{t('components.arabicParts.position', { defaultValue: 'Posição' })}:</span>
                     <span className="text-sm font-medium text-foreground">
-                      {formatDegree(part.degree)}° {getSignSymbol(part.sign)} {part.sign}
+                      {formatDegree(part.degree)}° {getSignSymbol(part.sign)} {translateSign(part.sign)}
                     </span>
                   </div>
 
@@ -128,6 +138,18 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
                       {info.description}
                     </p>
                   </div>
+
+                  {/* Interpretation section */}
+                  {interpretations && interpretations[info.key] && (
+                    <div className="pt-3 mt-3 border-t border-border/50">
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        {t('components.arabicParts.interpretation', { defaultValue: 'Interpretação' })}:
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {interpretations[info.key]}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -176,7 +198,7 @@ export function ArabicPartsTable({ parts }: ArabicPartsTableProps) {
                       </td>
                       <td className="py-3 px-2 text-sm text-foreground">
                         <span className="flex items-center gap-1">
-                          {getSignSymbol(part.sign)} {part.sign}
+                          {getSignSymbol(part.sign)} {translateSign(part.sign)}
                         </span>
                       </td>
                       <td className="py-3 px-2 text-center text-sm text-foreground">

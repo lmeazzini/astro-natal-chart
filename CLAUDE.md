@@ -250,9 +250,15 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 
 ### Astrological Calculations (Critical Domain Logic)
 
-**ACTUAL IMPLEMENTATION**: All calculation logic is in `apps/api/app/services/astro_service.py` (374 lines)
+**Main calculation logic:** `apps/api/app/services/astro_service.py` (~780 lines)
 
-**The `apps/api/app/astro/` directory exists but is EMPTY** - this was planned for future refactoring but currently all logic is in the service layer.
+**Traditional astrology modules:** `apps/api/app/astro/`
+- `dignities.py` - Essential dignities (rulership, exaltation, triplicity, term, face)
+- `lunar_phase.py` - Lunar phase calculations
+- `solar_phase.py` - Solar phase calculations
+- `temperament.py` - Traditional temperament analysis
+- `lord_of_nativity_interpretations.py` - Lord of nativity interpretations
+- `interpretation_prompts.yaml` - AI interpretation prompts
 
 **Actually Implemented:**
 - ✅ PySwisseph integration with **Moshier ephemeris** (built-in, no external files needed)
@@ -265,15 +271,18 @@ All apps are orchestrated by **Turborepo** (`turbo.json`). Running `npm run dev`
 - ✅ Applying/separating aspect detection (based on planet speeds)
 - ✅ Retrograde detection
 - ✅ Sign and degree calculations (e.g., "15° Taurus")
+- ✅ **Sect determination** (day/night chart) - `calculate_sect()`, `calculate_sect_analysis()`
+- ✅ **Arabic Parts** (Lot of Fortune, Spirit, etc.) - `calculate_arabic_parts()`
+- ✅ **Essential dignities** - rulership, exaltation, triplicity, term, face (`dignities.py`)
+- ✅ **Lunar phase** calculations (`lunar_phase.py`)
+- ✅ **Solar phase** calculations (`solar_phase.py`)
+- ✅ **Temperament** analysis (`temperament.py`)
 
-**NOT Implemented (requires external ephemeris files or additional logic):**
+**NOT Implemented Yet:**
 - ❌ Chiron and asteroids (Ceres, Pallas, Juno, Vesta)
-- ❌ Essential dignities calculation (rulership, exaltation, triplicity, term, face)
-- ❌ Sect determination (day/night chart)
-- ❌ Lot of Fortune calculation
-- ❌ Text interpretations (no template engine)
 - ❌ Fixed stars conjunctions
 - ❌ High-precision JPL DE431 ephemeris (currently using lower-precision Moshier)
+- ❌ Profections, Firdaria, Solar Returns (see issues #126-128)
 
 **Precision:**
 - Current: Moshier ephemeris (good for most uses, ~1-2 arcsecond error)
@@ -647,19 +656,22 @@ export async function createChart(chartData: ChartCreate): Promise<Chart> {
 
 ## Testing Guidelines
 
-**CURRENT STATUS**: ~30% backend coverage, 0% frontend coverage
+**CURRENT STATUS**: **439 tests** collected, backend coverage improving
 
 **Backend testing (pytest):**
-- `apps/api/tests/test_api/` - API endpoint tests
-  - ✅ `test_auth.py` - 24 tests (register, login, refresh, logout, email verification)
-  - TestRegister: 6 tests
-  - TestLogin: 5 tests
-  - TestRefreshToken: 4 tests
-  - TestGetCurrentUser: 4 tests
-  - TestLogout: 3 tests
-  - TestAuthenticationFlow: 2 tests
-- `apps/api/tests/test_astro/` - Calculation tests (empty - needs implementation)
-- `apps/api/tests/test_services/` - Service tests (empty - needs implementation)
+- `apps/api/tests/test_api/` - API endpoint tests (auth, charts, users, etc.)
+- `apps/api/tests/test_astro/` - Astrological calculation tests
+  - `test_dignities.py` - Essential dignities tests
+- `apps/api/tests/test_services/` - Service layer tests
+  - `test_astro_service.py` - Astro calculations (sect, aspects, etc.)
+  - `test_chart_service.py` - Chart CRUD operations
+  - `test_geocoding_service.py` - Location lookup
+  - `test_interpretation_service.py` - AI interpretations
+  - `test_interpretation_cache_service.py` - Cache logic
+  - `test_pdf_service.py` - PDF generation
+  - `test_s3_service.py` - S3 storage
+  - `test_rag_services.py` - RAG/Qdrant integration
+  - `test_backup_s3_service.py` - Backup service
 
 **Test configuration:**
 - Fixtures: `db_session`, `client`, `test_user`, `test_user_factory`, `test_chart_factory`
@@ -735,7 +747,7 @@ logger.bind(user_id=user.id).info("Chart created")
 3. **JSONB queries:** Use PostgreSQL JSONB operators (`->`, `->>`, `@>`) for querying chart_data
 4. **Timezone handling:** Always use timezone-aware datetimes, store birth_timezone IANA name
 5. **PySwisseph precision:** Currently using Moshier (built-in). For high precision, need to download ephemeris files and set `EPHEMERIS_PATH`
-6. **Empty directories:** `packages/`, `app/astro/` exist but are empty/unused
+6. **Empty directories:** `packages/` exists but is empty/unused
 7. **Installed but unused:** React Query, Zustand, axios, React Hook Form (installed but not actively used in current code)
 8. **Docker watchfiles:** Never remove `.venv` exclusions from docker-compose.yml - causes container crashes
 
@@ -777,24 +789,31 @@ logger.bind(user_id=user.id).info("Chart created")
 - Docker development environment
 - Redis for caching and rate limiting
 - AI interpretations (OpenAI GPT-4o-mini) - optional
-- **Testing infrastructure** (~30% backend coverage, 24 auth tests)
+- **Testing infrastructure** (439 tests, backend coverage improving)
+- **Traditional Astrology Calculations:**
+  - ✅ Sect determination (day/night chart)
+  - ✅ Arabic Parts (Lot of Fortune, Spirit, etc.)
+  - ✅ Essential dignities (rulership, exaltation, triplicity, term, face)
+  - ✅ Lunar phase calculations
+  - ✅ Solar phase calculations
+  - ✅ Temperament analysis
+  - ✅ RAG system with Qdrant for AI interpretations
 
 **❌ NOT IMPLEMENTED YET:**
 - Disaster recovery tests and restore procedures (see issue #87)
-- Essential dignities calculation
-- Sect determination (day/night)
-- Lot of Fortune
+- Chiron and asteroids
+- Fixed stars conjunctions
 - PDF generation (LaTeX infrastructure exists but no tasks)
-- Higher test coverage (target: 70% backend, 60% frontend, current: ~30%)
+- Higher test coverage (target: 70% backend, 60% frontend)
 - Dark mode (see issue #35)
 - Avatar upload (profile management endpoints exist)
-- Solar phase calculation (see issue #34)
 - Logo integration (see issue #41)
 - Internationalization (i18n)
 - Cache logic for astro calculations (Redis configured but not used for caching yet)
 - Shared packages (`packages/shared-types/`, `packages/ui-components/`)
 - Public famous charts gallery (see issue #86)
 - Blog with SEO optimization (planned)
+- Profections, Firdaria, Solar Returns (see issues #126-128)
 
 ## Documentation References
 
@@ -850,6 +869,20 @@ We use a simplified GitFlow with two main branches:
 - `test/*` - Test additions
 - `hotfix/*` - Critical production fixes (from `main`)
 
+### ⚠️ COMMIT RULES (CRITICAL)
+
+| Branch | Direct Commit Allowed? | When? |
+|--------|------------------------|-------|
+| `main` | 🚫 **NEVER** | Only via PR from `dev` (releases) or `hotfix/*` |
+| `dev` | 🚫 **NO** | Only if **explicitly requested** by user |
+| `feature/*` | ✅ Yes | Normal development |
+
+**Golden Rules:**
+1. **New feature?** → Create `feature/xxx` branch → PR to `dev`
+2. **Bug fix?** → Create `fix/xxx` branch → PR to `dev`
+3. **Hotfix in production?** → Create `hotfix/xxx` from `main` → PR to `main` AND `dev`
+4. **Release?** → PR from `dev` to `main` → Create tag and GitHub release
+
 ### Workflow Steps
 
 1. **Create feature branch from `dev`:**
@@ -893,10 +926,54 @@ We use a simplified GitFlow with two main branches:
 
 8. After approval, merge to `dev`
 
+### Release Process (dev → main)
+
+When ready to release:
+
+```bash
+# 1. Create PR from dev to main
+gh pr create --base main --head dev --title "Release vX.Y.Z"
+
+# 2. After PR is merged, create tag and release
+git checkout main
+git pull origin main
+git tag -a vX.Y.Z -m "Release vX.Y.Z: brief description"
+git push origin vX.Y.Z
+
+# 3. Create GitHub release
+gh release create vX.Y.Z --title "vX.Y.Z" --notes "Release notes here"
+```
+
+**Versioning (SemVer):**
+- `vX.0.0` - Major: Breaking changes
+- `vX.Y.0` - Minor: New features (backward compatible)
+- `vX.Y.Z` - Patch: Bug fixes
+
+### Hotfix Process
+
+For critical production bugs:
+
+```bash
+# 1. Create hotfix branch from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/critical-bug
+
+# 2. Fix the bug, commit, push
+
+# 3. Create PR to main
+gh pr create --base main --title "hotfix: fix critical bug"
+
+# 4. After merge, also merge to dev
+git checkout dev
+git merge main
+git push origin dev
+```
+
 **IMPORTANT:**
-- **NEVER** commit directly to `main` or `dev`
-- **ALWAYS** create PRs to `dev` (not `main`)
-- Only maintainers merge `dev` → `main` (releases)
+- **NEVER** commit directly to `main` or `dev` (unless explicitly requested for `dev`)
+- **ALWAYS** create PRs to `dev` for features/fixes
+- **ALWAYS** create tag + release when merging `dev` → `main`
 - See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for full guidelines
 
 ## Key Dependencies to Know

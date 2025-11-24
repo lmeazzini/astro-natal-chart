@@ -30,13 +30,39 @@ class BirthChartCreate(BaseModel):
 
 
 class BirthChartUpdate(BaseModel):
-    """Schema for updating a birth chart."""
+    """Schema for updating a birth chart.
 
+    All fields are optional. Only provided fields will be updated.
+    If birth data (datetime, timezone, lat/lon) changes, chart will be recalculated.
+    """
+
+    # Personal info (no recalculation needed)
     person_name: str | None = Field(None, min_length=1, max_length=100)
     gender: str | None = Field(None, max_length=50)
     notes: str | None = None
     tags: list[str] | None = None
     visibility: str | None = Field(None, max_length=20)
+
+    # Birth data (triggers recalculation if changed)
+    birth_datetime: datetime | None = Field(
+        None, description="Birth date and time in ISO format"
+    )
+    birth_timezone: str | None = Field(
+        None, max_length=50, description="Timezone (e.g., America/Sao_Paulo)"
+    )
+    latitude: float | None = Field(
+        None, ge=-90, le=90, description="Birth location latitude"
+    )
+    longitude: float | None = Field(
+        None, ge=-180, le=180, description="Birth location longitude"
+    )
+    city: str | None = Field(None, max_length=100)
+    country: str | None = Field(None, max_length=100)
+
+    # Technical settings (triggers recalculation if changed)
+    house_system: str | None = Field(None, max_length=20)
+    zodiac_type: str | None = Field(None, max_length=20)
+    node_type: str | None = Field(None, max_length=20)
 
 
 class PlanetPosition(BaseModel):

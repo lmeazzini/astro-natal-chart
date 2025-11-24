@@ -24,6 +24,26 @@ export interface BirthChartCreate {
   node_type?: string;
 }
 
+export interface BirthChartUpdate {
+  // Personal info (no recalculation needed)
+  person_name?: string | null;
+  gender?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  visibility?: string | null;
+  // Birth data (triggers recalculation if changed)
+  birth_datetime?: string | null; // ISO format
+  birth_timezone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  country?: string | null;
+  // Technical settings (triggers recalculation if changed)
+  house_system?: string | null;
+  zodiac_type?: string | null;
+  node_type?: string | null;
+}
+
 export interface PlanetPosition {
   name: string;
   longitude: number;
@@ -69,6 +89,35 @@ export interface ArabicParts {
   necessity: ArabicPart;
 }
 
+export interface PlanetSectStatus {
+  name: string;
+  sign: string;
+  house: number;
+  degree: number;
+  planet_sect: 'diurnal' | 'nocturnal' | 'neutral';
+  in_sect: boolean;
+  faction: 'benefic' | 'malefic' | 'luminary' | 'neutral';
+  performance: 'optimal' | 'moderate' | 'challenging';
+}
+
+export interface SectAnalysisData {
+  sect: 'diurnal' | 'nocturnal';
+  sun_house: number;
+  planets_by_sect: {
+    in_sect: PlanetSectStatus[];
+    out_of_sect: PlanetSectStatus[];
+    neutral: PlanetSectStatus[];
+  };
+  benefics: {
+    in_sect: PlanetSectStatus | null;
+    out_of_sect: PlanetSectStatus | null;
+  };
+  malefics: {
+    in_sect: PlanetSectStatus | null;
+    out_of_sect: PlanetSectStatus | null;
+  };
+}
+
 export interface BirthChart {
   id: string;
   user_id: string;
@@ -95,6 +144,7 @@ export interface BirthChart {
     ascendant: number;
     midheaven: number;
     sect?: string;
+    sect_analysis?: SectAnalysisData;
     lunar_phase?: LunarPhaseData;
     solar_phase?: SolarPhaseData;
     lord_of_nativity?: LordOfNativityData;
@@ -124,12 +174,29 @@ export interface ChartStatus {
   task_id: string | null;
 }
 
+export interface ChartLimitInfo {
+  chart_count: number;
+  limit: number;
+  is_verified: boolean;
+}
+
 export const chartsService = {
   /**
    * Create a new birth chart
    */
   async create(data: BirthChartCreate, token: string): Promise<BirthChart> {
     return apiClient.post<BirthChart>('/api/v1/charts/', data, token);
+  },
+
+  /**
+   * Get chart count for the current user (for limit checking)
+   */
+  async getCount(token: string): Promise<number> {
+    const result = await apiClient.get<BirthChartList>(
+      '/api/v1/charts/?page=1&page_size=1',
+      token
+    );
+    return result.total;
   },
 
   /**
@@ -161,6 +228,14 @@ export const chartsService = {
   },
 
   /**
+   * Update a birth chart
+   * If birth data changes, chart will be recalculated
+   */
+  async update(chartId: string, data: BirthChartUpdate, token: string): Promise<BirthChart> {
+    return apiClient.put<BirthChart>(`/api/v1/charts/${chartId}`, data, token);
+  },
+
+  /**
    * Delete a birth chart
    */
   async delete(chartId: string, token: string, hardDelete: boolean = false): Promise<void> {
@@ -168,5 +243,13 @@ export const chartsService = {
       `/api/v1/charts/${chartId}?hard_delete=${hardDelete}`,
       token
     );
+  },
+
+  /**
+   * Recalculate a birth chart (forces recalculation of all chart data)
+   * This triggers the same recalculation as updating birth data
+   */
+  async recalculate(chartId: string, token: string): Promise<BirthChart> {
+    return apiClient.post<BirthChart>(`/api/v1/charts/${chartId}/recalculate`, {}, token);
   },
 };

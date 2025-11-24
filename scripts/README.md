@@ -2,20 +2,26 @@
 
 Scripts utilitários para gerenciamento e manutenção do Astro.
 
+Todos os scripts estão centralizados nesta pasta única para facilitar a manutenção.
+
 ## Database Backup Scripts
 
-Scripts para backup e restore do banco de dados PostgreSQL. **Veja documentação completa em [BACKUP.md](../BACKUP.md)**.
+Scripts para backup e restore do banco de dados PostgreSQL e Qdrant. **Veja documentação completa em [BACKUP.md](../BACKUP.md)**.
 
 ### backup-db.sh
 
-Cria backup completo do banco de dados com compressão.
+Cria backup completo do PostgreSQL e Qdrant com compressão.
 
 ```bash
+# Backup padrão (com timestamp)
 ./scripts/backup-db.sh
+
+# Backup com nome específico (ex: estado inicial)
+BACKUP_NAME=initial ./scripts/backup-db.sh
 ```
 
 **Funcionalidades:**
-- Backup automático com compressão máxima
+- Backup automático com compressão máxima (PostgreSQL + Qdrant)
 - Upload para S3 (opcional)
 - Limpeza automática de backups antigos
 - Verificação de integridade
@@ -116,12 +122,59 @@ Gera logos em diferentes tamanhos.
 ./scripts/generate_logos.sh
 ```
 
-### remove_bg.py
+## Python Data Scripts
 
-Remove background de imagens.
+Scripts Python para popular dados do sistema. Devem ser executados a partir do diretório `apps/api`.
+
+### populate_rag.py
+
+Popula o banco de dados vetorial Qdrant com documentos RAG para interpretações astrológicas.
 
 ```bash
-python3 ./scripts/remove_bg.py input.png output.png
+cd apps/api && uv run python ../../scripts/populate_rag.py
+
+# Limpar documentos existentes antes de popular
+cd apps/api && uv run python ../../scripts/populate_rag.py --clear
+```
+
+### populate_public_charts.py
+
+Popula a tabela de mapas públicos com dados de pessoas famosas.
+
+```bash
+cd apps/api && uv run python ../../scripts/populate_public_charts.py
+```
+
+### generate_missing_interpretations.py
+
+Gera interpretações para mapas que ainda não as possuem.
+
+```bash
+cd apps/api && uv run python ../../scripts/generate_missing_interpretations.py
+
+# Limitar quantidade de mapas
+cd apps/api && uv run python ../../scripts/generate_missing_interpretations.py --limit 10
+
+# Modo dry-run (apenas mostra o que seria feito)
+cd apps/api && uv run python ../../scripts/generate_missing_interpretations.py --dry-run
+```
+
+## OAuth/Email Scripts
+
+### get_gmail_refresh_token.py
+
+Obtém refresh token do Gmail para envio de emails OAuth2.
+
+```bash
+cd apps/api && uv run python ../../scripts/get_gmail_refresh_token.py
+```
+
+### test_oauth_email.py
+
+Testa configuração de email OAuth2.
+
+```bash
+cd apps/api && uv run python ../../scripts/test_oauth_email.py
 ```
 
 ## Agendamento (Cron)

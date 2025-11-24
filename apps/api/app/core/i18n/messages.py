@@ -25,6 +25,7 @@ class AuthMessages(StrEnum):
     VERIFICATION_FAILED = "auth.verification_failed"
     INVALID_VERIFICATION_TOKEN = "auth.invalid_verification_token"
     NOT_ENOUGH_PRIVILEGES = "auth.not_enough_privileges"
+    ADMIN_EMAIL_NOT_VERIFIED = "auth.admin_email_not_verified"
 
 
 class PasswordMessages(StrEnum):
@@ -63,6 +64,8 @@ class ChartMessages(StrEnum):
     PDF_GENERATING = "chart.pdf_generating"
     PDF_READY = "chart.pdf_ready"
     PDF_FAILED = "chart.pdf_failed"
+    UNVERIFIED_CHART_LIMIT = "chart.unverified_chart_limit"
+    UNVERIFIED_PDF_BLOCKED = "chart.unverified_pdf_blocked"
 
 
 class UserMessages(StrEnum):

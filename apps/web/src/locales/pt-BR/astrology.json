@@ -93,13 +93,13 @@
     "peregrine": "Peregrino"
   },
   "sect": {
-    "sect": "Seita",
-    "diurnal": "Diurna",
-    "nocturnal": "Noturna",
-    "daySect": "Seita Diurna",
-    "nightSect": "Seita Noturna",
-    "inSect": "Em Seita",
-    "outOfSect": "Fora de Seita"
+    "sect": "Secto",
+    "diurnal": "Diurno",
+    "nocturnal": "Noturno",
+    "daySect": "Secto Diurno",
+    "nightSect": "Secto Noturno",
+    "inSect": "Em Secto",
+    "outOfSect": "Fora de Secto"
   },
   "lunarPhase": {
     "title": "Fase Lunar",

@@ -1,31 +1,60 @@
 /**
  * Chart interpretations service for AI-generated interpretations
+ * All interpretations now use RAG (Retrieval-Augmented Generation) by default
  */
 
 import { apiClient } from './api';
 
-export interface ChartInterpretations {
-  planets: Record<string, string>;
-  houses: Record<string, string>;
-  aspects: Record<string, string>;
+/**
+ * RAG source information for enhanced interpretations
+ */
+export interface RAGSourceInfo {
+  source: string;
+  page: string | null;
+  relevance_score: number;
+  content_preview: string;
 }
+
+/**
+ * Single interpretation item with RAG metadata
+ */
+export interface InterpretationItem {
+  content: string;
+  source: 'standard' | 'rag';
+  rag_sources: RAGSourceInfo[];
+}
+
+/**
+ * RAG-enhanced interpretations response
+ */
+export interface RAGInterpretations {
+  planets: Record<string, InterpretationItem>;
+  houses: Record<string, InterpretationItem>;
+  aspects: Record<string, InterpretationItem>;
+  arabic_parts?: Record<string, InterpretationItem>;
+  source: 'rag';
+  documents_used: number;
+}
+
+// Legacy type alias for backwards compatibility
+export type ChartInterpretations = RAGInterpretations;
 
 export const interpretationsService = {
   /**
-   * Get all interpretations for a birth chart
+   * Get all RAG-enhanced interpretations for a birth chart
    */
-  async getByChartId(chartId: string, token: string): Promise<ChartInterpretations> {
-    return apiClient.get<ChartInterpretations>(
+  async getByChartId(chartId: string, token: string): Promise<RAGInterpretations> {
+    return apiClient.get<RAGInterpretations>(
       `/api/v1/charts/${chartId}/interpretations`,
       token
     );
   },
 
   /**
-   * Regenerate interpretations for a birth chart
+   * Regenerate RAG-enhanced interpretations for a birth chart
    */
-  async regenerate(chartId: string, token: string): Promise<ChartInterpretations> {
-    return apiClient.post<ChartInterpretations>(
+  async regenerate(chartId: string, token: string): Promise<RAGInterpretations> {
+    return apiClient.post<RAGInterpretations>(
       `/api/v1/charts/${chartId}/interpretations/regenerate`,
       {},
       token

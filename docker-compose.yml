@@ -37,6 +37,28 @@ services:
     networks:
       - astro-network
 
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: astro-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"  # gRPC port
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/6333' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - astro-network
+
   # FastAPI Backend
   api:
     build:
@@ -49,6 +71,7 @@ services:
     volumes:
       - ./apps/api:/app
       - ./apps/api/media:/app/media  # PDF storage
+      - ./rag_docs:/app/rag_docs  # RAG documents
       - /app/__pycache__  # Prevent pycache from being mounted
       - /app/.venv  # Prevent venv from being watched
     ports:
@@ -60,10 +83,13 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      qdrant:
         condition: service_healthy
     networks:
       - astro-network
@@ -150,17 +176,26 @@ services:
   #     - "443:443"
   #   volumes:
   #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
   #     - ./nginx/ssl:/etc/nginx/ssl:ro
   #   depends_on:
   #     - api
   #     - web
   #   networks:
   #     - astro-network
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
 
 volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  qdrant_data:
     driver: local
   backup_data:
     driver: local

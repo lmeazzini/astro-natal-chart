@@ -10,7 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.dependencies import require_admin
+from app.core.dependencies import require_verified_admin
 from app.core.rate_limit import RateLimits, limiter
 from app.models.chart import AuditLog, BirthChart
 from app.models.enums import UserRole
@@ -37,7 +37,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 async def list_all_users(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=100, description="Max records to return"),
-    admin_user: User = Depends(require_admin),
+    admin_user: User = Depends(require_verified_admin),
     db: AsyncSession = Depends(get_db),
 ) -> AdminUserList:
     """List all users in the system (admin only)."""
@@ -76,7 +76,7 @@ async def list_all_users(
 )
 async def get_user_detail(
     user_id: UUID,
-    admin_user: User = Depends(require_admin),
+    admin_user: User = Depends(require_verified_admin),
     db: AsyncSession = Depends(get_db),
 ) -> AdminUserDetail:
     """Get detailed user information (admin only)."""
@@ -128,7 +128,7 @@ async def get_user_detail(
 async def update_user_role(
     user_id: UUID,
     request: UpdateUserRoleRequest,
-    admin_user: User = Depends(require_admin),
+    admin_user: User = Depends(require_verified_admin),
     db: AsyncSession = Depends(get_db),
 ) -> UpdateUserRoleResponse:
     """Update user role (admin only)."""
@@ -212,7 +212,7 @@ async def update_user_role(
     responses={403: {"description": "Admin privileges required"}},
 )
 async def get_system_stats(
-    admin_user: User = Depends(require_admin),
+    admin_user: User = Depends(require_verified_admin),
     db: AsyncSession = Depends(get_db),
 ) -> SystemStats:
     """Get system statistics (admin only)."""

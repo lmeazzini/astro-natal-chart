@@ -75,6 +75,23 @@ ASPECTS = {
     "Sesquiquadrate": {"angle": 135, "orb": 2},
 }
 
+# Sect constants (Hellenistic astrology)
+# Diurnal planets work better in day charts, nocturnal planets in night charts
+DIURNAL_PLANETS = ["Sun", "Jupiter", "Saturn"]
+NOCTURNAL_PLANETS = ["Moon", "Venus", "Mars"]
+NEUTRAL_PLANETS = ["Mercury"]
+
+# Planet factions
+BENEFIC_PLANETS = ["Jupiter", "Venus"]
+MALEFIC_PLANETS = ["Saturn", "Mars"]
+LUMINARY_PLANETS = ["Sun", "Moon"]
+
+# Modern/outer planets to skip in traditional sect analysis
+MODERN_PLANETS = ["Uranus", "Neptune", "Pluto", "North Node", "Chiron"]
+
+# Classical planet order (traditional sorting)
+CLASSICAL_PLANET_ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+
 
 def convert_to_julian_day(dt: datetime, timezone: str, latitude: float, longitude: float) -> float:
     """
@@ -352,6 +369,14 @@ def calculate_sect(ascendant: float, sun_longitude: float) -> str:
     - Diurnal (day chart): Sun is above the horizon (houses 7-12)
     - Nocturnal (night chart): Sun is below the horizon (houses 1-6)
 
+    The horizon is defined by the ASC-DSC axis:
+    - Sun between ASC and DSC (going through IC, increasing degrees) = BELOW horizon
+    - Sun between DSC and ASC (going through MC, decreasing/wrapping degrees) = ABOVE horizon
+
+    Edge cases:
+    - Sun exactly on ASC (sunrise): counted as diurnal (start of day)
+    - Sun exactly on DSC (sunset): counted as nocturnal (start of night)
+
     Args:
         ascendant: Ascendant degree (0-360)
         sun_longitude: Sun's ecliptic longitude (0-360)
@@ -365,16 +390,144 @@ def calculate_sect(ascendant: float, sun_longitude: float) -> str:
     # Normalize sun longitude
     sun_lon = sun_longitude % 360
 
-    # Check if Sun is between Ascendant and Descendant (going through MC)
-    # This determines if Sun is above horizon (day chart)
+    # Determine if Sun is BELOW the horizon (between ASC and DSC going through IC)
+    # If Sun is below horizon, it's a night chart; otherwise it's a day chart
     if ascendant < descendant:
         # Normal case: ASC is at smaller degree than DSC
-        is_day_chart = ascendant <= sun_lon <= descendant
+        # Sun between ASC and DSC (exclusive of DSC) = below horizon = nocturnal
+        sun_below_horizon = ascendant <= sun_lon < descendant
     else:
-        # Wrapped case: ASC crosses 0° Aries
-        is_day_chart = sun_lon >= ascendant or sun_lon <= descendant
+        # Wrapped case: ASC crosses 0° (e.g., ASC=350, DSC=170)
+        # Sun is below horizon if it's >= ASC (going to 360) OR < DSC (from 0)
+        sun_below_horizon = sun_lon >= ascendant or sun_lon < descendant
 
-    return "diurnal" if is_day_chart else "nocturnal"
+    return "nocturnal" if sun_below_horizon else "diurnal"
+
+
+def get_planet_sect_status(planet_name: str, chart_sect: str) -> dict[str, Any]:
+    """
+    Get planet's sect status and performance based on traditional astrology.
+
+    In Hellenistic astrology:
+    - Diurnal planets (Sun, Jupiter, Saturn) work better in day charts
+    - Nocturnal planets (Moon, Venus, Mars) work better in night charts
+    - Mercury is neutral and adapts to either sect
+
+    Args:
+        planet_name: Name of planet
+        chart_sect: 'diurnal' or 'nocturnal'
+
+    Returns:
+        Dictionary with sect analysis for the planet
+    """
+    # Determine planet's natural sect using module constants
+    if planet_name in DIURNAL_PLANETS:
+        planet_sect = "diurnal"
+    elif planet_name in NOCTURNAL_PLANETS:
+        planet_sect = "nocturnal"
+    else:
+        planet_sect = "neutral"
+
+    # Check if in sect
+    in_sect = (planet_sect == chart_sect) or (planet_sect == "neutral")
+
+    # Determine faction using module constants
+    if planet_name in BENEFIC_PLANETS:
+        faction = "benefic"
+    elif planet_name in MALEFIC_PLANETS:
+        faction = "malefic"
+    elif planet_name in LUMINARY_PLANETS:
+        faction = "luminary"
+    else:
+        faction = "neutral"
+
+    # Determine performance based on faction and sect status
+    if faction == "benefic":
+        performance = "optimal" if in_sect else "moderate"
+    elif faction == "malefic":
+        performance = "moderate" if in_sect else "challenging"
+    else:
+        performance = "optimal"  # Luminaries and Mercury
+
+    return {
+        "planet_sect": planet_sect,
+        "in_sect": in_sect,
+        "faction": faction,
+        "performance": performance,
+    }
+
+
+def calculate_sect_analysis(planets: list[dict[str, Any]], chart_sect: str) -> dict[str, Any]:
+    """
+    Complete sect analysis of the chart.
+
+    Analyzes all planets' relationship with the chart's sect, categorizing them
+    as in-sect, out-of-sect, or neutral, and identifying benefics/malefics.
+
+    Args:
+        planets: List of planet dictionaries with name, sign, house
+        chart_sect: 'diurnal' or 'nocturnal'
+
+    Returns:
+        Complete sect analysis dictionary
+    """
+    planets_in_sect: list[dict[str, Any]] = []
+    planets_out_of_sect: list[dict[str, Any]] = []
+    planets_neutral: list[dict[str, Any]] = []
+
+    benefics: dict[str, dict[str, Any] | None] = {"in_sect": None, "out_of_sect": None}
+    malefics: dict[str, dict[str, Any] | None] = {"in_sect": None, "out_of_sect": None}
+
+    for planet in planets:
+        planet_name = planet.get("name", "")
+        # Skip modern planets using module constant
+        if planet_name in MODERN_PLANETS:
+            continue
+
+        status = get_planet_sect_status(planet_name, chart_sect)
+
+        planet_data = {
+            "name": planet_name,
+            "sign": planet.get("sign", ""),
+            "house": planet.get("house", 0),
+            "degree": planet.get("degree", 0),
+            **status,
+        }
+
+        # Categorize by sect status
+        if status["planet_sect"] == "neutral":
+            planets_neutral.append(planet_data)
+        elif status["in_sect"]:
+            planets_in_sect.append(planet_data)
+            if status["faction"] == "benefic":
+                benefics["in_sect"] = planet_data
+            elif status["faction"] == "malefic":
+                malefics["in_sect"] = planet_data
+        else:
+            planets_out_of_sect.append(planet_data)
+            if status["faction"] == "benefic":
+                benefics["out_of_sect"] = planet_data
+            elif status["faction"] == "malefic":
+                malefics["out_of_sect"] = planet_data
+
+    # Get Sun's house for display
+    sun_house = 1
+    for planet in planets:
+        if planet.get("name") == "Sun":
+            sun_house = planet.get("house", 1)
+            break
+
+    return {
+        "sect": chart_sect,
+        "sun_house": sun_house,
+        "planets_by_sect": {
+            "in_sect": planets_in_sect,
+            "out_of_sect": planets_out_of_sect,
+            "neutral": planets_neutral,
+        },
+        "benefics": benefics,
+        "malefics": malefics,
+    }
 
 
 def get_house_for_position(longitude: float, house_cusps: list[float]) -> int:
@@ -589,15 +742,29 @@ def calculate_birth_chart(
     ascendant_sign_data = get_sign_and_position(ascendant)
     ascendant_sign = ascendant_sign_data["sign"]
 
-    # Get ascendant ruler and its sign
+    # Get ascendant ruler, its sign, and dignities
     ascendant_ruler_name = get_sign_ruler(ascendant_sign) or "Sun"
-    ascendant_ruler_planet = next((p for p in planets if p.name == ascendant_ruler_name), None)
-    ascendant_ruler_sign = ascendant_ruler_planet.sign if ascendant_ruler_planet else ascendant_sign
+    ascendant_ruler_data = next(
+        (p for p in planets_with_dignities if p.get("name") == ascendant_ruler_name), None
+    )
+    ascendant_ruler_sign = ascendant_ruler_data.get("sign", ascendant_sign) if ascendant_ruler_data else ascendant_sign
+    ascendant_ruler_dignities = (
+        ascendant_ruler_data.get("dignities", {}).get("dignities")
+        if ascendant_ruler_data and ascendant_ruler_data.get("dignities")
+        else None
+    )
 
-    # Get lord of nativity sign
+    # Get lord of nativity, its sign, and dignities
     lord_of_nativity_name = lord_of_nativity["planet"] if lord_of_nativity else "Sun"
-    lord_of_nativity_planet = next((p for p in planets if p.name == lord_of_nativity_name), None)
-    lord_of_nativity_sign = lord_of_nativity_planet.sign if lord_of_nativity_planet else "Aries"
+    lord_of_nativity_data = next(
+        (p for p in planets_with_dignities if p.get("name") == lord_of_nativity_name), None
+    )
+    lord_of_nativity_sign = lord_of_nativity_data.get("sign", "Aries") if lord_of_nativity_data else "Aries"
+    lord_of_nativity_dignities = (
+        lord_of_nativity_data.get("dignities", {}).get("dignities")
+        if lord_of_nativity_data and lord_of_nativity_data.get("dignities")
+        else None
+    )
 
     temperament = calculate_temperament(
         ascendant_sign=ascendant_sign,
@@ -608,6 +775,8 @@ def calculate_birth_chart(
         moon_longitude=moon_longitude,
         lord_of_nativity_name=lord_of_nativity_name,
         lord_of_nativity_sign=lord_of_nativity_sign,
+        ascendant_ruler_dignities=ascendant_ruler_dignities,
+        lord_of_nativity_dignities=lord_of_nativity_dignities,
     )
 
     # Calculate Arabic Parts (Lots)
@@ -620,6 +789,9 @@ def calculate_birth_chart(
         sect=sect,
     )
 
+    # Calculate complete sect analysis with planet classifications
+    sect_analysis = calculate_sect_analysis(planets_with_dignities, sect)
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -627,6 +799,7 @@ def calculate_birth_chart(
         "ascendant": ascendant,
         "midheaven": midheaven,
         "sect": sect,
+        "sect_analysis": sect_analysis,
         "lunar_phase": lunar_phase,
         "solar_phase": solar_phase,
         "lord_of_nativity": lord_of_nativity,

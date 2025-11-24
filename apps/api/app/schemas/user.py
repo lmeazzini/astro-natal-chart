@@ -75,7 +75,12 @@ class UserUpdate(BaseModel):
 
     full_name: str | None = Field(None, min_length=3, max_length=100)
     locale: str | None = Field(None, max_length=10)
-    timezone: str | None = Field(None, max_length=50)
+    timezone: str | None = Field(None, max_length=50, description="IANA timezone identifier")
+    time_format: str | None = Field(
+        None,
+        pattern="^(12h|24h)$",
+        description="Time format preference: 12h or 24h",
+    )
     avatar_url: str | None = None
     bio: str | None = Field(None, max_length=500, description="User biography")
     profile_public: bool | None = Field(None, description="Make profile publicly visible")
@@ -144,6 +149,7 @@ class UserRead(UserBase):
     id: UUID
     locale: str
     timezone: str | None
+    time_format: str
     avatar_url: str | None
     email_verified: bool
     is_active: bool

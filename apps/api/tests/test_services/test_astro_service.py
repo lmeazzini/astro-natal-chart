@@ -17,7 +17,15 @@ from datetime import datetime
 from app.schemas.chart import PlanetPosition
 from app.services.astro_service import (
     ASPECTS,
+    BENEFIC_PLANETS,
+    CLASSICAL_PLANET_ORDER,
+    DIURNAL_PLANETS,
     HOUSE_SYSTEMS,
+    LUMINARY_PLANETS,
+    MALEFIC_PLANETS,
+    MODERN_PLANETS,
+    NEUTRAL_PLANETS,
+    NOCTURNAL_PLANETS,
     PLANETS,
     SIGNS,
     calculate_arabic_parts,
@@ -26,9 +34,11 @@ from app.services.astro_service import (
     calculate_houses,
     calculate_planets,
     calculate_sect,
+    calculate_sect_analysis,
     convert_to_julian_day,
     get_house_for_planet,
     get_house_for_position,
+    get_planet_sect_status,
     get_sign_and_position,
     is_aspect_applying,
 )
@@ -70,6 +80,46 @@ class TestConstants:
             assert aspect in ASPECTS
             assert "angle" in ASPECTS[aspect]
             assert "orb" in ASPECTS[aspect]
+
+    def test_sect_constants_defined(self):
+        """Test that sect-related constants are properly defined."""
+        # Diurnal planets
+        assert "Sun" in DIURNAL_PLANETS
+        assert "Jupiter" in DIURNAL_PLANETS
+        assert "Saturn" in DIURNAL_PLANETS
+        assert len(DIURNAL_PLANETS) == 3
+
+        # Nocturnal planets
+        assert "Moon" in NOCTURNAL_PLANETS
+        assert "Venus" in NOCTURNAL_PLANETS
+        assert "Mars" in NOCTURNAL_PLANETS
+        assert len(NOCTURNAL_PLANETS) == 3
+
+        # Neutral planets
+        assert "Mercury" in NEUTRAL_PLANETS
+
+    def test_faction_constants_defined(self):
+        """Test that faction constants are properly defined."""
+        assert "Jupiter" in BENEFIC_PLANETS
+        assert "Venus" in BENEFIC_PLANETS
+        assert "Saturn" in MALEFIC_PLANETS
+        assert "Mars" in MALEFIC_PLANETS
+        assert "Sun" in LUMINARY_PLANETS
+        assert "Moon" in LUMINARY_PLANETS
+
+    def test_modern_planets_defined(self):
+        """Test that modern planets list is properly defined."""
+        assert "Uranus" in MODERN_PLANETS
+        assert "Neptune" in MODERN_PLANETS
+        assert "Pluto" in MODERN_PLANETS
+        assert "North Node" in MODERN_PLANETS
+
+    def test_classical_planet_order(self):
+        """Test classical planet order for traditional sorting."""
+        assert CLASSICAL_PLANET_ORDER[0] == "Sun"
+        assert CLASSICAL_PLANET_ORDER[1] == "Moon"
+        assert CLASSICAL_PLANET_ORDER[-1] == "Saturn"
+        assert len(CLASSICAL_PLANET_ORDER) == 7
 
 
 class TestConvertToJulianDay:
@@ -414,34 +464,341 @@ class TestIsAspectApplying:
 
 
 class TestCalculateSect:
-    """Tests for day/night chart determination."""
+    """Tests for day/night chart determination.
 
-    def test_day_chart_sun_above_horizon(self):
-        """Test that chart is diurnal when Sun is above horizon."""
-        # Ascendant at 0° (Aries rising)
-        # Sun at 90° (MC area) - above horizon
-        sect = calculate_sect(ascendant=0.0, sun_longitude=90.0)
-        assert sect == "diurnal"
+    In traditional astrology:
+    - DIURNAL (day chart): Sun is ABOVE the horizon (houses 7-12)
+    - NOCTURNAL (night chart): Sun is BELOW the horizon (houses 1-6)
+
+    The horizon is defined by ASC-DSC axis:
+    - ASC to DSC (through IC, increasing degrees) = BELOW horizon
+    - DSC to ASC (through MC, wrapping degrees) = ABOVE horizon
+    """
 
     def test_night_chart_sun_below_horizon(self):
-        """Test that chart is nocturnal when Sun is below horizon."""
-        # Ascendant at 0° (Aries rising)
-        # Sun at 270° (IC area) - below horizon
-        sect = calculate_sect(ascendant=0.0, sun_longitude=270.0)
+        """Test that chart is nocturnal when Sun is below horizon.
+
+        ASC=0, DSC=180
+        Sun at 90 is between ASC(0) and DSC(180), going through IC
+        This is BELOW the horizon = NOCTURNAL
+        """
+        sect = calculate_sect(ascendant=0.0, sun_longitude=90.0)
         assert sect == "nocturnal"
 
-    def test_sect_at_sunrise(self):
-        """Test sect calculation at sunrise (Sun at ASC)."""
-        sect = calculate_sect(ascendant=100.0, sun_longitude=100.0)
-        # Sun exactly at ASC - technically still day
+    def test_day_chart_sun_above_horizon(self):
+        """Test that chart is diurnal when Sun is above horizon.
+
+        ASC=0, DSC=180
+        Sun at 270 is between DSC(180) and ASC(360/0), going through MC
+        This is ABOVE the horizon = DIURNAL
+        """
+        sect = calculate_sect(ascendant=0.0, sun_longitude=270.0)
         assert sect == "diurnal"
 
-    def test_sect_at_sunset(self):
-        """Test sect calculation at sunset (Sun at DSC)."""
-        # For a clear nocturnal chart, Sun should be clearly below horizon
-        # ASC=100, DSC=280, Sun at 50 is clearly in the lower hemisphere
-        sect = calculate_sect(ascendant=100.0, sun_longitude=50.0)
+    def test_sect_at_sunrise(self):
+        """Test sect calculation at sunrise (Sun exactly at ASC).
+
+        Sun exactly at ASC marks the start of day.
+        Traditionally counted as NOCTURNAL (Sun just rising, technically still below)
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=100.0)
         assert sect == "nocturnal"
+
+    def test_sect_at_sunset(self):
+        """Test sect calculation at sunset (Sun at DSC).
+
+        ASC=100, DSC=280
+        Sun at 280 is exactly at DSC (sunset)
+        Traditionally counted as DIURNAL (Sun just setting, last moment above)
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=280.0)
+        assert sect == "diurnal"
+
+    def test_sun_clearly_below_horizon(self):
+        """Test Sun clearly below horizon (near IC).
+
+        ASC=100, DSC=280, IC≈10
+        Sun at 150 is between ASC(100) and DSC(280) = below horizon
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=150.0)
+        assert sect == "nocturnal"
+
+    def test_sun_clearly_above_horizon(self):
+        """Test Sun clearly above horizon (near MC).
+
+        ASC=100, DSC=280, MC≈190
+        Sun at 350 is between DSC(280) and ASC(460/100) = above horizon
+        """
+        sect = calculate_sect(ascendant=100.0, sun_longitude=350.0)
+        assert sect == "diurnal"
+
+    def test_wrapped_ascendant_day_chart(self):
+        """Test sect with ASC crossing 0° - day chart.
+
+        ASC=350, DSC=170
+        Sun at 260 is between DSC(170) and ASC(350) = above horizon
+        """
+        sect = calculate_sect(ascendant=350.0, sun_longitude=260.0)
+        assert sect == "diurnal"
+
+    def test_wrapped_ascendant_night_chart(self):
+        """Test sect with ASC crossing 0° - night chart.
+
+        ASC=350, DSC=170
+        Sun at 50 is between ASC(350->0->50) or <DSC(170) = below horizon
+        """
+        sect = calculate_sect(ascendant=350.0, sun_longitude=50.0)
+        assert sect == "nocturnal"
+
+
+class TestGetPlanetSectStatus:
+    """Tests for individual planet sect status calculation."""
+
+    def test_diurnal_planet_in_diurnal_chart(self):
+        """Test diurnal planet (Jupiter) in a day chart is in sect."""
+        status = get_planet_sect_status("Jupiter", "diurnal")
+        assert status["planet_sect"] == "diurnal"
+        assert status["in_sect"] is True
+        assert status["faction"] == "benefic"
+        assert status["performance"] == "optimal"
+
+    def test_diurnal_planet_in_nocturnal_chart(self):
+        """Test diurnal planet (Saturn) in a night chart is out of sect."""
+        status = get_planet_sect_status("Saturn", "nocturnal")
+        assert status["planet_sect"] == "diurnal"
+        assert status["in_sect"] is False
+        assert status["faction"] == "malefic"
+        assert status["performance"] == "challenging"
+
+    def test_nocturnal_planet_in_nocturnal_chart(self):
+        """Test nocturnal planet (Venus) in a night chart is in sect."""
+        status = get_planet_sect_status("Venus", "nocturnal")
+        assert status["planet_sect"] == "nocturnal"
+        assert status["in_sect"] is True
+        assert status["faction"] == "benefic"
+        assert status["performance"] == "optimal"
+
+    def test_nocturnal_planet_in_diurnal_chart(self):
+        """Test nocturnal planet (Mars) in a day chart is out of sect."""
+        status = get_planet_sect_status("Mars", "diurnal")
+        assert status["planet_sect"] == "nocturnal"
+        assert status["in_sect"] is False
+        assert status["faction"] == "malefic"
+        assert status["performance"] == "challenging"
+
+    def test_mercury_is_always_neutral(self):
+        """Test Mercury is neutral and always 'in sect'."""
+        status_diurnal = get_planet_sect_status("Mercury", "diurnal")
+        status_nocturnal = get_planet_sect_status("Mercury", "nocturnal")
+
+        assert status_diurnal["planet_sect"] == "neutral"
+        assert status_diurnal["in_sect"] is True
+        assert status_diurnal["faction"] == "neutral"
+
+        assert status_nocturnal["planet_sect"] == "neutral"
+        assert status_nocturnal["in_sect"] is True
+
+    def test_luminaries_performance(self):
+        """Test Sun and Moon have optimal performance."""
+        sun_status = get_planet_sect_status("Sun", "diurnal")
+        moon_status = get_planet_sect_status("Moon", "nocturnal")
+
+        assert sun_status["faction"] == "luminary"
+        assert sun_status["performance"] == "optimal"
+
+        assert moon_status["faction"] == "luminary"
+        assert moon_status["performance"] == "optimal"
+
+    def test_benefic_out_of_sect_moderate(self):
+        """Test benefic planet out of sect has moderate performance."""
+        # Jupiter (diurnal benefic) in nocturnal chart
+        status = get_planet_sect_status("Jupiter", "nocturnal")
+        assert status["faction"] == "benefic"
+        assert status["in_sect"] is False
+        assert status["performance"] == "moderate"
+
+    def test_malefic_in_sect_moderate(self):
+        """Test malefic planet in sect has moderate performance."""
+        # Saturn (diurnal malefic) in diurnal chart
+        status = get_planet_sect_status("Saturn", "diurnal")
+        assert status["faction"] == "malefic"
+        assert status["in_sect"] is True
+        assert status["performance"] == "moderate"
+
+
+class TestCalculateSectAnalysis:
+    """Tests for complete sect analysis calculation."""
+
+    def test_diurnal_chart_analysis_structure(self):
+        """Test sect analysis returns correct structure for diurnal chart."""
+        planets = [
+            {"name": "Sun", "sign": "Leo", "house": 10, "degree": 15},
+            {"name": "Moon", "sign": "Cancer", "house": 9, "degree": 10},
+            {"name": "Mercury", "sign": "Virgo", "house": 11, "degree": 5},
+            {"name": "Venus", "sign": "Libra", "house": 12, "degree": 20},
+            {"name": "Mars", "sign": "Aries", "house": 6, "degree": 25},
+            {"name": "Jupiter", "sign": "Sagittarius", "house": 2, "degree": 8},
+            {"name": "Saturn", "sign": "Capricorn", "house": 3, "degree": 12},
+        ]
+
+        analysis = calculate_sect_analysis(planets, "diurnal")
+
+        assert analysis["sect"] == "diurnal"
+        assert "sun_house" in analysis
+        assert "planets_by_sect" in analysis
+        assert "benefics" in analysis
+        assert "malefics" in analysis
+        assert "in_sect" in analysis["planets_by_sect"]
+        assert "out_of_sect" in analysis["planets_by_sect"]
+        assert "neutral" in analysis["planets_by_sect"]
+
+    def test_nocturnal_chart_analysis_structure(self):
+        """Test sect analysis returns correct structure for nocturnal chart."""
+        planets = [
+            {"name": "Sun", "sign": "Scorpio", "house": 4, "degree": 15},
+            {"name": "Moon", "sign": "Pisces", "house": 8, "degree": 10},
+            {"name": "Mercury", "sign": "Sagittarius", "house": 5, "degree": 5},
+            {"name": "Venus", "sign": "Libra", "house": 3, "degree": 20},
+            {"name": "Mars", "sign": "Leo", "house": 1, "degree": 25},
+            {"name": "Jupiter", "sign": "Gemini", "house": 11, "degree": 8},
+            {"name": "Saturn", "sign": "Aquarius", "house": 7, "degree": 12},
+        ]
+
+        analysis = calculate_sect_analysis(planets, "nocturnal")
+
+        assert analysis["sect"] == "nocturnal"
+        assert analysis["sun_house"] == 4
+
+    def test_diurnal_chart_correct_planet_classification(self):
+        """Test planets are correctly classified in diurnal chart."""
+        planets = [
+            {"name": "Sun", "sign": "Leo", "house": 10, "degree": 15},
+            {"name": "Moon", "sign": "Cancer", "house": 9, "degree": 10},
+            {"name": "Mercury", "sign": "Virgo", "house": 11, "degree": 5},
+            {"name": "Venus", "sign": "Libra", "house": 12, "degree": 20},
+            {"name": "Mars", "sign": "Aries", "house": 6, "degree": 25},
+            {"name": "Jupiter", "sign": "Sagittarius", "house": 2, "degree": 8},
+            {"name": "Saturn", "sign": "Capricorn", "house": 3, "degree": 12},
+        ]
+
+        analysis = calculate_sect_analysis(planets, "diurnal")
+
+        # In diurnal chart: Sun, Jupiter, Saturn are in sect
+        in_sect_names = [p["name"] for p in analysis["planets_by_sect"]["in_sect"]]
+        out_of_sect_names = [p["name"] for p in analysis["planets_by_sect"]["out_of_sect"]]
+        neutral_names = [p["name"] for p in analysis["planets_by_sect"]["neutral"]]
+
+        assert "Sun" in in_sect_names
+        assert "Jupiter" in in_sect_names
+        assert "Saturn" in in_sect_names
+
+        # Moon, Venus, Mars are out of sect in diurnal chart
+        assert "Moon" in out_of_sect_names
+        assert "Venus" in out_of_sect_names
+        assert "Mars" in out_of_sect_names
+
+        # Mercury is neutral
+        assert "Mercury" in neutral_names
+
+    def test_nocturnal_chart_correct_planet_classification(self):
+        """Test planets are correctly classified in nocturnal chart."""
+        planets = [
+            {"name": "Sun", "sign": "Scorpio", "house": 4, "degree": 15},
+            {"name": "Moon", "sign": "Pisces", "house": 8, "degree": 10},
+            {"name": "Venus", "sign": "Libra", "house": 3, "degree": 20},
+            {"name": "Mars", "sign": "Leo", "house": 1, "degree": 25},
+            {"name": "Jupiter", "sign": "Gemini", "house": 11, "degree": 8},
+            {"name": "Saturn", "sign": "Aquarius", "house": 7, "degree": 12},
+        ]
+
+        analysis = calculate_sect_analysis(planets, "nocturnal")
+
+        in_sect_names = [p["name"] for p in analysis["planets_by_sect"]["in_sect"]]
+        out_of_sect_names = [p["name"] for p in analysis["planets_by_sect"]["out_of_sect"]]
+
+        # In nocturnal chart: Moon, Venus, Mars are in sect
+        assert "Moon" in in_sect_names
+        assert "Venus" in in_sect_names
+        assert "Mars" in in_sect_names
+
+        # Sun, Jupiter, Saturn are out of sect in nocturnal chart
+        assert "Sun" in out_of_sect_names
+        assert "Jupiter" in out_of_sect_names
+        assert "Saturn" in out_of_sect_names
+
+    def test_benefics_identification(self):
+        """Test benefics are correctly identified by sect status."""
+        planets = [
+            {"name": "Venus", "sign": "Libra", "house": 3, "degree": 20},
+            {"name": "Jupiter", "sign": "Sagittarius", "house": 2, "degree": 8},
+        ]
+
+        # In diurnal chart: Jupiter in sect, Venus out of sect
+        analysis = calculate_sect_analysis(planets, "diurnal")
+
+        assert analysis["benefics"]["in_sect"] is not None
+        assert analysis["benefics"]["in_sect"]["name"] == "Jupiter"
+        assert analysis["benefics"]["out_of_sect"] is not None
+        assert analysis["benefics"]["out_of_sect"]["name"] == "Venus"
+
+    def test_malefics_identification(self):
+        """Test malefics are correctly identified by sect status."""
+        planets = [
+            {"name": "Mars", "sign": "Aries", "house": 6, "degree": 25},
+            {"name": "Saturn", "sign": "Capricorn", "house": 3, "degree": 12},
+        ]
+
+        # In nocturnal chart: Mars in sect, Saturn out of sect
+        analysis = calculate_sect_analysis(planets, "nocturnal")
+
+        assert analysis["malefics"]["in_sect"] is not None
+        assert analysis["malefics"]["in_sect"]["name"] == "Mars"
+        assert analysis["malefics"]["out_of_sect"] is not None
+        assert analysis["malefics"]["out_of_sect"]["name"] == "Saturn"
+
+    def test_modern_planets_excluded(self):
+        """Test modern planets are excluded from sect analysis."""
+        planets = [
+            {"name": "Sun", "sign": "Leo", "house": 10, "degree": 15},
+            {"name": "Moon", "sign": "Cancer", "house": 9, "degree": 10},
+            {"name": "Uranus", "sign": "Taurus", "house": 7, "degree": 5},
+            {"name": "Neptune", "sign": "Pisces", "house": 5, "degree": 20},
+            {"name": "Pluto", "sign": "Capricorn", "house": 3, "degree": 25},
+            {"name": "North Node", "sign": "Gemini", "house": 8, "degree": 8},
+        ]
+
+        analysis = calculate_sect_analysis(planets, "diurnal")
+
+        all_planet_names = (
+            [p["name"] for p in analysis["planets_by_sect"]["in_sect"]] +
+            [p["name"] for p in analysis["planets_by_sect"]["out_of_sect"]] +
+            [p["name"] for p in analysis["planets_by_sect"]["neutral"]]
+        )
+
+        # Modern planets should not be in the analysis
+        assert "Uranus" not in all_planet_names
+        assert "Neptune" not in all_planet_names
+        assert "Pluto" not in all_planet_names
+        assert "North Node" not in all_planet_names
+
+        # Classical planets should still be there
+        assert "Sun" in all_planet_names
+        assert "Moon" in all_planet_names
+
+    def test_sect_analysis_in_birth_chart(self):
+        """Test sect_analysis is included in birth chart calculation."""
+        chart = calculate_birth_chart(
+            birth_datetime=datetime(1990, 6, 15, 14, 0, 0),
+            timezone="America/Sao_Paulo",
+            latitude=-23.5505,
+            longitude=-46.6333,
+        )
+
+        assert "sect_analysis" in chart
+        assert chart["sect_analysis"]["sect"] in ["diurnal", "nocturnal"]
+        assert "planets_by_sect" in chart["sect_analysis"]
+        assert "benefics" in chart["sect_analysis"]
+        assert "malefics" in chart["sect_analysis"]
 
 
 class TestGetHouseForPosition:

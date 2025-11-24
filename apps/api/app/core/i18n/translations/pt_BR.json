@@ -13,7 +13,8 @@
     "verification_sent": "Email de verificação enviado com sucesso",
     "verification_failed": "Falha ao enviar email de verificação",
     "invalid_verification_token": "Token de verificação inválido ou expirado",
-    "not_enough_privileges": "Privilégios insuficientes"
+    "not_enough_privileges": "Privilégios insuficientes",
+    "admin_email_not_verified": "Verificação de email é necessária para acesso administrativo"
   },
   "password": {
     "reset_email_sent": "Se o email existir, você receberá instruções de recuperação",
@@ -42,7 +43,9 @@
     "calculation_error": "Erro ao calcular mapa natal",
     "pdf_generating": "PDF em geração. Aguarde alguns instantes.",
     "pdf_ready": "PDF pronto para download",
-    "pdf_failed": "Falha ao gerar PDF"
+    "pdf_failed": "Falha ao gerar PDF",
+    "unverified_chart_limit": "Você atingiu o limite de {limit} mapas para contas não verificadas. Verifique seu email para criar mais mapas.",
+    "unverified_pdf_blocked": "A geração de PDF está disponível apenas para contas verificadas. Verifique seu email para desbloquear esta funcionalidade."
   },
   "user": {
     "profile_updated": "Perfil atualizado com sucesso",

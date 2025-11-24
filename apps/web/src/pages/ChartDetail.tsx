@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
-import { interpretationsService, ChartInterpretations } from '../services/interpretations';
+import { interpretationsService, RAGInterpretations, RAGSourceInfo } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
@@ -19,6 +19,7 @@ import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
+import { SectAnalysis } from '../components/SectAnalysis';
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
@@ -28,8 +29,9 @@ import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2 } from 'lucide-react';
+import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit } from 'lucide-react';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
@@ -40,7 +42,8 @@ export function ChartDetailPage() {
   const [chart, setChart] = useState<BirthChart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [interpretations, setInterpretations] = useState<ChartInterpretations | null>(null);
+  // All interpretations now use RAG by default
+  const [interpretations, setInterpretations] = useState<RAGInterpretations | null>(null);
 
   // PDF export state
   const [pdfStatus, setPdfStatus] = useState<PDFStatus>('idle');
@@ -117,6 +120,66 @@ export function ChartDetailPage() {
       // Silently fail - interpretations are optional
       console.error('Failed to load interpretations:', err);
     }
+  }
+
+  // Helper to extract content from interpretation item (handles both string and object formats)
+  function extractContent(item: unknown): string {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object' && 'content' in item) {
+      return (item as { content: string }).content;
+    }
+    return '';
+  }
+
+  // Helper to get interpretations content from RAG format
+  function getCurrentInterpretations(): { planets?: Record<string, string>; houses?: Record<string, string>; aspects?: Record<string, string>; arabic_parts?: Record<string, string> } | null {
+    if (!interpretations) return null;
+
+    return {
+      planets: Object.fromEntries(
+        Object.entries(interpretations.planets).map(([key, item]) => [key, extractContent(item)])
+      ),
+      houses: Object.fromEntries(
+        Object.entries(interpretations.houses).map(([key, item]) => [key, extractContent(item)])
+      ),
+      aspects: Object.fromEntries(
+        Object.entries(interpretations.aspects).map(([key, item]) => [key, extractContent(item)])
+      ),
+      arabic_parts: interpretations.arabic_parts
+        ? Object.fromEntries(
+            Object.entries(interpretations.arabic_parts).map(([key, item]) => [key, extractContent(item)])
+          )
+        : undefined,
+    };
+  }
+
+  // Helper to extract RAG sources from interpretation item (handles both formats)
+  function extractRAGSources(item: unknown): RAGSourceInfo[] {
+    if (item && typeof item === 'object' && 'rag_sources' in item) {
+      return (item as { rag_sources: RAGSourceInfo[] }).rag_sources || [];
+    }
+    return [];
+  }
+
+  // Helper to get RAG sources for interpretations
+  function getRAGSources(): {
+    planets?: Record<string, RAGSourceInfo[]>;
+    houses?: Record<string, RAGSourceInfo[]>;
+    aspects?: Record<string, RAGSourceInfo[]>;
+  } | null {
+    if (!interpretations) return null;
+
+    return {
+      planets: Object.fromEntries(
+        Object.entries(interpretations.planets).map(([key, item]) => [key, extractRAGSources(item)])
+      ),
+      houses: Object.fromEntries(
+        Object.entries(interpretations.houses).map(([key, item]) => [key, extractRAGSources(item)])
+      ),
+      aspects: Object.fromEntries(
+        Object.entries(interpretations.aspects).map(([key, item]) => [key, extractRAGSources(item)])
+      ),
+    };
   }
 
   async function handleDelete() {
@@ -367,6 +430,16 @@ export function ChartDetailPage() {
                 )}
               </Button>
 
+              {/* Edit Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/charts/${id}/edit`)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                {t('common.edit', { defaultValue: 'Edit' })}
+              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -570,6 +643,14 @@ export function ChartDetailPage() {
                   </div>
                 )}
               </div>
+
+              {/* Sect Analysis */}
+              {chart.chart_data.sect_analysis && (
+                <div>
+                  <h3 className="text-h4 font-display mb-4">{t('components.sect.title', { defaultValue: 'Sect Analysis' })}</h3>
+                  <SectAnalysis sectData={chart.chart_data.sect_analysis} />
+                </div>
+              )}
               </CardContent>
             </Card>
             )}
@@ -587,12 +668,25 @@ export function ChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <PlanetList
                     planets={chart.chart_data.planets}
                     showOnlyClassical={true}
-                    interpretations={interpretations?.planets}
+                    interpretations={getCurrentInterpretations()?.planets}
+                    ragSources={getRAGSources()?.planets}
                     lordOfNativity={chart.chart_data.lord_of_nativity}
                   />
                 </CardContent>
@@ -612,11 +706,24 @@ export function ChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <HouseTable
                     houses={chart.chart_data.houses}
-                    interpretations={interpretations?.houses}
+                    interpretations={getCurrentInterpretations()?.houses}
+                    ragSources={getRAGSources()?.houses}
                   />
                 </CardContent>
               </Card>
@@ -635,11 +742,24 @@ export function ChartDetailPage() {
                       side="right"
                     />
                   </CardTitle>
+                  {interpretations && (
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <AspectGrid
                     aspects={chart.chart_data.aspects}
-                    interpretations={interpretations?.aspects}
+                    interpretations={getCurrentInterpretations()?.aspects}
+                    ragSources={getRAGSources()?.aspects}
                   />
                 </CardContent>
               </Card>
@@ -661,9 +781,24 @@ export function ChartDetailPage() {
                   <CardDescription>
                     {t('chartDetail.arabicPartsDesc', { defaultValue: 'Sensitive points from Hellenistic astrological tradition' })}
                   </CardDescription>
+                  {interpretations && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" />
+                        {t('rag.badge', 'Aprimorado com RAG')}
+                      </Badge>
+                      <InfoTooltip
+                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        side="right"
+                      />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <ArabicPartsTable parts={chart.chart_data.arabic_parts} />
+                  <ArabicPartsTable
+                    parts={chart.chart_data.arabic_parts}
+                    interpretations={getCurrentInterpretations()?.arabic_parts}
+                  />
 
                   {/* Educational Section */}
                   <div className="mt-8 p-6 bg-muted/50 rounded-lg space-y-4">

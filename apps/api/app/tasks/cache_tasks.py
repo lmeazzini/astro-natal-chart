@@ -3,7 +3,7 @@ Celery tasks for interpretation cache management.
 """
 
 import asyncio
-from datetime import datetime
+from datetime import UTC, datetime
 
 from loguru import logger
 
@@ -57,7 +57,7 @@ async def _cleanup_expired_interpretations_async(ttl_days: int) -> dict[str, int
             "entries_after": entries_after,
             "deleted_count": deleted_count,
             "ttl_days": ttl_days,
-            "cleanup_time": datetime.utcnow().isoformat(),
+            "cleanup_time": datetime.now(UTC).isoformat(),
         }
 
         logger.info(
@@ -122,7 +122,7 @@ async def _clear_by_prompt_version_async(prompt_version: str) -> dict[str, int |
         result: dict[str, int | str] = {
             "prompt_version": prompt_version,
             "deleted_count": deleted_count,
-            "cleanup_time": datetime.utcnow().isoformat(),
+            "cleanup_time": datetime.now(UTC).isoformat(),
         }
 
         logger.info(

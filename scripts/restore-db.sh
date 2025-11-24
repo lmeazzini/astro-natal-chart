@@ -1,8 +1,8 @@
 #!/bin/bash
 # Database Restore Script for Astro Application
-# Restores PostgreSQL database from backup file
+# Restores PostgreSQL database and Qdrant vector database from backup files
 # Author: Astro DevOps Team
-# Version: 1.0.0
+# Version: 1.1.0
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
@@ -33,6 +33,11 @@ LOG_FILE="${RESTORE_LOG_FILE:-/var/log/astro-restore.log}"
 # Default backup directory
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/astro-db}"
 
+# Qdrant configuration
+QDRANT_HOST="${QDRANT_HOST:-localhost}"
+QDRANT_PORT="${QDRANT_PORT:-6333}"
+QDRANT_COLLECTION="${QDRANT_COLLECTION:-astrology_knowledge}"
+
 # ============================================================================
 # Functions
 # ============================================================================
@@ -49,10 +54,10 @@ usage() {
     cat <<EOF
 Usage: $0 <backup_file> [options]
 
-Restore PostgreSQL database from backup file.
+Restore PostgreSQL database and optionally Qdrant from backup files.
 
 Arguments:
-    backup_file         Path to backup file (*.sql.gz) or S3 URL
+    backup_file         Path to PostgreSQL backup file (*.sql.gz) or S3 URL
 
 Options:
     --no-stop           Don't stop application services
@@ -60,6 +65,8 @@ Options:
     --download-s3       Download latest backup from S3 first
     --list-backups      List available local backups
     --list-s3           List backups available in S3
+    --qdrant FILE       Also restore Qdrant from snapshot file
+    --skip-qdrant       Skip Qdrant restore even if snapshot exists
     --help              Show this help message
 
 Environment Variables:
@@ -71,10 +78,16 @@ Environment Variables:
     POSTGRES_USER       PostgreSQL admin user (default: postgres)
     BACKUP_DIR          Backup directory (default: /var/backups/astro-db)
     BACKUP_S3_BUCKET    S3 bucket for backups (for --download-s3 and --list-s3)
+    QDRANT_HOST         Qdrant host (default: localhost)
+    QDRANT_PORT         Qdrant port (default: 6333)
+    QDRANT_COLLECTION   Qdrant collection name (default: astrology_knowledge)
 
 Examples:
-    # Restore from local backup
+    # Restore from local backup (PostgreSQL only)
     $0 /var/backups/astro-db/astro_backup_20250116_030000.sql.gz
+
+    # Restore PostgreSQL and Qdrant
+    $0 backup.sql.gz --qdrant qdrant_backup_20250116.snapshot
 
     # Restore without confirmation (use with caution!)
     $0 backup.sql.gz --no-confirm
@@ -98,26 +111,46 @@ list_backups() {
         exit 1
     fi
 
-    # List backups with details
-    local backups=$(find "$BACKUP_DIR" -name "astro_backup_*.sql.gz" -type f | sort -r)
+    # List PostgreSQL backups
+    local pg_backups=$(find "$BACKUP_DIR" -name "astro_backup_*.sql.gz" -type f 2>/dev/null | sort -r)
 
-    if [ -z "$backups" ]; then
-        echo "No backups found in $BACKUP_DIR"
-        exit 0
-    fi
-
-    echo "Recent backups:"
+    echo "PostgreSQL Backups:"
     echo ""
-    printf "%-40s %-12s %-20s\n" "FILENAME" "SIZE" "DATE"
+    printf "%-45s %-12s %-20s\n" "FILENAME" "SIZE" "DATE"
     echo "--------------------------------------------------------------------------------"
 
-    echo "$backups" | head -10 | while read -r backup; do
-        local filename=$(basename "$backup")
-        local size=$(ls -lh "$backup" | awk '{print $5}')
-        local date=$(ls -l --time-style=long-iso "$backup" 2>/dev/null | awk '{print $6" "$7}' || stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$backup")
+    if [ -z "$pg_backups" ]; then
+        echo "  No PostgreSQL backups found"
+    else
+        echo "$pg_backups" | head -10 | while read -r backup; do
+            local filename=$(basename "$backup")
+            local size=$(ls -lh "$backup" | awk '{print $5}')
+            local date=$(ls -l --time-style=long-iso "$backup" 2>/dev/null | awk '{print $6" "$7}' || stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$backup")
 
-        printf "%-40s %-12s %-20s\n" "$filename" "$size" "$date"
-    done
+            printf "%-45s %-12s %-20s\n" "$filename" "$size" "$date"
+        done
+    fi
+
+    echo ""
+    echo "Qdrant Vector Database Backups:"
+    echo ""
+    printf "%-45s %-12s %-20s\n" "FILENAME" "SIZE" "DATE"
+    echo "--------------------------------------------------------------------------------"
+
+    # List Qdrant backups
+    local qdrant_backups=$(find "$BACKUP_DIR" -name "qdrant_backup_*.snapshot" -type f 2>/dev/null | sort -r)
+
+    if [ -z "$qdrant_backups" ]; then
+        echo "  No Qdrant backups found"
+    else
+        echo "$qdrant_backups" | head -10 | while read -r backup; do
+            local filename=$(basename "$backup")
+            local size=$(ls -lh "$backup" | awk '{print $5}')
+            local date=$(ls -l --time-style=long-iso "$backup" 2>/dev/null | awk '{print $6" "$7}' || stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$backup")
+
+            printf "%-45s %-12s %-20s\n" "$filename" "$size" "$date"
+        done
+    fi
 
     echo ""
     exit 0
@@ -389,13 +422,105 @@ verify_restore() {
     log "Database verification completed ✓"
 }
 
+restore_qdrant() {
+    local qdrant_backup_file="$1"
+
+    log "Starting Qdrant vector database restore..."
+
+    local qdrant_url="http://${QDRANT_HOST}:${QDRANT_PORT}"
+
+    # Check if Qdrant is reachable
+    if ! curl -sf "${qdrant_url}/healthz" >/dev/null 2>&1; then
+        error "Qdrant not reachable at ${qdrant_url}"
+        return 1
+    fi
+
+    # Check if backup file exists
+    if [ ! -f "$qdrant_backup_file" ]; then
+        error "Qdrant backup file not found: $qdrant_backup_file"
+        return 1
+    fi
+
+    local file_size=$(stat -c%s "$qdrant_backup_file" 2>/dev/null || stat -f%z "$qdrant_backup_file" 2>/dev/null)
+    log "Qdrant backup file size: $(numfmt --to=iec-i --suffix=B $file_size 2>/dev/null || echo ${file_size}B)"
+
+    # Delete existing collection if exists
+    log "Deleting existing Qdrant collection '${QDRANT_COLLECTION}'..."
+    curl -sf -X DELETE "${qdrant_url}/collections/${QDRANT_COLLECTION}" >/dev/null 2>&1 || true
+
+    # Upload snapshot and restore
+    log "Uploading and restoring Qdrant snapshot..."
+    log "This may take several minutes depending on snapshot size..."
+
+    local restore_response
+    restore_response=$(curl -sf -X POST \
+        "${qdrant_url}/collections/${QDRANT_COLLECTION}/snapshots/upload?priority=snapshot" \
+        -H "Content-Type: multipart/form-data" \
+        -F "snapshot=@${qdrant_backup_file}" 2>&1)
+
+    if [ -z "$restore_response" ]; then
+        error "Failed to restore Qdrant snapshot"
+        return 1
+    fi
+
+    # Check if restore was successful by querying the collection
+    sleep 2  # Give Qdrant time to index
+    local collection_info
+    collection_info=$(curl -sf "${qdrant_url}/collections/${QDRANT_COLLECTION}" 2>/dev/null)
+
+    if [ -z "$collection_info" ]; then
+        error "Failed to verify Qdrant restore - collection not found"
+        return 1
+    fi
+
+    local points_count
+    points_count=$(echo "$collection_info" | grep -o '"points_count":[0-9]*' | cut -d: -f2)
+
+    log "Qdrant restore completed: ${points_count:-0} vectors restored ✓"
+    return 0
+}
+
+verify_qdrant_restore() {
+    log "Verifying Qdrant restore..."
+
+    local qdrant_url="http://${QDRANT_HOST}:${QDRANT_PORT}"
+
+    # Check if collection exists and has data
+    local collection_info
+    collection_info=$(curl -sf "${qdrant_url}/collections/${QDRANT_COLLECTION}" 2>/dev/null)
+
+    if [ -z "$collection_info" ]; then
+        error "Qdrant collection '${QDRANT_COLLECTION}' not found after restore"
+        return 1
+    fi
+
+    local status
+    status=$(echo "$collection_info" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+    local points_count
+    points_count=$(echo "$collection_info" | grep -o '"points_count":[0-9]*' | cut -d: -f2)
+
+    log "Qdrant collection status: $status"
+    log "Qdrant vectors count: ${points_count:-0}"
+
+    if [ "$status" = "green" ]; then
+        log "Qdrant verification completed ✓"
+        return 0
+    else
+        log "Qdrant status is '$status' (may still be indexing)"
+        return 0
+    fi
+}
+
 # ============================================================================
 # Main
 # ============================================================================
 
 main() {
     local backup_file=""
+    local qdrant_backup_file=""
     local skip_confirm=false
+    local skip_qdrant=false
 
     # Parse arguments
     while [ $# -gt 0 ]; do
@@ -409,6 +534,18 @@ main() {
             --list-s3)
                 list_s3_backups
                 exit 0
+                ;;
+            --qdrant)
+                if [ $# -gt 1 ]; then
+                    qdrant_backup_file="$2"
+                    shift
+                else
+                    error "--qdrant requires a snapshot file path"
+                    usage
+                fi
+                ;;
+            --skip-qdrant)
+                skip_qdrant=true
                 ;;
             --download-s3)
                 # If S3 URL provided as next argument, use it; otherwise get latest
@@ -450,10 +587,14 @@ main() {
     fi
 
     log "=========================================="
-    log "Starting database restore"
+    log "Starting database restore (PostgreSQL + Qdrant)"
     log "=========================================="
-    log "Backup file: $backup_file"
-    log "Database: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
+    log "PostgreSQL backup: $backup_file"
+    log "PostgreSQL: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
+    if [ -n "$qdrant_backup_file" ]; then
+        log "Qdrant backup: $qdrant_backup_file"
+    fi
+    log "Qdrant: ${QDRANT_HOST}:${QDRANT_PORT} (collection: ${QDRANT_COLLECTION})"
 
     # Verify backup file
     verify_backup_file "$backup_file"
@@ -468,21 +609,66 @@ main() {
     # Stop application
     stop_application
 
-    # Perform restore
+    # Perform PostgreSQL restore
     perform_restore "$backup_file"
 
-    # Verify restore
+    # Verify PostgreSQL restore
     verify_restore
+
+    # ==========================================
+    # Qdrant Vector Database Restore
+    # ==========================================
+    if [ "$skip_qdrant" != "true" ]; then
+        if [ -n "$qdrant_backup_file" ]; then
+            log ""
+            log "=========================================="
+            log "Starting Qdrant vector database restore"
+            log "=========================================="
+
+            if restore_qdrant "$qdrant_backup_file"; then
+                verify_qdrant_restore
+            else
+                log "⚠️  Qdrant restore failed (non-fatal)"
+            fi
+        else
+            # Try to find matching Qdrant backup based on PostgreSQL backup timestamp
+            local pg_timestamp=$(basename "$backup_file" | grep -o '[0-9]\{8\}_[0-9]\{6\}')
+            if [ -n "$pg_timestamp" ]; then
+                local matching_qdrant="$BACKUP_DIR/qdrant_backup_${pg_timestamp}.snapshot"
+                if [ -f "$matching_qdrant" ]; then
+                    log ""
+                    log "=========================================="
+                    log "Found matching Qdrant backup, restoring..."
+                    log "=========================================="
+                    if restore_qdrant "$matching_qdrant"; then
+                        verify_qdrant_restore
+                    else
+                        log "⚠️  Qdrant restore failed (non-fatal)"
+                    fi
+                else
+                    log ""
+                    log "No matching Qdrant backup found (use --qdrant to specify one)"
+                fi
+            fi
+        fi
+    else
+        log ""
+        log "Skipping Qdrant restore (--skip-qdrant flag)"
+    fi
 
     # Start application
     start_application
 
     # Summary
+    log ""
     log "=========================================="
-    log "Restore completed successfully"
+    log "All restores completed"
     log "=========================================="
-    log "Database: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
+    log "PostgreSQL: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
     log "Restored from: $backup_file"
+    if [ -n "$qdrant_backup_file" ]; then
+        log "Qdrant restored from: $qdrant_backup_file"
+    fi
     log ""
     log "✓ Application should now be running with restored data"
 }

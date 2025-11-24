@@ -283,6 +283,99 @@ aspect_prompts:
       Esta fusão favorece estudos superiores e comunicação filosófica estruturada.
       A exaltação mercurial traz precisão ao otimismo de Júpiter."
 
+# Prompts para interpretação de Partes Árabes (Arabian Parts / Lots)
+arabic_part_prompts:
+  base: |
+    Gere uma interpretação astrológica PRECISA para a {part_name} ({part_name_pt}) em {sign} na casa {house}.
+
+    DADOS FORNECIDOS:
+    - Grau: {degree}° de {sign}
+    - Casa: {house}
+    - Sect do mapa: {sect}
+    - Regente do signo: {sign_ruler}
+    - Dignidades do regente: {ruler_dignities}
+
+    SIGNIFICADOS DAS PARTES ÁRABES:
+
+    LOTE DA FORTUNA (Part of Fortune):
+    - Síntese de Sol, Lua e Ascendente
+    - Representa: corpo, saúde, vitalidade, circunstâncias materiais, sorte mundana
+    - Fórmula diurna: ASC + Lua - Sol | Fórmula noturna: ASC + Sol - Lua
+    - Mostra onde encontramos facilidade material e bem-estar físico
+
+    LOTE DO ESPÍRITO (Part of Spirit):
+    - Inverso do Lote da Fortuna
+    - Representa: mente, alma, vontade, ação intencional, escolhas conscientes
+    - Fórmula diurna: ASC + Sol - Lua | Fórmula noturna: ASC + Lua - Sol
+    - Mostra onde exercemos nossa vontade e propósito
+
+    LOTE DE EROS (Part of Eros / Love):
+    - Representa: amor, desejo, paixão, atração, relacionamentos amorosos
+    - Fórmula: ASC + Vênus - Espírito
+    - Mostra a natureza dos desejos e como expressamos amor
+
+    LOTE DA NECESSIDADE (Part of Necessity / Nemesis):
+    - Representa: fado, restrições, karma, destino, limitações inevitáveis
+    - Fórmula: ASC + Fortuna - Espírito (ou variantes)
+    - Mostra áreas onde enfrentamos desafios kármicos
+
+    A interpretação DEVE:
+    1. Explicar o significado específico desta Parte
+    2. Analisar o impacto do signo onde cai
+    3. Considerar a casa e seus assuntos
+    4. Avaliar a condição do regente do signo (se dignificado, fortalece a Parte)
+    5. Máximo 4 frases em português brasileiro
+
+  parts_descriptions:
+    fortune:
+      name: "Part of Fortune"
+      name_pt: "Lote da Fortuna"
+      keywords: "corpo, saúde, riqueza material, sorte, circunstâncias"
+      nature: "Ponto de síntese lunar - bem-estar físico e material"
+
+    spirit:
+      name: "Part of Spirit"
+      name_pt: "Lote do Espírito"
+      keywords: "mente, alma, vontade, ação, propósito"
+      nature: "Ponto de síntese solar - vontade e ação consciente"
+
+    eros:
+      name: "Part of Eros"
+      name_pt: "Lote de Eros"
+      keywords: "amor, desejo, paixão, atração, romance"
+      nature: "Ponto venusiano - natureza do amor e desejo"
+
+    necessity:
+      name: "Part of Necessity"
+      name_pt: "Lote da Necessidade"
+      keywords: "fado, karma, restrições, destino, desafios"
+      nature: "Ponto saturnino - limitações e lições kármicas"
+
+  examples:
+    fortune_taurus_2: |
+      "O Lote da Fortuna em Touro na casa 2 indica facilidade natural para acumular
+      recursos materiais e estabilidade financeira. Com Vênus como regente e em dignidade,
+      a pessoa possui talento inato para atrair conforto e segurança material.
+      Esta posição favorece prosperidade através de métodos constantes e seguros."
+
+    spirit_aries_10: |
+      "O Lote do Espírito em Áries na casa 10 revela uma alma voltada para liderança
+      e conquistas profissionais. A vontade se expressa através de iniciativas ousadas
+      e pioneirismo na carreira. Com Marte forte, há capacidade de ação decisiva
+      para alcançar posições de autoridade e reconhecimento público."
+
+    eros_cancer_5: |
+      "O Lote de Eros em Câncer na casa 5 indica amor nutriente e protetor,
+      com forte desejo de criar laços emocionais profundos. A atração se manifesta
+      através de cuidado e intimidade emocional. Romances tendem a envolver
+      temas de família, lar e segurança emocional."
+
+    necessity_capricorn_6: |
+      "O Lote da Necessidade em Capricórnio na casa 6 sugere lições kármicas
+      relacionadas a trabalho, saúde e serviço. Desafios podem surgir através de
+      responsabilidades laborais excessivas ou limitações físicas que exigem disciplina.
+      O domínio de rotinas e estrutura é essencial para transcender estas restrições."
+
 # Guia de dignidades para contexto
 dignities_guide:
   ruler: "+5 pontos - domicílio, planeta em seu próprio signo"

@@ -72,6 +72,7 @@ temp/
 # Ignore PDFs except in docs/references/
 *.pdf
 !docs/references/*.pdf
+!docs/references/**/*.pdf
 
 # OS
 Thumbs.db

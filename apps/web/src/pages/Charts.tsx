@@ -18,10 +18,13 @@ import { BigThreeBadge } from '@/components/ui/big-three-badge';
 import { AlertCircle, Trash2, Plus, ArrowLeft, Sparkles, RefreshCw, Pencil } from 'lucide-react';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { EducationalBanner } from '@/components/EducationalBanner';
+import { EmailVerificationBanner } from '@/components/EmailVerificationBanner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function ChartsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [charts, setCharts] = useState<BirthChart[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,6 +168,13 @@ export function ChartsPage() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        )}
+
+        {/* Email verification reminder for unverified users */}
+        {user && !user.email_verified && (
+          <div className="mb-6">
+            <EmailVerificationBanner showPremiumHint={true} />
+          </div>
         )}
 
         {charts.length === 0 ? (

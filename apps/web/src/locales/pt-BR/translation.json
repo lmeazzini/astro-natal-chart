@@ -641,7 +641,13 @@
       "messageWithFeature": "Para acessar {{feature}}, você precisa verificar seu email primeiro.",
       "instructions": "Verifique sua caixa de entrada e clique no link de verificação para confirmar sua conta.",
       "checkSpam": "Se não encontrar, verifique sua pasta de spam.",
-      "resendButton": "Reenviar email de verificação"
+      "resendButton": "Reenviar email de verificação",
+      "checkStatus": "Já verifiquei",
+      "checking": "Verificando...",
+      "statusChecked": "Status atualizado. Se você verificou seu email, a página será atualizada."
+    },
+    "emailVerificationBanner": {
+      "premiumHint": "Desbloqueie interpretações com IA e exportação em PDF"
     },
     "lunarPhase": {
       "sunMoonAngle": "Ângulo Sol-Lua",

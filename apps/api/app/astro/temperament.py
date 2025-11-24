@@ -22,7 +22,6 @@ Dignity-based weighting (Issue #161):
 
 from typing import Any
 
-
 # Dignity weight scale based on traditional essential dignities
 # Range: 0.5 (minimum) to 2.0 (maximum)
 DIGNITY_WEIGHTS = {

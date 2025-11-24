@@ -15,11 +15,12 @@ import sys
 
 sys.path.insert(0, "/app")
 
-from sqlalchemy import select, text
-from app.core.database import AsyncSessionLocal
-from app.models.chart import BirthChart
-from app.services.interpretation_service_rag import InterpretationServiceRAG
-from app.repositories.interpretation_repository import InterpretationRepository
+from sqlalchemy import select, text  # noqa: E402
+
+from app.core.database import AsyncSessionLocal  # noqa: E402
+from app.models.chart import BirthChart  # noqa: E402
+from app.repositories.interpretation_repository import InterpretationRepository  # noqa: E402
+from app.services.interpretation_service_rag import InterpretationServiceRAG  # noqa: E402
 
 
 async def regenerate_all_interpretations():

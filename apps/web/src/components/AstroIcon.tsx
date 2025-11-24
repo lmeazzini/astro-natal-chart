@@ -124,6 +124,7 @@ export function AstroIcon({
 /**
  * Helper to get all icons of a specific category
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getIconsByCategory(category: AstroIconCategory): AstroIconName[] {
   switch (category) {
     case 'planets':
@@ -142,6 +143,7 @@ export function getIconsByCategory(category: AstroIconCategory): AstroIconName[]
 /**
  * All available icon names
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const allAstroIcons: AstroIconName[] = [
   ...planetIcons,
   ...signIcons,

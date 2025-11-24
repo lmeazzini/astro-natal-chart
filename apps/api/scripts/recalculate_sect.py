@@ -16,9 +16,10 @@ import sys
 
 sys.path.insert(0, "/app")
 
-from sqlalchemy import text
-from app.core.database import AsyncSessionLocal
-from app.services.astro_service import calculate_sect
+from sqlalchemy import text  # noqa: E402
+
+from app.core.database import AsyncSessionLocal  # noqa: E402
+from app.services.astro_service import calculate_sect  # noqa: E402
 
 
 async def recalculate_all_sects():
@@ -136,10 +137,10 @@ async def recalculate_all_sects():
         print("\n" + "=" * 60)
         print("SUMMARY")
         print("=" * 60)
-        print(f"\nPublic Charts:")
+        print("\nPublic Charts:")
         print(f"  Updated: {public_updated}")
         print(f"  Unchanged: {public_unchanged}")
-        print(f"\nBirth Charts:")
+        print("\nBirth Charts:")
         print(f"  Updated: {birth_updated}")
         print(f"  Unchanged: {birth_unchanged}")
         print(f"\nTotal updated: {public_updated + birth_updated}")

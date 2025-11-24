@@ -742,15 +742,29 @@ def calculate_birth_chart(
     ascendant_sign_data = get_sign_and_position(ascendant)
     ascendant_sign = ascendant_sign_data["sign"]
 
-    # Get ascendant ruler and its sign
+    # Get ascendant ruler, its sign, and dignities
     ascendant_ruler_name = get_sign_ruler(ascendant_sign) or "Sun"
-    ascendant_ruler_planet = next((p for p in planets if p.name == ascendant_ruler_name), None)
-    ascendant_ruler_sign = ascendant_ruler_planet.sign if ascendant_ruler_planet else ascendant_sign
+    ascendant_ruler_data = next(
+        (p for p in planets_with_dignities if p.get("name") == ascendant_ruler_name), None
+    )
+    ascendant_ruler_sign = ascendant_ruler_data.get("sign", ascendant_sign) if ascendant_ruler_data else ascendant_sign
+    ascendant_ruler_dignities = (
+        ascendant_ruler_data.get("dignities", {}).get("dignities")
+        if ascendant_ruler_data and ascendant_ruler_data.get("dignities")
+        else None
+    )
 
-    # Get lord of nativity sign
+    # Get lord of nativity, its sign, and dignities
     lord_of_nativity_name = lord_of_nativity["planet"] if lord_of_nativity else "Sun"
-    lord_of_nativity_planet = next((p for p in planets if p.name == lord_of_nativity_name), None)
-    lord_of_nativity_sign = lord_of_nativity_planet.sign if lord_of_nativity_planet else "Aries"
+    lord_of_nativity_data = next(
+        (p for p in planets_with_dignities if p.get("name") == lord_of_nativity_name), None
+    )
+    lord_of_nativity_sign = lord_of_nativity_data.get("sign", "Aries") if lord_of_nativity_data else "Aries"
+    lord_of_nativity_dignities = (
+        lord_of_nativity_data.get("dignities", {}).get("dignities")
+        if lord_of_nativity_data and lord_of_nativity_data.get("dignities")
+        else None
+    )
 
     temperament = calculate_temperament(
         ascendant_sign=ascendant_sign,
@@ -761,6 +775,8 @@ def calculate_birth_chart(
         moon_longitude=moon_longitude,
         lord_of_nativity_name=lord_of_nativity_name,
         lord_of_nativity_sign=lord_of_nativity_sign,
+        ascendant_ruler_dignities=ascendant_ruler_dignities,
+        lord_of_nativity_dignities=lord_of_nativity_dignities,
     )
 
     # Calculate Arabic Parts (Lots)

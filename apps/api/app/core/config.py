@@ -159,6 +159,24 @@ class Settings(BaseSettings):
     # RAG Settings
     RAG_MAX_ASPECTS: int = 10  # Maximum aspects to interpret in RAG mode
 
+    # RAG Document Storage
+    RAG_STORAGE_TYPE: Literal["local", "s3"] = "local"  # Storage backend
+    RAG_S3_BUCKET: str | None = None  # S3 bucket for RAG documents (uses AWS credentials above)
+    RAG_S3_PREFIX: str = "rag-documents"  # S3 prefix for RAG documents
+    RAG_LOCAL_PATH: str = "rag_docs"  # Local path for RAG documents (relative to app root)
+    RAG_CACHE_DIR: str | None = "/tmp/rag_cache"  # Cache directory for S3 documents
+    RAG_CACHE_TTL: int = 3600  # Cache TTL in seconds (1 hour)
+
+    @property
+    def rag_s3_enabled(self) -> bool:
+        """Check if RAG S3 storage is enabled and configured."""
+        return bool(
+            self.RAG_STORAGE_TYPE == "s3"
+            and self.AWS_ACCESS_KEY_ID
+            and self.AWS_SECRET_ACCESS_KEY
+            and self.RAG_S3_BUCKET
+        )
+
     # Cookie Security Settings
     COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
     COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies

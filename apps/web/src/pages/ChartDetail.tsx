@@ -33,7 +33,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit } from 'lucide-react';
+import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit, RefreshCw } from 'lucide-react';
 
 export function ChartDetailPage() {
   const { t } = useTranslation();
@@ -52,6 +52,9 @@ export function ChartDetailPage() {
   // @ts-expect-error - TODO: Display error message in UI
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pdfError, setPdfError] = useState<string | null>(null);
+
+  // Interpretations loading state
+  const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
 
   // Email verification for premium features
   const {
@@ -138,6 +141,7 @@ export function ChartDetailPage() {
         return;
       }
 
+      setIsLoadingInterpretations(true);
       const data = await interpretationsService.getByChartId(id, token);
       setInterpretations(data);
     } catch (err) {
@@ -148,7 +152,31 @@ export function ChartDetailPage() {
       }
       // Silently fail - interpretations are optional
       console.error('Failed to load interpretations:', err);
+    } finally {
+      setIsLoadingInterpretations(false);
     }
+  }
+
+  // Handle modal close - reload interpretations in case user verified email
+  function handleVerificationModalClose(open: boolean) {
+    setShowVerificationModal(open);
+    // If modal is closing, try to reload interpretations
+    // (user might have verified email in another tab)
+    if (!open) {
+      loadInterpretations();
+    }
+  }
+
+  // Manual refresh for interpretations
+  async function handleRefreshInterpretations() {
+    if (!isEmailVerified) {
+      requireEmailVerification(
+        () => {},
+        t('chartDetail.interpretations', { defaultValue: 'AI Interpretations' })
+      );
+      return;
+    }
+    await loadInterpretations();
   }
 
   // Helper to extract content from interpretation item (handles both string and object formats)
@@ -696,13 +724,33 @@ export function ChartDetailPage() {
             {chart.chart_data && (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-h3 font-display flex items-center gap-2">
-                    {t('chartDetail.planetPositions', { defaultValue: 'Planetary Positions' })}
-                    <InfoTooltip
-                      content={t('chartDetail.planetPositionsTooltip', { defaultValue: 'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.' })}
-                      side="right"
-                    />
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-h3 font-display flex items-center gap-2">
+                      {t('chartDetail.planetPositions', { defaultValue: 'Planetary Positions' })}
+                      <InfoTooltip
+                        content={t('chartDetail.planetPositionsTooltip', { defaultValue: 'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.' })}
+                        side="right"
+                      />
+                    </CardTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefreshInterpretations}
+                      disabled={isLoadingInterpretations}
+                      title={t('chartDetail.refreshInterpretations', { defaultValue: 'Refresh AI interpretations' })}
+                    >
+                      {isLoadingInterpretations ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                      <span className="ml-2 hidden sm:inline">
+                        {isLoadingInterpretations
+                          ? t('common.loading', { defaultValue: 'Loading...' })
+                          : t('chartDetail.refreshAI', { defaultValue: 'Refresh AI' })}
+                      </span>
+                    </Button>
+                  </div>
                   {interpretations && (
                     <CardDescription className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary" className="flex items-center gap-1.5">
@@ -713,6 +761,12 @@ export function ChartDetailPage() {
                         content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
                         side="right"
                       />
+                    </CardDescription>
+                  )}
+                  {!interpretations && !isLoadingInterpretations && !isEmailVerified && (
+                    <CardDescription className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400">
+                      <Sparkles className="h-4 w-4" />
+                      {t('chartDetail.verifyForInterpretations', { defaultValue: 'Verify your email to unlock AI interpretations' })}
                     </CardDescription>
                   )}
                 </CardHeader>
@@ -902,7 +956,7 @@ export function ChartDetailPage() {
       {/* Email Verification Modal */}
       <EmailVerificationModal
         open={showVerificationModal}
-        onOpenChange={setShowVerificationModal}
+        onOpenChange={handleVerificationModalClose}
         featureName={verificationFeatureName}
       />
     </div>

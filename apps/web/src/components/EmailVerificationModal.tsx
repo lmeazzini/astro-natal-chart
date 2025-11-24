@@ -16,8 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { apiClient } from '@/services/api';
 
 interface EmailVerificationModalProps {
   /** Whether the modal is open */
@@ -44,23 +43,7 @@ export function EmailVerificationModal({
       setIsResending(true);
       setResendError('');
 
-      const token = localStorage.getItem('astro_access_token');
-      if (!token) {
-        throw new Error(t('components.emailVerification.needAuth', { defaultValue: 'You need to be authenticated' }));
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/auth/resend-verification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || t('components.emailVerification.resendFailed', { defaultValue: 'Failed to resend email' }));
-      }
+      await apiClient.post('/api/v1/auth/resend-verification');
 
       setResendSuccess(true);
 

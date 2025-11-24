@@ -38,6 +38,39 @@ router = APIRouter()
     response_model=RAGInterpretationsResponse,
     summary="Get chart interpretations",
     description="Get all AI-generated interpretations for a birth chart with RAG enhancement. Requires verified email.",
+    responses={
+        403: {
+            "description": "Email not verified or unauthorized access",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "email_not_verified": {
+                            "summary": "Email not verified",
+                            "value": {
+                                "detail": {
+                                    "error": "email_not_verified",
+                                    "message": "Email verification required to access this feature.",
+                                    "user_email": "user@example.com",
+                                }
+                            },
+                        },
+                        "unauthorized": {
+                            "summary": "Unauthorized access",
+                            "value": {"detail": "Not authorized to access this chart"},
+                        },
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Chart not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Chart not found"}
+                }
+            },
+        },
+    },
 )
 async def get_chart_interpretations(
     chart_id: UUID,
@@ -163,6 +196,39 @@ async def get_chart_interpretations(
     status_code=status.HTTP_200_OK,
     summary="Regenerate chart interpretations",
     description="Delete existing interpretations and generate new ones using RAG-enhanced AI. Requires verified email.",
+    responses={
+        403: {
+            "description": "Email not verified or unauthorized access",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "email_not_verified": {
+                            "summary": "Email not verified",
+                            "value": {
+                                "detail": {
+                                    "error": "email_not_verified",
+                                    "message": "Email verification required to access this feature.",
+                                    "user_email": "user@example.com",
+                                }
+                            },
+                        },
+                        "unauthorized": {
+                            "summary": "Unauthorized access",
+                            "value": {"detail": "Not authorized to access this chart"},
+                        },
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Chart not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Chart not found"}
+                }
+            },
+        },
+    },
 )
 async def regenerate_chart_interpretations(
     chart_id: UUID,

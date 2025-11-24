@@ -364,7 +364,11 @@
       "page": "Página"
     },
     "lunarPhase": "Fase Lunar",
-    "solarPhase": "Fase Solar"
+    "solarPhase": "Fase Solar",
+    "interpretations": "Interpretações com IA",
+    "refreshInterpretations": "Atualizar interpretações com IA",
+    "refreshAI": "Atualizar IA",
+    "verifyForInterpretations": "Verifique seu email para desbloquear interpretações com IA"
   },
   "profile": {
     "title": "Meu Perfil",

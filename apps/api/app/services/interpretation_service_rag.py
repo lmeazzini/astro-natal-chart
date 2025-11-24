@@ -458,6 +458,30 @@ class InterpretationServiceRAG:
         Returns:
             Generated interpretation text
         """
+        # Build cache parameters
+        cache_params = {
+            "house": house,
+            "sign": sign,
+            "ruler": ruler,
+            "ruler_dignities": ruler_dignities,
+            "sect": sect,
+        }
+
+        # Try cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="house_rag",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+            )
+            if cached:
+                self._cache_hits += 1
+                logger.info(f"Using cached RAG interpretation for house {house} in {sign}")
+                return cached
+
+        self._cache_misses += 1
+
         # Build search query
         search_query = f"house {house} in {sign} ruled by {ruler}"
 
@@ -502,6 +526,17 @@ class InterpretationServiceRAG:
             interpretation = response.choices[0].message.content
             interpretation_text = interpretation.strip() if interpretation else ""
 
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="house_rag",
+                    subject=f"House {house}",
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                )
+
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for house {house} in {sign} "
@@ -545,6 +580,34 @@ class InterpretationServiceRAG:
         Returns:
             Generated interpretation text
         """
+        # Build cache parameters (orb excluded to maximize cache hits)
+        cache_params = {
+            "planet1": planet1,
+            "planet2": planet2,
+            "aspect": aspect,
+            "sign1": sign1,
+            "sign2": sign2,
+            "applying": applying,
+            "sect": sect,
+            "dignities1": dignities1,
+            "dignities2": dignities2,
+        }
+
+        # Try cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="aspect_rag",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+            )
+            if cached:
+                self._cache_hits += 1
+                logger.info(f"Using cached RAG interpretation for {planet1} {aspect} {planet2}")
+                return cached
+
+        self._cache_misses += 1
+
         # Build search query
         search_query = f"{planet1} {aspect} {planet2} in {sign1} and {sign2}"
 
@@ -593,7 +656,26 @@ class InterpretationServiceRAG:
             )
 
             interpretation = response.choices[0].message.content
-            return interpretation.strip() if interpretation else ""
+            interpretation_text = interpretation.strip() if interpretation else ""
+
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="aspect_rag",
+                    subject=f"{planet1}-{aspect}-{planet2}",
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                )
+
+            if interpretation_text:
+                logger.info(
+                    f"Successfully generated RAG-enhanced interpretation for {planet1} {aspect} {planet2} "
+                    f"(used {len(documents)} context documents)"
+                )
+
+            return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG aspect interpretation: {e}")
@@ -626,6 +708,29 @@ class InterpretationServiceRAG:
         part_info = ARABIC_PARTS[part_key]
         part_name = part_info["name"]
         part_name_pt = part_info["name_pt"]
+
+        # Build cache parameters
+        cache_params = {
+            "part_key": part_key,
+            "sign": sign,
+            "house": house,
+            "sect": sect,
+        }
+
+        # Try cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="arabic_part_rag",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+            )
+            if cached:
+                self._cache_hits += 1
+                logger.info(f"Using cached RAG interpretation for {part_name} in {sign}")
+                return cached
+
+        self._cache_misses += 1
 
         # Build search query for RAG
         search_query = f"{part_name} {part_name_pt} in {sign} house {house}"
@@ -673,6 +778,17 @@ class InterpretationServiceRAG:
 
             interpretation = response.choices[0].message.content
             interpretation_text = interpretation.strip() if interpretation else ""
+
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="arabic_part_rag",
+                    subject=part_key,
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                )
 
             if interpretation_text:
                 logger.info(

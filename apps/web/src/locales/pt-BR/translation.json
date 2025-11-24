@@ -631,6 +631,14 @@
       "resendFailed": "Falha ao reenviar email",
       "genericError": "Erro ao reenviar email. Tente novamente mais tarde."
     },
+    "emailVerificationModal": {
+      "title": "Verificação de email necessária",
+      "message": "Este recurso requer verificação de email. Por favor, verifique seu email para continuar.",
+      "messageWithFeature": "Para acessar {{feature}}, você precisa verificar seu email primeiro.",
+      "instructions": "Verifique sua caixa de entrada e clique no link de verificação para confirmar sua conta.",
+      "checkSpam": "Se não encontrar, verifique sua pasta de spam.",
+      "resendButton": "Reenviar email de verificação"
+    },
     "lunarPhase": {
       "sunMoonAngle": "Ângulo Sol-Lua",
       "illumination": "Iluminação",

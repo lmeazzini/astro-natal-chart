@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
-from app.core.dependencies import get_current_user, get_db
+from app.core.dependencies import get_db, require_verified_email
 from app.models.chart import BirthChart
 from app.models.interpretation import ChartInterpretation
 from app.models.user import User
@@ -37,11 +37,11 @@ router = APIRouter()
     "/charts/{chart_id}/interpretations",
     response_model=RAGInterpretationsResponse,
     summary="Get chart interpretations",
-    description="Get all AI-generated interpretations for a birth chart with RAG enhancement.",
+    description="Get all AI-generated interpretations for a birth chart with RAG enhancement. Requires verified email.",
 )
 async def get_chart_interpretations(
     chart_id: UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(require_verified_email)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> RAGInterpretationsResponse:
     """
@@ -162,11 +162,11 @@ async def get_chart_interpretations(
     response_model=RAGInterpretationsResponse,
     status_code=status.HTTP_200_OK,
     summary="Regenerate chart interpretations",
-    description="Delete existing interpretations and generate new ones using RAG-enhanced AI.",
+    description="Delete existing interpretations and generate new ones using RAG-enhanced AI. Requires verified email.",
 )
 async def regenerate_chart_interpretations(
     chart_id: UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(require_verified_email)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> RAGInterpretationsResponse:
     """

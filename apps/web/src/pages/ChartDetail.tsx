@@ -26,6 +26,8 @@ import { formatBirthDateTime } from '@/utils/datetime';
 import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
+import { EmailVerificationModal } from '../components/EmailVerificationModal';
+import { useEmailVerification } from '../hooks/useEmailVerification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -51,11 +53,27 @@ export function ChartDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pdfError, setPdfError] = useState<string | null>(null);
 
+  // Email verification for premium features
+  const {
+    isEmailVerified,
+    showModal: showVerificationModal,
+    setShowModal: setShowVerificationModal,
+    featureName: verificationFeatureName,
+    requireEmailVerification,
+  } = useEmailVerification();
+
   useEffect(() => {
     loadChart();
-    loadInterpretations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Load interpretations when email verification status changes
+  useEffect(() => {
+    if (isEmailVerified) {
+      loadInterpretations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isEmailVerified]);
 
   // Polling effect for processing charts
   useEffect(() => {
@@ -114,9 +132,20 @@ export function ChartDetailPage() {
       const token = getToken();
       if (!token || !id) return;
 
+      // Skip loading if email not verified (will get 403)
+      if (!isEmailVerified) {
+        console.log('Skipping interpretations - email not verified');
+        return;
+      }
+
       const data = await interpretationsService.getByChartId(id, token);
       setInterpretations(data);
     } catch (err) {
+      // Check if it's a 403 email verification error
+      if (err instanceof Error && err.message.includes('403')) {
+        console.log('Interpretations require email verification');
+        return;
+      }
       // Silently fail - interpretations are optional
       console.error('Failed to load interpretations:', err);
     }
@@ -204,6 +233,12 @@ export function ChartDetailPage() {
     const token = getToken();
     if (!token) {
       navigate('/login');
+      return;
+    }
+
+    // Require email verification for PDF export
+    if (!isEmailVerified) {
+      requireEmailVerification(() => {}, t('chartDetail.pdf.export', { defaultValue: 'Export PDF' }));
       return;
     }
 
@@ -863,6 +898,13 @@ export function ChartDetailPage() {
           </Card>
         )}
       </div>
+
+      {/* Email Verification Modal */}
+      <EmailVerificationModal
+        open={showVerificationModal}
+        onOpenChange={setShowVerificationModal}
+        featureName={verificationFeatureName}
+      />
     </div>
   );
 }

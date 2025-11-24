@@ -14,7 +14,8 @@
     "verification_failed": "Falha ao enviar email de verificação",
     "invalid_verification_token": "Token de verificação inválido ou expirado",
     "not_enough_privileges": "Privilégios insuficientes",
-    "admin_email_not_verified": "Verificação de email é necessária para acesso administrativo"
+    "admin_email_not_verified": "Verificação de email é necessária para acesso administrativo",
+    "email_not_verified": "Verificação de email necessária para acessar este recurso. Por favor, verifique seu email primeiro."
   },
   "password": {
     "reset_email_sent": "Se o email existir, você receberá instruções de recuperação",

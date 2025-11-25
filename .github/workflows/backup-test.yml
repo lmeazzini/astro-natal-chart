@@ -16,6 +16,7 @@ jobs:
   backup-restore-test:
     name: Test Backup and Restore
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # Reasonable timeout for backup/restore test
 
     services:
       postgres:

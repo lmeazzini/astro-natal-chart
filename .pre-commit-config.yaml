@@ -39,8 +39,28 @@ repos:
         files: ^apps/api/
 
   # =============================================================================
+  # Backend (Python) - Mypy for type checking
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: bash -c 'cd apps/api && uv run mypy app/'
+        language: system
+        files: ^apps/api/app/.*\.py$
+        pass_filenames: false
+        # Note: pass_filenames=false because mypy needs to analyze the entire
+        # codebase for proper type inference. Running on individual files would
+        # miss cross-module type errors.
+
+  # =============================================================================
   # Frontend (TypeScript/JavaScript) - Using local ESLint and Prettier
   # =============================================================================
+  # Note: pass_filenames=false is intentional for frontend hooks because:
+  # 1. ESLint and Prettier are configured via npm scripts with project-specific settings
+  # 2. Running on individual files would miss project-wide configuration
+  # 3. The file patterns in 'files:' still ensure hooks only run when relevant files change
+  # 4. This ensures consistent behavior with local development (`npm run lint`)
   - repo: local
     hooks:
       - id: eslint

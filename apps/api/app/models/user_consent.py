@@ -2,7 +2,7 @@
 Model for user consent tracking (LGPD/GDPR compliance).
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
@@ -62,7 +62,7 @@ class UserConsent(Base):
         comment="Snapshot of consent text at acceptance time",
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -74,7 +74,7 @@ class UserConsent(Base):
     def revoke(self) -> None:
         """Revoga o consentimento."""
         self.accepted = False
-        self.revoked_at = datetime.utcnow()
+        self.revoked_at = datetime.now(UTC)
 
     def __repr__(self) -> str:
         """String representation."""

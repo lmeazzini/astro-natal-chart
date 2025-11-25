@@ -23,7 +23,7 @@
 ## Stack Tecnológica
 
 ### Backend
-- **Python 3.11+** com FastAPI
+- **Python 3.13+** com FastAPI
 - **PostgreSQL 16** (JSONB para dados flexíveis)
 - **PySwisseph** para cálculos astrológicos
 - **Celery + Redis** para processamento assíncrono

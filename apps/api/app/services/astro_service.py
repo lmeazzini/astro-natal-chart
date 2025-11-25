@@ -2,7 +2,7 @@
 Astrological calculation service using Swiss Ephemeris (PySwisseph).
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -986,5 +986,5 @@ def calculate_birth_chart(
         "lord_of_nativity": lord_of_nativity,
         "temperament": temperament,
         "arabic_parts": arabic_parts,
-        "calculation_timestamp": datetime.utcnow().isoformat(),
+        "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

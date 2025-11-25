@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
 from app.core.dependencies import get_db, require_verified_email
-from app.core.i18n import normalize_locale
+from app.core.i18n import SUPPORTED_LOCALES, normalize_locale
 from app.models.chart import BirthChart
 from app.models.interpretation import ChartInterpretation
 from app.models.user import User
@@ -344,10 +344,6 @@ async def regenerate_chart_interpretations(
 # RAG Interpretation Helper Function
 # ============================================================================
 
-# Supported languages for interpretations
-SUPPORTED_LANGUAGES = ["pt-BR", "en-US"]
-
-
 async def _generate_rag_interpretations(
     chart: BirthChart,
     rag_service: InterpretationServiceRAG,
@@ -649,35 +645,48 @@ async def _generate_rag_interpretations(
             f"RAG interpretations to database for chart {chart.id} ({language})"
         )
 
-    # Generate interpretations in other languages if requested
+    # Generate interpretations in other languages if requested.
+    # This runs after primary language is saved, so failures don't affect the main response.
+    #
+    # PERFORMANCE NOTE: This doubles the OpenAI API calls and response time for first-time
+    # generation. The tradeoff is that users can instantly switch languages without waiting.
+    # For high-traffic scenarios, consider moving secondary language generation to a Celery
+    # background task. Current approach prioritizes UX over response time.
     if save_to_db and generate_all_languages and repo:
-        other_languages = [lang for lang in SUPPORTED_LANGUAGES if lang != language]
+        other_languages = [lang for lang in SUPPORTED_LOCALES if lang != language]
         for other_lang in other_languages:
-            # Check if interpretations already exist for this language
-            chart_uuid = UUID(str(chart.id))
-            existing = await repo.get_by_chart_id(chart_uuid)
-            existing_in_lang = [
-                i for i in existing
-                if i.prompt_version == RAG_PROMPT_VERSION
-                and getattr(i, 'language', 'pt-BR') == other_lang
-            ]
+            try:
+                # Check if interpretations already exist for this language
+                chart_uuid = UUID(str(chart.id))
+                existing = await repo.get_by_chart_id(chart_uuid)
+                existing_in_lang = [
+                    i for i in existing
+                    if i.prompt_version == RAG_PROMPT_VERSION
+                    and getattr(i, 'language', 'pt-BR') == other_lang
+                ]
 
-            if not existing_in_lang:
-                logger.info(
-                    f"Generating additional interpretations in {other_lang} for chart {chart.id}"
-                )
-                # Create a new service instance for the other language
-                other_lang_service = InterpretationServiceRAG(
-                    db, use_cache=True, use_rag=True, language=other_lang
-                )
-                # Generate in other language (don't recurse - set generate_all_languages=False)
-                await _generate_rag_interpretations(
-                    chart=chart,
-                    rag_service=other_lang_service,
-                    db=db,
-                    save_to_db=True,
-                    language=other_lang,
-                    generate_all_languages=False,  # Prevent infinite recursion
+                if not existing_in_lang:
+                    logger.info(
+                        f"Generating additional interpretations in {other_lang} for chart {chart.id}"
+                    )
+                    # Create a new service instance for the other language
+                    other_lang_service = InterpretationServiceRAG(
+                        db, use_cache=True, use_rag=True, language=other_lang
+                    )
+                    # Generate in other language (don't recurse - set generate_all_languages=False)
+                    await _generate_rag_interpretations(
+                        chart=chart,
+                        rag_service=other_lang_service,
+                        db=db,
+                        save_to_db=True,
+                        language=other_lang,
+                        generate_all_languages=False,  # Prevent infinite recursion
+                    )
+            except Exception as e:
+                # Log error but don't fail the main request - secondary language can be generated later
+                logger.warning(
+                    f"Failed to generate interpretations in {other_lang} for chart {chart.id}: {e}. "
+                    "User can regenerate later by switching language."
                 )
 
     return RAGInterpretationsResponse(

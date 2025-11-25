@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import require_admin
-from app.core.i18n import normalize_locale
+from app.core.i18n import SUPPORTED_LOCALES, normalize_locale
 from app.core.rate_limit import RateLimits, limiter
 from app.models.public_chart import PublicChart
 from app.models.public_chart_interpretation import PublicChartInterpretation
@@ -251,10 +251,6 @@ async def get_public_chart_interpretations(
         ) from e
 
 
-# Supported languages for interpretations
-SUPPORTED_LANGUAGES = ["pt-BR", "en-US"]
-
-
 async def _generate_public_chart_interpretations(
     chart: PublicChart,
     db: AsyncSession,
@@ -463,29 +459,42 @@ async def _generate_public_chart_interpretations(
         f"interpretations for public chart {chart.id} ({language})"
     )
 
-    # Generate interpretations in other languages if requested
+    # Generate interpretations in other languages if requested.
+    # This runs after primary language is saved, so failures don't affect the main response.
+    #
+    # PERFORMANCE NOTE: This doubles the OpenAI API calls and response time for first-time
+    # generation. The tradeoff is that users can instantly switch languages without waiting.
+    # For high-traffic scenarios, consider moving secondary language generation to a Celery
+    # background task. Current approach prioritizes UX over response time.
     if generate_all_languages:
-        other_languages = [lang for lang in SUPPORTED_LANGUAGES if lang != language]
+        other_languages = [lang for lang in SUPPORTED_LOCALES if lang != language]
         for other_lang in other_languages:
-            # Check if interpretations already exist for this language
-            existing_query = select(PublicChartInterpretation).where(
-                PublicChartInterpretation.chart_id == chart.id,
-                PublicChartInterpretation.language == other_lang,
-            )
-            result = await db.execute(existing_query)
-            existing_in_lang = result.scalars().all()
-
-            if not existing_in_lang:
-                logger.info(
-                    f"Generating additional interpretations in {other_lang} "
-                    f"for public chart {chart.id}"
+            try:
+                # Check if interpretations already exist for this language
+                existing_query = select(PublicChartInterpretation).where(
+                    PublicChartInterpretation.chart_id == chart.id,
+                    PublicChartInterpretation.language == other_lang,
                 )
-                # Generate in other language (don't recurse)
-                await _generate_public_chart_interpretations(
-                    chart=chart,
-                    db=db,
-                    language=other_lang,
-                    generate_all_languages=False,  # Prevent infinite recursion
+                result = await db.execute(existing_query)
+                existing_in_lang = result.scalars().all()
+
+                if not existing_in_lang:
+                    logger.info(
+                        f"Generating additional interpretations in {other_lang} "
+                        f"for public chart {chart.id}"
+                    )
+                    # Generate in other language (don't recurse)
+                    await _generate_public_chart_interpretations(
+                        chart=chart,
+                        db=db,
+                        language=other_lang,
+                        generate_all_languages=False,  # Prevent infinite recursion
+                    )
+            except Exception as e:
+                # Log error but don't fail the main request - secondary language can be generated later
+                logger.warning(
+                    f"Failed to generate interpretations in {other_lang} for public chart {chart.id}: {e}. "
+                    "Will be generated on next request in that language."
                 )
 
     return ChartInterpretationsResponse(

@@ -246,10 +246,22 @@ class TestGenerateGrowthSuggestions:
         self.sample_chart_data = {
             "planets": [
                 {"name": "Sun", "sign": "Aries", "house": 1, "retrograde": False, "dignities": {}},
-                {"name": "Moon", "sign": "Cancer", "house": 4, "retrograde": False, "dignities": {}},
+                {
+                    "name": "Moon",
+                    "sign": "Cancer",
+                    "house": 4,
+                    "retrograde": False,
+                    "dignities": {},
+                },
             ],
             "aspects": [
-                {"planet1": "Sun", "planet2": "Moon", "aspect": "square", "orb": 3.0, "applying": True},
+                {
+                    "planet1": "Sun",
+                    "planet2": "Moon",
+                    "aspect": "square",
+                    "orb": 3.0,
+                    "applying": True,
+                },
             ],
             "ascendant": 0.0,
             "sect": "diurnal",
@@ -259,9 +271,7 @@ class TestGenerateGrowthSuggestions:
     async def test_generates_all_sections(self) -> None:
         """Test that all suggestion sections are generated."""
         mock_response = MagicMock()
-        mock_response.choices = [
-            MagicMock(message=MagicMock(content='{"growth_points": []}'))
-        ]
+        mock_response.choices = [MagicMock(message=MagicMock(content='{"growth_points": []}'))]
 
         with patch.object(
             self.service.client.chat.completions,
@@ -269,9 +279,7 @@ class TestGenerateGrowthSuggestions:
             new_callable=AsyncMock,
             return_value=mock_response,
         ):
-            suggestions = await self.service.generate_growth_suggestions(
-                self.sample_chart_data
-            )
+            suggestions = await self.service.generate_growth_suggestions(self.sample_chart_data)
 
         assert "growth_points" in suggestions
         assert "challenges" in suggestions
@@ -283,9 +291,7 @@ class TestGenerateGrowthSuggestions:
     async def test_includes_metadata(self) -> None:
         """Test that metadata is included in response."""
         mock_response = MagicMock()
-        mock_response.choices = [
-            MagicMock(message=MagicMock(content='{"growth_points": []}'))
-        ]
+        mock_response.choices = [MagicMock(message=MagicMock(content='{"growth_points": []}'))]
 
         with patch.object(
             self.service.client.chat.completions,
@@ -293,9 +299,7 @@ class TestGenerateGrowthSuggestions:
             new_callable=AsyncMock,
             return_value=mock_response,
         ):
-            suggestions = await self.service.generate_growth_suggestions(
-                self.sample_chart_data
-            )
+            suggestions = await self.service.generate_growth_suggestions(self.sample_chart_data)
 
         assert suggestions["metadata"]["language"] == "en-US"
         assert suggestions["metadata"]["model"] == "gpt-4o-mini"

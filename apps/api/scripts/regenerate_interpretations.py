@@ -66,9 +66,10 @@ async def regenerate_all_interpretations():
                 )
 
                 # Count new interpretations
-                count_result = await db.execute(text(
-                    "SELECT COUNT(*) FROM chart_interpretations WHERE chart_id = :chart_id"
-                ), {"chart_id": str(chart.id)})
+                count_result = await db.execute(
+                    text("SELECT COUNT(*) FROM chart_interpretations WHERE chart_id = :chart_id"),
+                    {"chart_id": str(chart.id)},
+                )
                 new_count = count_result.scalar()
                 print(f"  Generated {new_count} new RAG interpretations")
 

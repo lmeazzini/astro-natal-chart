@@ -86,9 +86,7 @@ export function PremiumUpsell({
           variant="outline"
           className="flex-shrink-0 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900"
         >
-          <Link to="/pricing">
-            {t('premium.upgrade', { defaultValue: 'Upgrade' })}
-          </Link>
+          <Link to="/pricing">{t('premium.upgrade', { defaultValue: 'Upgrade' })}</Link>
         </Button>
       </div>
     );

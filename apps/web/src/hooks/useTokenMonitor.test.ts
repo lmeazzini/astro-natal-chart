@@ -167,148 +167,132 @@ describe('useTokenMonitor', () => {
       vi.useRealTimers();
     });
 
-    it(
-      'should proactively refresh token expiring within threshold',
-      async () => {
-        const nearExp = Math.floor(Date.now() / 1000) + 60; // 1 min from now (< 2 min threshold)
-        vi.spyOn(api, 'getToken').mockReturnValue('expiring-token');
-        vi.spyOn(api, 'getRefreshToken').mockReturnValue('valid-refresh-token');
-        vi.mocked(jwtDecode).mockReturnValue({ exp: nearExp, sub: 'user-123', iat: 0 });
+    it('should proactively refresh token expiring within threshold', async () => {
+      const nearExp = Math.floor(Date.now() / 1000) + 60; // 1 min from now (< 2 min threshold)
+      vi.spyOn(api, 'getToken').mockReturnValue('expiring-token');
+      vi.spyOn(api, 'getRefreshToken').mockReturnValue('valid-refresh-token');
+      vi.mocked(jwtDecode).mockReturnValue({ exp: nearExp, sub: 'user-123', iat: 0 });
 
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              access_token: 'new-access-token',
-              refresh_token: 'new-refresh-token',
-            }),
-        });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            access_token: 'new-access-token',
+            refresh_token: 'new-refresh-token',
+          }),
+      });
 
-        renderHook(() =>
-          useTokenMonitor({
-            onLogout: mockOnLogout,
-            enabled: true,
-          })
-        );
+      renderHook(() =>
+        useTokenMonitor({
+          onLogout: mockOnLogout,
+          enabled: true,
+        })
+      );
 
-        // Wait for async operations with waitFor
-        await waitFor(
-          () => {
-            expect(mockFetch).toHaveBeenCalledWith(
-              expect.stringContaining('/api/v1/auth/refresh'),
-              expect.objectContaining({
-                method: 'POST',
-              })
-            );
-          },
-          { timeout: 2000 }
-        );
+      // Wait for async operations with waitFor
+      await waitFor(
+        () => {
+          expect(mockFetch).toHaveBeenCalledWith(
+            expect.stringContaining('/api/v1/auth/refresh'),
+            expect.objectContaining({
+              method: 'POST',
+            })
+          );
+        },
+        { timeout: 2000 }
+      );
 
-        await waitFor(() => {
-          expect(api.setToken).toHaveBeenCalledWith('new-access-token');
-        });
-        expect(mockOnLogout).not.toHaveBeenCalled();
-      },
-      10000
-    );
+      await waitFor(() => {
+        expect(api.setToken).toHaveBeenCalledWith('new-access-token');
+      });
+      expect(mockOnLogout).not.toHaveBeenCalled();
+    }, 10000);
 
-    it(
-      'should logout when token is expired and refresh fails',
-      async () => {
-        const expiredExp = Math.floor(Date.now() / 1000) - 60; // 1 min ago
-        vi.spyOn(api, 'getToken').mockReturnValue('expired-token');
-        vi.spyOn(api, 'getRefreshToken').mockReturnValue('invalid-refresh');
-        vi.mocked(jwtDecode).mockReturnValue({ exp: expiredExp, sub: 'user-123', iat: 0 });
+    it('should logout when token is expired and refresh fails', async () => {
+      const expiredExp = Math.floor(Date.now() / 1000) - 60; // 1 min ago
+      vi.spyOn(api, 'getToken').mockReturnValue('expired-token');
+      vi.spyOn(api, 'getRefreshToken').mockReturnValue('invalid-refresh');
+      vi.mocked(jwtDecode).mockReturnValue({ exp: expiredExp, sub: 'user-123', iat: 0 });
 
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-        });
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+      });
 
-        renderHook(() =>
-          useTokenMonitor({
-            onLogout: mockOnLogout,
-            enabled: true,
-          })
-        );
+      renderHook(() =>
+        useTokenMonitor({
+          onLogout: mockOnLogout,
+          enabled: true,
+        })
+      );
 
-        // Wait for logout to be called
-        await waitFor(
-          () => {
-            expect(mockOnLogout).toHaveBeenCalled();
-          },
-          { timeout: 2000 }
-        );
+      // Wait for logout to be called
+      await waitFor(
+        () => {
+          expect(mockOnLogout).toHaveBeenCalled();
+        },
+        { timeout: 2000 }
+      );
 
-        expect(api.clearTokens).toHaveBeenCalled();
-      },
-      10000
-    );
+      expect(api.clearTokens).toHaveBeenCalled();
+    }, 10000);
 
-    it(
-      'should logout on invalid token decode error',
-      async () => {
-        vi.spyOn(api, 'getToken').mockReturnValue('malformed-token');
-        vi.mocked(jwtDecode).mockImplementation(() => {
-          throw new Error('Invalid token');
-        });
+    it('should logout on invalid token decode error', async () => {
+      vi.spyOn(api, 'getToken').mockReturnValue('malformed-token');
+      vi.mocked(jwtDecode).mockImplementation(() => {
+        throw new Error('Invalid token');
+      });
 
-        renderHook(() =>
-          useTokenMonitor({
-            onLogout: mockOnLogout,
-            enabled: true,
-          })
-        );
+      renderHook(() =>
+        useTokenMonitor({
+          onLogout: mockOnLogout,
+          enabled: true,
+        })
+      );
 
-        // Wait for logout to be called
-        await waitFor(
-          () => {
-            expect(mockOnLogout).toHaveBeenCalled();
-          },
-          { timeout: 2000 }
-        );
+      // Wait for logout to be called
+      await waitFor(
+        () => {
+          expect(mockOnLogout).toHaveBeenCalled();
+        },
+        { timeout: 2000 }
+      );
 
-        expect(api.clearTokens).toHaveBeenCalled();
-      },
-      10000
-    );
+      expect(api.clearTokens).toHaveBeenCalled();
+    }, 10000);
 
-    it(
-      'should not logout on refresh failure when token not expired',
-      async () => {
-        const nearExp = Math.floor(Date.now() / 1000) + 60; // 1 min from now
-        vi.spyOn(api, 'getToken').mockReturnValue('near-expiry-token');
-        vi.spyOn(api, 'getRefreshToken').mockReturnValue('refresh-token');
-        vi.mocked(jwtDecode).mockReturnValue({ exp: nearExp, sub: 'user-123', iat: 0 });
+    it('should not logout on refresh failure when token not expired', async () => {
+      const nearExp = Math.floor(Date.now() / 1000) + 60; // 1 min from now
+      vi.spyOn(api, 'getToken').mockReturnValue('near-expiry-token');
+      vi.spyOn(api, 'getRefreshToken').mockReturnValue('refresh-token');
+      vi.mocked(jwtDecode).mockReturnValue({ exp: nearExp, sub: 'user-123', iat: 0 });
 
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 500, // Server error, not auth error
-        });
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500, // Server error, not auth error
+      });
 
-        renderHook(() =>
-          useTokenMonitor({
-            onLogout: mockOnLogout,
-            enabled: true,
-          })
-        );
+      renderHook(() =>
+        useTokenMonitor({
+          onLogout: mockOnLogout,
+          enabled: true,
+        })
+      );
 
-        // Wait for fetch to be called
-        await waitFor(
-          () => {
-            expect(mockFetch).toHaveBeenCalled();
-          },
-          { timeout: 2000 }
-        );
+      // Wait for fetch to be called
+      await waitFor(
+        () => {
+          expect(mockFetch).toHaveBeenCalled();
+        },
+        { timeout: 2000 }
+      );
 
-        // Give time for any potential logout call
-        await new Promise((r) => setTimeout(r, 200));
+      // Give time for any potential logout call
+      await new Promise((r) => setTimeout(r, 200));
 
-        // Should NOT logout on proactive refresh failure (token still valid)
-        expect(mockOnLogout).not.toHaveBeenCalled();
-        expect(api.clearTokens).not.toHaveBeenCalled();
-      },
-      10000
-    );
+      // Should NOT logout on proactive refresh failure (token still valid)
+      expect(mockOnLogout).not.toHaveBeenCalled();
+      expect(api.clearTokens).not.toHaveBeenCalled();
+    }, 10000);
   });
 });

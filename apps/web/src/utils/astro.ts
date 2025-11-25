@@ -182,9 +182,7 @@ export function getAspectColor(aspectName: string): string {
  * Determine if aspect is major (conjunction, opposition, trine, square, sextile)
  */
 export function isMajorAspect(aspectName: string): boolean {
-  return ['Conjunction', 'Opposition', 'Trine', 'Square', 'Sextile'].includes(
-    aspectName
-  );
+  return ['Conjunction', 'Opposition', 'Trine', 'Square', 'Sextile'].includes(aspectName);
 }
 
 /**

@@ -4,7 +4,6 @@ Uses Nominatim (OpenStreetMap) as primary provider (free, no API key needed).
 Falls back to OpenCage if API key is configured.
 """
 
-
 import httpx
 
 from app.core.config import settings

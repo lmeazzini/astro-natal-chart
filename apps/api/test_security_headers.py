@@ -41,7 +41,9 @@ def test_security_headers(base_url: str = "http://localhost:8000") -> None:
             if expected_value in actual_value:
                 results.append(f"✅ {header}: {actual_value[:60]}...")
             else:
-                results.append(f"⚠️  {header}: {actual_value} (expected to contain '{expected_value}')")
+                results.append(
+                    f"⚠️  {header}: {actual_value} (expected to contain '{expected_value}')"
+                )
         else:
             results.append(f"❌ {header}: MISSING")
 

@@ -14,10 +14,7 @@ export function TermsPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            to="/"
-            className="text-primary hover:underline inline-flex items-center gap-2 mb-4"
-          >
+          <Link to="/" className="text-primary hover:underline inline-flex items-center gap-2 mb-4">
             <ArrowLeft className="h-5 w-5" />
             {t('legal.back')}
           </Link>
@@ -82,17 +79,25 @@ export function TermsPage() {
             <Trans
               i18nKey="terms.privacy.seePolicy"
               components={{
-                link: <Link to="/privacy" className="text-primary hover:underline" />
+                link: <Link to="/privacy" className="text-primary hover:underline" />,
               }}
             />
           </p>
 
           <h3>{t('terms.privacy.rightsTitle')}</h3>
           <ul>
-            <li><strong>{t('terms.privacy.access')}</strong></li>
-            <li><strong>{t('terms.privacy.rectification')}</strong></li>
-            <li><strong>{t('terms.privacy.deletion')}</strong></li>
-            <li><strong>{t('terms.privacy.portability')}</strong></li>
+            <li>
+              <strong>{t('terms.privacy.access')}</strong>
+            </li>
+            <li>
+              <strong>{t('terms.privacy.rectification')}</strong>
+            </li>
+            <li>
+              <strong>{t('terms.privacy.deletion')}</strong>
+            </li>
+            <li>
+              <strong>{t('terms.privacy.portability')}</strong>
+            </li>
           </ul>
 
           <h2>{t('terms.limitations.title')}</h2>

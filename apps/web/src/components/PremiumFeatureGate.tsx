@@ -28,11 +28,7 @@ interface PremiumFeatureGateProps {
  * </PremiumFeatureGate>
  * ```
  */
-export function PremiumFeatureGate({
-  children,
-  fallback,
-  feature,
-}: PremiumFeatureGateProps) {
+export function PremiumFeatureGate({ children, fallback, feature }: PremiumFeatureGateProps) {
   const { isPremium } = usePermissions();
 
   if (isPremium) {

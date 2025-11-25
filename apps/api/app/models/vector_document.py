@@ -1,4 +1,5 @@
 """Vector document model for RAG system."""
+
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -15,14 +16,10 @@ class VectorDocument(Base):
 
     __tablename__ = "vector_documents"
 
-    id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
 
     # Document identification
-    collection_name: Mapped[str] = mapped_column(
-        String(100), nullable=False, index=True
-    )
+    collection_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     document_type: Mapped[str] = mapped_column(
         String(50), nullable=False, index=True
     )  # 'pdf', 'text', 'interpretation', 'concept'

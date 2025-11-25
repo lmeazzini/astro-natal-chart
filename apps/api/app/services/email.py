@@ -131,13 +131,12 @@ class EmailService:
                 await loop.run_in_executor(
                     None,  # Uses default ThreadPoolExecutor
                     self.credentials.refresh,
-                    Request()
+                    Request(),
                 )
 
             # 2. Build Gmail service (async via executor)
             service = await loop.run_in_executor(
-                None,
-                partial(build, 'gmail', 'v1', credentials=self.credentials)
+                None, partial(build, "gmail", "v1", credentials=self.credentials)
             )
 
             # 3. Create message (sync, but fast - no I/O)
@@ -156,10 +155,7 @@ class EmailService:
 
             # 4. Send email (async via executor)
             send_func = partial(
-                service.users().messages().send(
-                    userId='me',
-                    body={'raw': raw}
-                ).execute
+                service.users().messages().send(userId="me", body={"raw": raw}).execute
             )
             await loop.run_in_executor(None, send_func)
 
@@ -521,14 +517,8 @@ class EmailService:
         )
 
         if success:
-            logger.info(
-                "Welcome email sent successfully",
-                extra={"to_email": to_email}
-            )
+            logger.info("Welcome email sent successfully", extra={"to_email": to_email})
         else:
-            logger.error(
-                "Failed to send welcome email",
-                extra={"to_email": to_email}
-            )
+            logger.error("Failed to send welcome email", extra={"to_email": to_email})
 
         return success

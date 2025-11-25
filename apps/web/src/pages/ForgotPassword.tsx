@@ -11,7 +11,14 @@ import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
@@ -51,11 +58,7 @@ export function ForgotPasswordPage() {
         setGeneralError(response.message);
       }
     } catch (error) {
-      setGeneralError(
-        error instanceof Error
-          ? error.message
-          : t('auth.forgotPassword.error')
-      );
+      setGeneralError(error instanceof Error ? error.message : t('auth.forgotPassword.error'));
     }
   }
 
@@ -67,9 +70,7 @@ export function ForgotPasswordPage() {
           <h1 className="text-4xl font-bold text-foreground mb-2">
             {t('auth.forgotPassword.title')}
           </h1>
-          <p className="text-muted-foreground">
-            {t('auth.forgotPassword.subtitle')}
-          </p>
+          <p className="text-muted-foreground">{t('auth.forgotPassword.subtitle')}</p>
         </div>
 
         {/* Form Card */}
@@ -77,7 +78,9 @@ export function ForgotPasswordPage() {
           <CardHeader>
             <CardTitle>{t('auth.forgotPassword.title')}</CardTitle>
             <CardDescription>
-              {t('auth.forgotPassword.description', { defaultValue: 'Enviaremos um link de recuperação para seu email' })}
+              {t('auth.forgotPassword.description', {
+                defaultValue: 'Enviaremos um link de recuperação para seu email',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -94,7 +97,9 @@ export function ForgotPasswordPage() {
                 <AlertDescription className="text-green-700 dark:text-green-400">
                   {successMessage}
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {t('auth.forgotPassword.checkInbox', { defaultValue: 'Verifique sua caixa de entrada e spam.' })}
+                    {t('auth.forgotPassword.checkInbox', {
+                      defaultValue: 'Verifique sua caixa de entrada e spam.',
+                    })}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -123,15 +128,13 @@ export function ForgotPasswordPage() {
                     )}
                   />
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={form.formState.isSubmitting}
-                  >
+                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {form.formState.isSubmitting ? t('common.loading') : t('auth.forgotPassword.submit')}
+                    {form.formState.isSubmitting
+                      ? t('common.loading')
+                      : t('auth.forgotPassword.submit')}
                   </Button>
                 </form>
               </Form>

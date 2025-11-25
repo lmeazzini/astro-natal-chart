@@ -5,7 +5,15 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, ShieldCheck, Sparkles, FileDown, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react';
+import {
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  FileDown,
+  Loader2,
+  RefreshCw,
+  CheckCircle2,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -62,7 +70,11 @@ export function EmailVerificationModal({
       if (error instanceof Error) {
         setResendError(error.message);
       } else {
-        setResendError(t('components.emailVerification.genericError', { defaultValue: 'Error resending email. Please try again later.' }));
+        setResendError(
+          t('components.emailVerification.genericError', {
+            defaultValue: 'Error resending email. Please try again later.',
+          })
+        );
       }
     } finally {
       setIsResending(false);
@@ -79,9 +91,11 @@ export function EmailVerificationModal({
       // User data was refreshed, check if email is now verified
       // The modal will close automatically via the parent component
       // if user.email_verified becomes true
-      setCheckStatusMessage(t('components.emailVerificationModal.statusChecked', {
-        defaultValue: 'Status updated. If you verified your email, the page will refresh.',
-      }));
+      setCheckStatusMessage(
+        t('components.emailVerificationModal.statusChecked', {
+          defaultValue: 'Status updated. If you verified your email, the page will refresh.',
+        })
+      );
 
       // Clear message after 3 seconds
       setTimeout(() => setCheckStatusMessage(''), 3000);
@@ -93,7 +107,10 @@ export function EmailVerificationModal({
     if (featureName?.toLowerCase().includes('pdf')) {
       return <FileDown className="h-8 w-8 text-primary" />;
     }
-    if (featureName?.toLowerCase().includes('interpretation') || featureName?.toLowerCase().includes('ai')) {
+    if (
+      featureName?.toLowerCase().includes('interpretation') ||
+      featureName?.toLowerCase().includes('ai')
+    ) {
       return <Sparkles className="h-8 w-8 text-primary" />;
     }
     return <ShieldCheck className="h-8 w-8 text-primary" />;
@@ -104,24 +121,23 @@ export function EmailVerificationModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="space-y-4">
           <div className="flex justify-center">
-            <div className="rounded-full bg-primary/10 p-4">
-              {getFeatureIcon()}
-            </div>
+            <div className="rounded-full bg-primary/10 p-4">{getFeatureIcon()}</div>
           </div>
           <DialogTitle className="text-center">
-            {t('components.emailVerificationModal.title', { defaultValue: 'Email verification required' })}
+            {t('components.emailVerificationModal.title', {
+              defaultValue: 'Email verification required',
+            })}
           </DialogTitle>
           <DialogDescription className="text-center">
-            {featureName ? (
-              t('components.emailVerificationModal.messageWithFeature', {
-                defaultValue: 'To access {{feature}}, you need to verify your email first.',
-                feature: featureName,
-              })
-            ) : (
-              t('components.emailVerificationModal.message', {
-                defaultValue: 'This feature requires email verification. Please verify your email to continue.',
-              })
-            )}
+            {featureName
+              ? t('components.emailVerificationModal.messageWithFeature', {
+                  defaultValue: 'To access {{feature}}, you need to verify your email first.',
+                  feature: featureName,
+                })
+              : t('components.emailVerificationModal.message', {
+                  defaultValue:
+                    'This feature requires email verification. Please verify your email to continue.',
+                })}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +152,8 @@ export function EmailVerificationModal({
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
               {t('components.emailVerificationModal.instructions', {
-                defaultValue: 'Check your inbox for the verification email and click the link to verify your account.',
+                defaultValue:
+                  'Check your inbox for the verification email and click the link to verify your account.',
               })}
             </p>
             <p>
@@ -149,13 +166,13 @@ export function EmailVerificationModal({
           {/* Success/Error messages */}
           {resendSuccess && (
             <p className="text-sm text-green-600 dark:text-green-400 text-center">
-              {t('components.emailVerification.success', { defaultValue: 'Verification email sent! Check your inbox.' })}
+              {t('components.emailVerification.success', {
+                defaultValue: 'Verification email sent! Check your inbox.',
+              })}
             </p>
           )}
           {resendError && (
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">
-              {resendError}
-            </p>
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">{resendError}</p>
           )}
           {checkStatusMessage && (
             <p className="text-sm text-blue-600 dark:text-blue-400 text-center flex items-center justify-center gap-2">
@@ -184,7 +201,9 @@ export function EmailVerificationModal({
             ) : (
               <>
                 <Mail className="mr-2 h-4 w-4" />
-                {t('components.emailVerificationModal.resendButton', { defaultValue: 'Resend verification email' })}
+                {t('components.emailVerificationModal.resendButton', {
+                  defaultValue: 'Resend verification email',
+                })}
               </>
             )}
           </Button>
@@ -203,16 +222,14 @@ export function EmailVerificationModal({
               ) : (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  {t('components.emailVerificationModal.checkStatus', { defaultValue: 'I already verified' })}
+                  {t('components.emailVerificationModal.checkStatus', {
+                    defaultValue: 'I already verified',
+                  })}
                 </>
               )}
             </Button>
           )}
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
             {t('common.close', { defaultValue: 'Close' })}
           </Button>
         </DialogFooter>

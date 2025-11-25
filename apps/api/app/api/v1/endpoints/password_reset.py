@@ -80,9 +80,7 @@ async def confirm_password_reset(
     service = PasswordResetService()
 
     try:
-        result = await service.confirm_password_reset(
-            db, request.token, request.new_password
-        )
+        result = await service.confirm_password_reset(db, request.token, request.new_password)
 
         return PasswordResetResponse(
             message=result["message"],

@@ -8,15 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import {
-  Book,
-  Satellite,
-  Star,
-  Calculator,
-  Check,
-  ArrowLeft,
-  ExternalLink,
-} from 'lucide-react';
+import { Book, Satellite, Star, Calculator, Check, ArrowLeft, ExternalLink } from 'lucide-react';
 
 export function MethodologyPage() {
   const { t } = useTranslation();
@@ -70,7 +62,9 @@ export function MethodologyPage() {
                   <Book className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-display">{t('methodology.traditional.title')}</CardTitle>
+                  <CardTitle className="text-3xl font-display">
+                    {t('methodology.traditional.title')}
+                  </CardTitle>
                   <CardDescription className="text-base mt-1">
                     {t('methodology.traditional.subtitle')}
                   </CardDescription>
@@ -94,7 +88,9 @@ export function MethodologyPage() {
               <Separator />
 
               <div>
-                <h4 className="text-xl font-semibold mb-3">{t('methodology.traditional.techniques')}</h4>
+                <h4 className="text-xl font-semibold mb-3">
+                  {t('methodology.traditional.techniques')}
+                </h4>
                 <div className="space-y-4">
                   <div>
                     <h5 className="font-semibold text-foreground mb-2 flex items-center gap-2">
@@ -105,14 +101,30 @@ export function MethodologyPage() {
                       {t('methodology.traditional.dignities.desc')}
                     </p>
                     <ul className="text-sm text-muted-foreground space-y-1 ml-10 mt-2">
-                      <li><strong>{t('methodology.traditional.dignities.domicile')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.exaltation')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.triplicity')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.term')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.face')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.peregrine')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.detriment')}</strong></li>
-                      <li><strong>{t('methodology.traditional.dignities.fall')}</strong></li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.domicile')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.exaltation')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.triplicity')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.term')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.face')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.peregrine')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.detriment')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.dignities.fall')}</strong>
+                      </li>
                     </ul>
                   </div>
 
@@ -125,9 +137,15 @@ export function MethodologyPage() {
                       {t('methodology.traditional.sect.desc')}
                     </p>
                     <ul className="text-sm text-muted-foreground space-y-1 ml-10 mt-2">
-                      <li><strong>{t('methodology.traditional.sect.diurnal')}</strong></li>
-                      <li><strong>{t('methodology.traditional.sect.nocturnal')}</strong></li>
-                      <li><strong>{t('methodology.traditional.sect.neutral')}</strong></li>
+                      <li>
+                        <strong>{t('methodology.traditional.sect.diurnal')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.sect.nocturnal')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.sect.neutral')}</strong>
+                      </li>
                     </ul>
                     <p className="text-muted-foreground text-sm leading-relaxed ml-6 mt-2">
                       {t('methodology.traditional.sect.note')}
@@ -143,10 +161,18 @@ export function MethodologyPage() {
                       {t('methodology.traditional.temperament.desc')}
                     </p>
                     <ul className="text-sm text-muted-foreground space-y-1 ml-10 mt-2">
-                      <li><strong>{t('methodology.traditional.temperament.choleric')}</strong></li>
-                      <li><strong>{t('methodology.traditional.temperament.melancholic')}</strong></li>
-                      <li><strong>{t('methodology.traditional.temperament.sanguine')}</strong></li>
-                      <li><strong>{t('methodology.traditional.temperament.phlegmatic')}</strong></li>
+                      <li>
+                        <strong>{t('methodology.traditional.temperament.choleric')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.temperament.melancholic')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.temperament.sanguine')}</strong>
+                      </li>
+                      <li>
+                        <strong>{t('methodology.traditional.temperament.phlegmatic')}</strong>
+                      </li>
                     </ul>
                   </div>
 
@@ -169,8 +195,12 @@ export function MethodologyPage() {
                   {t('methodology.traditional.comparison.title')}
                 </h5>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p><strong>{t('methodology.traditional.comparison.traditional')}</strong></p>
-                  <p><strong>{t('methodology.traditional.comparison.modern')}</strong></p>
+                  <p>
+                    <strong>{t('methodology.traditional.comparison.traditional')}</strong>
+                  </p>
+                  <p>
+                    <strong>{t('methodology.traditional.comparison.modern')}</strong>
+                  </p>
                   <p className="pt-2 italic">
                     <strong>{t('methodology.traditional.comparison.approach')}</strong>
                   </p>
@@ -187,7 +217,9 @@ export function MethodologyPage() {
                   <Satellite className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-display">{t('methodology.swissEph.title')}</CardTitle>
+                  <CardTitle className="text-3xl font-display">
+                    {t('methodology.swissEph.title')}
+                  </CardTitle>
                   <CardDescription className="text-base mt-1">
                     {t('methodology.swissEph.subtitle')}
                   </CardDescription>
@@ -216,40 +248,60 @@ export function MethodologyPage() {
                   <div className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground">{t('methodology.swissEph.precision')}</p>
-                      <p className="text-sm text-muted-foreground">{t('methodology.swissEph.precisionDesc')}</p>
+                      <p className="font-semibold text-foreground">
+                        {t('methodology.swissEph.precision')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('methodology.swissEph.precisionDesc')}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground">{t('methodology.swissEph.coverage')}</p>
-                      <p className="text-sm text-muted-foreground">{t('methodology.swissEph.coverageDesc')}</p>
+                      <p className="font-semibold text-foreground">
+                        {t('methodology.swissEph.coverage')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('methodology.swissEph.coverageDesc')}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground">{t('methodology.swissEph.jpl')}</p>
-                      <p className="text-sm text-muted-foreground">{t('methodology.swissEph.jplDesc')}</p>
+                      <p className="font-semibold text-foreground">
+                        {t('methodology.swissEph.jpl')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('methodology.swissEph.jplDesc')}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground">{t('methodology.swissEph.openSource')}</p>
-                      <p className="text-sm text-muted-foreground">{t('methodology.swissEph.openSourceDesc')}</p>
+                      <p className="font-semibold text-foreground">
+                        {t('methodology.swissEph.openSource')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('methodology.swissEph.openSourceDesc')}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground">{t('methodology.swissEph.validation')}</p>
-                      <p className="text-sm text-muted-foreground">{t('methodology.swissEph.validationDesc')}</p>
+                      <p className="font-semibold text-foreground">
+                        {t('methodology.swissEph.validation')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('methodology.swissEph.validationDesc')}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -260,28 +312,46 @@ export function MethodologyPage() {
           {/* Implementation Details */}
           <Card className="border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl font-display">{t('methodology.implementation.title')}</CardTitle>
+              <CardTitle className="text-2xl font-display">
+                {t('methodology.implementation.title')}
+              </CardTitle>
               <CardDescription className="text-base mt-1">
                 {t('methodology.implementation.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.implementation.houseSystems')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.implementation.houseSystems')}
+                </h5>
                 <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li><strong>{t('methodology.implementation.placidus')}</strong></li>
-                  <li><strong>{t('methodology.implementation.koch')}</strong></li>
-                  <li><strong>{t('methodology.implementation.equal')}</strong></li>
-                  <li><strong>{t('methodology.implementation.wholeSigns')}</strong></li>
-                  <li><strong>{t('methodology.implementation.campanus')}</strong></li>
-                  <li><strong>{t('methodology.implementation.regiomontanus')}</strong></li>
+                  <li>
+                    <strong>{t('methodology.implementation.placidus')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.koch')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.equal')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.wholeSigns')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.campanus')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.regiomontanus')}</strong>
+                  </li>
                 </ul>
               </div>
 
               <Separator className="my-4" />
 
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.implementation.planets')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.implementation.planets')}
+                </h5>
                 <p className="text-sm text-muted-foreground mb-2">
                   {t('methodology.implementation.planetsList')}
                 </p>
@@ -293,19 +363,31 @@ export function MethodologyPage() {
               <Separator className="my-4" />
 
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.implementation.aspects')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.implementation.aspects')}
+                </h5>
                 <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li><strong>{t('methodology.implementation.majorAspects')}</strong></li>
-                  <li><strong>{t('methodology.implementation.minorAspects')}</strong></li>
-                  <li><strong>{t('methodology.implementation.orbs')}</strong></li>
-                  <li><strong>{t('methodology.implementation.applying')}</strong></li>
+                  <li>
+                    <strong>{t('methodology.implementation.majorAspects')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.minorAspects')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.orbs')}</strong>
+                  </li>
+                  <li>
+                    <strong>{t('methodology.implementation.applying')}</strong>
+                  </li>
                 </ul>
               </div>
 
               <Separator className="my-4" />
 
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.implementation.future')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.implementation.future')}
+                </h5>
                 <ul className="text-sm text-muted-foreground space-y-1 ml-4">
                   <li>{t('methodology.implementation.future1')}</li>
                   <li>{t('methodology.implementation.future2')}</li>
@@ -320,11 +402,15 @@ export function MethodologyPage() {
           {/* References */}
           <Card className="border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl font-display">{t('methodology.references.title')}</CardTitle>
+              <CardTitle className="text-2xl font-display">
+                {t('methodology.references.title')}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.references.classicTexts')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.references.classicTexts')}
+                </h5>
                 <ul className="text-sm text-muted-foreground space-y-2">
                   <li>
                     <strong>Tetrabiblos</strong> - Claudius Ptolemy (II d.C.)
@@ -347,7 +433,9 @@ export function MethodologyPage() {
               <Separator />
 
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.references.techDocs')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.references.techDocs')}
+                </h5>
                 <ul className="text-sm text-muted-foreground space-y-2">
                   <li>
                     <a
@@ -388,12 +476,23 @@ export function MethodologyPage() {
               <Separator />
 
               <div>
-                <h5 className="font-semibold text-foreground mb-2">{t('methodology.references.contemporaryAuthors')}</h5>
+                <h5 className="font-semibold text-foreground mb-2">
+                  {t('methodology.references.contemporaryAuthors')}
+                </h5>
                 <ul className="text-sm text-muted-foreground space-y-2">
-                  <li><strong>Chris Brennan</strong> - "Hellenistic Astrology: The Study of Fate and Fortune"</li>
-                  <li><strong>Demetra George</strong> - "Ancient Astrology in Theory and Practice"</li>
-                  <li><strong>Robert Hand</strong> - "Night & Day: Planetary Sect in Astrology"</li>
-                  <li><strong>Benjamin Dykes</strong> - Medieval/Persian translations</li>
+                  <li>
+                    <strong>Chris Brennan</strong> - "Hellenistic Astrology: The Study of Fate and
+                    Fortune"
+                  </li>
+                  <li>
+                    <strong>Demetra George</strong> - "Ancient Astrology in Theory and Practice"
+                  </li>
+                  <li>
+                    <strong>Robert Hand</strong> - "Night & Day: Planetary Sect in Astrology"
+                  </li>
+                  <li>
+                    <strong>Benjamin Dykes</strong> - Medieval/Persian translations
+                  </li>
                 </ul>
               </div>
             </CardContent>

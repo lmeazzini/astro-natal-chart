@@ -90,7 +90,10 @@ export function RagDocumentsPage() {
             {t('ragDocuments.title', 'RAG Knowledge Base')}
           </h2>
           <p className="text-muted-foreground">
-            {t('ragDocuments.description', 'Documents used for AI-enhanced astrological interpretations')}
+            {t(
+              'ragDocuments.description',
+              'Documents used for AI-enhanced astrological interpretations'
+            )}
           </p>
         </div>
 
@@ -145,21 +148,30 @@ export function RagDocumentsPage() {
           <Button
             variant={filterType === '' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => { setFilterType(''); setPage(1); }}
+            onClick={() => {
+              setFilterType('');
+              setPage(1);
+            }}
           >
             {t('ragDocuments.filterAll', 'All')}
           </Button>
           <Button
             variant={filterType === 'text' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => { setFilterType('text'); setPage(1); }}
+            onClick={() => {
+              setFilterType('text');
+              setPage(1);
+            }}
           >
             {t('ragDocuments.filterText', 'Text')}
           </Button>
           <Button
             variant={filterType === 'pdf' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => { setFilterType('pdf'); setPage(1); }}
+            onClick={() => {
+              setFilterType('pdf');
+              setPage(1);
+            }}
           >
             {t('ragDocuments.filterPdf', 'PDF')}
           </Button>
@@ -167,9 +179,7 @@ export function RagDocumentsPage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6">
-            {error}
-          </div>
+          <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6">{error}</div>
         )}
 
         {/* Loading */}
@@ -236,7 +246,8 @@ export function RagDocumentsPage() {
                         {doc.content_preview}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {t('ragDocuments.createdAt', 'Created')}: {new Date(doc.created_at).toLocaleString()}
+                        {t('ragDocuments.createdAt', 'Created')}:{' '}
+                        {new Date(doc.created_at).toLocaleString()}
                       </p>
                     </CardContent>
                   </Card>
@@ -248,7 +259,8 @@ export function RagDocumentsPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-6">
                 <p className="text-sm text-muted-foreground">
-                  {t('ragDocuments.showing', 'Showing')} {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, total)} {t('ragDocuments.of', 'of')} {total}
+                  {t('ragDocuments.showing', 'Showing')} {(page - 1) * pageSize + 1}-
+                  {Math.min(page * pageSize, total)} {t('ragDocuments.of', 'of')} {total}
                 </p>
                 <div className="flex gap-2">
                   <Button

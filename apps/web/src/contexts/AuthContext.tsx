@@ -14,7 +14,13 @@ interface AuthContextData {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, fullName: string, password: string, passwordConfirm: string, acceptTerms?: boolean) => Promise<void>;
+  register: (
+    email: string,
+    fullName: string,
+    password: string,
+    passwordConfirm: string,
+    acceptTerms?: boolean
+  ) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
   /** Refresh user data from API (e.g., after email verification in another tab) */

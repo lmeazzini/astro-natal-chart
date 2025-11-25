@@ -114,10 +114,7 @@ export function PublicChartsPage() {
       {/* Navigation */}
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
@@ -286,8 +283,7 @@ export function PublicChartsPage() {
           <h2 className="text-2xl font-bold text-foreground mb-4">
             {user
               ? t('publicCharts.ctaTitleLoggedIn', 'Crie Mais Mapas Natais')
-              : t('publicCharts.ctaTitle', 'Crie Seu Próprio Mapa Natal')
-            }
+              : t('publicCharts.ctaTitle', 'Crie Seu Próprio Mapa Natal')}
           </h2>
           <p className="text-muted-foreground mb-6">
             {t(
@@ -296,11 +292,10 @@ export function PublicChartsPage() {
             )}
           </p>
           <Button size="lg" asChild>
-            <Link to={user ? "/charts/new" : "/register"}>
+            <Link to={user ? '/charts/new' : '/register'}>
               {user
                 ? t('publicCharts.ctaButtonLoggedIn', 'Criar Novo Mapa')
-                : t('publicCharts.ctaButton', 'Começar Grátis')
-              }
+                : t('publicCharts.ctaButton', 'Começar Grátis')}
             </Link>
           </Button>
         </div>

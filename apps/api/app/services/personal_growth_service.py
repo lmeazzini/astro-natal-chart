@@ -98,8 +98,18 @@ class PersonalGrowthService:
         if "ascendant" in chart_data:
             asc_lon = chart_data["ascendant"]
             signs = [
-                "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
-                "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+                "Aries",
+                "Taurus",
+                "Gemini",
+                "Cancer",
+                "Leo",
+                "Virgo",
+                "Libra",
+                "Scorpio",
+                "Sagittarius",
+                "Capricorn",
+                "Aquarius",
+                "Pisces",
             ]
             asc_sign = signs[int(asc_lon / 30) % 12]
             patterns["big_three"]["ascendant"] = {"sign": asc_sign}
@@ -121,11 +131,13 @@ class PersonalGrowthService:
         # Retrograde planets
         for planet in planets:
             if planet.get("retrograde"):
-                patterns["retrogrades"].append({
-                    "planet": planet.get("name"),
-                    "sign": planet.get("sign"),
-                    "house": planet.get("house"),
-                })
+                patterns["retrogrades"].append(
+                    {
+                        "planet": planet.get("name"),
+                        "sign": planet.get("sign"),
+                        "house": planet.get("house"),
+                    }
+                )
 
         # Analyze dignities
         for planet in planets:
@@ -157,16 +169,16 @@ class PersonalGrowthService:
 
         for sign, planet_list in sign_counts.items():
             if len(planet_list) >= 3:
-                patterns["stelliums"].append({
-                    "sign": sign,
-                    "planets": planet_list,
-                })
+                patterns["stelliums"].append(
+                    {
+                        "sign": sign,
+                        "planets": planet_list,
+                    }
+                )
 
         return patterns
 
-    def _build_chart_summary(
-        self, chart_data: dict[str, Any], patterns: dict[str, Any]
-    ) -> str:
+    def _build_chart_summary(self, chart_data: dict[str, Any], patterns: dict[str, Any]) -> str:
         """Build a text summary of the chart for the AI prompt."""
         planets = chart_data.get("planets", [])
         big_three = patterns.get("big_three", {})

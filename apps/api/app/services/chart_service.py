@@ -95,7 +95,9 @@ async def create_birth_chart(
             logger.info(f"Generated RAG interpretations for chart {created_chart.id}")
         except Exception as e:
             # Log error but don't fail chart creation
-            logger.error(f"Failed to generate RAG interpretations for chart {created_chart.id}: {e}")
+            logger.error(
+                f"Failed to generate RAG interpretations for chart {created_chart.id}: {e}"
+            )
 
     return created_chart
 

@@ -39,7 +39,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '🚶',
       label: 'Peregrino',
-      color: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600'
+      color:
+        'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600',
     };
   }
 
@@ -48,7 +49,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '👑',
       label: 'Domicílio',
-      color: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700'
+      color:
+        'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700',
     };
   }
 
@@ -56,7 +58,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '🌟',
       label: 'Exaltação',
-      color: 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-900 dark:text-lime-200 dark:border-lime-700'
+      color:
+        'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-900 dark:text-lime-200 dark:border-lime-700',
     };
   }
 
@@ -64,7 +67,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '⬇️',
       label: 'Queda',
-      color: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700'
+      color:
+        'bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700',
     };
   }
 
@@ -72,7 +76,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '⚠️',
       label: 'Detrimento',
-      color: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700'
+      color:
+        'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700',
     };
   }
 
@@ -81,7 +86,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon,
       label: 'Triplicidade',
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700'
+      color:
+        'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700',
     };
   }
 
@@ -89,7 +95,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '📊',
       label: 'Termo',
-      color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700'
+      color:
+        'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700',
     };
   }
 
@@ -97,7 +104,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
     return {
       icon: '👤',
       label: 'Face',
-      color: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700'
+      color:
+        'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700',
     };
   }
 
@@ -105,7 +113,8 @@ export function getDignityBadge(dignities?: Dignities): DignityBadge {
   return {
     icon: '🚶',
     label: 'Peregrino',
-    color: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600'
+    color:
+      'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600',
   };
 }
 
@@ -125,11 +134,16 @@ export function getScoreColorClass(score: number): string {
  * Get badge color class based on dignity score
  */
 export function getScoreBadgeColor(score: number): string {
-  if (score >= 7) return 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700';
-  if (score >= 4) return 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-900 dark:text-lime-200 dark:border-lime-700';
-  if (score >= 1) return 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700';
-  if (score >= -3) return 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600';
-  if (score >= -6) return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700';
+  if (score >= 7)
+    return 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700';
+  if (score >= 4)
+    return 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-900 dark:text-lime-200 dark:border-lime-700';
+  if (score >= 1)
+    return 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700';
+  if (score >= -3)
+    return 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600';
+  if (score >= -6)
+    return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700';
   return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700';
 }
 
@@ -138,12 +152,12 @@ export function getScoreBadgeColor(score: number): string {
  */
 export function getClassificationLabel(classification: string): string {
   const labels: Record<string, string> = {
-    'very_strong': 'Muito Forte',
-    'strong': 'Forte',
-    'moderate': 'Moderado',
-    'weak': 'Fraco',
-    'very_weak': 'Muito Fraco',
-    'peregrine': 'Peregrino'
+    very_strong: 'Muito Forte',
+    strong: 'Forte',
+    moderate: 'Moderado',
+    weak: 'Fraco',
+    very_weak: 'Muito Fraco',
+    peregrine: 'Peregrino',
   };
   return labels[classification] || classification;
 }
@@ -151,7 +165,9 @@ export function getClassificationLabel(classification: string): string {
 /**
  * Get all dignity details as a list
  */
-export function getDignityDetails(dignities?: Dignities): Array<{ icon: string; label: string; points: number }> {
+export function getDignityDetails(
+  dignities?: Dignities
+): Array<{ icon: string; label: string; points: number }> {
   if (!dignities) return [];
 
   const details: Array<{ icon: string; label: string; points: number }> = [];
@@ -199,7 +215,11 @@ export function isClassicalPlanet(planetName: string): boolean {
 /**
  * Get dignity explanation text
  */
-export function getDignityExplanation(dignities?: Dignities, planetName?: string, sign?: string): string {
+export function getDignityExplanation(
+  dignities?: Dignities,
+  planetName?: string,
+  sign?: string
+): string {
   if (!dignities || !planetName || !sign) {
     return 'Sem informações de dignidades disponíveis.';
   }

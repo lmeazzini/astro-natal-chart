@@ -122,10 +122,7 @@ class ApiClient {
   /**
    * Handle 401 Unauthorized responses by attempting token refresh
    */
-  private async handleUnauthorized<T>(
-    endpoint: string,
-    options: RequestOptions
-  ): Promise<T> {
+  private async handleUnauthorized<T>(endpoint: string, options: RequestOptions): Promise<T> {
     // Prevent multiple simultaneous refresh attempts
     if (!this.isRefreshing) {
       this.isRefreshing = true;
@@ -172,10 +169,7 @@ class ApiClient {
     }
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     const token = getToken();
     const { skipRefresh, ...fetchOptions } = options;
@@ -208,9 +202,7 @@ class ApiClient {
       if (!response.ok) {
         const error: ApiError = await response.json();
         throw new Error(
-          typeof error.detail === 'string'
-            ? error.detail
-            : error.detail[0]?.msg || 'Request error'
+          typeof error.detail === 'string' ? error.detail : error.detail[0]?.msg || 'Request error'
         );
       }
 

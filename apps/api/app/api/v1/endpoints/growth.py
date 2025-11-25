@@ -60,18 +60,12 @@ router = APIRouter()
         },
         404: {
             "description": "Chart not found",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Chart not found"}
-                }
-            },
+            "content": {"application/json": {"example": {"detail": "Chart not found"}}},
         },
         429: {
             "description": "Rate limit exceeded",
             "content": {
-                "application/json": {
-                    "example": {"detail": "Rate limit exceeded: 10 per 1 hour"}
-                }
+                "application/json": {"example": {"detail": "Rate limit exceeded: 10 per 1 hour"}}
             },
         },
     },

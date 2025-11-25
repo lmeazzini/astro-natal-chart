@@ -25,18 +25,18 @@ from typing import Any
 # Dignity weight scale based on traditional essential dignities
 # Range: 0.5 (minimum) to 2.0 (maximum)
 DIGNITY_WEIGHTS = {
-    "domicile": 2.0,      # Planet in its own sign (rulership)
-    "ruler": 2.0,         # Alias for domicile
-    "exalted": 1.75,      # Planet in exaltation sign
-    "triplicity": 1.5,    # Planet as triplicity ruler (day/night/participant)
+    "domicile": 2.0,  # Planet in its own sign (rulership)
+    "ruler": 2.0,  # Alias for domicile
+    "exalted": 1.75,  # Planet in exaltation sign
+    "triplicity": 1.5,  # Planet as triplicity ruler (day/night/participant)
     "triplicity_day": 1.5,
     "triplicity_night": 1.5,
     "triplicity_participant": 1.5,
-    "term": 1.25,         # Planet in own term (bound)
-    "face": 1.1,          # Planet in own face (decan)
-    "peregrine": 1.0,     # No dignity (default)
-    "detriment": 0.75,    # Planet in sign opposite to rulership
-    "fall": 0.5,          # Planet in sign opposite to exaltation
+    "term": 1.25,  # Planet in own term (bound)
+    "face": 1.1,  # Planet in own face (decan)
+    "peregrine": 1.0,  # No dignity (default)
+    "detriment": 0.75,  # Planet in sign opposite to rulership
+    "fall": 0.5,  # Planet in sign opposite to exaltation
 }
 
 # Elemental qualities for each zodiac sign
@@ -93,8 +93,8 @@ SOLAR_PHASE_QUALITIES = {
 
 # Lunar phase qualities (4 divisions of lunar cycle)
 LUNAR_PHASE_QUALITIES = {
-    1: ("hot", "wet"),   # New → Waxing (0° - 90°)
-    2: ("hot", "dry"),   # Waxing → Full (90° - 180°)
+    1: ("hot", "wet"),  # New → Waxing (0° - 90°)
+    2: ("hot", "dry"),  # Waxing → Full (90° - 180°)
     3: ("cold", "dry"),  # Full → Waning (180° - 270°)
     4: ("cold", "wet"),  # Waning → New (270° - 360°)
 }
@@ -390,7 +390,11 @@ def calculate_temperament(
     phase_groups = {
         1: (["Aries", "Taurus", "Gemini"], "1ª Fase (Sanguíneo)", "1st Phase (Sanguine)"),
         2: (["Cancer", "Leo", "Virgo"], "2ª Fase (Colérico)", "2nd Phase (Choleric)"),
-        3: (["Libra", "Scorpio", "Sagittarius"], "3ª Fase (Melancólico)", "3rd Phase (Melancholic)"),
+        3: (
+            ["Libra", "Scorpio", "Sagittarius"],
+            "3ª Fase (Melancólico)",
+            "3rd Phase (Melancholic)",
+        ),
         4: (["Capricorn", "Aquarius", "Pisces"], "4ª Fase (Fleumático)", "4th Phase (Phlegmatic)"),
     }
 

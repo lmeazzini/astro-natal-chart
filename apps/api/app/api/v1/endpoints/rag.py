@@ -1,4 +1,5 @@
 """RAG API endpoints for vector search and document management."""
+
 from typing import Any
 from uuid import UUID
 
@@ -50,6 +51,7 @@ async def generate_embedding(text: str) -> list[float] | None:
     except Exception as e:
         logger.error(f"Failed to generate embedding: {e}")
         return None
+
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
 
@@ -166,7 +168,9 @@ async def search_documents(
                         SearchResult(
                             document_id=str(doc.id),
                             title=doc.title,
-                            content_preview=doc.content[:200] + "..." if len(doc.content) > 200 else doc.content,
+                            content_preview=doc.content[:200] + "..."
+                            if len(doc.content) > 200
+                            else doc.content,
                             score=result.get("hybrid_score", result.get("rrf_score", 0)),
                             metadata=doc.doc_metadata,
                             source_type="hybrid" if "hybrid_score" in result else "sparse",
@@ -372,7 +376,9 @@ async def list_documents(
                 id=str(doc.id),
                 title=doc.title,
                 document_type=doc.document_type,
-                content_preview=doc.content[:150] + "..." if len(doc.content) > 150 else doc.content,
+                content_preview=doc.content[:150] + "..."
+                if len(doc.content) > 150
+                else doc.content,
                 page=metadata.get("page"),
                 source=metadata.get("source") or metadata.get("original_filename"),
                 created_at=doc.created_at.isoformat(),

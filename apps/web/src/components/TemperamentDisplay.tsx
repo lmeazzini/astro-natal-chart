@@ -20,8 +20,8 @@ export interface TemperamentFactor {
   value: string;
   value_pt?: string;
   qualities: string[];
-  weight?: number;  // Dignity-based weight (0.5-2.0)
-  dignity?: string | null;  // Dignity name for display
+  weight?: number; // Dignity-based weight (0.5-2.0)
+  dignity?: string | null; // Dignity name for display
 }
 
 export interface TemperamentData {
@@ -73,13 +73,33 @@ const qualityIcons: Record<string, string> = {
 
 // Dignity labels for display
 const dignityLabels: Record<string, { en: string; pt: string; color: string }> = {
-  domicile: { en: 'Domicile', pt: 'Domicílio', color: 'bg-green-500/20 text-green-700 dark:text-green-400' },
-  exaltation: { en: 'Exaltation', pt: 'Exaltação', color: 'bg-blue-500/20 text-blue-700 dark:text-blue-400' },
-  triplicity: { en: 'Triplicity', pt: 'Triplicidade', color: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-400' },
+  domicile: {
+    en: 'Domicile',
+    pt: 'Domicílio',
+    color: 'bg-green-500/20 text-green-700 dark:text-green-400',
+  },
+  exaltation: {
+    en: 'Exaltation',
+    pt: 'Exaltação',
+    color: 'bg-blue-500/20 text-blue-700 dark:text-blue-400',
+  },
+  triplicity: {
+    en: 'Triplicity',
+    pt: 'Triplicidade',
+    color: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-400',
+  },
   term: { en: 'Term', pt: 'Termo', color: 'bg-purple-500/20 text-purple-700 dark:text-purple-400' },
   face: { en: 'Face', pt: 'Face', color: 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400' },
-  peregrine: { en: 'Peregrine', pt: 'Peregrino', color: 'bg-gray-500/20 text-gray-700 dark:text-gray-400' },
-  detriment: { en: 'Detriment', pt: 'Detrimento', color: 'bg-orange-500/20 text-orange-700 dark:text-orange-400' },
+  peregrine: {
+    en: 'Peregrine',
+    pt: 'Peregrino',
+    color: 'bg-gray-500/20 text-gray-700 dark:text-gray-400',
+  },
+  detriment: {
+    en: 'Detriment',
+    pt: 'Detrimento',
+    color: 'bg-orange-500/20 text-orange-700 dark:text-orange-400',
+  },
   fall: { en: 'Fall', pt: 'Queda', color: 'bg-red-500/20 text-red-700 dark:text-red-400' },
 };
 
@@ -125,18 +145,23 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
   const { translatePlanet, translateSign, translateLunarPhase } = useAstroTranslation();
   const isEn = i18n.language === 'en-US' || i18n.language === 'en';
 
-  const colorClass = temperamentColors[temperament.dominant] ||
-    'from-gray-500/10 to-gray-500/10 border-gray-500/20';
+  const colorClass =
+    temperamentColors[temperament.dominant] || 'from-gray-500/10 to-gray-500/10 border-gray-500/20';
 
   // Calculate dynamic max value based on actual scores
   // With weights, max theoretical is 14 (3 fixed factors @ 1.0 + 2 weighted @ 2.0 each = 7 per quality axis)
   // But we use actual sum for better visualization
-  const totalScores = temperament.scores.hot + temperament.scores.cold +
-                      temperament.scores.wet + temperament.scores.dry;
-  const maxQualityValue = Math.max(totalScores / 2, 10);  // At least 10 for backward compatibility
+  const totalScores =
+    temperament.scores.hot +
+    temperament.scores.cold +
+    temperament.scores.wet +
+    temperament.scores.dry;
+  const maxQualityValue = Math.max(totalScores / 2, 10); // At least 10 for backward compatibility
 
   // Get dignity label
-  const getDignityLabel = (dignity: string | null | undefined): { label: string; color: string } | null => {
+  const getDignityLabel = (
+    dignity: string | null | undefined
+  ): { label: string; color: string } | null => {
     if (!dignity) return null;
     const dignityInfo = dignityLabels[dignity];
     if (!dignityInfo) return null;
@@ -184,10 +209,15 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
           </span>
           <div className="flex-1">
             <div className="text-lg font-semibold text-foreground">
-              {t('components.temperament.title', { defaultValue: 'Temperamento' })}: {isEn ? temperament.dominant : temperament.dominant_pt}
+              {t('components.temperament.title', { defaultValue: 'Temperamento' })}:{' '}
+              {isEn ? temperament.dominant : temperament.dominant_pt}
             </div>
             <div className="text-xs text-muted-foreground font-normal mt-1">
-              {t('components.temperament.element', { defaultValue: 'Elemento' })} {isEn ? temperament.element : temperament.element_pt} • {t('components.temperament.basedOn', { defaultValue: 'Baseado em 5 fatores tradicionais' })}
+              {t('components.temperament.element', { defaultValue: 'Elemento' })}{' '}
+              {isEn ? temperament.element : temperament.element_pt} •{' '}
+              {t('components.temperament.basedOn', {
+                defaultValue: 'Baseado em 5 fatores tradicionais',
+              })}
             </div>
           </div>
         </CardTitle>
@@ -209,7 +239,9 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Factors Breakdown */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-            {t('components.temperament.contributingFactors', { defaultValue: 'Fatores Contribuintes' })}
+            {t('components.temperament.contributingFactors', {
+              defaultValue: 'Fatores Contribuintes',
+            })}
           </p>
           <div className="space-y-2">
             {temperament.factors.map((factor, index) => {
@@ -234,7 +266,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
                               : 'bg-red-500/20 text-red-700 dark:text-red-400'
                           }`}
                           title={t('components.temperament.weightTooltip', {
-                            defaultValue: 'Peso baseado na dignidade do planeta'
+                            defaultValue: 'Peso baseado na dignidade do planeta',
                           })}
                         >
                           ×{factor.weight?.toFixed(2)}
@@ -242,10 +274,16 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {isEn ? factor.value : (factor.value_pt ? translateFactorValue(factor.value_pt) : translateFactorValue(factor.value))}
+                      {isEn
+                        ? factor.value
+                        : factor.value_pt
+                          ? translateFactorValue(factor.value_pt)
+                          : translateFactorValue(factor.value)}
                     </p>
                     {dignityInfo && (
-                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${dignityInfo.color}`}>
+                      <span
+                        className={`inline-block text-xs px-2 py-0.5 rounded-full ${dignityInfo.color}`}
+                      >
                         {dignityInfo.label}
                       </span>
                     )}
@@ -273,18 +311,24 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
             {t('components.temperament.interpretation', { defaultValue: 'Interpretação' })}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {temperament.description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{temperament.description}</p>
         </div>
 
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border space-y-2">
           <p className="text-xs text-muted-foreground">
-            ⚖️ {t('components.temperament.note', { defaultValue: 'O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.' })}
+            ⚖️{' '}
+            {t('components.temperament.note', {
+              defaultValue:
+                'O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.',
+            })}
           </p>
           <p className="text-xs text-muted-foreground">
-            📊 {t('components.temperament.weightNote', { defaultValue: 'Os fatores planetários (Regente do Ascendente e Senhor da Natividade) têm seus pesos ajustados pela dignidade essencial: planetas dignificados (domicílio, exaltação) contribuem mais, enquanto planetas debilitados (detrimento, queda) contribuem menos.' })}
+            📊{' '}
+            {t('components.temperament.weightNote', {
+              defaultValue:
+                'Os fatores planetários (Regente do Ascendente e Senhor da Natividade) têm seus pesos ajustados pela dignidade essencial: planetas dignificados (domicílio, exaltação) contribuem mais, enquanto planetas debilitados (detrimento, queda) contribuem menos.',
+            })}
           </p>
         </div>
       </CardContent>

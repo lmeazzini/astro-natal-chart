@@ -11,19 +11,46 @@ export type AstroIconCategory = 'planets' | 'signs' | 'aspects' | 'houses';
 
 // Planet icons
 export type PlanetIcon =
-  | 'sun' | 'moon' | 'mercury' | 'venus' | 'mars'
-  | 'jupiter' | 'saturn' | 'uranus' | 'neptune' | 'pluto'
-  | 'north-node' | 'south-node' | 'chiron';
+  | 'sun'
+  | 'moon'
+  | 'mercury'
+  | 'venus'
+  | 'mars'
+  | 'jupiter'
+  | 'saturn'
+  | 'uranus'
+  | 'neptune'
+  | 'pluto'
+  | 'north-node'
+  | 'south-node'
+  | 'chiron';
 
 // Zodiac sign icons
 export type SignIcon =
-  | 'aries' | 'taurus' | 'gemini' | 'cancer' | 'leo' | 'virgo'
-  | 'libra' | 'scorpio' | 'sagittarius' | 'capricorn' | 'aquarius' | 'pisces';
+  | 'aries'
+  | 'taurus'
+  | 'gemini'
+  | 'cancer'
+  | 'leo'
+  | 'virgo'
+  | 'libra'
+  | 'scorpio'
+  | 'sagittarius'
+  | 'capricorn'
+  | 'aquarius'
+  | 'pisces';
 
 // Aspect icons
 export type AspectIcon =
-  | 'conjunction' | 'opposition' | 'trine' | 'square' | 'sextile'
-  | 'quincunx' | 'semisextile' | 'semisquare' | 'sesquiquadrate';
+  | 'conjunction'
+  | 'opposition'
+  | 'trine'
+  | 'square'
+  | 'sextile'
+  | 'quincunx'
+  | 'semisextile'
+  | 'semisquare'
+  | 'sesquiquadrate';
 
 // House icons
 export type HouseIcon = 'ascendant' | 'midheaven' | 'descendant' | 'imum-coeli';
@@ -46,19 +73,46 @@ interface AstroIconProps {
 
 // Maps for auto-detecting category from icon name
 const planetIcons: PlanetIcon[] = [
-  'sun', 'moon', 'mercury', 'venus', 'mars',
-  'jupiter', 'saturn', 'uranus', 'neptune', 'pluto',
-  'north-node', 'south-node', 'chiron'
+  'sun',
+  'moon',
+  'mercury',
+  'venus',
+  'mars',
+  'jupiter',
+  'saturn',
+  'uranus',
+  'neptune',
+  'pluto',
+  'north-node',
+  'south-node',
+  'chiron',
 ];
 
 const signIcons: SignIcon[] = [
-  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo',
-  'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'
+  'aries',
+  'taurus',
+  'gemini',
+  'cancer',
+  'leo',
+  'virgo',
+  'libra',
+  'scorpio',
+  'sagittarius',
+  'capricorn',
+  'aquarius',
+  'pisces',
 ];
 
 const aspectIcons: AspectIcon[] = [
-  'conjunction', 'opposition', 'trine', 'square', 'sextile',
-  'quincunx', 'semisextile', 'semisquare', 'sesquiquadrate'
+  'conjunction',
+  'opposition',
+  'trine',
+  'square',
+  'sextile',
+  'quincunx',
+  'semisextile',
+  'semisquare',
+  'sesquiquadrate',
 ];
 
 const houseIcons: HouseIcon[] = ['ascendant', 'midheaven', 'descendant', 'imum-coeli'];
@@ -94,13 +148,7 @@ function detectCategory(name: AstroIconName): AstroIconCategory {
  * // With explicit category
  * <AstroIcon name="ascendant" category="houses" />
  */
-export function AstroIcon({
-  name,
-  category,
-  size = 24,
-  className,
-  label,
-}: AstroIconProps) {
+export function AstroIcon({ name, category, size = 24, className, label }: AstroIconProps) {
   const resolvedCategory = category || detectCategory(name);
   const iconPath = `/icons/astrology/${resolvedCategory}/${name}.svg`;
 

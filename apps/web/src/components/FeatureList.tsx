@@ -128,10 +128,14 @@ export function FeatureList() {
       <Card>
         <CardContent className="py-8 text-center">
           <p className="text-muted-foreground mb-4">{error}</p>
-          <Button variant="outline" size="sm" onClick={() => {
-            setLoading(true);
-            loadFeatures();
-          }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              loadFeatures();
+            }}
+          >
             {t('common.retry', { defaultValue: 'Try again' })}
           </Button>
         </CardContent>
@@ -159,10 +163,14 @@ export function FeatureList() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {t('dashboard.features.implemented', { defaultValue: 'Implemented Features' })}
-              <Badge variant="default" className="ml-2">{features.implemented.length}</Badge>
+              <Badge variant="default" className="ml-2">
+                {features.implemented.length}
+              </Badge>
             </CardTitle>
             <CardDescription>
-              {t('dashboard.features.implementedDesc', { defaultValue: 'Features recently added to the platform' })}
+              {t('dashboard.features.implementedDesc', {
+                defaultValue: 'Features recently added to the platform',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -180,7 +188,10 @@ export function FeatureList() {
                     <ExternalLink className="h-3 w-3 opacity-50" />
                   </a>
                   <p className="text-sm text-muted-foreground">
-                    #{feature.number} • {feature.closed_at ? formatDate(feature.closed_at) : formatDate(feature.created_at)}
+                    #{feature.number} •{' '}
+                    {feature.closed_at
+                      ? formatDate(feature.closed_at)
+                      : formatDate(feature.created_at)}
                   </p>
                 </div>
                 <Badge variant="default">
@@ -198,10 +209,14 @@ export function FeatureList() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {t('dashboard.features.inProgress', { defaultValue: 'In Development' })}
-              <Badge variant="secondary" className="ml-2">{features.in_progress.length}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {features.in_progress.length}
+              </Badge>
             </CardTitle>
             <CardDescription>
-              {t('dashboard.features.inProgressDesc', { defaultValue: 'Features currently being developed' })}
+              {t('dashboard.features.inProgressDesc', {
+                defaultValue: 'Features currently being developed',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -237,10 +252,14 @@ export function FeatureList() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {t('dashboard.features.planned', { defaultValue: 'Planned' })}
-              <Badge variant="outline" className="ml-2">{features.planned.length}</Badge>
+              <Badge variant="outline" className="ml-2">
+                {features.planned.length}
+              </Badge>
             </CardTitle>
             <CardDescription>
-              {t('dashboard.features.plannedDesc', { defaultValue: 'Features planned for future versions' })}
+              {t('dashboard.features.plannedDesc', {
+                defaultValue: 'Features planned for future versions',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

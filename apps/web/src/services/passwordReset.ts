@@ -20,26 +20,19 @@ class PasswordResetService {
    * Request password reset email
    */
   async requestReset(email: string): Promise<PasswordResetRequestResponse> {
-    return apiClient.post<PasswordResetRequestResponse>(
-      '/api/v1/password-reset/request',
-      { email }
-    );
+    return apiClient.post<PasswordResetRequestResponse>('/api/v1/password-reset/request', {
+      email,
+    });
   }
 
   /**
    * Confirm password reset with token
    */
-  async confirmReset(
-    token: string,
-    newPassword: string
-  ): Promise<PasswordResetRequestResponse> {
-    return apiClient.post<PasswordResetRequestResponse>(
-      '/api/v1/password-reset/confirm',
-      {
-        token,
-        new_password: newPassword,
-      }
-    );
+  async confirmReset(token: string, newPassword: string): Promise<PasswordResetRequestResponse> {
+    return apiClient.post<PasswordResetRequestResponse>('/api/v1/password-reset/confirm', {
+      token,
+      new_password: newPassword,
+    });
   }
 }
 

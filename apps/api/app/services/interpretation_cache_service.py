@@ -93,9 +93,7 @@ class InterpretationCacheService:
             interpretation_type, parameters, model, prompt_version, language
         )
 
-        stmt = select(InterpretationCache).where(
-            InterpretationCache.cache_key == cache_key
-        )
+        stmt = select(InterpretationCache).where(InterpretationCache.cache_key == cache_key)
         result = await self.db.execute(stmt)
         cache_entry = result.scalar_one_or_none()
 
@@ -165,9 +163,7 @@ class InterpretationCacheService:
             await self.db.commit()
             await self.db.refresh(cache_entry)
 
-            logger.info(
-                f"Cached new interpretation for {interpretation_type}: {subject}"
-            )
+            logger.info(f"Cached new interpretation for {interpretation_type}: {subject}")
             return cache_entry
         except IntegrityError:
             # Race condition: another request already created this entry
@@ -176,9 +172,7 @@ class InterpretationCacheService:
 
             # Fetch and return the existing entry
             existing = await self.db.execute(
-                select(InterpretationCache).where(
-                    InterpretationCache.cache_key == cache_key
-                )
+                select(InterpretationCache).where(InterpretationCache.cache_key == cache_key)
             )
             existing_entry = existing.scalar_one_or_none()
             if existing_entry:
@@ -219,9 +213,7 @@ class InterpretationCacheService:
         ttl = ttl_days or self.DEFAULT_TTL_DAYS
         cutoff_date = datetime.now(UTC) - timedelta(days=ttl)
 
-        stmt = delete(InterpretationCache).where(
-            InterpretationCache.last_accessed_at < cutoff_date
-        )
+        stmt = delete(InterpretationCache).where(InterpretationCache.last_accessed_at < cutoff_date)
         result = await self.db.execute(stmt)
         await self.db.commit()
 
@@ -310,14 +302,16 @@ class InterpretationCacheService:
         # Estimated cost savings (assuming $0.00015 per 1K input tokens, $0.0006 per 1K output)
         # Average prompt ~500 tokens, response ~300 tokens
         # Cost per call: (0.5 * 0.00015) + (0.3 * 0.0006) = $0.000255
-        estimated_savings = (total_hits - total_entries) * 0.000255 if total_hits > total_entries else 0
+        estimated_savings = (
+            (total_hits - total_entries) * 0.000255 if total_hits > total_entries else 0
+        )
 
         return {
             "total_entries": total_entries,
             "total_hits": total_hits,
-            "cache_hit_ratio": round(
-                (total_hits - total_entries) / total_hits * 100, 2
-            ) if total_hits > 0 else 0,
+            "cache_hit_ratio": round((total_hits - total_entries) / total_hits * 100, 2)
+            if total_hits > 0
+            else 0,
             "entries_by_type": entries_by_type,
             "oldest_entry": oldest_entry.isoformat() if oldest_entry else None,
             "newest_entry": newest_entry.isoformat() if newest_entry else None,

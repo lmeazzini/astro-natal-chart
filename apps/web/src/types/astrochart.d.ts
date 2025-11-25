@@ -36,7 +36,13 @@ declare module '@astrodraw/astrochart' {
     CUSPS_STROKE?: number;
     SHIFT_IN_DEGREES?: number;
     ASPECTS?: Record<string, AspectConfig>;
-    [key: string]: string | number | boolean | string[] | Record<string, string | AspectConfig> | undefined;
+    [key: string]:
+      | string
+      | number
+      | boolean
+      | string[]
+      | Record<string, string | AspectConfig>
+      | undefined;
   }
 
   export class Chart {
@@ -47,12 +53,7 @@ declare module '@astrodraw/astrochart' {
      * @param height - Height of the chart in pixels
      * @param settings - Optional chart settings
      */
-    constructor(
-      elementId: string,
-      width: number,
-      height: number,
-      settings?: ChartSettings
-    );
+    constructor(elementId: string, width: number, height: number, settings?: ChartSettings);
 
     /**
      * Generate a radix (natal) chart

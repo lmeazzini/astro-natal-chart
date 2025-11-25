@@ -196,9 +196,7 @@ class TestLogin:
         assert response.status_code == 401
         assert "inactive" in response.json()["detail"].lower()
 
-    async def test_login_case_insensitive_email(
-        self, client: AsyncClient, test_user: User
-    ):
+    async def test_login_case_insensitive_email(self, client: AsyncClient, test_user: User):
         """Test login with different email case works."""
         response = await client.post(
             "/api/v1/auth/login",
@@ -251,9 +249,7 @@ class TestRefreshToken:
         assert response.status_code == 401
         assert "invalid" in response.json()["detail"].lower()
 
-    async def test_refresh_with_access_token_fails(
-        self, client: AsyncClient, test_user: User
-    ):
+    async def test_refresh_with_access_token_fails(self, client: AsyncClient, test_user: User):
         """Test that using access token for refresh fails."""
         # Login to get tokens
         login_response = await client.post(
@@ -329,9 +325,7 @@ class TestGetCurrentUser:
 class TestLogout:
     """Test user logout endpoint."""
 
-    async def test_logout_success(
-        self, client: AsyncClient, auth_headers: dict[str, str]
-    ):
+    async def test_logout_success(self, client: AsyncClient, auth_headers: dict[str, str]):
         """Test logout with valid token."""
         response = await client.post("/api/v1/auth/logout", headers=auth_headers)
 
@@ -415,9 +409,7 @@ class TestAuthenticationFlow:
         )
         assert logout_response.status_code == 204
 
-    async def test_multiple_users_isolated(
-        self, client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_multiple_users_isolated(self, client: AsyncClient, db_session: AsyncSession):
         """Test that multiple users are properly isolated."""
         # Create user 1
         await client.post(

@@ -924,7 +924,9 @@ def calculate_birth_chart(
     ascendant_ruler_data = next(
         (p for p in planets_with_dignities if p.get("name") == ascendant_ruler_name), None
     )
-    ascendant_ruler_sign = ascendant_ruler_data.get("sign", ascendant_sign) if ascendant_ruler_data else ascendant_sign
+    ascendant_ruler_sign = (
+        ascendant_ruler_data.get("sign", ascendant_sign) if ascendant_ruler_data else ascendant_sign
+    )
     ascendant_ruler_dignities = (
         ascendant_ruler_data.get("dignities", {}).get("dignities")
         if ascendant_ruler_data and ascendant_ruler_data.get("dignities")
@@ -936,7 +938,9 @@ def calculate_birth_chart(
     lord_of_nativity_data = next(
         (p for p in planets_with_dignities if p.get("name") == lord_of_nativity_name), None
     )
-    lord_of_nativity_sign = lord_of_nativity_data.get("sign", "Aries") if lord_of_nativity_data else "Aries"
+    lord_of_nativity_sign = (
+        lord_of_nativity_data.get("sign", "Aries") if lord_of_nativity_data else "Aries"
+    )
     lord_of_nativity_dignities = (
         lord_of_nativity_data.get("dignities", {}).get("dignities")
         if lord_of_nativity_data and lord_of_nativity_data.get("dignities")

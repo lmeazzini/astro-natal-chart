@@ -276,9 +276,7 @@ async def _generate_public_chart_interpretations(
     arabic_parts: dict[str, str] = {}
 
     # Initialize RAG service with language
-    rag_service = InterpretationServiceRAG(
-        db, use_cache=True, use_rag=True, language=language
-    )
+    rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True, language=language)
 
     chart_data = chart.chart_data
     assert chart_data is not None, "chart_data must not be None"

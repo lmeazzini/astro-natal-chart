@@ -142,7 +142,9 @@ class TestUploadBackup:
         backup_s3_service_enabled.client.upload_file = MagicMock()
         backup_s3_service_enabled.client.head_object = MagicMock(
             return_value={
-                "Metadata": {"md5_checksum": backup_s3_service_enabled._calculate_md5(tmp_backup_file)},
+                "Metadata": {
+                    "md5_checksum": backup_s3_service_enabled._calculate_md5(tmp_backup_file)
+                },
                 "ETag": '"someetag"',
             }
         )
@@ -176,9 +178,7 @@ class TestUploadBackup:
 
     def test_upload_no_credentials_error(self, backup_s3_service_enabled, tmp_backup_file):
         """Test upload when AWS credentials are invalid."""
-        backup_s3_service_enabled.client.upload_file = MagicMock(
-            side_effect=NoCredentialsError()
-        )
+        backup_s3_service_enabled.client.upload_file = MagicMock(side_effect=NoCredentialsError())
 
         s3_url = backup_s3_service_enabled.upload_backup(tmp_backup_file)
 
@@ -200,7 +200,10 @@ class TestUploadWithRetry:
         """Test successful upload on second attempt."""
         # First attempt fails, second succeeds
         backup_s3_service_enabled.client.upload_file = MagicMock(
-            side_effect=[ClientError({"Error": {"Code": "ServiceUnavailable"}}, "upload_file"), None]
+            side_effect=[
+                ClientError({"Error": {"Code": "ServiceUnavailable"}}, "upload_file"),
+                None,
+            ]
         )
 
         # Mock time.sleep to avoid waiting
@@ -305,9 +308,7 @@ class TestVerifyUploadIntegrity:
 
     def test_verify_integrity_invalid_url(self, backup_s3_service_enabled, tmp_backup_file):
         """Test integrity verification with invalid S3 URL."""
-        result = backup_s3_service_enabled.verify_upload_integrity(
-            tmp_backup_file, "invalid-url"
-        )
+        result = backup_s3_service_enabled.verify_upload_integrity(tmp_backup_file, "invalid-url")
 
         assert result is False
 

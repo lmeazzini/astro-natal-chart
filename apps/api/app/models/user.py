@@ -22,6 +22,7 @@ class UserType(str, Enum):
     STUDENT = "student"
     CURIOUS = "curious"
 
+
 if TYPE_CHECKING:
     from app.models.chart import BirthChart
 
@@ -74,9 +75,7 @@ class User(Base):
     specializations: Mapped[list | None] = mapped_column(JSONB, nullable=True)
 
     # Preferences
-    allow_email_notifications: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
+    allow_email_notifications: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     analytics_consent: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Activity tracking

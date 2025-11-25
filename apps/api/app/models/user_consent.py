@@ -50,14 +50,20 @@ class UserConsent(Base):
         comment="Document version (e.g., '1.0', '2024-11-15')",
     )
     accepted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True, comment="IPv4 or IPv6 address")
-    user_agent: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Browser user agent string")
+    ip_address: Mapped[str | None] = mapped_column(
+        String(45), nullable=True, comment="IPv4 or IPv6 address"
+    )
+    user_agent: Mapped[str | None] = mapped_column(
+        Text, nullable=True, comment="Browser user agent string"
+    )
     consent_text: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
         comment="Snapshot of consent text at acceptance time",
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+    )
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     @property

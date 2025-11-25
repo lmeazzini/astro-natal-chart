@@ -56,6 +56,7 @@ def generate_chart_pdf_task(self: celery_app.Task, chart_id_str: str) -> dict[st
         # Run async operations with manually managed event loop
         # This avoids event loop conflicts in Celery workers
         import asyncio
+
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -131,25 +132,29 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
             from app.models.interpretation import ChartInterpretation
 
             # Check if interpretations exist
-            interp_stmt = sql_select(ChartInterpretation).where(ChartInterpretation.chart_id == chart_id)
+            interp_stmt = sql_select(ChartInterpretation).where(
+                ChartInterpretation.chart_id == chart_id
+            )
             interp_result = await db.execute(interp_stmt)
             existing_interps = interp_result.scalars().all()
 
             # Build interpretations dict from existing records
             interpretations: dict[str, dict[str, str]] = {
-                'planets': {},
-                'houses': {},
-                'aspects': {},
-                'arabic_parts': {},
+                "planets": {},
+                "houses": {},
+                "aspects": {},
+                "arabic_parts": {},
             }
             for interp in existing_interps:
                 if interp.interpretation_type in interpretations:
-                    interpretations[interp.interpretation_type][interp.subject] = interp.content or ""
+                    interpretations[interp.interpretation_type][interp.subject] = (
+                        interp.content or ""
+                    )
 
             # Check if we need to generate interpretations
-            has_planet_interps = bool(interpretations.get('planets'))
-            has_house_interps = bool(interpretations.get('houses'))
-            has_aspect_interps = bool(interpretations.get('aspects'))
+            has_planet_interps = bool(interpretations.get("planets"))
+            has_house_interps = bool(interpretations.get("houses"))
+            has_aspect_interps = bool(interpretations.get("aspects"))
 
             if not (has_planet_interps and has_house_interps and has_aspect_interps):
                 logger.info(f"Generating missing interpretations for chart {chart_id}")
@@ -170,14 +175,14 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
             template_data = pdf_service.prepare_template_data(
                 chart_data={
                     **chart.chart_data,
-                    'person_name': chart.person_name,
-                    'birth_datetime': chart.birth_datetime,
-                    'city': chart.city,
-                    'country': chart.country,
-                    'latitude': float(chart.latitude),
-                    'longitude': float(chart.longitude),
-                    'house_system': chart.house_system,
-                    'zodiac_type': chart.zodiac_type,
+                    "person_name": chart.person_name,
+                    "birth_datetime": chart.birth_datetime,
+                    "city": chart.city,
+                    "country": chart.country,
+                    "latitude": float(chart.latitude),
+                    "longitude": float(chart.longitude),
+                    "house_system": chart.house_system,
+                    "zodiac_type": chart.zodiac_type,
                 },
                 interpretations=interpretations,
                 chart_image_path=chart_image_path,
@@ -195,15 +200,14 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_path = Path(temp_dir)
                 tex_file = temp_path / "document.tex"
-                tex_file.write_text(latex_source, encoding='utf-8')
+                tex_file.write_text(latex_source, encoding="utf-8")
 
                 # Copy macros.tex to temp directory (required by template)
                 templates_dir = Path(__file__).parent.parent / "report_templates"
                 macros_file = templates_dir / "macros.tex"
                 if macros_file.exists():
                     (temp_path / "macros.tex").write_text(
-                        macros_file.read_text(encoding='utf-8'),
-                        encoding='utf-8'
+                        macros_file.read_text(encoding="utf-8"), encoding="utf-8"
                     )
 
                 # Run pdflatex twice (for TOC and cross-references)
@@ -211,9 +215,10 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
                     logger.info(f"Running pdflatex pass {pass_num}/2")
                     process = subprocess.run(
                         [
-                            'pdflatex',
-                            '-interaction=nonstopmode',
-                            '-output-directory', str(temp_path),
+                            "pdflatex",
+                            "-interaction=nonstopmode",
+                            "-output-directory",
+                            str(temp_path),
                             str(tex_file),
                         ],
                         capture_output=True,
@@ -227,16 +232,14 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
                     if process.returncode != 0:
                         logger.warning(f"pdflatex pass {pass_num} completed with warnings")
                         logger.debug(f"stdout: {process.stdout[-1000:]}")  # Last 1000 chars
-                        logger.debug(f"stderr: {process.stderr[-500:]}")    # Last 500 chars
+                        logger.debug(f"stderr: {process.stderr[-500:]}")  # Last 500 chars
 
                         # Check if PDF was actually generated despite warnings
                         if not temp_pdf.exists() and pass_num == 1:
                             logger.error(f"pdflatex failed on pass {pass_num} - no PDF generated")
                             logger.error(f"stdout: {process.stdout}")
                             logger.error(f"stderr: {process.stderr}")
-                            raise RuntimeError(
-                                f"PDF compilation failed: {process.stderr[:500]}"
-                            )
+                            raise RuntimeError(f"PDF compilation failed: {process.stderr[:500]}")
                     else:
                         logger.info(f"pdflatex pass {pass_num} completed successfully")
 
@@ -292,8 +295,8 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
             # Old PDF deletion removed - S3 upload now overwrites existing file automatically
 
             return {
-                'pdf_url': pdf_url,
-                'status': 'completed',
+                "pdf_url": pdf_url,
+                "status": "completed",
             }
 
     except Exception as exc:

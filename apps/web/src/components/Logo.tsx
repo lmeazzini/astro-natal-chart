@@ -27,10 +27,10 @@ interface LogoProps {
 }
 
 const sizeClasses = {
-  sm: 'h-8 w-8',     // 32px
-  md: 'h-16 w-16',   // 64px
-  lg: 'h-32 w-32',   // 128px
-  xl: 'h-48 w-48',   // 192px
+  sm: 'h-8 w-8', // 32px
+  md: 'h-16 w-16', // 64px
+  lg: 'h-32 w-32', // 128px
+  xl: 'h-48 w-48', // 192px
 };
 
 export function Logo({ size = 'md', className = '', onClick }: LogoProps) {

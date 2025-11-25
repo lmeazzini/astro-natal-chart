@@ -65,9 +65,7 @@ def sample_interpretations():
                 "interpretation": "The Sun in Taurus...",
             }
         ],
-        "houses": [
-            {"house_number": 1, "sign": "Leo", "interpretation": "The 1st house..."}
-        ],
+        "houses": [{"house_number": 1, "sign": "Leo", "interpretation": "The 1st house..."}],
         "aspects": [
             {
                 "planet1": "Sun",
@@ -79,7 +77,9 @@ def sample_interpretations():
     }
 
 
-@pytest.mark.skip(reason="Requires LaTeX template files and complex async mocking - tested via integration tests")
+@pytest.mark.skip(
+    reason="Requires LaTeX template files and complex async mocking - tested via integration tests"
+)
 class TestGenerateChartPDFTask:
     """Tests for generate_chart_pdf_task Celery task."""
 
@@ -126,13 +126,13 @@ class TestGenerateChartPDFTask:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Requires LaTeX template files and complex async mocking - tested via integration tests")
+@pytest.mark.skip(
+    reason="Requires LaTeX template files and complex async mocking - tested via integration tests"
+)
 class TestGeneratePDFAsync:
     """Tests for _generate_pdf_async internal function."""
 
-    async def test_generate_pdf_success(
-        self, sample_chart_in_db, sample_interpretations, tmp_path
-    ):
+    async def test_generate_pdf_success(self, sample_chart_in_db, sample_interpretations, tmp_path):
         """Test successful async PDF generation."""
         chart_id = sample_chart_in_db.id
 
@@ -154,9 +154,7 @@ class TestGeneratePDFAsync:
 
         # Mock InterpretationService
         mock_interp_service = AsyncMock()
-        mock_interp_service.get_interpretations_by_chart.return_value = (
-            sample_interpretations
-        )
+        mock_interp_service.get_interpretations_by_chart.return_value = sample_interpretations
 
         # Mock PDFService
         mock_pdf_service = MagicMock()
@@ -179,12 +177,8 @@ class TestGeneratePDFAsync:
         mock_process.stderr = ""
 
         with (
-            patch(
-                "app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine
-            ),
-            patch(
-                "app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local
-            ),
+            patch("app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine),
+            patch("app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local),
             patch(
                 "app.tasks.pdf_tasks.InterpretationService",
                 return_value=mock_interp_service,
@@ -220,12 +214,8 @@ class TestGeneratePDFAsync:
         mock_engine.dispose = AsyncMock()
 
         with (
-            patch(
-                "app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine
-            ),
-            patch(
-                "app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local
-            ),
+            patch("app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine),
+            patch("app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local),
             pytest.raises(ValueError, match="not found"),
         ):
             await _generate_pdf_async(chart_id)
@@ -250,12 +240,8 @@ class TestGeneratePDFAsync:
         mock_engine.dispose = AsyncMock()
 
         with (
-            patch(
-                "app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine
-            ),
-            patch(
-                "app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local
-            ),
+            patch("app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine),
+            patch("app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local),
             pytest.raises(ValueError, match="no calculated data"),
         ):
             await _generate_pdf_async(chart_id)
@@ -281,9 +267,7 @@ class TestGeneratePDFAsync:
         mock_engine.dispose = AsyncMock()
 
         mock_interp_service = AsyncMock()
-        mock_interp_service.get_interpretations_by_chart.return_value = (
-            sample_interpretations
-        )
+        mock_interp_service.get_interpretations_by_chart.return_value = sample_interpretations
 
         mock_pdf_service = MagicMock()
         mock_pdf_service.prepare_template_data.return_value = {"person_name": "Test"}
@@ -297,12 +281,8 @@ class TestGeneratePDFAsync:
         mock_process.stderr = "LaTeX Error: Unknown command"
 
         with (
-            patch(
-                "app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine
-            ),
-            patch(
-                "app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local
-            ),
+            patch("app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine),
+            patch("app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local),
             patch(
                 "app.tasks.pdf_tasks.InterpretationService",
                 return_value=mock_interp_service,
@@ -317,9 +297,7 @@ class TestGeneratePDFAsync:
 
         mock_engine.dispose.assert_called_once()
 
-    async def test_generate_pdf_with_interpretation_generation(
-        self, sample_chart_in_db, tmp_path
-    ):
+    async def test_generate_pdf_with_interpretation_generation(self, sample_chart_in_db, tmp_path):
         """Test PDF generation triggers interpretation generation when missing."""
         chart_id = sample_chart_in_db.id
 
@@ -342,9 +320,7 @@ class TestGeneratePDFAsync:
         full_interps = {
             "planets": [{"planet_name": "Sun", "interpretation": "Test"}],
             "houses": [{"house_number": 1, "interpretation": "Test"}],
-            "aspects": [
-                {"planet1": "Sun", "planet2": "Moon", "interpretation": "Test"}
-            ],
+            "aspects": [{"planet1": "Sun", "planet2": "Moon", "interpretation": "Test"}],
         }
         mock_interp_service.get_interpretations_by_chart.side_effect = [
             empty_interps,
@@ -364,12 +340,8 @@ class TestGeneratePDFAsync:
         mock_process.returncode = 0
 
         with (
-            patch(
-                "app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine
-            ),
-            patch(
-                "app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local
-            ),
+            patch("app.tasks.pdf_tasks.create_async_engine", return_value=mock_engine),
+            patch("app.tasks.pdf_tasks.async_sessionmaker", return_value=mock_session_local),
             patch(
                 "app.tasks.pdf_tasks.InterpretationService",
                 return_value=mock_interp_service,

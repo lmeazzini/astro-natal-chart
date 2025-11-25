@@ -217,18 +217,11 @@ async def get_system_stats(
 ) -> SystemStats:
     """Get system statistics (admin only)."""
     # Total users
-    total_users = (
-        await db.scalar(
-            select(func.count(User.id)).where(User.deleted_at.is_(None))
-        )
-        or 0
-    )
+    total_users = await db.scalar(select(func.count(User.id)).where(User.deleted_at.is_(None))) or 0
 
     # Total charts
     total_charts = (
-        await db.scalar(
-            select(func.count(BirthChart.id)).where(BirthChart.deleted_at.is_(None))
-        )
+        await db.scalar(select(func.count(BirthChart.id)).where(BirthChart.deleted_at.is_(None)))
         or 0
     )
 
@@ -256,9 +249,7 @@ async def get_system_stats(
 
     # Users by role
     roles_stmt = (
-        select(User.role, func.count(User.id))
-        .where(User.deleted_at.is_(None))
-        .group_by(User.role)
+        select(User.role, func.count(User.id)).where(User.deleted_at.is_(None)).group_by(User.role)
     )
     roles_result = await db.execute(roles_stmt)
     users_by_role: dict[str, int] = {row[0]: row[1] for row in roles_result}

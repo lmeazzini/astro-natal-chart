@@ -112,6 +112,7 @@ class S3DocumentLoader:
 
         # Check cache age
         import time
+
         cache_age = time.time() - cache_path.stat().st_mtime
         return cache_age < self.cache_ttl
 

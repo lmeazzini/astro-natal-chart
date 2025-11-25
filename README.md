@@ -528,6 +528,40 @@ gh pr create --base dev
 - **Commits**: Conventional Commits (feat:, fix:, docs:, etc.)
 - **PRs**: Sempre para `dev`, nunca direto para `main`
 
+### Pre-commit Hooks
+
+O projeto utiliza **pre-commit** para garantir qualidade do código antes de cada commit. Os hooks verificam automaticamente:
+
+- **Trailing whitespace** e **end of file** fixers
+- **YAML e JSON** syntax check
+- **Large files** detection (> 1MB)
+- **Merge conflicts** detection
+- **Private keys** detection
+- **Ruff** linting e formatting (backend Python)
+- **ESLint** e **Prettier** (frontend TypeScript/React)
+- **Conventional Commits** validation
+
+**Instalação:**
+
+```bash
+# Instalar pre-commit (via UV no backend)
+cd apps/api
+uv sync
+
+# Instalar os hooks no repositório
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# Rodar em todos os arquivos (primeira vez ou verificação manual)
+uv run pre-commit run --all-files
+```
+
+**Uso:**
+- Hooks rodam automaticamente em cada `git commit`
+- Se algum hook falhar, o commit é abortado
+- Corrija os problemas e tente commitar novamente
+- Para bypass temporário (não recomendado): `git commit --no-verify`
+
 ## Segurança
 
 - Reportar vulnerabilidades: [security@example.com]

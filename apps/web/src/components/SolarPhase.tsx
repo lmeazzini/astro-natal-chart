@@ -43,7 +43,9 @@ export function SolarPhase({ solarPhase }: SolarPhaseProps) {
   const isEn = i18n.language === 'en-US' || i18n.language === 'en';
 
   const emoji = temperamentEmoji[solarPhase.temperament] || '☀️';
-  const colorClass = temperamentColors[solarPhase.temperament] || 'from-yellow-500/10 to-orange-500/10 border-yellow-500/20';
+  const colorClass =
+    temperamentColors[solarPhase.temperament] ||
+    'from-yellow-500/10 to-orange-500/10 border-yellow-500/20';
 
   return (
     <Card className={`bg-gradient-to-br ${colorClass}`}>
@@ -95,15 +97,17 @@ export function SolarPhase({ solarPhase }: SolarPhaseProps) {
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
             {t('components.solarPhase.interpretation', { defaultValue: 'Interpretação' })}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {solarPhase.description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{solarPhase.description}</p>
         </div>
 
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            💡 {t('components.solarPhase.note', { defaultValue: 'A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional.' })}
+            💡{' '}
+            {t('components.solarPhase.note', {
+              defaultValue:
+                'A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional.',
+            })}
           </p>
         </div>
       </CardContent>

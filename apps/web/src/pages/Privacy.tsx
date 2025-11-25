@@ -14,16 +14,11 @@ export function PrivacyPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            to="/"
-            className="text-primary hover:underline inline-flex items-center gap-2 mb-4"
-          >
+          <Link to="/" className="text-primary hover:underline inline-flex items-center gap-2 mb-4">
             <ArrowLeft className="h-5 w-5" />
             {t('legal.back')}
           </Link>
-          <h1 className="text-4xl font-bold text-foreground">
-            {t('privacy.title')}
-          </h1>
+          <h1 className="text-4xl font-bold text-foreground">{t('privacy.title')}</h1>
           <p className="text-muted-foreground mt-2">
             {t('legal.lastUpdated', { date: '15/11/2025' })}
           </p>
@@ -40,7 +35,8 @@ export function PrivacyPage() {
             <br />
             <strong>{t('privacy.controller.dpo')}</strong>: dpo@astro-app.com
             <br />
-            <strong>{t('privacy.controller.responseTime')}</strong>: {t('privacy.controller.responseTimeValue')}
+            <strong>{t('privacy.controller.responseTime')}</strong>:{' '}
+            {t('privacy.controller.responseTimeValue')}
           </p>
 
           <h2>{t('privacy.dataCollected.title')}</h2>
@@ -48,42 +44,52 @@ export function PrivacyPage() {
           <h3>{t('privacy.dataCollected.personalTitle')}</h3>
           <ul>
             <li>
-              <strong>{t('privacy.dataCollected.fullName')}</strong>: {t('privacy.dataCollected.fullNamePurpose')}
+              <strong>{t('privacy.dataCollected.fullName')}</strong>:{' '}
+              {t('privacy.dataCollected.fullNamePurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.email')}</strong>: {t('privacy.dataCollected.emailPurpose')}
+              <strong>{t('privacy.dataCollected.email')}</strong>:{' '}
+              {t('privacy.dataCollected.emailPurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.password')}</strong>: {t('privacy.dataCollected.passwordPurpose')}
+              <strong>{t('privacy.dataCollected.password')}</strong>:{' '}
+              {t('privacy.dataCollected.passwordPurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.birthDate')}</strong>: {t('privacy.dataCollected.birthDatePurpose')}
+              <strong>{t('privacy.dataCollected.birthDate')}</strong>:{' '}
+              {t('privacy.dataCollected.birthDatePurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.birthTime')}</strong>: {t('privacy.dataCollected.birthTimePurpose')}
+              <strong>{t('privacy.dataCollected.birthTime')}</strong>:{' '}
+              {t('privacy.dataCollected.birthTimePurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.birthPlace')}</strong>: {t('privacy.dataCollected.birthPlacePurpose')}
+              <strong>{t('privacy.dataCollected.birthPlace')}</strong>:{' '}
+              {t('privacy.dataCollected.birthPlacePurpose')}
             </li>
           </ul>
 
           <h3>{t('privacy.dataCollected.autoTitle')}</h3>
           <ul>
             <li>
-              <strong>{t('privacy.dataCollected.ip')}</strong>: {t('privacy.dataCollected.ipPurpose')}
+              <strong>{t('privacy.dataCollected.ip')}</strong>:{' '}
+              {t('privacy.dataCollected.ipPurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.userAgent')}</strong>: {t('privacy.dataCollected.userAgentPurpose')}
+              <strong>{t('privacy.dataCollected.userAgent')}</strong>:{' '}
+              {t('privacy.dataCollected.userAgentPurpose')}
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.cookies')}</strong>: {t('privacy.dataCollected.cookiesPurpose')} (
+              <strong>{t('privacy.dataCollected.cookies')}</strong>:{' '}
+              {t('privacy.dataCollected.cookiesPurpose')} (
               <Link to="/cookies" className="text-primary hover:underline">
                 {t('cookies.title')}
               </Link>
               )
             </li>
             <li>
-              <strong>{t('privacy.dataCollected.logs')}</strong>: {t('privacy.dataCollected.logsPurpose')}
+              <strong>{t('privacy.dataCollected.logs')}</strong>:{' '}
+              {t('privacy.dataCollected.logsPurpose')}
             </li>
           </ul>
 
@@ -92,7 +98,9 @@ export function PrivacyPage() {
           <ul>
             <li>{t('privacy.dataCollected.oauthCollect')}</li>
             <li>{t('privacy.dataCollected.oauthLegal')}</li>
-            <li><strong>{t('privacy.dataCollected.oauthNoPassword')}</strong></li>
+            <li>
+              <strong>{t('privacy.dataCollected.oauthNoPassword')}</strong>
+            </li>
           </ul>
 
           <h2>{t('privacy.dataUse.title')}</h2>
@@ -104,10 +112,12 @@ export function PrivacyPage() {
               <strong>{t('privacy.dataUse.auth')}</strong>: {t('privacy.dataUse.authDesc')}
             </li>
             <li>
-              <strong>{t('privacy.dataUse.communication')}</strong>: {t('privacy.dataUse.communicationDesc')}
+              <strong>{t('privacy.dataUse.communication')}</strong>:{' '}
+              {t('privacy.dataUse.communicationDesc')}
             </li>
             <li>
-              <strong>{t('privacy.dataUse.improvements')}</strong>: {t('privacy.dataUse.improvementsDesc')}
+              <strong>{t('privacy.dataUse.improvements')}</strong>:{' '}
+              {t('privacy.dataUse.improvementsDesc')}
             </li>
             <li>
               <strong>{t('privacy.dataUse.legal')}</strong>: {t('privacy.dataUse.legalDesc')}
@@ -121,29 +131,57 @@ export function PrivacyPage() {
           </div>
 
           <h2>{t('privacy.sharing.title')}</h2>
-          <p><strong>{t('privacy.sharing.noSell')}</strong></p>
+          <p>
+            <strong>{t('privacy.sharing.noSell')}</strong>
+          </p>
           <ul>
-            <li><strong>{t('privacy.sharing.cloud')}</strong></li>
-            <li><strong>{t('privacy.sharing.emailService')}</strong></li>
-            <li><strong>{t('privacy.sharing.geocoding')}</strong></li>
-            <li><strong>{t('privacy.sharing.authorities')}</strong></li>
+            <li>
+              <strong>{t('privacy.sharing.cloud')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.sharing.emailService')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.sharing.geocoding')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.sharing.authorities')}</strong>
+            </li>
           </ul>
 
           <h2>{t('privacy.security.title')}</h2>
           <ul>
-            <li><strong>{t('privacy.security.tls')}</strong></li>
-            <li><strong>{t('privacy.security.passwords')}</strong></li>
-            <li><strong>{t('privacy.security.jwt')}</strong></li>
-            <li><strong>{t('privacy.security.rateLimit')}</strong></li>
+            <li>
+              <strong>{t('privacy.security.tls')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.security.passwords')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.security.jwt')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.security.rateLimit')}</strong>
+            </li>
           </ul>
 
           <h2>{t('privacy.retention.title')}</h2>
           <ul>
-            <li><strong>{t('privacy.retention.active')}</strong></li>
-            <li><strong>{t('privacy.retention.inactive')}</strong></li>
-            <li><strong>{t('privacy.retention.softDelete')}</strong></li>
-            <li><strong>{t('privacy.retention.hardDelete')}</strong></li>
-            <li><strong>{t('privacy.retention.audit')}</strong></li>
+            <li>
+              <strong>{t('privacy.retention.active')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.retention.inactive')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.retention.softDelete')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.retention.hardDelete')}</strong>
+            </li>
+            <li>
+              <strong>{t('privacy.retention.audit')}</strong>
+            </li>
           </ul>
 
           <h2>{t('privacy.rights.title')}</h2>

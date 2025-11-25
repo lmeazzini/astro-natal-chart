@@ -212,9 +212,7 @@ class PasswordResetService:
         cutoff_time = datetime.utcnow() - timedelta(hours=24)
 
         result = await db.execute(
-            select(PasswordResetToken).where(
-                PasswordResetToken.created_at < cutoff_time
-            )
+            select(PasswordResetToken).where(PasswordResetToken.created_at < cutoff_time)
         )
         tokens = result.scalars().all()
 

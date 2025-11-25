@@ -102,7 +102,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 # Test Redis URL (use DB 1 instead of DB 0 for test isolation)
-TEST_REDIS_URL = str(settings.REDIS_URL).rsplit('/', 1)[0] + '/1'
+TEST_REDIS_URL = str(settings.REDIS_URL).rsplit("/", 1)[0] + "/1"
 
 
 @pytest.fixture(autouse=True)
@@ -196,6 +196,7 @@ async def test_user_factory(db_session: AsyncSession):
         user2 = await test_user_factory(email="user2@example.com", is_superuser=True)
         admin = await test_user_factory(email="admin@realastrology.ai", role="admin")
     """
+
     async def _create_user(
         email: str = "test@example.com",
         password: str = "Test123!@#",
@@ -371,6 +372,7 @@ async def test_chart_factory(db_session: AsyncSession, test_chart_data: dict):
             birth_datetime=datetime(1990, 1, 1, 12, 0),
         )
     """
+
     async def _create_chart(
         user: User,
         person_name: str = "Test Person",

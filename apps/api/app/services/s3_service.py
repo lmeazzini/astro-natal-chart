@@ -54,9 +54,7 @@ class S3Service:
                 logger.error(f"Failed to initialize S3 client: {e}")
                 self.enabled = False
         else:
-            logger.warning(
-                "[DEV MODE] S3Service not configured - uploads will be simulated"
-            )
+            logger.warning("[DEV MODE] S3Service not configured - uploads will be simulated")
 
     def _build_key(self, user_id: str, chart_id: str, filename: str) -> str:
         """
@@ -185,9 +183,7 @@ class S3Service:
             logger.error(f"Failed to upload PDF bytes to S3: {e}")
             return None
 
-    def generate_presigned_url(
-        self, s3_url: str, expires_in: int | None = None
-    ) -> str | None:
+    def generate_presigned_url(self, s3_url: str, expires_in: int | None = None) -> str | None:
         """
         Generate a temporary presigned URL for downloading a PDF.
 
@@ -229,9 +225,7 @@ class S3Service:
                 ExpiresIn=expires_in,
             )
 
-            logger.info(
-                f"Generated presigned URL for {key} (expires in {expires_in}s)"
-            )
+            logger.info(f"Generated presigned URL for {key} (expires in {expires_in}s)")
             return presigned_url
 
         except (ClientError, NoCredentialsError) as e:
@@ -291,16 +285,12 @@ class S3Service:
         prefix = self._build_key(user_id, chart_id, "")
 
         try:
-            response = self.client.list_objects_v2(
-                Bucket=self.bucket_name, Prefix=prefix
-            )
+            response = self.client.list_objects_v2(Bucket=self.bucket_name, Prefix=prefix)
 
             if "Contents" not in response:
                 return []
 
-            s3_urls = [
-                f"s3://{self.bucket_name}/{obj['Key']}" for obj in response["Contents"]
-            ]
+            s3_urls = [f"s3://{self.bucket_name}/{obj['Key']}" for obj in response["Contents"]]
 
             logger.info(f"Found {len(s3_urls)} PDFs for chart {chart_id}")
             return s3_urls
@@ -356,9 +346,7 @@ class S3Service:
         "image/webp": [b"RIFF"],  # WebP (followed by size and WEBP)
     }
 
-    def _validate_image_magic_bytes(
-        self, image_bytes: bytes, content_type: str
-    ) -> bool:
+    def _validate_image_magic_bytes(self, image_bytes: bytes, content_type: str) -> bool:
         """
         Validate that the image file's magic bytes match the declared content type.
 
@@ -437,9 +425,7 @@ class S3Service:
 
         # Validate magic bytes (file signature) for security
         if not self._validate_image_magic_bytes(image_bytes, content_type):
-            logger.warning(
-                f"Magic bytes validation failed for content_type={content_type}"
-            )
+            logger.warning(f"Magic bytes validation failed for content_type={content_type}")
             raise ValueError(
                 "File content does not match declared type. Please upload a valid image."
             )

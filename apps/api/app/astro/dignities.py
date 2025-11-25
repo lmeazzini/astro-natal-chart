@@ -433,9 +433,7 @@ def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[
 
     # Filter only classical planets with dignities
     classical_planets = [
-        p
-        for p in planets_with_dignities
-        if p.get("name") in planet_priority and p.get("dignities")
+        p for p in planets_with_dignities if p.get("name") in planet_priority and p.get("dignities")
     ]
 
     if not classical_planets:
@@ -462,14 +460,21 @@ def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[
     if dign.get("is_exalted"):
         dignity_details.append({"type": "exalted", "label": "Exaltação", "points": 4, "icon": "🌟"})
     if dign.get("is_detriment"):
-        dignity_details.append({"type": "detriment", "label": "Detrimento", "points": -5, "icon": "⚠️"})
+        dignity_details.append(
+            {"type": "detriment", "label": "Detrimento", "points": -5, "icon": "⚠️"}
+        )
     if dign.get("is_fall"):
         dignity_details.append({"type": "fall", "label": "Queda", "points": -4, "icon": "⬇️"})
     if dign.get("triplicity_ruler"):
         trip_type = dign["triplicity_ruler"]
         trip_label = f"Triplicidade ({trip_type})"
         dignity_details.append(
-            {"type": "triplicity", "label": trip_label, "points": 3, "icon": "🔥" if trip_type == "day" else "🌙"}
+            {
+                "type": "triplicity",
+                "label": trip_label,
+                "points": 3,
+                "icon": "🔥" if trip_type == "day" else "🌙",
+            }
         )
     if dign.get("term_ruler"):
         dignity_details.append({"type": "term", "label": "Termo", "points": 2, "icon": "📊"})

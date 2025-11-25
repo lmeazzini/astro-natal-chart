@@ -48,9 +48,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
               {t('components.lunarPhase.sunMoonAngle', { defaultValue: 'Ângulo Sol-Lua' })}
             </p>
-            <p className="text-sm font-semibold text-foreground">
-              {lunarPhase.angle.toFixed(1)}°
-            </p>
+            <p className="text-sm font-semibold text-foreground">{lunarPhase.angle.toFixed(1)}°</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -89,7 +87,11 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            💡 {t('components.lunarPhase.note', { defaultValue: 'A fase lunar no nascimento revela padrões sobre temperamento, ciclo de vida e como você processa experiências emocionais.' })}
+            💡{' '}
+            {t('components.lunarPhase.note', {
+              defaultValue:
+                'A fase lunar no nascimento revela padrões sobre temperamento, ciclo de vida e como você processa experiências emocionais.',
+            })}
           </p>
         </div>
       </CardContent>

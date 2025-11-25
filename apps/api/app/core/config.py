@@ -3,7 +3,6 @@ Application configuration using Pydantic Settings.
 Loads environment variables from .env file.
 """
 
-
 from typing import Literal
 
 from pydantic import PostgresDsn, RedisDsn
@@ -100,11 +99,7 @@ class Settings(BaseSettings):
     @property
     def s3_enabled(self) -> bool:
         """Check if S3 is properly configured."""
-        return bool(
-            self.AWS_ACCESS_KEY_ID
-            and self.AWS_SECRET_ACCESS_KEY
-            and self.S3_BUCKET_NAME
-        )
+        return bool(self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY and self.S3_BUCKET_NAME)
 
     # AWS S3 - Backup Storage (uses same AWS credentials)
     BACKUP_S3_BUCKET: str | None = None
@@ -116,11 +111,7 @@ class Settings(BaseSettings):
     @property
     def backup_s3_enabled(self) -> bool:
         """Check if Backup S3 is properly configured."""
-        return bool(
-            self.AWS_ACCESS_KEY_ID
-            and self.AWS_SECRET_ACCESS_KEY
-            and self.BACKUP_S3_BUCKET
-        )
+        return bool(self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY and self.BACKUP_S3_BUCKET)
 
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"

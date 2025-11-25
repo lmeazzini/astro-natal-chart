@@ -101,15 +101,36 @@ export function PlanetList({
       {/* Sorting Controls */}
       {hasDignities && (
         <div className="flex gap-4 items-center flex-wrap">
-          <label className="text-sm font-medium text-foreground">{t('components.planetList.sortBy', { defaultValue: 'Ordenar por:' })}</label>
-          <ToggleGroup type="single" value={sortBy} onValueChange={(value) => value && setSortBy(value as SortBy)}>
-            <ToggleGroupItem value="position" aria-label={t('components.planetList.sortByPosition', { defaultValue: 'Ordenar por posição' })}>
+          <label className="text-sm font-medium text-foreground">
+            {t('components.planetList.sortBy', { defaultValue: 'Ordenar por:' })}
+          </label>
+          <ToggleGroup
+            type="single"
+            value={sortBy}
+            onValueChange={(value) => value && setSortBy(value as SortBy)}
+          >
+            <ToggleGroupItem
+              value="position"
+              aria-label={t('components.planetList.sortByPosition', {
+                defaultValue: 'Ordenar por posição',
+              })}
+            >
               {t('components.planetList.position', { defaultValue: 'Posição' })}
             </ToggleGroupItem>
-            <ToggleGroupItem value="house" aria-label={t('components.planetList.sortByHouse', { defaultValue: 'Ordenar por casa' })}>
+            <ToggleGroupItem
+              value="house"
+              aria-label={t('components.planetList.sortByHouse', {
+                defaultValue: 'Ordenar por casa',
+              })}
+            >
               {t('components.planetList.house', { defaultValue: 'Casa' })}
             </ToggleGroupItem>
-            <ToggleGroupItem value="dignity" aria-label={t('components.planetList.sortByStrength', { defaultValue: 'Ordenar por força' })}>
+            <ToggleGroupItem
+              value="dignity"
+              aria-label={t('components.planetList.sortByStrength', {
+                defaultValue: 'Ordenar por força',
+              })}
+            >
               💪 {t('components.planetList.strength', { defaultValue: 'Força' })}
             </ToggleGroupItem>
           </ToggleGroup>
@@ -120,7 +141,9 @@ export function PlanetList({
             className="ml-auto"
           >
             <Info className="h-4 w-4 mr-2" />
-            {showDignityInfo ? t('components.planetList.hideInfo', { defaultValue: 'Esconder Info' }) : t('components.planetList.showInfo', { defaultValue: 'Mostrar Info' })}
+            {showDignityInfo
+              ? t('components.planetList.hideInfo', { defaultValue: 'Esconder Info' })
+              : t('components.planetList.showInfo', { defaultValue: 'Mostrar Info' })}
           </Button>
         </div>
       )}
@@ -129,50 +152,102 @@ export function PlanetList({
       {showDignityInfo && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('components.planetList.essentialDignities', { defaultValue: 'Dignidades Essenciais' })}</CardTitle>
+            <CardTitle className="text-base">
+              {t('components.planetList.essentialDignities', {
+                defaultValue: 'Dignidades Essenciais',
+              })}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              {t('components.planetList.dignitiesDescription', { defaultValue: 'As dignidades essenciais mostram a força de um planeta em determinado signo, baseadas na astrologia tradicional.' })}
+              {t('components.planetList.dignitiesDescription', {
+                defaultValue:
+                  'As dignidades essenciais mostram a força de um planeta em determinado signo, baseadas na astrologia tradicional.',
+              })}
             </p>
             <dl className="space-y-2 text-sm">
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">👑 {t('components.planetList.domicile', { defaultValue: 'Domicílio' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.domicileDesc', { defaultValue: 'Planeta no signo que rege (+5)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  👑 {t('components.planetList.domicile', { defaultValue: 'Domicílio' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.domicileDesc', {
+                    defaultValue: 'Planeta no signo que rege (+5)',
+                  })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">🌟 {t('components.planetList.exaltation', { defaultValue: 'Exaltação' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.exaltationDesc', { defaultValue: 'Ponto de maior força (+4)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  🌟 {t('components.planetList.exaltation', { defaultValue: 'Exaltação' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.exaltationDesc', {
+                    defaultValue: 'Ponto de maior força (+4)',
+                  })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">⬇️ {t('components.planetList.fall', { defaultValue: 'Queda' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.fallDesc', { defaultValue: 'Oposto à exaltação (-4)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  ⬇️ {t('components.planetList.fall', { defaultValue: 'Queda' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.fallDesc', { defaultValue: 'Oposto à exaltação (-4)' })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">⚠️ {t('components.planetList.detriment', { defaultValue: 'Detrimento' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.detrimentDesc', { defaultValue: 'Oposto ao domicílio (-5)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  ⚠️ {t('components.planetList.detriment', { defaultValue: 'Detrimento' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.detrimentDesc', {
+                    defaultValue: 'Oposto ao domicílio (-5)',
+                  })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">🔥/🌙 {t('components.planetList.triplicity', { defaultValue: 'Triplicidade' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.triplicityDesc', { defaultValue: 'Afinidade elemental (+3)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  🔥/🌙 {t('components.planetList.triplicity', { defaultValue: 'Triplicidade' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.triplicityDesc', {
+                    defaultValue: 'Afinidade elemental (+3)',
+                  })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">📊 {t('components.planetList.term', { defaultValue: 'Termo' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.termDesc', { defaultValue: 'Divisão de graus (+2)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  📊 {t('components.planetList.term', { defaultValue: 'Termo' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.termDesc', { defaultValue: 'Divisão de graus (+2)' })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">👤 {t('components.planetList.face', { defaultValue: 'Face' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.faceDesc', { defaultValue: 'Divisão de 10 graus (+1)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  👤 {t('components.planetList.face', { defaultValue: 'Face' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.faceDesc', {
+                    defaultValue: 'Divisão de 10 graus (+1)',
+                  })}
+                </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="font-semibold min-w-[120px]">🚶 {t('components.planetList.peregrine', { defaultValue: 'Peregrino' })}:</dt>
-                <dd className="text-muted-foreground">{t('components.planetList.peregrineDesc', { defaultValue: 'Sem dignidades (0)' })}</dd>
+                <dt className="font-semibold min-w-[120px]">
+                  🚶 {t('components.planetList.peregrine', { defaultValue: 'Peregrino' })}:
+                </dt>
+                <dd className="text-muted-foreground">
+                  {t('components.planetList.peregrineDesc', { defaultValue: 'Sem dignidades (0)' })}
+                </dd>
               </div>
             </dl>
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                {t('components.planetList.scoreInfo', { defaultValue: 'Score positivo indica planeta forte. Score negativo indica debilitação.' })}
+                {t('components.planetList.scoreInfo', {
+                  defaultValue:
+                    'Score positivo indica planeta forte. Score negativo indica debilitação.',
+                })}
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -183,13 +258,27 @@ export function PlanetList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('components.planetList.planet', { defaultValue: 'Planeta' })}</TableHead>
+              <TableHead>
+                {t('components.planetList.planet', { defaultValue: 'Planeta' })}
+              </TableHead>
               <TableHead>{t('components.planetList.sign', { defaultValue: 'Signo' })}</TableHead>
-              <TableHead>{t('components.planetList.position', { defaultValue: 'Posição' })}</TableHead>
-              <TableHead className="text-center">{t('components.planetList.house', { defaultValue: 'Casa' })}</TableHead>
-              {hasDignities && <TableHead>{t('components.planetList.dignities', { defaultValue: 'Dignidades' })}</TableHead>}
-              <TableHead className="text-center">{t('components.planetList.retrograde', { defaultValue: 'Retrógrado' })}</TableHead>
-              <TableHead className="text-right">{t('components.planetList.speed', { defaultValue: 'Velocidade' })}</TableHead>
+              <TableHead>
+                {t('components.planetList.position', { defaultValue: 'Posição' })}
+              </TableHead>
+              <TableHead className="text-center">
+                {t('components.planetList.house', { defaultValue: 'Casa' })}
+              </TableHead>
+              {hasDignities && (
+                <TableHead>
+                  {t('components.planetList.dignities', { defaultValue: 'Dignidades' })}
+                </TableHead>
+              )}
+              <TableHead className="text-center">
+                {t('components.planetList.retrograde', { defaultValue: 'Retrógrado' })}
+              </TableHead>
+              <TableHead className="text-right">
+                {t('components.planetList.speed', { defaultValue: 'Velocidade' })}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <motion.tbody
@@ -228,12 +317,14 @@ export function PlanetList({
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 500, delay: 0.5 }}
+                          transition={{ type: 'spring', stiffness: 500, delay: 0.5 }}
                         >
                           <Badge
                             variant="outline"
                             className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
-                            title={t('components.planetList.lordOfNativityTitle', { defaultValue: 'Senhor da Natividade - maior dignidade essencial' })}
+                            title={t('components.planetList.lordOfNativityTitle', {
+                              defaultValue: 'Senhor da Natividade - maior dignidade essencial',
+                            })}
                           >
                             👑
                           </Badge>
@@ -242,101 +333,100 @@ export function PlanetList({
                     </motion.div>
                   </TableCell>
 
-                {/* Sign with Symbol */}
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl" title={translateSign(planet.sign)}>
-                      {getSignSymbol(planet.sign)}
-                    </span>
-                    <span className="text-muted-foreground">{translateSign(planet.sign)}</span>
-                  </div>
-                </TableCell>
-
-                {/* Position (Degree, Minute, Second) */}
-                <TableCell>
-                  <span className="font-mono text-muted-foreground">
-                    {formatDMS(planet.degree, planet.minute, planet.second)}
-                  </span>
-                </TableCell>
-
-                {/* House */}
-                <TableCell className="text-center">
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-xs">
-                    {planet.house}
-                  </span>
-                </TableCell>
-
-                {/* Dignities Badge */}
-                {hasDignities && (
+                  {/* Sign with Symbol */}
                   <TableCell>
-                    {planet.dignities ? (
-                      <div className="flex flex-col gap-1">
-                        <div
-                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium ${
-                            getDignityBadge(planet.dignities).color
-                          }`}
-                          title={`Score: ${getDignityScore(planet.dignities)}`}
-                        >
-                          <span>{getDignityBadge(planet.dignities).icon}</span>
-                          <span>{getDignityBadge(planet.dignities).label}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span
-                            className={`text-xs font-semibold ${getScoreColorClass(
-                              getDignityScore(planet.dignities)
-                            )}`}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl" title={translateSign(planet.sign)}>
+                        {getSignSymbol(planet.sign)}
+                      </span>
+                      <span className="text-muted-foreground">{translateSign(planet.sign)}</span>
+                    </div>
+                  </TableCell>
+
+                  {/* Position (Degree, Minute, Second) */}
+                  <TableCell>
+                    <span className="font-mono text-muted-foreground">
+                      {formatDMS(planet.degree, planet.minute, planet.second)}
+                    </span>
+                  </TableCell>
+
+                  {/* House */}
+                  <TableCell className="text-center">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-xs">
+                      {planet.house}
+                    </span>
+                  </TableCell>
+
+                  {/* Dignities Badge */}
+                  {hasDignities && (
+                    <TableCell>
+                      {planet.dignities ? (
+                        <div className="flex flex-col gap-1">
+                          <div
+                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium ${
+                              getDignityBadge(planet.dignities).color
+                            }`}
+                            title={`Score: ${getDignityScore(planet.dignities)}`}
                           >
-                            {getDignityScore(planet.dignities) > 0 ? '+' : ''}
-                            {getDignityScore(planet.dignities)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            ({getClassificationLabel(planet.dignities.classification)})
-                          </span>
-                        </div>
-                        {/* Detailed dignity list */}
-                        {getDignityDetails(planet.dignities).length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {getDignityDetails(planet.dignities).map((detail, idx) => (
-                              <span
-                                key={idx}
-                                className="inline-flex items-center gap-0.5 text-xs text-muted-foreground"
-                                title={`${detail.label}: ${detail.points > 0 ? '+' : ''}${detail.points}`}
-                              >
-                                {detail.icon}
-                              </span>
-                            ))}
+                            <span>{getDignityBadge(planet.dignities).icon}</span>
+                            <span>{getDignityBadge(planet.dignities).label}</span>
                           </div>
-                        )}
-                      </div>
+                          <div className="flex items-center gap-1">
+                            <span
+                              className={`text-xs font-semibold ${getScoreColorClass(
+                                getDignityScore(planet.dignities)
+                              )}`}
+                            >
+                              {getDignityScore(planet.dignities) > 0 ? '+' : ''}
+                              {getDignityScore(planet.dignities)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              ({getClassificationLabel(planet.dignities.classification)})
+                            </span>
+                          </div>
+                          {/* Detailed dignity list */}
+                          {getDignityDetails(planet.dignities).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {getDignityDetails(planet.dignities).map((detail, idx) => (
+                                <span
+                                  key={idx}
+                                  className="inline-flex items-center gap-0.5 text-xs text-muted-foreground"
+                                  title={`${detail.label}: ${detail.points > 0 ? '+' : ''}${detail.points}`}
+                                >
+                                  {detail.icon}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Retrograde Indicator */}
+                  <TableCell className="text-center">
+                    {planet.retrograde ? (
+                      <Badge variant="destructive" className="font-semibold">
+                        R
+                      </Badge>
                     ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <span className="text-muted-foreground/30 text-xs">—</span>
                     )}
                   </TableCell>
-                )}
 
-                {/* Retrograde Indicator */}
-                <TableCell className="text-center">
-                  {planet.retrograde ? (
-                    <Badge variant="destructive" className="font-semibold">
-                      R
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground/30 text-xs">—</span>
-                  )}
-                </TableCell>
-
-                {/* Speed (Daily Motion) */}
-                <TableCell className="text-right">
-                  <span
-                    className={`font-mono text-xs ${
-                      planet.speed < 0
-                        ? 'text-destructive'
-                        : 'text-muted-foreground'
-                    }`}
-                  >
-                    {planet.speed.toFixed(4)}°/{t('components.planetList.day', { defaultValue: 'dia' })}
-                  </span>
-                </TableCell>
+                  {/* Speed (Daily Motion) */}
+                  <TableCell className="text-right">
+                    <span
+                      className={`font-mono text-xs ${
+                        planet.speed < 0 ? 'text-destructive' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {planet.speed.toFixed(4)}°/
+                      {t('components.planetList.day', { defaultValue: 'dia' })}
+                    </span>
+                  </TableCell>
                 </motion.tr>
               ))}
             </AnimatePresence>
@@ -348,8 +438,11 @@ export function PlanetList({
       <Card>
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">{displayPlanets.length}</strong> {t('components.planetList.planets', { defaultValue: 'planetas' })}
-            {showOnlyClassical && ` ${t('components.planetList.classical', { defaultValue: 'clássicos' })}`} {t('components.planetList.calculated', { defaultValue: 'calculados' })} •{' '}
+            <strong className="text-foreground">{displayPlanets.length}</strong>{' '}
+            {t('components.planetList.planets', { defaultValue: 'planetas' })}
+            {showOnlyClassical &&
+              ` ${t('components.planetList.classical', { defaultValue: 'clássicos' })}`}{' '}
+            {t('components.planetList.calculated', { defaultValue: 'calculados' })} •{' '}
             <strong className="text-foreground">
               {displayPlanets.filter((p) => p.retrograde).length}
             </strong>{' '}
@@ -357,7 +450,9 @@ export function PlanetList({
           </p>
           {showOnlyClassical && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {t('components.planetList.classicalNote', { defaultValue: 'Exibindo apenas os 7 planetas clássicos da astrologia tradicional' })}
+              {t('components.planetList.classicalNote', {
+                defaultValue: 'Exibindo apenas os 7 planetas clássicos da astrologia tradicional',
+              })}
             </p>
           )}
         </CardContent>
@@ -367,7 +462,9 @@ export function PlanetList({
       {interpretations && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-foreground">
-            {t('components.planetList.astrologicalInterpretations', { defaultValue: 'Interpretações Astrológicas' })}
+            {t('components.planetList.astrologicalInterpretations', {
+              defaultValue: 'Interpretações Astrológicas',
+            })}
           </h3>
 
           <div className="space-y-4">
@@ -385,9 +482,13 @@ export function PlanetList({
                       </span>
                       {translatePlanet(planetKey)}
                       {sources.length > 0 && (
-                        <Badge variant="outline" className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20">
+                        <Badge
+                          variant="outline"
+                          className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
+                        >
                           <BookOpen className="h-3 w-3 mr-1" />
-                          {sources.length} {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
+                          {sources.length}{' '}
+                          {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
                         </Badge>
                       )}
                     </CardTitle>
@@ -401,7 +502,11 @@ export function PlanetList({
                     {sources.length > 0 && (
                       <Collapsible>
                         <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10"
+                          >
                             <span className="flex items-center gap-2">
                               <BookOpen className="h-4 w-4" />
                               {t('chartDetail.rag.sources', { defaultValue: 'Fontes RAG' })}
@@ -412,14 +517,20 @@ export function PlanetList({
                         <CollapsibleContent className="mt-2">
                           <div className="space-y-2 p-3 bg-purple-500/5 rounded-lg border border-purple-500/10">
                             <p className="text-xs text-muted-foreground mb-2">
-                              {t('chartDetail.rag.sourcesDesc', { defaultValue: 'Documentos usados para esta interpretação' })}
+                              {t('chartDetail.rag.sourcesDesc', {
+                                defaultValue: 'Documentos usados para esta interpretação',
+                              })}
                             </p>
                             {sources.map((source, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-2 bg-background rounded border text-xs">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between p-2 bg-background rounded border text-xs"
+                              >
                                 <span className="font-medium text-foreground">{source.source}</span>
                                 {source.page && (
                                   <Badge variant="secondary" className="text-xs">
-                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })} {source.page}
+                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })}{' '}
+                                    {source.page}
                                   </Badge>
                                 )}
                               </div>
@@ -432,9 +543,12 @@ export function PlanetList({
                 </Card>
               );
             })}
-            {Object.keys(interpretations).filter((k) => CLASSICAL_PLANETS.includes(k)).length === 0 && (
+            {Object.keys(interpretations).filter((k) => CLASSICAL_PLANETS.includes(k)).length ===
+              0 && (
               <p className="text-center text-muted-foreground py-8">
-                {t('components.planetList.noInterpretations', { defaultValue: 'Nenhuma interpretação disponível' })}
+                {t('components.planetList.noInterpretations', {
+                  defaultValue: 'Nenhuma interpretação disponível',
+                })}
               </p>
             )}
           </div>
@@ -442,7 +556,16 @@ export function PlanetList({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>{t('components.planetList.aboutInterpretations', { defaultValue: 'Sobre as interpretações' })}:</strong> {t('components.planetList.interpretationsDesc', { defaultValue: 'Geradas por IA baseando-se em princípios de astrologia tradicional (dignidades essenciais, sect). Foco nos 7 planetas clássicos.' })}
+              <strong>
+                {t('components.planetList.aboutInterpretations', {
+                  defaultValue: 'Sobre as interpretações',
+                })}
+                :
+              </strong>{' '}
+              {t('components.planetList.interpretationsDesc', {
+                defaultValue:
+                  'Geradas por IA baseando-se em princípios de astrologia tradicional (dignidades essenciais, sect). Foco nos 7 planetas clássicos.',
+              })}
             </AlertDescription>
           </Alert>
         </div>

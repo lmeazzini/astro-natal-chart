@@ -121,9 +121,7 @@ async def fetch_all_feature_issues() -> list[dict]:
                     )
 
                 if response.status_code != 200:
-                    logger.error(
-                        f"GitHub API error: {response.status_code} - {response.text}"
-                    )
+                    logger.error(f"GitHub API error: {response.status_code} - {response.text}")
                     raise HTTPException(
                         status_code=502,
                         detail="Failed to fetch from GitHub API",
@@ -258,9 +256,7 @@ async def get_features() -> FeaturesResponse:
                     settings.GITHUB_FEATURES_CACHE_TTL,
                     features.model_dump_json(),
                 )
-                logger.debug(
-                    f"Cached GitHub features for {settings.GITHUB_FEATURES_CACHE_TTL}s"
-                )
+                logger.debug(f"Cached GitHub features for {settings.GITHUB_FEATURES_CACHE_TTL}s")
             except Exception as e:
                 logger.warning(f"Redis cache write failed: {e}")
 

@@ -25,7 +25,7 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger
+  AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
   Sparkles,
@@ -87,7 +87,9 @@ export function LandingPage() {
               <Star className="h-4 w-4 fill-primary" />
               {t('landing.hero.socialProof', { defaultValue: 'Mais de 1.000 mapas criados' })}
               <span className="text-muted-foreground">|</span>
-              <span>{t('landing.hero.traditional', { defaultValue: 'Astrologia Tradicional' })}</span>
+              <span>
+                {t('landing.hero.traditional', { defaultValue: 'Astrologia Tradicional' })}
+              </span>
             </div>
 
             {/* Main Headline - Emotional, stops the scroll */}
@@ -98,7 +100,8 @@ export function LandingPage() {
             {/* Subheadline - Generates curiosity */}
             <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
               {t('landing.hero.subtitle', {
-                defaultValue: 'O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.'
+                defaultValue:
+                  'O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.',
               })}
             </p>
 
@@ -150,12 +153,42 @@ export function LandingPage() {
           {/* Pain Points Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
             {[
-              { key: 'purpose', text: t('landing.pain.purpose', { defaultValue: '"Não sei qual é meu propósito de vida"' }) },
-              { key: 'talents', text: t('landing.pain.talents', { defaultValue: '"Sinto que tenho talentos que não consigo expressar"' }) },
-              { key: 'decisions', text: t('landing.pain.decisions', { defaultValue: '"Tomo decisões e depois me arrependo"' }) },
-              { key: 'patterns', text: t('landing.pain.patterns', { defaultValue: '"Não entendo por que repito os mesmos padrões"' }) },
-              { key: 'horoscopes', text: t('landing.pain.horoscopes', { defaultValue: '"Horóscopos genéricos nunca fazem sentido pra mim"' }) },
-              { key: 'selfknowledge', text: t('landing.pain.selfknowledge', { defaultValue: '"Quero me conhecer melhor, mas não sei como"' }) },
+              {
+                key: 'purpose',
+                text: t('landing.pain.purpose', {
+                  defaultValue: '"Não sei qual é meu propósito de vida"',
+                }),
+              },
+              {
+                key: 'talents',
+                text: t('landing.pain.talents', {
+                  defaultValue: '"Sinto que tenho talentos que não consigo expressar"',
+                }),
+              },
+              {
+                key: 'decisions',
+                text: t('landing.pain.decisions', {
+                  defaultValue: '"Tomo decisões e depois me arrependo"',
+                }),
+              },
+              {
+                key: 'patterns',
+                text: t('landing.pain.patterns', {
+                  defaultValue: '"Não entendo por que repito os mesmos padrões"',
+                }),
+              },
+              {
+                key: 'horoscopes',
+                text: t('landing.pain.horoscopes', {
+                  defaultValue: '"Horóscopos genéricos nunca fazem sentido pra mim"',
+                }),
+              },
+              {
+                key: 'selfknowledge',
+                text: t('landing.pain.selfknowledge', {
+                  defaultValue: '"Quero me conhecer melhor, mas não sei como"',
+                }),
+              },
             ].map((pain) => (
               <div
                 key={pain.key}
@@ -171,7 +204,8 @@ export function LandingPage() {
           <div className="text-center">
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               {t('landing.pain.transition', {
-                defaultValue: 'Você não está sozinho. A maioria das pessoas passa a vida inteira sem realmente se conhecer. Mas não precisa ser assim.'
+                defaultValue:
+                  'Você não está sozinho. A maioria das pessoas passa a vida inteira sem realmente se conhecer. Mas não precisa ser assim.',
               })}
             </p>
           </div>
@@ -188,16 +222,21 @@ export function LandingPage() {
               {t('landing.solution.badge', { defaultValue: 'A Solução' })}
             </Badge>
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-6 font-display">
-              {t('landing.solution.title', { defaultValue: 'Real Astrology: Autoconhecimento Profundo Através da Astrologia Tradicional' })}
+              {t('landing.solution.title', {
+                defaultValue:
+                  'Real Astrology: Autoconhecimento Profundo Através da Astrologia Tradicional',
+              })}
             </h3>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-4">
               {t('landing.solution.description1', {
-                defaultValue: 'Diferente de horóscopos genéricos baseados apenas no signo solar, o Real Astrology cria seu mapa natal completo usando as mesmas técnicas que astrólogos usam há mais de 2.000 anos.'
+                defaultValue:
+                  'Diferente de horóscopos genéricos baseados apenas no signo solar, o Real Astrology cria seu mapa natal completo usando as mesmas técnicas que astrólogos usam há mais de 2.000 anos.',
               })}
             </p>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               {t('landing.solution.description2', {
-                defaultValue: 'Seu mapa é único como sua impressão digital — calculado para o momento e local exatos do seu nascimento.'
+                defaultValue:
+                  'Seu mapa é único como sua impressão digital — calculado para o momento e local exatos do seu nascimento.',
               })}
             </p>
           </div>
@@ -222,12 +261,15 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Star className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">{t('landing.benefits.essence.title', { defaultValue: 'Sua Essência' })}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t('landing.benefits.essence.title', { defaultValue: 'Sua Essência' })}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
                   {t('landing.benefits.essence.description', {
-                    defaultValue: 'Entenda sua personalidade profunda, além do signo solar. Descubra por que você é do jeito que é.'
+                    defaultValue:
+                      'Entenda sua personalidade profunda, além do signo solar. Descubra por que você é do jeito que é.',
                   })}
                 </CardDescription>
               </CardContent>
@@ -239,12 +281,15 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">{t('landing.benefits.talents.title', { defaultValue: 'Seus Talentos Ocultos' })}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t('landing.benefits.talents.title', { defaultValue: 'Seus Talentos Ocultos' })}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
                   {t('landing.benefits.talents.description', {
-                    defaultValue: 'Identifique habilidades naturais que você talvez nem saiba que tem — e como desenvolvê-las.'
+                    defaultValue:
+                      'Identifique habilidades naturais que você talvez nem saiba que tem — e como desenvolvê-las.',
                   })}
                 </CardDescription>
               </CardContent>
@@ -256,12 +301,17 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Heart className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">{t('landing.benefits.relationships.title', { defaultValue: 'Seus Padrões em Relacionamentos' })}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t('landing.benefits.relationships.title', {
+                    defaultValue: 'Seus Padrões em Relacionamentos',
+                  })}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
                   {t('landing.benefits.relationships.description', {
-                    defaultValue: 'Compreenda como você ama, o que busca em parceiros e como melhorar suas conexões.'
+                    defaultValue:
+                      'Compreenda como você ama, o que busca em parceiros e como melhorar suas conexões.',
                   })}
                 </CardDescription>
               </CardContent>
@@ -273,12 +323,15 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Target className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">{t('landing.benefits.purpose.title', { defaultValue: 'Seu Propósito' })}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t('landing.benefits.purpose.title', { defaultValue: 'Seu Propósito' })}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
                   {t('landing.benefits.purpose.description', {
-                    defaultValue: 'Encontre pistas sobre sua vocação e o caminho que traz mais realização para sua vida.'
+                    defaultValue:
+                      'Encontre pistas sobre sua vocação e o caminho que traz mais realização para sua vida.',
                   })}
                 </CardDescription>
               </CardContent>
@@ -290,12 +343,15 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">{t('landing.benefits.challenges.title', { defaultValue: 'Seus Desafios' })}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t('landing.benefits.challenges.title', { defaultValue: 'Seus Desafios' })}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
                   {t('landing.benefits.challenges.description', {
-                    defaultValue: 'Conheça seus pontos de crescimento e transforme obstáculos em oportunidades.'
+                    defaultValue:
+                      'Conheça seus pontos de crescimento e transforme obstáculos em oportunidades.',
                   })}
                 </CardDescription>
               </CardContent>
@@ -307,12 +363,15 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Compass className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">{t('landing.benefits.moment.title', { defaultValue: 'Seu Momento Atual' })}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t('landing.benefits.moment.title', { defaultValue: 'Seu Momento Atual' })}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
                   {t('landing.benefits.moment.description', {
-                    defaultValue: 'Entenda as influências planetárias atuais e como elas estão impactando sua vida agora.'
+                    defaultValue:
+                      'Entenda as influências planetárias atuais e como elas estão impactando sua vida agora.',
                   })}
                 </CardDescription>
               </CardContent>
@@ -335,12 +394,14 @@ export function LandingPage() {
           <div className="prose prose-lg dark:prose-invert max-w-none text-center mb-8">
             <p className="text-muted-foreground">
               {t('landing.traditional.intro', {
-                defaultValue: 'A astrologia que você vê em revistas e apps populares é uma versão simplificada criada no século XX.'
+                defaultValue:
+                  'A astrologia que você vê em revistas e apps populares é uma versão simplificada criada no século XX.',
               })}
             </p>
             <p className="text-muted-foreground">
               {t('landing.traditional.description', {
-                defaultValue: 'O Real Astrology resgata a astrologia tradicional — as mesmas técnicas usadas por civilizações antigas, refinadas por séculos de observação.'
+                defaultValue:
+                  'O Real Astrology resgata a astrologia tradicional — as mesmas técnicas usadas por civilizações antigas, refinadas por séculos de observação.',
               })}
             </p>
           </div>
@@ -348,23 +409,40 @@ export function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {[
               {
-                title: t('landing.traditional.dignities.title', { defaultValue: 'Dignidades Essenciais' }),
-                description: t('landing.traditional.dignities.description', { defaultValue: 'A força real de cada planeta no seu mapa' })
+                title: t('landing.traditional.dignities.title', {
+                  defaultValue: 'Dignidades Essenciais',
+                }),
+                description: t('landing.traditional.dignities.description', {
+                  defaultValue: 'A força real de cada planeta no seu mapa',
+                }),
               },
               {
-                title: t('landing.traditional.sect.title', { defaultValue: 'Sect (Diurno/Noturno)' }),
-                description: t('landing.traditional.sect.description', { defaultValue: 'Seu mapa é de dia ou de noite? Isso muda tudo' })
+                title: t('landing.traditional.sect.title', {
+                  defaultValue: 'Sect (Diurno/Noturno)',
+                }),
+                description: t('landing.traditional.sect.description', {
+                  defaultValue: 'Seu mapa é de dia ou de noite? Isso muda tudo',
+                }),
               },
               {
-                title: t('landing.traditional.arabicParts.title', { defaultValue: 'Partes Árabes' }),
-                description: t('landing.traditional.arabicParts.description', { defaultValue: 'Pontos sensíveis que revelam áreas específicas da vida' })
+                title: t('landing.traditional.arabicParts.title', {
+                  defaultValue: 'Partes Árabes',
+                }),
+                description: t('landing.traditional.arabicParts.description', {
+                  defaultValue: 'Pontos sensíveis que revelam áreas específicas da vida',
+                }),
               },
               {
                 title: t('landing.traditional.temperament.title', { defaultValue: 'Temperamento' }),
-                description: t('landing.traditional.temperament.description', { defaultValue: 'Seu equilíbrio dos 4 elementos segundo a tradição' })
+                description: t('landing.traditional.temperament.description', {
+                  defaultValue: 'Seu equilíbrio dos 4 elementos segundo a tradição',
+                }),
               },
             ].map((item, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 bg-card rounded-lg border border-border">
+              <div
+                key={index}
+                className="flex items-start gap-3 p-4 bg-card rounded-lg border border-border"
+              >
                 <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-foreground">{item.title}</p>
@@ -376,7 +454,9 @@ export function LandingPage() {
 
           <div className="text-center">
             <p className="text-muted-foreground font-medium">
-              {t('landing.traditional.conclusion', { defaultValue: 'Não é achismo. É astronomia + tradição + interpretação profunda.' })}
+              {t('landing.traditional.conclusion', {
+                defaultValue: 'Não é achismo. É astronomia + tradição + interpretação profunda.',
+              })}
             </p>
           </div>
         </div>
@@ -400,7 +480,8 @@ export function LandingPage() {
                 <Quote className="h-8 w-8 text-primary/30 mb-4" />
                 <p className="text-muted-foreground mb-6 italic">
                   {t('landing.testimonials.t1.quote', {
-                    defaultValue: '"Eu sempre achei que era \'só\' uma canceriana sensível demais. Quando vi meu mapa completo, entendi que tenho Lua em Escorpião e Marte na Casa 1. Finalmente fez sentido por que sou tão intensa!"'
+                    defaultValue:
+                      '"Eu sempre achei que era \'só\' uma canceriana sensível demais. Quando vi meu mapa completo, entendi que tenho Lua em Escorpião e Marte na Casa 1. Finalmente fez sentido por que sou tão intensa!"',
                   })}
                 </p>
                 <div className="flex items-center gap-3">
@@ -408,8 +489,12 @@ export function LandingPage() {
                     <span className="text-primary font-semibold">M</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{t('landing.testimonials.t1.name', { defaultValue: 'Marina, 28 anos' })}</p>
-                    <p className="text-sm text-muted-foreground">{t('landing.testimonials.t1.location', { defaultValue: 'São Paulo' })}</p>
+                    <p className="font-semibold text-foreground">
+                      {t('landing.testimonials.t1.name', { defaultValue: 'Marina, 28 anos' })}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('landing.testimonials.t1.location', { defaultValue: 'São Paulo' })}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -421,7 +506,8 @@ export function LandingPage() {
                 <Quote className="h-8 w-8 text-primary/30 mb-4" />
                 <p className="text-muted-foreground mb-6 italic">
                   {t('landing.testimonials.t2.quote', {
-                    defaultValue: '"Fiz meu mapa em vários sites, mas nunca tinha visto análise de Sect e Dignidades. O Real Astrology me mostrou que Saturno no meu mapa é muito mais positivo do que eu pensava. Mudou minha perspectiva."'
+                    defaultValue:
+                      '"Fiz meu mapa em vários sites, mas nunca tinha visto análise de Sect e Dignidades. O Real Astrology me mostrou que Saturno no meu mapa é muito mais positivo do que eu pensava. Mudou minha perspectiva."',
                   })}
                 </p>
                 <div className="flex items-center gap-3">
@@ -429,8 +515,12 @@ export function LandingPage() {
                     <span className="text-primary font-semibold">C</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{t('landing.testimonials.t2.name', { defaultValue: 'Carlos, 35 anos' })}</p>
-                    <p className="text-sm text-muted-foreground">{t('landing.testimonials.t2.location', { defaultValue: 'Belo Horizonte' })}</p>
+                    <p className="font-semibold text-foreground">
+                      {t('landing.testimonials.t2.name', { defaultValue: 'Carlos, 35 anos' })}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('landing.testimonials.t2.location', { defaultValue: 'Belo Horizonte' })}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -442,7 +532,8 @@ export function LandingPage() {
                 <Quote className="h-8 w-8 text-primary/30 mb-4" />
                 <p className="text-muted-foreground mb-6 italic">
                   {t('landing.testimonials.t3.quote', {
-                    defaultValue: '"As interpretações com IA são incríveis. Parece que alguém que me conhece há anos escreveu sobre mim. Recomendo para quem quer se conhecer de verdade."'
+                    defaultValue:
+                      '"As interpretações com IA são incríveis. Parece que alguém que me conhece há anos escreveu sobre mim. Recomendo para quem quer se conhecer de verdade."',
                   })}
                 </p>
                 <div className="flex items-center gap-3">
@@ -450,8 +541,12 @@ export function LandingPage() {
                     <span className="text-primary font-semibold">J</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{t('landing.testimonials.t3.name', { defaultValue: 'Juliana, 42 anos' })}</p>
-                    <p className="text-sm text-muted-foreground">{t('landing.testimonials.t3.location', { defaultValue: 'Porto Alegre' })}</p>
+                    <p className="font-semibold text-foreground">
+                      {t('landing.testimonials.t3.name', { defaultValue: 'Juliana, 42 anos' })}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('landing.testimonials.t3.location', { defaultValue: 'Porto Alegre' })}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -476,13 +571,17 @@ export function LandingPage() {
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
                 <UserPlus className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  1
+                </span>
               </div>
               <h4 className="font-semibold text-foreground mb-2">
                 {t('landing.howItWorks.step1.title', { defaultValue: 'Cadastre-se Grátis' })}
               </h4>
               <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step1.description', { defaultValue: 'Leva menos de 1 minuto' })}
+                {t('landing.howItWorks.step1.description', {
+                  defaultValue: 'Leva menos de 1 minuto',
+                })}
               </p>
             </div>
 
@@ -490,13 +589,17 @@ export function LandingPage() {
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
                 <Calendar className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  2
+                </span>
               </div>
               <h4 className="font-semibold text-foreground mb-2">
                 {t('landing.howItWorks.step2.title', { defaultValue: 'Insira Seus Dados' })}
               </h4>
               <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step2.description', { defaultValue: 'Data, hora e local de nascimento' })}
+                {t('landing.howItWorks.step2.description', {
+                  defaultValue: 'Data, hora e local de nascimento',
+                })}
               </p>
             </div>
 
@@ -504,13 +607,17 @@ export function LandingPage() {
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
                 <Sparkles className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  3
+                </span>
               </div>
               <h4 className="font-semibold text-foreground mb-2">
                 {t('landing.howItWorks.step3.title', { defaultValue: 'Receba Seu Mapa' })}
               </h4>
               <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step3.description', { defaultValue: 'Visualização profissional + interpretações' })}
+                {t('landing.howItWorks.step3.description', {
+                  defaultValue: 'Visualização profissional + interpretações',
+                })}
               </p>
             </div>
 
@@ -518,13 +625,17 @@ export function LandingPage() {
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
                 <Eye className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">4</span>
+                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  4
+                </span>
               </div>
               <h4 className="font-semibold text-foreground mb-2">
                 {t('landing.howItWorks.step4.title', { defaultValue: 'Explore e Descubra' })}
               </h4>
               <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step4.description', { defaultValue: 'Navegue e descubra cada aspecto de si mesmo' })}
+                {t('landing.howItWorks.step4.description', {
+                  defaultValue: 'Navegue e descubra cada aspecto de si mesmo',
+                })}
               </p>
             </div>
           </div>
@@ -545,22 +656,28 @@ export function LandingPage() {
           <Accordion type="single" collapsible className="w-full space-y-4">
             <AccordionItem value="item-1" className="bg-card border border-border rounded-lg px-6">
               <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q1.question', { defaultValue: 'Precisa saber a hora exata de nascimento?' })}
+                {t('landing.faq.q1.question', {
+                  defaultValue: 'Precisa saber a hora exata de nascimento?',
+                })}
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {t('landing.faq.q1.answer', {
-                  defaultValue: 'A hora é importante para calcular o Ascendente e as Casas. Se não souber, você pode consultar sua certidão de nascimento ou usar uma hora aproximada (o mapa será menos preciso nessas áreas).'
+                  defaultValue:
+                    'A hora é importante para calcular o Ascendente e as Casas. Se não souber, você pode consultar sua certidão de nascimento ou usar uma hora aproximada (o mapa será menos preciso nessas áreas).',
                 })}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-2" className="bg-card border border-border rounded-lg px-6">
               <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q2.question', { defaultValue: 'Qual a diferença para outros sites de mapa astral?' })}
+                {t('landing.faq.q2.question', {
+                  defaultValue: 'Qual a diferença para outros sites de mapa astral?',
+                })}
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {t('landing.faq.q2.answer', {
-                  defaultValue: 'O Real Astrology usa astrologia tradicional com técnicas como Dignidades Essenciais, Sect e Partes Árabes — que a maioria dos sites modernos ignora. Além disso, nossas interpretações são geradas por IA treinada em textos clássicos de astrologia.'
+                  defaultValue:
+                    'O Real Astrology usa astrologia tradicional com técnicas como Dignidades Essenciais, Sect e Partes Árabes — que a maioria dos sites modernos ignora. Além disso, nossas interpretações são geradas por IA treinada em textos clássicos de astrologia.',
                 })}
               </AccordionContent>
             </AccordionItem>
@@ -571,7 +688,8 @@ export function LandingPage() {
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {t('landing.faq.q3.answer', {
-                  defaultValue: 'Sim! O mapa completo e interpretações básicas são gratuitos. Funcionalidades premium (como relatórios em PDF e análises avançadas) podem ter custo adicional no futuro, mas o essencial será sempre grátis.'
+                  defaultValue:
+                    'Sim! O mapa completo e interpretações básicas são gratuitos. Funcionalidades premium (como relatórios em PDF e análises avançadas) podem ter custo adicional no futuro, mas o essencial será sempre grátis.',
                 })}
               </AccordionContent>
             </AccordionItem>
@@ -582,18 +700,22 @@ export function LandingPage() {
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {t('landing.faq.q4.answer', {
-                  defaultValue: 'Absolutamente. Seguimos a LGPD e nunca compartilhamos seus dados com terceiros. Você pode excluir sua conta a qualquer momento e todos os seus dados serão removidos.'
+                  defaultValue:
+                    'Absolutamente. Seguimos a LGPD e nunca compartilhamos seus dados com terceiros. Você pode excluir sua conta a qualquer momento e todos os seus dados serão removidos.',
                 })}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-5" className="bg-card border border-border rounded-lg px-6">
               <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q5.question', { defaultValue: 'As interpretações com IA substituem um astrólogo?' })}
+                {t('landing.faq.q5.question', {
+                  defaultValue: 'As interpretações com IA substituem um astrólogo?',
+                })}
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {t('landing.faq.q5.answer', {
-                  defaultValue: 'As interpretações são um excelente ponto de partida para autoconhecimento, mas não substituem a análise de um astrólogo profissional para questões específicas ou complexas. Use como ferramenta de estudo e reflexão.'
+                  defaultValue:
+                    'As interpretações são um excelente ponto de partida para autoconhecimento, mas não substituem a análise de um astrólogo profissional para questões específicas ou complexas. Use como ferramenta de estudo e reflexão.',
                 })}
               </AccordionContent>
             </AccordionItem>
@@ -610,16 +732,21 @@ export function LandingPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 pointer-events-none" />
             <CardContent className="p-12 text-center relative">
               <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 font-display">
-                {t('landing.finalCta.title', { defaultValue: 'Pronto Para Se Conhecer de Verdade?' })}
+                {t('landing.finalCta.title', {
+                  defaultValue: 'Pronto Para Se Conhecer de Verdade?',
+                })}
               </h3>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                 {t('landing.finalCta.subtitle', {
-                  defaultValue: 'Seu mapa natal está esperando. É gratuito, leva 2 minutos e pode mudar a forma como você se vê para sempre.'
+                  defaultValue:
+                    'Seu mapa natal está esperando. É gratuito, leva 2 minutos e pode mudar a forma como você se vê para sempre.',
                 })}
               </p>
               <Button asChild size="lg" className="text-lg px-8 group">
                 <Link to="/register">
-                  {t('landing.finalCta.button', { defaultValue: 'Criar Meu Mapa Agora — É Grátis' })}
+                  {t('landing.finalCta.button', {
+                    defaultValue: 'Criar Meu Mapa Agora — É Grátis',
+                  })}
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -654,33 +781,57 @@ export function LandingPage() {
                 <span className="font-bold text-foreground">Real Astrology</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                {t('landing.footer.tagline', { defaultValue: 'Astrologia Tradicional Para o Mundo Moderno' })}
+                {t('landing.footer.tagline', {
+                  defaultValue: 'Astrologia Tradicional Para o Mundo Moderno',
+                })}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('landing.footer.legal', { defaultValue: 'Legal' })}</h4>
+              <h4 className="font-semibold text-foreground mb-4">
+                {t('landing.footer.legal', { defaultValue: 'Legal' })}
+              </h4>
               <div className="space-y-2">
-                <Link to="/terms" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/terms"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('landing.footer.terms', { defaultValue: 'Termos de Uso' })}
                 </Link>
-                <Link to="/privacy" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/privacy"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('landing.footer.privacy', { defaultValue: 'Política de Privacidade' })}
                 </Link>
-                <Link to="/cookies" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/cookies"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('landing.footer.cookies', { defaultValue: 'Política de Cookies' })}
                 </Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('landing.footer.access', { defaultValue: 'Acesso' })}</h4>
+              <h4 className="font-semibold text-foreground mb-4">
+                {t('landing.footer.access', { defaultValue: 'Acesso' })}
+              </h4>
               <div className="space-y-2">
-                <Link to="/login" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/login"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('landing.footer.login', { defaultValue: 'Entrar' })}
                 </Link>
-                <Link to="/register" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/register"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('landing.footer.register', { defaultValue: 'Criar Conta' })}
                 </Link>
-                <Link to="/dashboard" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link
+                  to="/dashboard"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
                   {t('landing.footer.dashboard', { defaultValue: 'Dashboard' })}
                 </Link>
               </div>
@@ -688,7 +839,8 @@ export function LandingPage() {
           </div>
           <div className="pt-8 border-t border-border text-center">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Real Astrology. {t('landing.footer.madeWith', { defaultValue: 'Feito com ♄ e ♃ no Brasil.' })}
+              © {new Date().getFullYear()} Real Astrology.{' '}
+              {t('landing.footer.madeWith', { defaultValue: 'Feito com ♄ e ♃ no Brasil.' })}
             </p>
           </div>
         </div>

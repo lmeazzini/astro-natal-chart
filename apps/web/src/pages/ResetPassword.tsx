@@ -11,7 +11,15 @@ import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
@@ -30,9 +38,22 @@ export function ResetPasswordPage() {
       password: z
         .string()
         .min(8, t('auth.register.passwordMinLength'))
-        .regex(/[A-Z]/, t('validation.passwordUppercase', { defaultValue: 'Senha deve conter pelo menos uma letra maiúscula' }))
-        .regex(/[a-z]/, t('validation.passwordLowercase', { defaultValue: 'Senha deve conter pelo menos uma letra minúscula' }))
-        .regex(/[0-9]/, t('validation.passwordNumber', { defaultValue: 'Senha deve conter pelo menos um número' })),
+        .regex(
+          /[A-Z]/,
+          t('validation.passwordUppercase', {
+            defaultValue: 'Senha deve conter pelo menos uma letra maiúscula',
+          })
+        )
+        .regex(
+          /[a-z]/,
+          t('validation.passwordLowercase', {
+            defaultValue: 'Senha deve conter pelo menos uma letra minúscula',
+          })
+        )
+        .regex(
+          /[0-9]/,
+          t('validation.passwordNumber', { defaultValue: 'Senha deve conter pelo menos um número' })
+        ),
       confirmPassword: z.string().min(1, t('validation.required')),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -66,15 +87,16 @@ export function ResetPasswordPage() {
     setSuccessMessage('');
 
     if (!token) {
-      setGeneralError(t('auth.resetPassword.tokenNotFound', { defaultValue: 'Token de recuperação não encontrado' }));
+      setGeneralError(
+        t('auth.resetPassword.tokenNotFound', {
+          defaultValue: 'Token de recuperação não encontrado',
+        })
+      );
       return;
     }
 
     try {
-      const response = await passwordResetService.confirmReset(
-        token,
-        values.password
-      );
+      const response = await passwordResetService.confirmReset(token, values.password);
 
       if (response.success) {
         setSuccessMessage(response.message);
@@ -86,11 +108,7 @@ export function ResetPasswordPage() {
         setGeneralError(response.message);
       }
     } catch (error) {
-      setGeneralError(
-        error instanceof Error
-          ? error.message
-          : t('auth.resetPassword.error')
-      );
+      setGeneralError(error instanceof Error ? error.message : t('auth.resetPassword.error'));
     }
   }
 
@@ -102,9 +120,7 @@ export function ResetPasswordPage() {
           <h1 className="text-4xl font-bold text-foreground mb-2">
             {t('auth.resetPassword.title')}
           </h1>
-          <p className="text-muted-foreground">
-            {t('auth.resetPassword.subtitle')}
-          </p>
+          <p className="text-muted-foreground">{t('auth.resetPassword.subtitle')}</p>
         </div>
 
         {/* Form Card */}
@@ -112,7 +128,9 @@ export function ResetPasswordPage() {
           <CardHeader>
             <CardTitle>{t('auth.resetPassword.newPassword')}</CardTitle>
             <CardDescription>
-              {t('auth.resetPassword.chooseStrong', { defaultValue: 'Escolha uma senha forte e segura' })}
+              {t('auth.resetPassword.chooseStrong', {
+                defaultValue: 'Escolha uma senha forte e segura',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -129,7 +147,9 @@ export function ResetPasswordPage() {
                 <AlertDescription className="text-green-700 dark:text-green-400">
                   {successMessage}
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {t('auth.resetPassword.redirecting', { defaultValue: 'Redirecionando para login em 3 segundos...' })}
+                    {t('auth.resetPassword.redirecting', {
+                      defaultValue: 'Redirecionando para login em 3 segundos...',
+                    })}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -154,7 +174,10 @@ export function ResetPasswordPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          {t('auth.resetPassword.passwordRequirements', { defaultValue: 'Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números' })}
+                          {t('auth.resetPassword.passwordRequirements', {
+                            defaultValue:
+                              'Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números',
+                          })}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -180,15 +203,13 @@ export function ResetPasswordPage() {
                     )}
                   />
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={form.formState.isSubmitting}
-                  >
+                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {form.formState.isSubmitting ? t('common.loading') : t('auth.resetPassword.submit')}
+                    {form.formState.isSubmitting
+                      ? t('common.loading')
+                      : t('auth.resetPassword.submit')}
                   </Button>
                 </form>
               </Form>

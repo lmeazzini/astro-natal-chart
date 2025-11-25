@@ -11,9 +11,7 @@ class GrowthPoint(BaseModel):
     area: str = Field(..., description="Area that needs development")
     indicator: str = Field(..., description="Astrological indicator")
     explanation: str = Field(..., description="Explanation of the pattern")
-    practical_actions: list[str] = Field(
-        ..., description="Specific actionable steps"
-    )
+    practical_actions: list[str] = Field(..., description="Specific actionable steps")
     mindset_shift: str = Field(..., description="Reframe or affirmation")
 
 

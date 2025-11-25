@@ -15,6 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 # Add app to path
 sys.path.insert(0, str(Path(__file__).parent / "apps" / "api"))
 
+
 def test_latex_compilation():
     """Test LaTeX template compilation with sample data."""
 
@@ -42,7 +43,7 @@ def test_latex_compilation():
                 "house": 10,
                 "dignity": "peregrinus",
                 "retrograde": "Não",
-                "interpretation": "The Sun in Taurus in the 10th house indicates a strong focus on career and public image. This placement brings stability and determination to professional pursuits."
+                "interpretation": "The Sun in Taurus in the 10th house indicates a strong focus on career and public image. This placement brings stability and determination to professional pursuits.",
             },
             {
                 "name": "Moon",
@@ -52,12 +53,22 @@ def test_latex_compilation():
                 "house": 3,
                 "dignity": "peregrine",
                 "retrograde": "Não",
-                "interpretation": "The Moon in Virgo in the 3rd house emphasizes analytical thinking and attention to detail in communication."
-            }
+                "interpretation": "The Moon in Virgo in the 3rd house emphasizes analytical thinking and attention to detail in communication.",
+            },
         ],
         "houses": [
-            {"number": 1, "sign": "Leo", "degree": "3.45", "interpretation": "The 1st house in Leo suggests a confident and charismatic personality."},
-            {"number": 2, "sign": "Virgo", "degree": "3.78", "interpretation": "The 2nd house in Virgo indicates practical approach to finances."}
+            {
+                "number": 1,
+                "sign": "Leo",
+                "degree": "3.45",
+                "interpretation": "The 1st house in Leo suggests a confident and charismatic personality.",
+            },
+            {
+                "number": 2,
+                "sign": "Virgo",
+                "degree": "3.78",
+                "interpretation": "The 2nd house in Virgo indicates practical approach to finances.",
+            },
         ],
         "aspects": [
             {
@@ -65,9 +76,9 @@ def test_latex_compilation():
                 "aspect": "trine",
                 "planet2": "Moon",
                 "orb": "2.3",
-                "interpretation": "Sun trine Moon creates harmony between conscious will and emotional needs."
+                "interpretation": "Sun trine Moon creates harmony between conscious will and emotional needs.",
             }
-        ]
+        ],
     }
 
     # Setup Jinja2 environment
@@ -87,6 +98,7 @@ def test_latex_compilation():
         print(f"❌ Template rendering failed: {e}")
         print(f"   Exception type: {type(e).__name__}")
         import traceback
+
         print("\n--- Full traceback ---")
         traceback.print_exc()
         return False
@@ -118,13 +130,14 @@ def test_latex_compilation():
                 "pdflatex",
                 "-interaction=nonstopmode",
                 "-halt-on-error",
-                "-output-directory", str(temp_path),
-                str(main_tex)
+                "-output-directory",
+                str(temp_path),
+                str(main_tex),
             ],
             cwd=temp_path,
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=120,
         )
 
         if result.returncode != 0:
@@ -145,13 +158,14 @@ def test_latex_compilation():
                 "pdflatex",
                 "-interaction=nonstopmode",
                 "-halt-on-error",
-                "-output-directory", str(temp_path),
-                str(main_tex)
+                "-output-directory",
+                str(temp_path),
+                str(main_tex),
             ],
             cwd=temp_path,
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=120,
         )
 
         if result.returncode != 0:
@@ -181,6 +195,7 @@ def test_latex_compilation():
         else:
             print("❌ PDF file was not generated\n")
             return False
+
 
 if __name__ == "__main__":
     success = test_latex_compilation()

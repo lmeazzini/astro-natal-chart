@@ -65,11 +65,7 @@ router = APIRouter()
         },
         404: {
             "description": "Chart not found",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Chart not found"}
-                }
-            },
+            "content": {"application/json": {"example": {"detail": "Chart not found"}}},
         },
     },
 )
@@ -118,9 +114,10 @@ async def get_chart_interpretations(
         repo = InterpretationRepository(db)
         existing = await repo.get_by_chart_id(chart_id)
         rag_existing = [
-            i for i in existing
+            i
+            for i in existing
             if i.prompt_version == RAG_PROMPT_VERSION
-            and getattr(i, 'language', 'pt-BR') == user_language
+            and getattr(i, "language", "pt-BR") == user_language
         ]
 
         if rag_existing:
@@ -137,9 +134,7 @@ async def get_chart_interpretations(
             for interp in rag_existing:
                 # Load rag_sources from database
                 rag_sources_data = interp.rag_sources or []
-                rag_sources_list = [
-                    RAGSourceInfo(**src) for src in rag_sources_data
-                ]
+                rag_sources_list = [RAGSourceInfo(**src) for src in rag_sources_data]
                 total_documents += len(rag_sources_list)
 
                 item = InterpretationItem(
@@ -235,11 +230,7 @@ async def get_chart_interpretations(
         },
         404: {
             "description": "Chart not found",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Chart not found"}
-                }
-            },
+            "content": {"application/json": {"example": {"detail": "Chart not found"}}},
         },
     },
 )
@@ -295,8 +286,7 @@ async def regenerate_chart_interpretations(
         repo = InterpretationRepository(db)
         existing = await repo.get_by_chart_id(chart_id)
         existing_in_language = [
-            i for i in existing
-            if getattr(i, 'language', 'pt-BR') == user_language
+            i for i in existing if getattr(i, "language", "pt-BR") == user_language
         ]
         for interp in existing_in_language:
             await repo.delete(interp)
@@ -343,6 +333,7 @@ async def regenerate_chart_interpretations(
 # ============================================================================
 # RAG Interpretation Helper Function
 # ============================================================================
+
 
 async def _generate_rag_interpretations(
     chart: BirthChart,
@@ -540,12 +531,8 @@ async def _generate_rag_interpretations(
         total_documents_used += len(documents)
 
         # Get signs and dignities for additional context
-        planet1_data: PlanetData = next(
-            (p for p in planets if p.get("name") == planet1), {}
-        )
-        planet2_data: PlanetData = next(
-            (p for p in planets if p.get("name") == planet2), {}
-        )
+        planet1_data: PlanetData = next((p for p in planets if p.get("name") == planet1), {})
+        planet2_data: PlanetData = next((p for p in planets if p.get("name") == planet2), {})
 
         sign1 = planet1_data.get("sign", "")
         sign2 = planet2_data.get("sign", "")
@@ -660,9 +647,10 @@ async def _generate_rag_interpretations(
                 chart_uuid = UUID(str(chart.id))
                 existing = await repo.get_by_chart_id(chart_uuid)
                 existing_in_lang = [
-                    i for i in existing
+                    i
+                    for i in existing
                     if i.prompt_version == RAG_PROMPT_VERSION
-                    and getattr(i, 'language', 'pt-BR') == other_lang
+                    and getattr(i, "language", "pt-BR") == other_lang
                 ]
 
                 if not existing_in_lang:

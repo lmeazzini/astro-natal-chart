@@ -584,6 +584,33 @@
       "aboutInterpretations": "About interpretations",
       "interpretationsDesc": "AI-generated based on traditional astrology principles. Interpretations consider the nature of the aspect and planets involved."
     },
+    "chartTooltip": {
+      "position": "Position",
+      "house": "House",
+      "speed": "Speed",
+      "dignities": "Dignities",
+      "score": "Score",
+      "ascendant": "Ascendant",
+      "midheaven": "Midheaven",
+      "houseN": "House {{n}}",
+      "cusp": "Cusp",
+      "longitude": "Longitude",
+      "angle": "Angle",
+      "orb": "Orb",
+      "applying": "Applying",
+      "harmonic": "Harmonic",
+      "tense": "Tense",
+      "neutral": "Neutral"
+    },
+    "chartWheel": {
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetZoom": "Reset zoom",
+      "dragToPan": "Drag to pan",
+      "chartRegion": "Interactive birth chart",
+      "zoomControls": "Zoom controls",
+      "chartDescription": "Circular birth chart showing planets, houses and aspects. Click elements to select, use mouse wheel to zoom."
+    },
     "arabicParts": {
       "fortune": "Part of Fortune",
       "fortuneDesc": "Body, health, material wealth",

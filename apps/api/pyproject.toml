@@ -36,7 +36,7 @@ dependencies = [
     # Astrological Calculations
     "pyswisseph==2.10.3.2",
     # Geolocation & Timezone
-    "timezonefinder==6.4.0",
+    "timezonefinder>=6.5.0",
     "httpx==0.25.2",
     # AI/ML
     "openai==1.54.4",

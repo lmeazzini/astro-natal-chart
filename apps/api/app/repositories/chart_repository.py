@@ -2,7 +2,7 @@
 Birth Chart repository.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import and_, func, select
@@ -118,7 +118,7 @@ class ChartRepository(BaseRepository[BirthChart]):
         Returns:
             Updated chart instance
         """
-        chart.deleted_at = datetime.utcnow()
+        chart.deleted_at = datetime.now(UTC)
         await self.db.commit()
         await self.db.refresh(chart)
         return chart

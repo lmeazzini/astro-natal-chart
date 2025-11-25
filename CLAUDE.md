@@ -10,7 +10,7 @@ This is a **natal chart (birth chart) generation system** using traditional astr
 
 **Tech Stack:**
 - **Monorepo**: Turborepo (npm workspaces)
-- **Backend**: Python 3.11+ with FastAPI (async), PostgreSQL 16 (JSONB), Redis
+- **Backend**: Python 3.13+ with FastAPI (async), PostgreSQL 16 (JSONB), Redis
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
 - **Astrology Engine**: PySwisseph (Moshier ephemeris - built-in)
 - **Infrastructure**: Docker Compose for development

@@ -4,7 +4,7 @@ Backend API para sistema de astrologia natal tradicional.
 
 ## Stack Tecnológica
 
-- **Python 3.11+**
+- **Python 3.13+**
 - **FastAPI** - Framework web moderno e rápido
 - **PostgreSQL 16** - Banco de dados relacional
 - **SQLAlchemy 2.0** - ORM assíncrono
@@ -33,7 +33,7 @@ app/
 
 ### Pré-requisitos
 
-- Python 3.11+
+- Python 3.13+
 - PostgreSQL 16+
 - Redis 7+
 - **UV** (recomendado) ou pip

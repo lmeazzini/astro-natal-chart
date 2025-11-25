@@ -4,7 +4,7 @@ Service for password reset functionality.
 
 import hashlib
 import secrets
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import select
@@ -69,7 +69,7 @@ class PasswordResetService:
         token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
 
         # Criar registro no banco
-        expires_at = datetime.utcnow() + timedelta(hours=self.TOKEN_EXPIRY_HOURS)
+        expires_at = datetime.now(UTC) + timedelta(hours=self.TOKEN_EXPIRY_HOURS)
         reset_token = PasswordResetToken(
             user_id=user.id,
             token=token_hash,
@@ -171,7 +171,7 @@ class PasswordResetService:
 
         # Atualizar senha
         user.password_hash = get_password_hash(new_password)
-        user.password_changed_at = datetime.utcnow()  # Invalidate existing JWT tokens
+        user.password_changed_at = datetime.now(UTC)  # Invalidate existing JWT tokens
 
         # Marcar token como usado
         reset_token.used = True
@@ -209,7 +209,7 @@ class PasswordResetService:
         Returns:
             Número de tokens removidos
         """
-        cutoff_time = datetime.utcnow() - timedelta(hours=24)
+        cutoff_time = datetime.now(UTC) - timedelta(hours=24)
 
         result = await db.execute(
             select(PasswordResetToken).where(PasswordResetToken.created_at < cutoff_time)

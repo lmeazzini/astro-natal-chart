@@ -2,7 +2,7 @@
 Model for password reset tokens.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
@@ -40,7 +40,7 @@ class PasswordResetToken(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     @property
@@ -51,12 +51,12 @@ class PasswordResetToken(Base):
         Returns:
             True se token ainda é válido, False caso contrário
         """
-        return not self.used and datetime.utcnow() < self.expires_at
+        return not self.used and datetime.now(UTC) < self.expires_at
 
     @property
     def is_expired(self) -> bool:
         """Verifica se token está expirado."""
-        return datetime.utcnow() >= self.expires_at
+        return datetime.now(UTC) >= self.expires_at
 
     def __repr__(self) -> str:
         """String representation."""

@@ -3,7 +3,7 @@ Privacy and LGPD compliance Celery tasks.
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from loguru import logger
 from sqlalchemy import delete, select
@@ -45,7 +45,7 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
     """Versão async da tarefa de hard delete."""
     async with AsyncSessionLocal() as db:
         # Data de corte: 30 dias atrás
-        cutoff_date = datetime.utcnow() - timedelta(days=30)
+        cutoff_date = datetime.now(UTC) - timedelta(days=30)
 
         # Encontrar usuários para hard delete
         result = await db.execute(
@@ -76,7 +76,7 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
                 ip_address=None,
                 details={
                     "deleted_at": user.deleted_at.isoformat() if user.deleted_at else None,
-                    "hard_deleted_at": datetime.utcnow().isoformat(),
+                    "hard_deleted_at": datetime.now(UTC).isoformat(),
                     "retention_period_days": 30,
                 },
             )

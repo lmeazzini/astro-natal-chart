@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import require_admin
+from app.core.i18n import normalize_locale
 from app.core.rate_limit import RateLimits, limiter
 from app.models.public_chart import PublicChart
 from app.models.public_chart_interpretation import PublicChartInterpretation
@@ -166,15 +167,20 @@ async def get_public_chart_interpretations(
     response: Response,
     slug: str,
     db: Annotated[AsyncSession, Depends(get_db)],
+    lang: Annotated[str | None, Query(description="Language: 'pt-BR' or 'en-US'")] = None,
 ) -> ChartInterpretationsResponse:
     """
     Get all interpretations for a public chart by its slug.
 
     - **slug**: URL-friendly identifier (e.g., 'albert-einstein')
+    - **lang**: Language for interpretations (default: 'pt-BR')
 
     Returns interpretations for planets, houses, aspects, and Arabic parts.
-    If interpretations don't exist, they will be generated using RAG-enhanced AI.
+    If interpretations don't exist in the requested language, they will be generated using RAG-enhanced AI.
     """
+    # Normalize language parameter
+    language = normalize_locale(lang) if lang else "pt-BR"
+
     # Get the public chart
     service = PublicChartService(db)
     chart = await service.get_chart_by_slug(slug)
@@ -191,9 +197,10 @@ async def get_public_chart_interpretations(
             detail="Chart data is not available yet.",
         )
 
-    # Check for existing interpretations
+    # Check for existing interpretations in the requested language
     stmt = select(PublicChartInterpretation).where(
-        PublicChartInterpretation.chart_id == chart.id
+        PublicChartInterpretation.chart_id == chart.id,
+        PublicChartInterpretation.language == language,
     )
     result = await db.execute(stmt)
     existing = result.scalars().all()
@@ -216,7 +223,7 @@ async def get_public_chart_interpretations(
                 arabic_parts[interp.subject] = interp.content
 
         logger.info(
-            f"Returning {len(existing)} existing interpretations for public chart {slug}"
+            f"Returning {len(existing)} existing interpretations for public chart {slug} ({language})"
         )
 
         return ChartInterpretationsResponse(
@@ -232,8 +239,9 @@ async def get_public_chart_interpretations(
         interpretations = await _generate_public_chart_interpretations(
             chart=chart,
             db=db,
+            language=language,
         )
-        logger.info(f"Generated new interpretations for public chart {slug}")
+        logger.info(f"Generated new interpretations for public chart {slug} ({language})")
         return interpretations
     except Exception as e:
         logger.error(f"Error generating interpretations for public chart {slug}: {e}")
@@ -246,6 +254,7 @@ async def get_public_chart_interpretations(
 async def _generate_public_chart_interpretations(
     chart: PublicChart,
     db: AsyncSession,
+    language: str = "pt-BR",
 ) -> ChartInterpretationsResponse:
     """
     Generate RAG-enhanced interpretations for a public chart.
@@ -257,8 +266,10 @@ async def _generate_public_chart_interpretations(
     aspects: dict[str, str] = {}
     arabic_parts: dict[str, str] = {}
 
-    # Initialize RAG service
-    rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
+    # Initialize RAG service with language
+    rag_service = InterpretationServiceRAG(
+        db, use_cache=True, use_rag=True, language=language
+    )
 
     chart_data = chart.chart_data
     assert chart_data is not None, "chart_data must not be None"
@@ -298,6 +309,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -339,6 +351,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -393,6 +406,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -423,6 +437,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -432,7 +447,7 @@ async def _generate_public_chart_interpretations(
     logger.info(
         f"Saved {len(planets)} planet, {len(houses)} house, "
         f"{len(aspects)} aspect, and {len(arabic_parts)} Arabic Part "
-        f"interpretations for public chart {chart.id}"
+        f"interpretations for public chart {chart.id} ({language})"
     )
 
     return ChartInterpretationsResponse(

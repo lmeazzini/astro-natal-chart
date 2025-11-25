@@ -100,7 +100,13 @@ ARABIC_PARTS: dict[str, dict[str, str]] = {
 class InterpretationServiceRAG:
     """Interpretation service with RAG support for enhanced astrological interpretations."""
 
-    def __init__(self, db: AsyncSession, use_cache: bool = True, use_rag: bool = True):
+    def __init__(
+        self,
+        db: AsyncSession,
+        use_cache: bool = True,
+        use_rag: bool = True,
+        language: str = "pt-BR",
+    ):
         """
         Initialize RAG interpretation service.
 
@@ -108,10 +114,12 @@ class InterpretationServiceRAG:
             db: Database session
             use_cache: Whether to use interpretation cache
             use_rag: Whether to use RAG for context retrieval
+            language: Language for interpretations ('pt-BR' or 'en-US')
         """
         self.db = db
         self.use_cache = use_cache
         self.use_rag = use_rag
+        self.language = language
         self.rag_context_limit = 3  # Number of relevant documents to retrieve
 
         # Initialize OpenAI client
@@ -145,6 +153,33 @@ class InterpretationServiceRAG:
                 "aspect_prompts": {"base": "Interprete {aspect} entre {planet1} e {planet2}."},
                 "arabic_part_prompts": {"base": "Interprete {part_name} em {sign} na casa {house}."},
             }
+
+    def _get_language_instruction(self) -> str:
+        """
+        Get language instruction to append to system prompt.
+
+        Returns:
+            Language instruction string for non-Portuguese languages,
+            empty string for Portuguese (default prompt language).
+        """
+        if self.language.startswith("en"):
+            return (
+                "\n\nIMPORTANT: You MUST respond in English (en-US). "
+                "Translate all astrological terms to English and produce natural, fluent English output. "
+                "Do NOT respond in Portuguese."
+            )
+        # Portuguese is the default prompt language, no instruction needed
+        return ""
+
+    def _get_system_prompt(self) -> str:
+        """
+        Get the system prompt with language instruction appended.
+
+        Returns:
+            System prompt with optional language instruction.
+        """
+        system_prompt: str = self.prompts["system_prompt"]
+        return system_prompt + self._get_language_instruction()
 
     def _validate_dignities(self, planet: str, sign: str, dignities: dict[str, Any]) -> dict[str, Any]:
         """
@@ -355,10 +390,11 @@ class InterpretationServiceRAG:
                 parameters=cache_params,
                 model=settings.OPENAI_MODEL,
                 prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {planet} in {sign}")
+                logger.info(f"Using cached RAG interpretation for {planet} in {sign} ({self.language})")
                 return cached
 
         self._cache_misses += 1
@@ -403,7 +439,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -422,19 +458,22 @@ class InterpretationServiceRAG:
                     content=interpretation_text,
                     model=settings.OPENAI_MODEL,
                     prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
                 )
 
             # Log success
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for {planet} in {sign} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG interpretation for {planet} in {sign}: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for {planet} in {sign}."
             return f"Interpretação não disponível para {planet} em {sign}."
 
     async def generate_house_interpretation(
@@ -474,10 +513,11 @@ class InterpretationServiceRAG:
                 parameters=cache_params,
                 model=settings.OPENAI_MODEL,
                 prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for house {house} in {sign}")
+                logger.info(f"Using cached RAG interpretation for house {house} in {sign} ({self.language})")
                 return cached
 
         self._cache_misses += 1
@@ -516,7 +556,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -535,18 +575,21 @@ class InterpretationServiceRAG:
                     content=interpretation_text,
                     model=settings.OPENAI_MODEL,
                     prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
                 )
 
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for house {house} in {sign} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG house interpretation: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for house {house} in {sign}."
             return f"Interpretação não disponível para casa {house} em {sign}."
 
     async def generate_aspect_interpretation(
@@ -600,10 +643,11 @@ class InterpretationServiceRAG:
                 parameters=cache_params,
                 model=settings.OPENAI_MODEL,
                 prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {planet1} {aspect} {planet2}")
+                logger.info(f"Using cached RAG interpretation for {planet1} {aspect} {planet2} ({self.language})")
                 return cached
 
         self._cache_misses += 1
@@ -648,7 +692,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -667,18 +711,21 @@ class InterpretationServiceRAG:
                     content=interpretation_text,
                     model=settings.OPENAI_MODEL,
                     prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
                 )
 
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for {planet1} {aspect} {planet2} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG aspect interpretation: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for {aspect} between {planet1} and {planet2}."
             return f"Interpretação não disponível para {aspect} entre {planet1} e {planet2}."
 
     async def generate_arabic_part_interpretation(
@@ -724,10 +771,11 @@ class InterpretationServiceRAG:
                 parameters=cache_params,
                 model=settings.OPENAI_MODEL,
                 prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {part_name} in {sign}")
+                logger.info(f"Using cached RAG interpretation for {part_name} in {sign} ({self.language})")
                 return cached
 
         self._cache_misses += 1
@@ -769,7 +817,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -788,18 +836,21 @@ class InterpretationServiceRAG:
                     content=interpretation_text,
                     model=settings.OPENAI_MODEL,
                     prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
                 )
 
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for {part_name} in {sign} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG interpretation for {part_name}: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for {part_name} in {sign}."
             return f"Interpretação não disponível para {part_name_pt} em {sign}."
 
     async def generate_all_rag_interpretations(
@@ -860,6 +911,7 @@ class InterpretationServiceRAG:
                     content=interpretation,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
+                    language=self.language,
                 )
                 self.db.add(interp_record)
             except Exception as e:
@@ -904,6 +956,7 @@ class InterpretationServiceRAG:
                     content=interpretation,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
+                    language=self.language,
                 )
                 self.db.add(interp_record)
             except Exception as e:
@@ -949,6 +1002,7 @@ class InterpretationServiceRAG:
                     content=interpretation,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
+                    language=self.language,
                 )
                 self.db.add(interp_record)
             except Exception as e:
@@ -977,6 +1031,7 @@ class InterpretationServiceRAG:
                     content=interpretation,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
+                    language=self.language,
                 )
                 self.db.add(interp_record)
             except Exception as e:

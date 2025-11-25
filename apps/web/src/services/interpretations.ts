@@ -34,6 +34,8 @@ export interface RAGInterpretations {
   arabic_parts?: Record<string, InterpretationItem>;
   source: 'rag';
   documents_used: number;
+  /** Language code of the interpretations (e.g., 'pt-BR' or 'en-US') */
+  language: string;
 }
 
 // Legacy type alias for backwards compatibility

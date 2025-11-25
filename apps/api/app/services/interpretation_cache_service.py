@@ -41,6 +41,7 @@ class InterpretationCacheService:
         parameters: dict[str, Any],
         model: str,
         prompt_version: str,
+        language: str = "pt-BR",
     ) -> str:
         """
         Generate a unique cache key from interpretation parameters.
@@ -50,6 +51,7 @@ class InterpretationCacheService:
             parameters: Dictionary of parameters used for interpretation
             model: OpenAI model name
             prompt_version: Version of the prompt template
+            language: Language code for the interpretation (e.g., 'pt-BR', 'en-US')
 
         Returns:
             SHA-256 hash string (64 characters)
@@ -60,6 +62,7 @@ class InterpretationCacheService:
             "params": parameters,
             "model": model,
             "prompt_version": prompt_version,
+            "language": language,
         }
         # Sort keys to ensure consistent ordering
         key_string = json.dumps(key_data, sort_keys=True, ensure_ascii=True)
@@ -71,6 +74,7 @@ class InterpretationCacheService:
         parameters: dict[str, Any],
         model: str,
         prompt_version: str,
+        language: str = "pt-BR",
     ) -> str | None:
         """
         Get cached interpretation if available.
@@ -80,12 +84,13 @@ class InterpretationCacheService:
             parameters: Dictionary of parameters
             model: OpenAI model name
             prompt_version: Version of prompt template
+            language: Language code for the interpretation (e.g., 'pt-BR', 'en-US')
 
         Returns:
             Cached interpretation content or None if not found
         """
         cache_key = self.generate_cache_key(
-            interpretation_type, parameters, model, prompt_version
+            interpretation_type, parameters, model, prompt_version, language
         )
 
         stmt = select(InterpretationCache).where(
@@ -124,6 +129,7 @@ class InterpretationCacheService:
         content: str,
         model: str,
         prompt_version: str,
+        language: str = "pt-BR",
     ) -> InterpretationCache:
         """
         Store interpretation in cache.
@@ -135,12 +141,13 @@ class InterpretationCacheService:
             content: Generated interpretation text
             model: OpenAI model name
             prompt_version: Version of prompt template
+            language: Language code for the interpretation (e.g., 'pt-BR', 'en-US')
 
         Returns:
             Created cache entry
         """
         cache_key = self.generate_cache_key(
-            interpretation_type, parameters, model, prompt_version
+            interpretation_type, parameters, model, prompt_version, language
         )
 
         cache_entry = InterpretationCache(

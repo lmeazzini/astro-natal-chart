@@ -649,6 +649,11 @@
     "emailVerificationBanner": {
       "premiumHint": "Desbloqueie interpretações com IA e exportação em PDF"
     },
+    "interpretationLanguage": {
+      "mismatchMessage": "Estas interpretações estão em {{interpretationLanguage}}. Gostaria de regenerá-las em {{currentLanguage}}?",
+      "regenerateButton": "Regenerar em {{language}}",
+      "regenerating": "Regenerando..."
+    },
     "lunarPhase": {
       "sunMoonAngle": "Ângulo Sol-Lua",
       "illumination": "Iluminação",

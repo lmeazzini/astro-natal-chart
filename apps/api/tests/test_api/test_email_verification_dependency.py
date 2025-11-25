@@ -29,7 +29,7 @@ async def unverified_user(db_session: AsyncSession) -> User:
         email_verified=False,  # Email NOT verified
         is_active=True,
         is_superuser=False,
-        role=UserRole.GERAL.value,
+        role=UserRole.FREE.value,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -57,7 +57,7 @@ async def verified_user(db_session: AsyncSession) -> User:
         email_verified=True,  # Email verified
         is_active=True,
         is_superuser=False,
-        role=UserRole.GERAL.value,
+        role=UserRole.FREE.value,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )

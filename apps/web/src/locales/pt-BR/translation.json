@@ -1240,6 +1240,60 @@
     "eros": "Lote de Eros",
     "necessity": "Lote da Necessidade"
   },
+  "premium": {
+    "upgradeToPremium": "Atualize para Premium",
+    "featureLockedTitle": "{{feature}} é um Recurso Premium",
+    "featureLockedDescription": "Este recurso é exclusivo para assinantes Premium. Atualize seu plano para desbloquear {{feature}} e outras funcionalidades avançadas.",
+    "genericDescription": "Tenha acesso a recursos avançados de astrologia como horária, profecções, firdária e muito mais!",
+    "upgrade": "Atualizar",
+    "viewPlans": "Ver Planos",
+    "features": {
+      "horary": "Astrologia Horária",
+      "profections": "Profecções",
+      "firdaria": "Firdária",
+      "solarReturn": "Revolução Solar"
+    }
+  },
+  "pricing": {
+    "badge": "Planos e Preços",
+    "title": "Escolha o plano ideal para você",
+    "subtitle": "Desbloqueie todo o potencial da astrologia tradicional com nossos planos Premium.",
+    "yourPlan": "Seu plano atual:",
+    "currentPlan": "Plano Atual",
+    "downgrade": "Fazer Downgrade",
+    "getStartedFree": "Começar Grátis",
+    "subscribe": "Assinar Premium",
+    "recommended": "Recomendado",
+    "plans": {
+      "free": {
+        "name": "Gratuito",
+        "description": "Para começar sua jornada astrológica",
+        "price": "R$ 0",
+        "period": "/mês"
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "Para astrólogos sérios que buscam profundidade",
+        "price": "R$ 29,90",
+        "period": "/mês"
+      }
+    },
+    "features": {
+      "natalCharts": "Mapas natais ilimitados",
+      "basicInterpretations": "Interpretações básicas",
+      "advancedInterpretations": "Interpretações avançadas com IA",
+      "chartVisualization": "Visualização de mapa SVG",
+      "horary": "Astrologia Horária",
+      "profections": "Profecções",
+      "firdaria": "Firdária",
+      "solarReturn": "Revolução Solar",
+      "prioritySupport": "Suporte prioritário"
+    },
+    "comingSoon": {
+      "title": "Em breve!",
+      "description": "O sistema de assinaturas está em desenvolvimento. Enquanto isso, aproveite as funcionalidades gratuitas e fique atento para novidades!"
+    }
+  },
   "landing": {
     "homeLabel": "Página Inicial",
     "login": "Entrar",

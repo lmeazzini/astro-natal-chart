@@ -51,7 +51,7 @@ class User(Base):
     # Role-based access control
     role: Mapped[str] = mapped_column(
         String(20),
-        default=UserRole.GERAL.value,
+        default=UserRole.FREE.value,
         nullable=False,
         index=True,
     )
@@ -131,12 +131,17 @@ class User(Base):
         return self.role == UserRole.ADMIN.value or self.is_superuser
 
     @property
+    def is_premium(self) -> bool:
+        """Check if user has premium or higher role."""
+        return self.role in [UserRole.PREMIUM.value, UserRole.ADMIN.value] or self.is_superuser
+
+    @property
     def user_role(self) -> UserRole:
         """Get user role as enum."""
         try:
             return UserRole(self.role)
         except ValueError:
-            return UserRole.GERAL
+            return UserRole.FREE
 
 
 class OAuthAccount(Base):

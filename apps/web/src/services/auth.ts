@@ -18,7 +18,7 @@ export interface LoginData {
 }
 
 export type UserType = 'professional' | 'student' | 'curious';
-export type UserRole = 'geral' | 'admin';
+export type UserRole = 'free' | 'premium' | 'admin';
 
 export interface User {
   id: string;

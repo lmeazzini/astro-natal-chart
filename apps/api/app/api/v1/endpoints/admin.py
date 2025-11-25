@@ -152,7 +152,7 @@ async def update_user_role(
         )
 
     # If demoting an admin, check if there's at least one other admin
-    if user.role == UserRole.ADMIN.value and request.role == UserRole.GERAL:
+    if user.role == UserRole.ADMIN.value and request.role == UserRole.FREE:
         admin_count_stmt = select(func.count(User.id)).where(
             User.role == UserRole.ADMIN.value,
             User.deleted_at.is_(None),

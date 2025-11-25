@@ -1217,6 +1217,60 @@
       "seeExample": "See Chart Example"
     }
   },
+  "premium": {
+    "upgradeToPremium": "Upgrade to Premium",
+    "featureLockedTitle": "{{feature}} is a Premium Feature",
+    "featureLockedDescription": "This feature is exclusive to Premium subscribers. Upgrade your plan to unlock {{feature}} and other advanced features.",
+    "genericDescription": "Get access to advanced astrology features like horary, profections, firdaria, and more!",
+    "upgrade": "Upgrade",
+    "viewPlans": "View Plans",
+    "features": {
+      "horary": "Horary Astrology",
+      "profections": "Profections",
+      "firdaria": "Firdaria",
+      "solarReturn": "Solar Return"
+    }
+  },
+  "pricing": {
+    "badge": "Plans & Pricing",
+    "title": "Choose the right plan for you",
+    "subtitle": "Unlock the full potential of traditional astrology with our Premium plans.",
+    "yourPlan": "Your current plan:",
+    "currentPlan": "Current Plan",
+    "downgrade": "Downgrade",
+    "getStartedFree": "Get Started Free",
+    "subscribe": "Subscribe to Premium",
+    "recommended": "Recommended",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "To start your astrological journey",
+        "price": "$0",
+        "period": "/month"
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "For serious astrologers seeking depth",
+        "price": "$9.90",
+        "period": "/month"
+      }
+    },
+    "features": {
+      "natalCharts": "Unlimited natal charts",
+      "basicInterpretations": "Basic interpretations",
+      "advancedInterpretations": "Advanced AI interpretations",
+      "chartVisualization": "SVG chart visualization",
+      "horary": "Horary Astrology",
+      "profections": "Profections",
+      "firdaria": "Firdaria",
+      "solarReturn": "Solar Return",
+      "prioritySupport": "Priority support"
+    },
+    "comingSoon": {
+      "title": "Coming Soon!",
+      "description": "The subscription system is under development. In the meantime, enjoy the free features and stay tuned for updates!"
+    }
+  },
   "landing": {
     "homeLabel": "Home",
     "login": "Login",

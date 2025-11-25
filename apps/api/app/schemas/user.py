@@ -154,7 +154,7 @@ class UserRead(UserBase):
     email_verified: bool
     is_active: bool
     is_superuser: bool
-    role: str  # User role (geral, admin)
+    role: str  # User role (free, premium, admin)
     bio: str | None
     profile_public: bool
     user_type: str

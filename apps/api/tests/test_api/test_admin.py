@@ -1,7 +1,7 @@
 """
 Tests for admin endpoints.
 
-Tests RBAC (Role-Based Access Control) with GERAL and ADMIN roles.
+Tests RBAC (Role-Based Access Control) with FREE, PREMIUM and ADMIN roles.
 Tests email verification requirement for admin access (issue #138).
 """
 
@@ -189,7 +189,7 @@ class TestGetUserDetail:
         data = response.json()
         assert data["email"] == test_user.email
         assert data["full_name"] == test_user.full_name
-        assert data["role"] == "geral"
+        assert data["role"] == "free"
         assert "chart_count" in data
 
     async def test_regular_user_cannot_get_user_detail(
@@ -260,7 +260,7 @@ class TestUpdateUserRole:
         response = await client.patch(
             f"/api/v1/admin/users/{another_admin.id}/role",
             headers=admin_auth_headers,
-            json={"role": "geral"},
+            json={"role": "free"},
         )
 
         # Should fail because we can't modify another admin's role
@@ -277,7 +277,7 @@ class TestUpdateUserRole:
         response = await client.patch(
             f"/api/v1/admin/users/{test_admin_user.id}/role",
             headers=admin_auth_headers,
-            json={"role": "geral"},
+            json={"role": "free"},
         )
 
         assert response.status_code == 400
@@ -296,7 +296,7 @@ class TestUpdateUserRole:
         # First, let's create a user with admin role
         new_user = await test_user_factory(
             email="temp@example.com",
-            role=UserRole.GERAL.value,
+            role=UserRole.FREE.value,
         )
 
         # This should work - promoting user
@@ -381,12 +381,12 @@ class TestSystemStats:
 class TestRoleAssignment:
     """Tests for automatic role assignment during registration."""
 
-    async def test_register_regular_user_gets_geral_role(
+    async def test_register_regular_user_gets_free_role(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
     ):
-        """Regular user registration should get GERAL role."""
+        """Regular user registration should get FREE role."""
         response = await client.post(
             "/api/v1/auth/register",
             json={
@@ -401,7 +401,7 @@ class TestRoleAssignment:
         assert response.status_code == 201
         data = response.json()
         # Response is UserRead schema directly (not wrapped in "user" key)
-        assert data["role"] == "geral"
+        assert data["role"] == "free"
 
     async def test_register_realastrology_email_gets_admin_role(
         self,
@@ -440,7 +440,7 @@ class TestSuperuserBackwardCompatibility:
         superuser = await test_user_factory(
             email="superuser@example.com",
             is_superuser=True,
-            role=UserRole.GERAL.value,  # Role is geral but is_superuser is True
+            role=UserRole.FREE.value,  # Role is free but is_superuser is True
         )
 
         from app.core.security import create_access_token
@@ -474,7 +474,7 @@ class TestUserReadSchema:
         assert response.status_code == 200
         data = response.json()
         assert "role" in data
-        assert data["role"] == "geral"
+        assert data["role"] == "free"
 
     async def test_admin_user_me_includes_admin_role(
         self,

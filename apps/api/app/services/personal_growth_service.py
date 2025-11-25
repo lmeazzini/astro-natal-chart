@@ -350,9 +350,9 @@ Analyze this natal chart and provide 3-5 SPECIFIC, ACTIONABLE growth points.
 Chart Summary:
 {chart_summary}
 
-Retrograde Planets: {json.dumps(patterns.get('retrogrades', []), indent=2)}
-Challenging Placements: {json.dumps(patterns.get('weak_dignities', []), indent=2)}
-Difficult Aspects: {json.dumps(patterns.get('difficult_aspects', [])[:5], indent=2)}
+Retrograde Planets: {json.dumps(patterns.get("retrogrades", []), indent=2)}
+Challenging Placements: {json.dumps(patterns.get("weak_dignities", []), indent=2)}
+Difficult Aspects: {json.dumps(patterns.get("difficult_aspects", [])[:5], indent=2)}
 {focus_instruction}
 
 For each growth point, provide:
@@ -451,8 +451,8 @@ Analyze this natal chart and identify 3-4 key challenges with solutions.
 Chart Summary:
 {chart_summary}
 
-Difficult Aspects: {json.dumps(patterns.get('difficult_aspects', [])[:5], indent=2)}
-Challenging Placements: {json.dumps(patterns.get('weak_dignities', []), indent=2)}
+Difficult Aspects: {json.dumps(patterns.get("difficult_aspects", [])[:5], indent=2)}
+Challenging Placements: {json.dumps(patterns.get("weak_dignities", []), indent=2)}
 {focus_instruction}
 
 For each challenge, provide:
@@ -551,9 +551,9 @@ Analyze this natal chart and identify 3-4 natural talents and opportunities.
 Chart Summary:
 {chart_summary}
 
-Harmonious Aspects: {json.dumps(patterns.get('harmonious_aspects', [])[:5], indent=2)}
-Strong Placements: {json.dumps(patterns.get('strong_dignities', []), indent=2)}
-Stelliums: {json.dumps(patterns.get('stelliums', []), indent=2)}
+Harmonious Aspects: {json.dumps(patterns.get("harmonious_aspects", [])[:5], indent=2)}
+Strong Placements: {json.dumps(patterns.get("strong_dignities", []), indent=2)}
+Stelliums: {json.dumps(patterns.get("stelliums", []), indent=2)}
 {focus_instruction}
 
 For each opportunity/talent, provide:
@@ -651,9 +651,9 @@ Chart Summary:
 {chart_summary}
 
 Big Three:
-- Sun: {big_three.get('sun', {}).get('sign', 'Unknown')} in House {big_three.get('sun', {}).get('house', '?')}
-- Moon: {big_three.get('moon', {}).get('sign', 'Unknown')} in House {big_three.get('moon', {}).get('house', '?')}
-- Ascendant: {big_three.get('ascendant', {}).get('sign', 'Unknown')}
+- Sun: {big_three.get("sun", {}).get("sign", "Unknown")} in House {big_three.get("sun", {}).get("house", "?")}
+- Moon: {big_three.get("moon", {}).get("sign", "Unknown")} in House {big_three.get("moon", {}).get("house", "?")}
+- Ascendant: {big_three.get("ascendant", {}).get("sign", "Unknown")}
 {focus_instruction}
 
 Provide insights about:

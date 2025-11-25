@@ -6,7 +6,9 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     admin,
+    admin_blog,
     auth,
+    blog,
     cache,
     charts,
     geocoding,
@@ -18,6 +20,7 @@ from app.api.v1.endpoints import (
     privacy,
     public_charts,
     rag,
+    seo,
     timezones,
     users,
 )
@@ -126,4 +129,22 @@ api_router.include_router(
 api_router.include_router(
     growth.router,
     tags=["personal-growth"],
+)
+
+# Blog endpoints (public - no auth required)
+api_router.include_router(
+    blog.router,
+    tags=["blog"],
+)
+
+# Blog admin endpoints (admin only)
+api_router.include_router(
+    admin_blog.router,
+    tags=["admin-blog"],
+)
+
+# SEO endpoints (sitemap, RSS, robots.txt)
+api_router.include_router(
+    seo.router,
+    tags=["seo"],
 )

@@ -19,7 +19,10 @@
     "optional": "Opcional",
     "required": "Obrigatório",
     "show": "Mostrar",
-    "hide": "Ocultar"
+    "hide": "Ocultar",
+    "pageOf": "Página {{current}} de {{total}}",
+    "myCharts": "Meus Mapas",
+    "login": "Entrar"
   },
   "nav": {
     "home": "Início",
@@ -1525,5 +1528,31 @@
       "integration": "Integração",
       "nextSteps": "Próximos Passos"
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Artigos sobre astrologia, mapas astrais e autoconhecimento",
+    "description": "Explore nossos artigos sobre astrologia tradicional, interpretação de mapas astrais e desenvolvimento pessoal.",
+    "noPosts": "Nenhum artigo encontrado",
+    "filteringBy": "Filtrando por",
+    "clearFilter": "Limpar filtro",
+    "categories": "Categorias",
+    "allCategories": "Todas as Categorias",
+    "popularTags": "Tags Populares",
+    "readTime": "de leitura",
+    "views": "visualizações",
+    "share": "Compartilhar",
+    "sharing": "Compartilhando...",
+    "copied": "Link copiado!",
+    "backToBlog": "Voltar ao Blog",
+    "recentPosts": "Posts Recentes",
+    "postNotFound": "Artigo não encontrado",
+    "postNotFoundDescription": "O artigo que você está procurando não existe ou foi removido.",
+    "ctaTitle": "Crie Seu Mapa",
+    "ctaDescription": "Descubra seu mapa astral com interpretações detalhadas.",
+    "ctaButton": "Começar Agora"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados."
   }
 }

@@ -126,8 +126,7 @@ async def _clear_by_prompt_version_async(prompt_version: str) -> dict[str, int |
         }
 
         logger.info(
-            f"Cache cleared for prompt version {prompt_version}: "
-            f"{deleted_count} entries deleted"
+            f"Cache cleared for prompt version {prompt_version}: {deleted_count} entries deleted"
         )
 
         return result

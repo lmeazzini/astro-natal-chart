@@ -155,5 +155,5 @@ def get_document_loader() -> DocumentLoader:
         return get_s3_document_loader()
     else:
         raise ValueError(
-            f"Invalid RAG_STORAGE_TYPE: {settings.RAG_STORAGE_TYPE}. " "Must be 'local' or 's3'."
+            f"Invalid RAG_STORAGE_TYPE: {settings.RAG_STORAGE_TYPE}. Must be 'local' or 's3'."
         )

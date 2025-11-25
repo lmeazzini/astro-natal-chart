@@ -2,6 +2,7 @@
 Database models.
 """
 
+from app.models.blog_post import BlogPost
 from app.models.chart import AuditLog, BirthChart
 from app.models.interpretation_cache import InterpretationCache
 from app.models.password_reset import PasswordResetToken
@@ -24,4 +25,5 @@ __all__ = [
     "SearchIndex",
     "PublicChart",
     "PublicChartInterpretation",
+    "BlogPost",
 ]

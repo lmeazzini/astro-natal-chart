@@ -2,6 +2,10 @@
 Security utilities: password hashing, JWT creation/validation.
 """
 
+# Python 3.13 Migration Note:
+# datetime.utcnow() is deprecated in Python 3.12+ and removed in 3.14.
+# Always use datetime.now(UTC) for timezone-aware UTC timestamps.
+# This ensures proper timezone handling and future compatibility.
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 

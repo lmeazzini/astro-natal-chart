@@ -731,202 +731,6 @@
     }
   },
   "pages": {
-    "landing": {
-      "homeLabel": "Página Inicial",
-      "login": "Entrar",
-      "createAccount": "Criar Conta",
-      "heroTitle": "Desvende os Mistérios do Seu Mapa Natal com Precisão Astronômica",
-      "heroSubtitle1": "Cálculos precisos com",
-      "heroSubtitle2": "visualizações profissionais em HD e interpretações personalizadas com",
-      "ai": "Inteligência Artificial",
-      "createFreeAccount": "Criar Minha Conta Grátis",
-      "viewExampleChart": "Ver Exemplo de Mapa",
-      "whyAstro": {
-        "title": "Por que Astro?",
-        "subtitle": "Nossa plataforma combina o melhor da Astrologia Tradicional com precisão astronômica de ponta, oferecendo cálculos confiáveis e interpretações autênticas.",
-        "traditional": {
-          "title": "Astrologia Tradicional",
-          "description": "Utilizamos técnicas clássicas da Astrologia Helenística e Medieval:",
-          "dignities": "Dignidades Essenciais",
-          "dignitiesDesc": "Domicílio, Exaltação, Triplicidade",
-          "sect": "Análise de Seita",
-          "sectDesc": "Planetas diurnos e noturnos",
-          "temperament": "Temperamento",
-          "temperamentDesc": "Análise dos 4 elementos e qualidades",
-          "lordOfNativity": "Senhor da Natividade",
-          "lordOfNativityDesc": "Identificação do planeta regente",
-          "differentialLabel": "Diferencial",
-          "differential": "Ao contrário da astrologia moderna psicológica, focamos em técnicas preditivas e objetivas validadas por séculos de prática."
-        },
-        "precision": {
-          "title": "Precisão Swiss Ephemeris",
-          "description": "Utilizamos o Swiss Ephemeris com efemérides JPL DE431 da NASA:",
-          "arcsecond": "< 1 arcsecond de erro",
-          "arcsecondDesc": "Precisão astronômica profissional",
-          "nasa": "Validação NASA/JPL",
-          "nasaDesc": "Mesmas efemérides de missões espaciais",
-          "coverage": "Cobertura de 13.000 anos",
-          "coverageDesc": "Cálculos históricos e futuros confiáveis",
-          "relativistic": "Ajustes relativísticos",
-          "relativisticDesc": "Inclui correções de Relatividade Geral",
-          "whyMatters": "Por que importa?",
-          "whyMattersDesc": "Diferenças de minutos na hora de nascimento podem alterar casas e aspectos. Nossa precisão garante cálculos confiáveis mesmo para horários aproximados."
-        },
-        "openSource": {
-          "title": "Código Aberto & Transparência",
-          "description": "Projeto open source com metodologia transparente e verificável:",
-          "auditable": "Código auditável",
-          "auditableDesc": "Qualquer um pode verificar nossos cálculos",
-          "documented": "Metodologia documentada",
-          "documentedDesc": "Explicamos cada técnica utilizada",
-          "noBlackbox": "Sem \"caixas-pretas\"",
-          "noBlackboxDesc": "Algoritmos claros e científicos",
-          "community": "Comunidade ativa",
-          "communityDesc": "Contribuições de astrólogos e desenvolvedores",
-          "commitment": "Nosso compromisso",
-          "commitmentDesc": "Nenhum algoritmo secreto ou \"fórmula mágica\". Tudo é baseado em textos clássicos e cálculos astronômicos verificáveis."
-        },
-        "learnMore": "Saiba Mais Sobre Nossa Metodologia"
-      },
-      "howItWorks": {
-        "title": "Como Funciona",
-        "subtitle": "Em poucos minutos você terá seu mapa natal completo com análise profissional",
-        "step1": {
-          "title": "Cadastro Rápido",
-          "description": "Crie sua conta gratuitamente em menos de 1 minuto. Apenas email e senha, sem complicações."
-        },
-        "step2": {
-          "title": "Dados de Nascimento",
-          "description": "Informe data, hora e local de nascimento. Nosso sistema encontra as coordenadas automaticamente."
-        },
-        "step3": {
-          "title": "Cálculo Preciso",
-          "description": "Em segundos, calculamos posições planetárias, casas e aspectos com precisão astronômica."
-        },
-        "step4": {
-          "title": "Visualize e Interprete",
-          "description": "Acesse seu mapa natal completo com gráficos profissionais e interpretações detalhadas."
-        }
-      },
-      "differentials": {
-        "title": "Por Que Escolher o Real Astrology?",
-        "subtitle": "A combinação perfeita entre tradição milenar e tecnologia de ponta",
-        "precision": {
-          "title": "Precisão Astronômica",
-          "description": "Utilizamos Swiss Ephemeris JPL DE431 com precisão inferior a 0.001° de erro. A mesma biblioteca usada por astronomos e agências espaciais."
-        },
-        "visualization": {
-          "title": "Visualização Profissional",
-          "description": "Mapas natais em alta definição com todos os elementos: planetas, casas, aspectos, graus e símbolos tradicionais."
-        },
-        "ai": {
-          "title": "Interpretações com IA",
-          "description": "Análises personalizadas geradas por Inteligência Artificial treinada em textos clássicos de astrologia tradicional."
-        },
-        "multiplatform": {
-          "title": "Multi-Plataforma",
-          "description": "Acesse de qualquer dispositivo - desktop, tablet ou smartphone. Interface adaptável e otimizada para todas as telas."
-        },
-        "security": {
-          "title": "100% Seguro",
-          "description": "Criptografia de ponta a ponta, conformidade com LGPD/GDPR. Seus dados pessoais protegidos com tecnologia SSL/TLS."
-        },
-        "unlimited": {
-          "title": "Mapas Ilimitados",
-          "description": "Crie quantos mapas natais quiser, completamente grátis. Sem limites, sem taxas ocultas, sem pegadinhas."
-        },
-        "pdf": {
-          "title": "Exportação PDF",
-          "description": "Relatórios profissionais em PDF de alta qualidade gerados com LaTeX. Perfeitos para impressão e compartilhamento."
-        },
-        "darkMode": {
-          "title": "Dark Mode",
-          "description": "Interface adaptável com modo escuro automático. Perfeito para uso noturno, respeitando suas preferências de sistema."
-        }
-      },
-      "authority": {
-        "title": "Baseado em Ciência e Tradição",
-        "subtitle": "Combinamos métodos milenares com a tecnologia mais avançada disponível",
-        "traditional": {
-          "title": "Astrologia Tradicional & Helênica",
-          "description": "Seguimos métodos tradicionais com mais de 2.000 anos de história, baseados nos ensinamentos dos mestres clássicos.",
-          "elementsTitle": "Elementos Considerados:",
-          "houseSystems": "Sistemas de casas (Placidus, Koch, Whole Sign)",
-          "dignities": "Dignidades essenciais e acidentais",
-          "aspects": "Aspectos clássicos e orbes tradicionais",
-          "nodes": "Nodos lunares e partes arábicas",
-          "authorityLabel": "Autoridade",
-          "authorityDesc": "Baseado nas obras de Ptolomeu (Tetrabiblos), Vettius Valens (Antologia) e Abu Ma'shar (Liber Introductorius)"
-        },
-        "precision": {
-          "title": "Precisão Astronômica",
-          "description": "Utilizamos o Swiss Ephemeris, a mesma biblioteca usada por astrônomos profissionais e agências espaciais em todo o mundo.",
-          "specsTitle": "Especificações Técnicas:",
-          "jpl": "Efemérides JPL DE431 (NASA/JPL)",
-          "accuracy": "Precisão superior a 0.001° (1 arcsecond)",
-          "validated": "Cálculos validados cientificamente",
-          "coverage": "Cobertura temporal de 13.000 anos"
-        },
-        "ai": {
-          "title": "Inteligência Artificial",
-          "description": "Interpretações personalizadas geradas por IA de última geração, treinada extensivamente em textos clássicos de astrologia.",
-          "techTitle": "Tecnologia:",
-          "gpt": "GPT-4 com prompts especializados",
-          "knowledge": "Base de conhecimento de textos helênicos",
-          "context": "Contexto de astrologia medieval e tradicional",
-          "analysis": "Análise de dignidades e disposições",
-          "importantLabel": "Importante",
-          "importantDesc": "A IA complementa, mas não substitui, a análise de um astrólogo profissional. Use como ponto de partida para seu estudo."
-        }
-      },
-      "security": {
-        "title": "Sua Privacidade é Nossa Prioridade",
-        "subtitle": "Proteção total dos seus dados com conformidade às leis internacionais de privacidade",
-        "auditLog": "Auditoria Completa",
-        "encryption": "Todos os seus dados são protegidos com criptografia SSL/TLS de ponta a ponta durante transmissão e armazenamento. Utilizamos os mais altos padrões de segurança da indústria.",
-        "auditLogs": "Mantemos logs completos de auditoria para garantir transparência total sobre o acesso e uso dos seus dados pessoais, conforme exigido pela LGPD e GDPR.",
-        "control": "Você tem controle total sobre seus dados: acesso, correção, exclusão e portabilidade garantidos por lei. Seus dados de nascimento nunca são compartilhados com terceiros.",
-        "privacyPolicy": "Política de Privacidade",
-        "termsOfUse": "Termos de Uso"
-      },
-      "faq": {
-        "title": "Perguntas Frequentes",
-        "subtitle": "Tire suas dúvidas sobre o Real Astrology",
-        "q1": "O que é um mapa natal?",
-        "a1": "Um mapa natal (ou carta astral) é uma representação gráfica das posições dos planetas, signos e casas astrológicas no momento exato do seu nascimento. Ele revela potenciais, características pessoais e tendências de vida baseadas na astrologia tradicional.",
-        "q2": "Preciso saber a hora exata do meu nascimento?",
-        "a2": "Sim, a hora exata é fundamental para cálculos precisos, especialmente para determinar o Ascendente e as posições das casas astrológicas. Uma diferença de apenas 4 minutos pode alterar o Ascendente. Se não souber, consulte sua certidão de nascimento ou registro hospitalar.",
-        "q3": "Como vocês calculam o mapa natal?",
-        "a3": "Utilizamos o Swiss Ephemeris com efemérides JPL DE431 da NASA, garantindo precisão astronômica superior a 0.001°. Nossos algoritmos calculam posições planetárias, casas astrológicas (múltiplos sistemas), aspectos entre planetas e pontos sensíveis como nodos lunares e partes arábicas.",
-        "q4": "Meus dados estão seguros?",
-        "a4": "Sim! Utilizamos criptografia SSL/TLS de ponta a ponta, armazenamento seguro e somos 100% conformes com LGPD e GDPR. Seus dados nunca são compartilhados com terceiros. Você tem controle total: pode acessar, corrigir ou excluir seus dados a qualquer momento.",
-        "q5": "Posso criar mapas natais para outras pessoas?",
-        "a5": "Sim! Você pode criar quantos mapas natais quiser - de amigos, familiares, clientes (se for astrólogo profissional), figuras históricas, etc. Não há limite de mapas criados. Apenas informe os dados de nascimento corretos.",
-        "q6": "O serviço é realmente gratuito?",
-        "a6": "Sim, completamente gratuito! Você pode criar mapas natais ilimitados, visualizar gráficos profissionais, acessar interpretações com IA e exportar PDFs sem pagar nada. Não há taxas ocultas, períodos de teste ou limitações. É grátis para sempre.",
-        "q7": "As interpretações com IA substituem um astrólogo profissional?",
-        "a7": "Não. As interpretações geradas por IA são um excelente ponto de partida para estudar seu mapa, mas não substituem a análise aprofundada de um astrólogo profissional qualificado. Use nossa IA como ferramenta de aprendizado e autoconhecimento, mas considere consultar um especialista para análises complexas ou questões específicas.",
-        "q8": "Como funciona o Dark Mode?",
-        "a8": "O Dark Mode pode ser ativado manualmente através do botão de tema na interface, ou configurado para seguir automaticamente as preferências do seu sistema operacional. Ideal para uso noturno, reduz fadiga ocular e economiza bateria em dispositivos com telas OLED."
-      },
-      "cta": {
-        "title": "Pronto para Descobrir Seu Destino?",
-        "subtitle": "Cadastre-se gratuitamente em menos de 1 minuto e comece a explorar os mistérios do seu mapa natal com precisão astronômica",
-        "button": "Começar Agora - É Grátis",
-        "benefits": "✓ Sem cartão de crédito    ✓ Sem limite de mapas    ✓ Grátis para sempre"
-      },
-      "footer": {
-        "description": "Sistema de mapas natais com precisão astronômica e astrologia tradicional.",
-        "legal": "Legal",
-        "terms": "Termos de Uso",
-        "privacy": "Política de Privacidade",
-        "cookies": "Política de Cookies",
-        "access": "Acesso",
-        "login": "Entrar",
-        "register": "Criar Conta",
-        "copyright": "Todos os direitos reservados."
-      }
-    },
     "oauthCallback": {
       "tokensNotFound": "Falha na autenticação OAuth. Tokens não encontrados.",
       "userFetchFailed": "Falha ao buscar dados do usuário",
@@ -1417,6 +1221,7 @@
       "title": "Descubra Quem Você Realmente É",
       "subtitle": "O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.",
       "cta": "Criar Meu Mapa Grátis",
+      "viewExample": "Ver Exemplos de Mapas",
       "noCreditCard": "Sem cartão de crédito",
       "dataSecure": "Seus dados seguros (LGPD)",
       "twoMinutes": "Leva 2 minutos"
@@ -1563,6 +1368,7 @@
       "access": "Acesso",
       "login": "Entrar",
       "register": "Criar Conta",
+      "dashboard": "Meus Mapas",
       "madeWith": "Feito com ♄ e ♃ no Brasil."
     }
   }

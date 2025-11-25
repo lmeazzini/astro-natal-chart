@@ -43,6 +43,7 @@ import {
   Shield,
   CreditCard,
   Clock,
+  Frown,
 } from 'lucide-react';
 
 export function LandingPage() {
@@ -109,6 +110,11 @@ export function LandingPage() {
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/charts/famous">
+                  {t('landing.hero.viewExample', { defaultValue: 'Ver Exemplos de Mapas' })}
+                </Link>
+              </Button>
             </div>
 
             {/* Friction Reducers */}
@@ -155,7 +161,7 @@ export function LandingPage() {
                 key={pain.key}
                 className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border border-border/50"
               >
-                <span className="text-2xl">😔</span>
+                <Frown className="h-6 w-6 text-muted-foreground/60 flex-shrink-0" />
                 <span className="text-muted-foreground italic">{pain.text}</span>
               </div>
             ))}
@@ -675,7 +681,7 @@ export function LandingPage() {
                   {t('landing.footer.register', { defaultValue: 'Criar Conta' })}
                 </Link>
                 <Link to="/dashboard" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Dashboard
+                  {t('landing.footer.dashboard', { defaultValue: 'Dashboard' })}
                 </Link>
               </div>
             </div>

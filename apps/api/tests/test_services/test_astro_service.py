@@ -919,6 +919,193 @@ class TestCalculateArabicParts:
             assert "sign" in parts[part_name]
             assert "house" in parts[part_name]
 
+    def test_all_extended_parts_calculated(self):
+        """Test that all 13 Arabic Parts (including extended) are calculated."""
+        planets = [
+            PlanetPosition(
+                name="Venus", longitude=100.0, latitude=0, speed=1.0,
+                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+            ),
+            PlanetPosition(
+                name="Mercury", longitude=80.0, latitude=0, speed=1.5,
+                sign="Gemini", degree=20, minute=0, second=0, house=3, retrograde=False
+            ),
+            PlanetPosition(
+                name="Saturn", longitude=200.0, latitude=0, speed=0.1,
+                sign="Libra", degree=20, minute=0, second=0, house=7, retrograde=False
+            ),
+            PlanetPosition(
+                name="Mars", longitude=150.0, latitude=0, speed=0.8,
+                sign="Virgo", degree=0, minute=0, second=0, house=6, retrograde=False
+            ),
+            PlanetPosition(
+                name="Jupiter", longitude=250.0, latitude=0, speed=0.2,
+                sign="Sagittarius", degree=10, minute=0, second=0, house=9, retrograde=False
+            ),
+        ]
+        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
+                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+        parts = calculate_arabic_parts(
+            ascendant=100.0,
+            sun_longitude=150.0,
+            moon_longitude=200.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="diurnal"
+        )
+
+        # All 13 parts should be calculated
+        expected_parts = [
+            "fortune", "spirit", "eros", "necessity",
+            "marriage", "victory", "father", "mother",
+            "children", "exaltation", "illness", "courage", "reputation"
+        ]
+        for part_name in expected_parts:
+            assert part_name in parts, f"Missing part: {part_name}"
+            assert "longitude" in parts[part_name]
+            assert "sign" in parts[part_name]
+            assert "degree" in parts[part_name]
+            assert "house" in parts[part_name]
+
+    def test_part_of_marriage_diurnal(self):
+        """Test Part of Marriage: ASC + Venus - Saturn (day)."""
+        planets = [
+            PlanetPosition(
+                name="Venus", longitude=100.0, latitude=0, speed=1.0,
+                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+            ),
+            PlanetPosition(
+                name="Saturn", longitude=200.0, latitude=0, speed=0.1,
+                sign="Libra", degree=20, minute=0, second=0, house=7, retrograde=False
+            ),
+        ]
+        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
+                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+        parts = calculate_arabic_parts(
+            ascendant=50.0,
+            sun_longitude=150.0,
+            moon_longitude=200.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="diurnal"
+        )
+
+        assert "marriage" in parts
+        # Diurnal: ASC(50) + Venus(100) - Saturn(200) = -50 = 310 mod 360
+        assert abs(parts["marriage"]["longitude"] - 310.0) < 0.1
+
+    def test_part_of_marriage_nocturnal(self):
+        """Test Part of Marriage: ASC + Saturn - Venus (night)."""
+        planets = [
+            PlanetPosition(
+                name="Venus", longitude=100.0, latitude=0, speed=1.0,
+                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+            ),
+            PlanetPosition(
+                name="Saturn", longitude=200.0, latitude=0, speed=0.1,
+                sign="Libra", degree=20, minute=0, second=0, house=7, retrograde=False
+            ),
+        ]
+        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
+                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+        parts = calculate_arabic_parts(
+            ascendant=50.0,
+            sun_longitude=150.0,
+            moon_longitude=200.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="nocturnal"
+        )
+
+        assert "marriage" in parts
+        # Nocturnal: ASC(50) + Saturn(200) - Venus(100) = 150
+        assert abs(parts["marriage"]["longitude"] - 150.0) < 0.1
+
+    def test_part_of_exaltation_fixed_formula(self):
+        """Test Part of Exaltation uses fixed formula regardless of sect."""
+        planets = []
+        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
+                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+        parts_day = calculate_arabic_parts(
+            ascendant=100.0,
+            sun_longitude=150.0,
+            moon_longitude=200.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="diurnal"
+        )
+
+        parts_night = calculate_arabic_parts(
+            ascendant=100.0,
+            sun_longitude=150.0,
+            moon_longitude=200.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="nocturnal"
+        )
+
+        # Exaltation uses fixed formula: ASC + 19 - Sun (does NOT reverse)
+        # Both should give the same result
+        assert "exaltation" in parts_day
+        assert "exaltation" in parts_night
+        assert parts_day["exaltation"]["longitude"] == parts_night["exaltation"]["longitude"]
+
+        # Verify calculation: ASC(100) + 19 - Sun(150) = -31 = 329 mod 360
+        assert abs(parts_day["exaltation"]["longitude"] - 329.0) < 0.1
+
+    def test_part_of_courage_uses_fortune(self):
+        """Test Part of Courage correctly uses Part of Fortune in calculation."""
+        planets = [
+            PlanetPosition(
+                name="Mars", longitude=150.0, latitude=0, speed=0.8,
+                sign="Virgo", degree=0, minute=0, second=0, house=6, retrograde=False
+            ),
+        ]
+        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
+                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+        parts = calculate_arabic_parts(
+            ascendant=0.0,
+            sun_longitude=90.0,
+            moon_longitude=180.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="diurnal"
+        )
+
+        # Fortune (diurnal): ASC(0) + Moon(180) - Sun(90) = 90
+        # Courage (diurnal): ASC(0) + Fortune(90) - Mars(150) = -60 = 300 mod 360
+        assert "courage" in parts
+        assert abs(parts["fortune"]["longitude"] - 90.0) < 0.1
+        assert abs(parts["courage"]["longitude"] - 300.0) < 0.1
+
+    def test_part_of_reputation_uses_fortune_and_spirit(self):
+        """Test Part of Reputation correctly uses Fortune and Spirit."""
+        planets = []
+        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
+                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+        parts = calculate_arabic_parts(
+            ascendant=0.0,
+            sun_longitude=90.0,
+            moon_longitude=180.0,
+            planets=planets,
+            house_cusps=house_cusps,
+            sect="diurnal"
+        )
+
+        # Fortune (diurnal): ASC(0) + Moon(180) - Sun(90) = 90
+        # Spirit (diurnal): ASC(0) + Sun(90) - Moon(180) = -90 = 270 mod 360
+        # Reputation (diurnal): ASC(0) + Fortune(90) - Spirit(270) = -180 = 180 mod 360
+        assert "reputation" in parts
+        assert abs(parts["fortune"]["longitude"] - 90.0) < 0.1
+        assert abs(parts["spirit"]["longitude"] - 270.0) < 0.1
+        assert abs(parts["reputation"]["longitude"] - 180.0) < 0.1
+
 
 class TestCalculateBirthChart:
     """Tests for complete birth chart calculation."""

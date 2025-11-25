@@ -1,0 +1,150 @@
+name: Monthly Backup Test
+
+on:
+  schedule:
+    # Run on the 1st of every month at 3 AM UTC
+    - cron: '0 3 1 * *'
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      notification:
+        description: 'Send notification on completion'
+        required: false
+        default: 'true'
+        type: boolean
+
+jobs:
+  backup-restore-test:
+    name: Test Backup and Restore
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Reasonable timeout for backup/restore test
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: astro_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: astro_restore_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+
+      - name: Verify PostgreSQL connectivity
+        env:
+          PGPASSWORD: test_password
+        run: |
+          psql -h localhost -p 5432 -U astro_user -d astro_restore_test -c "SELECT 1" || exit 1
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/backup-db.sh
+          chmod +x scripts/restore-db.sh
+          chmod +x scripts/test-restore.sh
+
+      - name: Run automated backup/restore test
+        env:
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: 5432
+          TEST_DB_USER: astro_user
+          TEST_DB_PASSWORD: test_password
+          TEST_DB_NAME: astro_restore_test
+        run: |
+          ./scripts/test-restore.sh
+
+      - name: Archive test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-test-logs
+          path: /tmp/astro-restore-test-*.log
+          retention-days: 30
+
+      - name: Create GitHub Issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Monthly Backup Test Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: `## Backup/Restore Test Failed
+
+            The automated monthly backup test has failed. This indicates a problem with our disaster recovery procedures.
+
+            **Date:** ${new Date().toISOString()}
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            ## Action Required
+
+            1. Review the workflow logs for detailed error information
+            2. Check the archived test logs artifact
+            3. Investigate backup and restore scripts
+            4. Fix the issue and re-run the test
+            5. Update disaster recovery documentation if needed
+
+            ## Test Logs
+
+            Download the test logs from the workflow artifacts above.
+
+            ## Labels
+
+            - \`bug\`
+            - \`high-priority\`
+            - \`infra\`
+            - \`disaster-recovery\`
+
+            cc: @devops-team
+            `,
+              labels: ['bug', 'high-priority', 'infra', 'disaster-recovery']
+            });
+
+            console.log(`Created issue #${issue.data.number}`);
+
+      - name: Post success notification
+        if: success() && (github.event.inputs.notification == 'true' || github.event_name == 'schedule')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const message = `✅ Monthly backup test passed successfully on ${new Date().toISOString().split('T')[0]}`;
+
+            console.log(message);
+
+            // Optional: Send to Slack/Discord/Email
+            // You can add notification integrations here
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Backup Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **PostgreSQL Version:** 16" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ All backup and restore procedures are working correctly." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The following operations were tested:" >> $GITHUB_STEP_SUMMARY
+            echo "- Database backup creation" >> $GITHUB_STEP_SUMMARY
+            echo "- Backup file integrity verification" >> $GITHUB_STEP_SUMMARY
+            echo "- Database restore from backup" >> $GITHUB_STEP_SUMMARY
+            echo "- Data validation after restore" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Backup test failed. Please review the logs and fix the issue." >> $GITHUB_STEP_SUMMARY
+          fi

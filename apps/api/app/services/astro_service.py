@@ -600,6 +600,35 @@ def calculate_arabic_parts(
 
     parts = {}
 
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # Arabic Parts (Lots) - Traditional Hellenistic Astrology
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # All parts use the formula: ASC + Planet1 - Planet2 (modulo 360)
+    # Most reverse by sect (day/night), except Part of Exaltation (fixed formula)
+    #
+    # CORE PARTS (Phase 1):
+    #   1. Fortune:   Day: ASC + Moon - Sun      | Night: ASC + Sun - Moon
+    #   2. Spirit:    Day: ASC + Sun - Moon      | Night: ASC + Moon - Sun
+    #   3. Eros:      Day: ASC + Venus - Spirit  | Night: ASC + Spirit - Venus
+    #   4. Necessity: Day: ASC + Fortune - Mercury | Night: ASC + Mercury - Fortune
+    #
+    # EXTENDED PARTS (Phase 2 - Issue #110):
+    #   5. Marriage:   Day: ASC + Venus - Saturn  | Night: ASC + Saturn - Venus
+    #   6. Victory:    Day: ASC + Jupiter - Fortune | Night: ASC + Fortune - Jupiter
+    #   7. Father:     Day: ASC + Sun - Saturn    | Night: ASC + Saturn - Sun
+    #   8. Mother:     Day: ASC + Moon - Venus    | Night: ASC + Venus - Moon
+    #   9. Children:   Day: ASC + Jupiter - Moon  | Night: ASC + Moon - Jupiter
+    #  10. Exaltation: ASC + 19° (Sun's exaltation) - Sun  [FIXED - no reversal]
+    #  11. Illness:    Day: ASC + Mars - Saturn   | Night: ASC + Saturn - Mars
+    #  12. Courage:    Day: ASC + Fortune - Mars  | Night: ASC + Mars - Fortune
+    #  13. Reputation: Day: ASC + Fortune - Spirit | Night: ASC + Spirit - Fortune
+    #
+    # References:
+    #   - Vettius Valens, Anthology
+    #   - Firmicus Maternus, Mathesis
+    #   - Al-Biruni, Book of Instruction
+    # ═══════════════════════════════════════════════════════════════════════════════
+
     # 1. Part of Fortune (Lote da Fortuna)
     # Most important Arabic Part - body, health, material wealth
     # Diurnal: Asc + Moon - Sun

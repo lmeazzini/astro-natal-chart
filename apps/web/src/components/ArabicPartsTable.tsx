@@ -193,8 +193,8 @@ export function ArabicPartsTable({ parts, interpretations }: ArabicPartsTablePro
 
   return (
     <div className="space-y-4">
-      {/* Grid de Cards - 3 columns for expanded layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Grid de Cards - responsive layout up to 4 columns on XL screens */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {availableParts.map((info) => {
           const part = parts[info.key]!;
 

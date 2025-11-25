@@ -14,6 +14,59 @@ from app.services.interpretation_service_rag import (
 )
 
 
+# =============================================================================
+# Module-level fixtures to avoid duplication
+# =============================================================================
+
+
+@pytest.fixture
+def mock_db() -> MagicMock:
+    """Create mock database session."""
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_openai_client() -> MagicMock:
+    """Create mock OpenAI client."""
+    mock_response = MagicMock()
+    mock_response.choices = [
+        MagicMock(
+            message=MagicMock(
+                content="Test interpretation for Arabic Part in Aries house 1."
+            )
+        )
+    ]
+    mock_client = MagicMock()
+    mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+    return mock_client
+
+
+@pytest.fixture
+def mock_rag_service(
+    mock_openai_client: MagicMock, mock_db: MagicMock
+) -> InterpretationServiceRAG:
+    """Create InterpretationServiceRAG with mocked dependencies."""
+    with patch(
+        "app.services.interpretation_service_rag.AsyncOpenAI",
+        return_value=mock_openai_client,
+    ):
+        with patch(
+            "app.services.interpretation_service_rag.hybrid_search_service"
+        ) as mock_hybrid:
+            mock_hybrid.hybrid_search = AsyncMock(return_value=[])
+            # Disable cache for testing to avoid async db issues
+            service = InterpretationServiceRAG(
+                db=mock_db, use_cache=False, language="pt-BR"
+            )
+            service.client = mock_openai_client
+            return service
+
+
+# =============================================================================
+# Test Classes
+# =============================================================================
+
+
 class TestArabicPartsDefinitions:
     """Test Arabic Parts definitions include all extended parts."""
 
@@ -64,46 +117,6 @@ class TestArabicPartsDefinitions:
 class TestGenerateArabicPartInterpretation:
     """Tests for generate_arabic_part_interpretation method."""
 
-    @pytest.fixture
-    def mock_openai_client(self) -> MagicMock:
-        """Create mock OpenAI client."""
-        mock_response = MagicMock()
-        mock_response.choices = [
-            MagicMock(
-                message=MagicMock(
-                    content="Test interpretation for Arabic Part in Aries house 1."
-                )
-            )
-        ]
-        mock_client = MagicMock()
-        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
-        return mock_client
-
-    @pytest.fixture
-    def mock_db(self) -> MagicMock:
-        """Create mock database session."""
-        return MagicMock()
-
-    @pytest.fixture
-    def mock_rag_service(
-        self, mock_openai_client: MagicMock, mock_db: MagicMock
-    ) -> InterpretationServiceRAG:
-        """Create InterpretationServiceRAG with mocked dependencies."""
-        with patch(
-            "app.services.interpretation_service_rag.AsyncOpenAI",
-            return_value=mock_openai_client,
-        ):
-            with patch(
-                "app.services.interpretation_service_rag.hybrid_search_service"
-            ) as mock_hybrid:
-                mock_hybrid.hybrid_search = AsyncMock(return_value=[])
-                # Disable cache for testing to avoid async db issues
-                service = InterpretationServiceRAG(
-                    db=mock_db, use_cache=False, language="pt-BR"
-                )
-                service.client = mock_openai_client
-                return service
-
     @pytest.mark.asyncio
     async def test_generate_basic_arabic_part(
         self, mock_rag_service: InterpretationServiceRAG
@@ -120,139 +133,41 @@ class TestGenerateArabicPartInterpretation:
         assert isinstance(result, str)
         assert len(result) > 0
 
+    # Parametrized test for all extended Arabic Parts using astrologically
+    # significant sign/house combinations (e.g., marriage in Libra/7th house
+    # because Libra rules partnerships and 7th is the house of marriage)
     @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_marriage(
-        self, mock_rag_service: InterpretationServiceRAG
+    @pytest.mark.parametrize(
+        "part_key,sign,house,sect",
+        [
+            ("marriage", "Libra", 7, "diurnal"),  # Libra rules 7th house of partnerships
+            ("victory", "Sagittarius", 9, "nocturnal"),  # Jupiter's sign, house of expansion
+            ("father", "Leo", 10, "diurnal"),  # Sun's sign, house of authority
+            ("mother", "Cancer", 4, "nocturnal"),  # Moon's sign, house of home/mother
+            ("children", "Leo", 5, "diurnal"),  # Sun's sign, house of children
+            ("exaltation", "Capricorn", 10, "diurnal"),  # Saturn's sign, house of status
+            ("illness", "Virgo", 6, "nocturnal"),  # Mercury's sign, house of health
+            ("courage", "Aries", 1, "diurnal"),  # Mars's sign, house of self
+            ("reputation", "Sagittarius", 10, "diurnal"),  # Jupiter's sign, house of fame
+        ],
+    )
+    async def test_generate_extended_arabic_part(
+        self,
+        mock_rag_service: InterpretationServiceRAG,
+        part_key: str,
+        sign: str,
+        house: int,
+        sect: str,
     ) -> None:
-        """Test generating interpretation for Part of Marriage."""
+        """Test generating interpretation for extended Arabic Parts."""
         result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="marriage",
-            sign="Libra",
-            house=7,
-            degree=10.0,
-            sect="diurnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_victory(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of Victory."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="victory",
-            sign="Sagittarius",
-            house=9,
-            degree=22.5,
-            sect="nocturnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_father(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of the Father."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="father",
-            sign="Leo",
-            house=10,
-            degree=5.0,
-            sect="diurnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_mother(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of the Mother."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="mother",
-            sign="Cancer",
-            house=4,
-            degree=18.0,
-            sect="nocturnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_children(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of Children."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="children",
-            sign="Leo",
-            house=5,
-            degree=12.0,
-            sect="diurnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_exaltation(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of Exaltation."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="exaltation",
-            sign="Capricorn",
-            house=10,
-            degree=28.0,
-            sect="diurnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_illness(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of Illness."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="illness",
-            sign="Virgo",
-            house=6,
-            degree=8.0,
-            sect="nocturnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_courage(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of Courage."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="courage",
-            sign="Aries",
-            house=1,
-            degree=1.0,
-            sect="diurnal",
-        )
-        assert result
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_generate_extended_arabic_part_reputation(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test generating interpretation for Part of Reputation."""
-        result = await mock_rag_service.generate_arabic_part_interpretation(
-            part_key="reputation",
-            sign="Sagittarius",
-            house=10,
+            part_key=part_key,
+            sign=sign,
+            house=house,
             degree=15.0,
-            sect="diurnal",
+            sect=sect,
         )
-        assert result
+        assert result, f"Failed to generate interpretation for {part_key}"
         assert isinstance(result, str)
 
     @pytest.mark.asyncio
@@ -269,34 +184,6 @@ class TestGenerateArabicPartInterpretation:
         )
         assert result == ""
 
-    @pytest.mark.asyncio
-    async def test_all_extended_parts_can_be_generated(
-        self, mock_rag_service: InterpretationServiceRAG
-    ) -> None:
-        """Test that all extended Arabic Parts can generate interpretations."""
-        extended_parts = [
-            "marriage",
-            "victory",
-            "father",
-            "mother",
-            "children",
-            "exaltation",
-            "illness",
-            "courage",
-            "reputation",
-        ]
-
-        for part_key in extended_parts:
-            result = await mock_rag_service.generate_arabic_part_interpretation(
-                part_key=part_key,
-                sign="Aries",
-                house=1,
-                degree=15.0,
-                sect="diurnal",
-            )
-            assert result, f"Failed to generate interpretation for {part_key}"
-            assert isinstance(result, str)
-
 
 class TestCacheHitTracking:
     """Tests for cache hit/miss tracking in Arabic Part interpretations."""
@@ -308,11 +195,6 @@ class TestCacheHitTracking:
         cache.get = AsyncMock(return_value=None)
         cache.set = AsyncMock()
         return cache
-
-    @pytest.fixture
-    def mock_db(self) -> MagicMock:
-        """Create mock database session."""
-        return MagicMock()
 
     @pytest.fixture
     def service_with_cache(
@@ -361,7 +243,8 @@ class TestCacheHitTracking:
 
     @pytest.mark.asyncio
     async def test_cache_hit_returns_cached_value(
-        self, service_with_cache: InterpretationServiceRAG,
+        self,
+        service_with_cache: InterpretationServiceRAG,
         mock_cache_service: MagicMock,
     ) -> None:
         """Test that cache hit returns cached value."""

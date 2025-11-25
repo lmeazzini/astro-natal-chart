@@ -177,6 +177,10 @@ class Settings(BaseSettings):
     # Unverified User Limits
     UNVERIFIED_USER_CHART_LIMIT: int = 5  # Max charts for unverified users
 
+    # Amplitude Analytics
+    AMPLITUDE_API_KEY: str | None = None
+    AMPLITUDE_ENABLED: bool = False
+
     @property
     def database_url_sync(self) -> str:
         """Get synchronous database URL for Alembic."""

@@ -65,10 +65,12 @@ export function PricingPage() {
         { text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }), included: false },
         { text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }), included: false },
       ],
-      ctaText: role === 'free' || !user
-        ? t('pricing.currentPlan', { defaultValue: 'Plano Atual' })
-        : t('pricing.downgrade', { defaultValue: 'Fazer Downgrade' }),
-      disabled: role === 'free' || !user,
+      ctaText: !user
+        ? t('pricing.getStartedFree', { defaultValue: 'Começar Grátis' })
+        : role === 'free'
+          ? t('pricing.currentPlan', { defaultValue: 'Plano Atual' })
+          : t('pricing.downgrade', { defaultValue: 'Fazer Downgrade' }),
+      disabled: role === 'free',
     },
     {
       id: 'premium',
@@ -231,27 +233,41 @@ export function PricingPage() {
                 </CardContent>
 
                 <CardFooter>
-                  <Button
-                    className={`w-full ${
-                      plan.highlighted && !plan.disabled
-                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white'
-                        : ''
-                    }`}
-                    variant={plan.highlighted ? 'default' : 'outline'}
-                    disabled={plan.disabled}
-                  >
-                    {plan.disabled ? (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        {plan.ctaText}
-                      </>
-                    ) : (
-                      <>
+                  {/* Non-authenticated users clicking free plan go to register */}
+                  {!user && plan.id === 'free' ? (
+                    <Button
+                      asChild
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <Link to="/register">
                         <Zap className="h-4 w-4 mr-2" />
                         {plan.ctaText}
-                      </>
-                    )}
-                  </Button>
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      className={`w-full ${
+                        plan.highlighted && !plan.disabled
+                          ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white'
+                          : ''
+                      }`}
+                      variant={plan.highlighted ? 'default' : 'outline'}
+                      disabled={plan.disabled}
+                    >
+                      {plan.disabled ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          {plan.ctaText}
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="h-4 w-4 mr-2" />
+                          {plan.ctaText}
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}

@@ -251,15 +251,28 @@ async def get_public_chart_interpretations(
         ) from e
 
 
+# Supported languages for interpretations
+SUPPORTED_LANGUAGES = ["pt-BR", "en-US"]
+
+
 async def _generate_public_chart_interpretations(
     chart: PublicChart,
     db: AsyncSession,
     language: str = "pt-BR",
+    generate_all_languages: bool = True,
 ) -> ChartInterpretationsResponse:
     """
     Generate RAG-enhanced interpretations for a public chart.
 
     This helper function generates interpretations and saves them to the database.
+    When generate_all_languages is True (default), it generates interpretations in
+    all supported languages (pt-BR and en-US).
+
+    Args:
+        chart: The public chart with chart_data
+        db: Database session
+        language: Primary language for the returned response
+        generate_all_languages: If True, also generates in other supported languages
     """
     planets: dict[str, str] = {}
     houses: dict[str, str] = {}
@@ -449,6 +462,31 @@ async def _generate_public_chart_interpretations(
         f"{len(aspects)} aspect, and {len(arabic_parts)} Arabic Part "
         f"interpretations for public chart {chart.id} ({language})"
     )
+
+    # Generate interpretations in other languages if requested
+    if generate_all_languages:
+        other_languages = [lang for lang in SUPPORTED_LANGUAGES if lang != language]
+        for other_lang in other_languages:
+            # Check if interpretations already exist for this language
+            existing_query = select(PublicChartInterpretation).where(
+                PublicChartInterpretation.chart_id == chart.id,
+                PublicChartInterpretation.language == other_lang,
+            )
+            result = await db.execute(existing_query)
+            existing_in_lang = result.scalars().all()
+
+            if not existing_in_lang:
+                logger.info(
+                    f"Generating additional interpretations in {other_lang} "
+                    f"for public chart {chart.id}"
+                )
+                # Generate in other language (don't recurse)
+                await _generate_public_chart_interpretations(
+                    chart=chart,
+                    db=db,
+                    language=other_lang,
+                    generate_all_languages=False,  # Prevent infinite recursion
+                )
 
     return ChartInterpretationsResponse(
         planets=planets,

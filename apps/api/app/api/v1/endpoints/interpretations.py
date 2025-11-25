@@ -344,6 +344,9 @@ async def regenerate_chart_interpretations(
 # RAG Interpretation Helper Function
 # ============================================================================
 
+# Supported languages for interpretations
+SUPPORTED_LANGUAGES = ["pt-BR", "en-US"]
+
 
 async def _generate_rag_interpretations(
     chart: BirthChart,
@@ -351,6 +354,7 @@ async def _generate_rag_interpretations(
     db: AsyncSession,
     save_to_db: bool = True,
     language: str = "pt-BR",
+    generate_all_languages: bool = True,
 ) -> RAGInterpretationsResponse:
     """
     Generate RAG-enhanced interpretations for a birth chart.
@@ -358,15 +362,21 @@ async def _generate_rag_interpretations(
     This helper function contains the common logic for generating RAG interpretations,
     used by both get and regenerate endpoints.
 
+    When generate_all_languages is True (default), it generates interpretations in
+    all supported languages (pt-BR and en-US) so users can switch languages without
+    waiting for regeneration.
+
     Args:
         chart: The birth chart with chart_data
-        rag_service: Configured RAG interpretation service
+        rag_service: Configured RAG interpretation service (used for primary language)
         db: Database session for saving interpretations
         save_to_db: Whether to save interpretations to the database
-        language: Language for interpretations ('pt-BR' or 'en-US')
+        language: Primary language for interpretations ('pt-BR' or 'en-US')
+        generate_all_languages: If True, also generates in other supported languages
 
     Returns:
         RAGInterpretationsResponse with planets, houses, and aspects interpretations
+        (in the primary language specified)
     """
     planets_data: dict[str, InterpretationItem] = {}
     houses_data: dict[str, InterpretationItem] = {}
@@ -636,8 +646,39 @@ async def _generate_rag_interpretations(
         logger.info(
             f"Saved {len(planets_data)} planet, {len(houses_data)} house, "
             f"{len(aspects_data)} aspect, and {len(arabic_parts_data)} Arabic Part "
-            f"RAG interpretations to database for chart {chart.id}"
+            f"RAG interpretations to database for chart {chart.id} ({language})"
         )
+
+    # Generate interpretations in other languages if requested
+    if save_to_db and generate_all_languages and repo:
+        other_languages = [lang for lang in SUPPORTED_LANGUAGES if lang != language]
+        for other_lang in other_languages:
+            # Check if interpretations already exist for this language
+            chart_uuid = UUID(str(chart.id))
+            existing = await repo.get_by_chart_id(chart_uuid)
+            existing_in_lang = [
+                i for i in existing
+                if i.prompt_version == RAG_PROMPT_VERSION
+                and getattr(i, 'language', 'pt-BR') == other_lang
+            ]
+
+            if not existing_in_lang:
+                logger.info(
+                    f"Generating additional interpretations in {other_lang} for chart {chart.id}"
+                )
+                # Create a new service instance for the other language
+                other_lang_service = InterpretationServiceRAG(
+                    db, use_cache=True, use_rag=True, language=other_lang
+                )
+                # Generate in other language (don't recurse - set generate_all_languages=False)
+                await _generate_rag_interpretations(
+                    chart=chart,
+                    rag_service=other_lang_service,
+                    db=db,
+                    save_to_db=True,
+                    language=other_lang,
+                    generate_all_languages=False,  # Prevent infinite recursion
+                )
 
     return RAGInterpretationsResponse(
         planets=planets_data,

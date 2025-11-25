@@ -3,7 +3,7 @@
 # Performs full PostgreSQL backup with compression and optional S3 upload
 # Also backs up Qdrant vector database snapshots
 # Author: Astro DevOps Team
-# Version: 1.1.0
+# Version: 1.2.0
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
@@ -79,6 +79,9 @@ cleanup_old_backups() {
 
         # Remove old backups
         find "$BACKUP_DIR" -name "astro_backup_*.sql.gz" -type f -mtime +"$RETENTION_DAYS" -delete
+
+        # Remove old metadata files
+        find "$BACKUP_DIR" -name "astro_backup_*.sql.gz.meta" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
 
         # Count backups after cleanup
         NEW_COUNT=$(find "$BACKUP_DIR" -name "astro_backup_*.sql.gz" -type f | wc -l)
@@ -195,6 +198,66 @@ check_disk_space() {
     fi
 
     return 0
+}
+
+create_backup_metadata() {
+    local backup_path="$1"
+    local metadata_file="${backup_path}.meta"
+
+    log "Creating backup metadata file..."
+
+    # Get PostgreSQL version
+    local pg_version=""
+    if [ -n "$DB_PASSWORD" ]; then
+        export PGPASSWORD="$DB_PASSWORD"
+    fi
+
+    pg_version=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT version()" 2>/dev/null | head -n1 | xargs)
+
+    unset PGPASSWORD
+
+    # Get backup file size
+    local file_size=$(stat -c%s "$backup_path" 2>/dev/null || stat -f%z "$backup_path" 2>/dev/null)
+    local file_size_human=$(numfmt --to=iec-i --suffix=B "$file_size" 2>/dev/null || echo "${file_size}B")
+
+    # Get database size
+    local db_size=""
+    if [ -n "$DB_PASSWORD" ]; then
+        export PGPASSWORD="$DB_PASSWORD"
+    fi
+
+    db_size=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT pg_size_pretty(pg_database_size('$DB_NAME'))" 2>/dev/null | xargs)
+
+    unset PGPASSWORD
+
+    # Write metadata in JSON format
+    cat > "$metadata_file" <<EOF
+{
+  "backup_timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "backup_file": "$BACKUP_FILE",
+  "backup_size_bytes": $file_size,
+  "backup_size_human": "$file_size_human",
+  "database": {
+    "name": "$DB_NAME",
+    "host": "$DB_HOST",
+    "port": $DB_PORT,
+    "version": "$pg_version",
+    "size": "$db_size"
+  },
+  "retention_days": $RETENTION_DAYS,
+  "compression_level": $COMPRESSION_LEVEL,
+  "script_version": "1.2.0",
+  "hostname": "$(hostname 2>/dev/null || echo 'unknown')"
+}
+EOF
+
+    if [ -f "$metadata_file" ]; then
+        log "Backup metadata created: ${BACKUP_FILE}.meta ✓"
+        return 0
+    else
+        error "Failed to create metadata file"
+        return 1
+    fi
 }
 
 backup_qdrant() {
@@ -370,6 +433,9 @@ main() {
         error "Backup verification failed"
         exit 1
     fi
+
+    # Create backup metadata file
+    create_backup_metadata "$backup_path"
 
     # Upload PostgreSQL backup to S3 (offsite)
     upload_to_s3 "$backup_path"

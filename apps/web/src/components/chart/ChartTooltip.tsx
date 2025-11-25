@@ -3,7 +3,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   getPlanetSymbol,
   getSignSymbol,
@@ -55,23 +55,21 @@ export function ChartTooltip({ type, data, position, containerRef }: ChartToolti
   const adjustedPosition = getAdjustedPosition();
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.15 }}
-        className="absolute z-50 bg-card border border-border rounded-lg shadow-lg p-3 min-w-[220px] max-w-[280px] pointer-events-none"
-        style={{
-          left: adjustedPosition.x,
-          top: adjustedPosition.y,
-        }}
-      >
-        {type === 'planet' && <PlanetTooltipContent planet={data as PlanetPosition} />}
-        {type === 'house' && <HouseTooltipContent house={data as HousePosition} />}
-        {type === 'aspect' && <AspectTooltipContent aspect={data as AspectData} />}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.15 }}
+      className="absolute z-50 bg-card border border-border rounded-lg shadow-lg p-3 min-w-[220px] max-w-[280px] pointer-events-none"
+      style={{
+        left: adjustedPosition.x,
+        top: adjustedPosition.y,
+      }}
+    >
+      {type === 'planet' && <PlanetTooltipContent planet={data as PlanetPosition} />}
+      {type === 'house' && <HouseTooltipContent house={data as HousePosition} />}
+      {type === 'aspect' && <AspectTooltipContent aspect={data as AspectData} />}
+    </motion.div>
   );
 }
 

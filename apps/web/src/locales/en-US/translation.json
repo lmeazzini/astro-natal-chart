@@ -606,7 +606,10 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
       "resetZoom": "Reset zoom",
-      "dragToPan": "Drag to pan"
+      "dragToPan": "Drag to pan",
+      "chartRegion": "Interactive birth chart",
+      "zoomControls": "Zoom controls",
+      "chartDescription": "Circular birth chart showing planets, houses and aspects. Click elements to select, use mouse wheel to zoom."
     },
     "arabicParts": {
       "fortune": "Part of Fortune",

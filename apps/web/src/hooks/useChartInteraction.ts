@@ -30,7 +30,6 @@ export interface ZoomPanState {
 
 interface UseChartInteractionProps {
   planets: PlanetPosition[];
-  houses: HousePosition[];
   aspects: AspectData[];
   onPlanetClick?: (planet: PlanetPosition) => void;
   onHouseClick?: (house: HousePosition) => void;

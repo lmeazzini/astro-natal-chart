@@ -67,13 +67,13 @@ export function InteractiveChartWheel({
     relatedPlanets,
     relatedAspects,
     zoomPan,
+    setZoom,
     zoomIn,
     zoomOut,
     resetZoom,
     setPan,
   } = useChartInteraction({
     planets,
-    houses,
     aspects,
     onPlanetClick,
     onHouseClick,
@@ -116,10 +116,15 @@ export function InteractiveChartWheel({
         const newTranslateX = zoomPan.translateX - mouseX * scaleDiff * 0.5;
         const newTranslateY = zoomPan.translateY - mouseY * scaleDiff * 0.5;
 
+        // Apply the new zoom scale and pan position
+        setZoom(newScale);
         setPan(newTranslateX, newTranslateY);
+      } else {
+        // Fallback: just zoom without pan adjustment
+        setZoom(newScale);
       }
     },
-    [zoomPan, setPan]
+    [zoomPan, setZoom, setPan]
   );
 
   // Handle pan start
@@ -513,17 +518,31 @@ export function InteractiveChartWheel({
   }
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div
+      className="relative"
+      ref={containerRef}
+      role="region"
+      aria-label={t('components.chartWheel.chartRegion', {
+        defaultValue: 'Mapa astral interativo',
+      })}
+    >
       {/* Zoom Controls */}
-      <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+      <div
+        className="absolute top-2 right-2 z-10 flex flex-col gap-1"
+        role="group"
+        aria-label={t('components.chartWheel.zoomControls', {
+          defaultValue: 'Controles de zoom',
+        })}
+      >
         <Button
           variant="outline"
           size="icon"
           className="h-8 w-8"
           onClick={zoomIn}
           title={t('components.chartWheel.zoomIn', { defaultValue: 'Ampliar' })}
+          aria-label={t('components.chartWheel.zoomIn', { defaultValue: 'Ampliar' })}
         >
-          <ZoomIn className="h-4 w-4" />
+          <ZoomIn className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button
           variant="outline"
@@ -531,8 +550,9 @@ export function InteractiveChartWheel({
           className="h-8 w-8"
           onClick={zoomOut}
           title={t('components.chartWheel.zoomOut', { defaultValue: 'Reduzir' })}
+          aria-label={t('components.chartWheel.zoomOut', { defaultValue: 'Reduzir' })}
         >
-          <ZoomOut className="h-4 w-4" />
+          <ZoomOut className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button
           variant="outline"
@@ -540,8 +560,9 @@ export function InteractiveChartWheel({
           className="h-8 w-8"
           onClick={resetZoom}
           title={t('components.chartWheel.resetZoom', { defaultValue: 'Resetar zoom' })}
+          aria-label={t('components.chartWheel.resetZoom', { defaultValue: 'Resetar zoom' })}
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="h-4 w-4" aria-hidden="true" />
         </Button>
       </div>
 
@@ -589,6 +610,11 @@ export function InteractiveChartWheel({
           animate={{ rotate: 0, scale: 1, opacity: 1 }}
           transition={{ ...spring.gentle, duration: 1 }}
           onClick={handleBackgroundClick}
+          role="img"
+          aria-label={t('components.chartWheel.chartDescription', {
+            defaultValue:
+              'Mapa astral circular mostrando planetas, casas e aspectos. Clique em elementos para selecionar, use roda do mouse para zoom.',
+          })}
         >
           {/* Background */}
           <motion.circle

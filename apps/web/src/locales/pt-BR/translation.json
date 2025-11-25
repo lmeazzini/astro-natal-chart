@@ -606,7 +606,10 @@
       "zoomIn": "Ampliar",
       "zoomOut": "Reduzir",
       "resetZoom": "Resetar zoom",
-      "dragToPan": "Arraste para mover"
+      "dragToPan": "Arraste para mover",
+      "chartRegion": "Mapa astral interativo",
+      "zoomControls": "Controles de zoom",
+      "chartDescription": "Mapa astral circular mostrando planetas, casas e aspectos. Clique em elementos para selecionar, use roda do mouse para zoom."
     },
     "arabicParts": {
       "fortune": "Lote da Fortuna",

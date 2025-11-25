@@ -292,7 +292,8 @@
       "houses": "Casas",
       "aspects": "Aspectos",
       "arabicParts": "Partes Árabes",
-      "interpretations": "Interpretações"
+      "interpretations": "Interpretações",
+      "growth": "Crescimento"
     },
     "birthInfo": "Informações de Nascimento",
     "person": "Pessoa",
@@ -1398,6 +1399,50 @@
       "register": "Criar Conta",
       "dashboard": "Meus Mapas",
       "madeWith": "Feito com ♄ e ♃ no Brasil."
+    }
+  },
+  "growth": {
+    "title": "Sugestões de Desenvolvimento Pessoal",
+    "description": "Descubra caminhos de crescimento baseados no seu mapa natal",
+    "intro": "Nossa IA analisa seu mapa natal para identificar oportunidades de crescimento, desafios a superar, talentos naturais e insights sobre propósito de vida.",
+    "generate": "Gerar Sugestões",
+    "regenerate": "Regenerar Sugestões",
+    "generating": "Analisando seu mapa e gerando sugestões personalizadas...",
+    "generatingTime": "Isso pode levar 15-30 segundos",
+    "disclaimer": "Estas sugestões são baseadas em análise astrológica e não substituem aconselhamento profissional.",
+    "errors": {
+      "notAuthenticated": "Faça login para gerar sugestões",
+      "emailRequired": "Verifique seu email para acessar esta funcionalidade",
+      "chartNotFound": "Mapa não encontrado",
+      "generateFailed": "Falha ao gerar sugestões",
+      "networkError": "Erro de rede. Tente novamente."
+    },
+    "growthPoints": {
+      "title": "Pontos de Crescimento",
+      "description": "Áreas para desenvolvimento pessoal e passos acionáveis",
+      "actions": "Ações Práticas:",
+      "mindset": "Mudança de Mentalidade:"
+    },
+    "challenges": {
+      "title": "Desafios a Superar",
+      "description": "Obstáculos e estratégias para superá-los",
+      "manifestation": "Como se manifesta:",
+      "strategy": "Estratégia:",
+      "practices": "Práticas:"
+    },
+    "opportunities": {
+      "title": "Talentos e Oportunidades",
+      "description": "Dons naturais e como aproveitá-los",
+      "leverage": "Como alavancar:"
+    },
+    "purpose": {
+      "title": "Propósito e Direção de Vida",
+      "description": "Direção da alma e insights sobre vocação",
+      "soulDirection": "Direção da Alma",
+      "vocation": "Vocação",
+      "contribution": "Contribuição",
+      "integration": "Integração",
+      "nextSteps": "Próximos Passos"
     }
   }
 }

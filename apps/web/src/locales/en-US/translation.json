@@ -292,7 +292,8 @@
       "houses": "Houses",
       "aspects": "Aspects",
       "arabicParts": "Arabic Parts",
-      "interpretations": "Interpretations"
+      "interpretations": "Interpretations",
+      "growth": "Growth"
     },
     "birthInfo": "Birth Information",
     "person": "Person",
@@ -1375,6 +1376,50 @@
       "register": "Sign Up",
       "dashboard": "My Charts",
       "madeWith": "Made with ♄ and ♃ in Brazil."
+    }
+  },
+  "growth": {
+    "title": "Personal Development Suggestions",
+    "description": "Discover growth paths based on your natal chart",
+    "intro": "Our AI analyzes your birth chart to identify growth opportunities, challenges to overcome, natural talents, and life purpose insights.",
+    "generate": "Generate Suggestions",
+    "regenerate": "Regenerate Suggestions",
+    "generating": "Analyzing your chart and generating personalized suggestions...",
+    "generatingTime": "This may take 15-30 seconds",
+    "disclaimer": "These suggestions are based on astrological analysis and should not replace professional advice.",
+    "errors": {
+      "notAuthenticated": "Please log in to generate suggestions",
+      "emailRequired": "Please verify your email to access this feature",
+      "chartNotFound": "Chart not found",
+      "generateFailed": "Failed to generate suggestions",
+      "networkError": "Network error. Please try again."
+    },
+    "growthPoints": {
+      "title": "Growth Points",
+      "description": "Areas for personal development and actionable steps",
+      "actions": "Practical Actions:",
+      "mindset": "Mindset Shift:"
+    },
+    "challenges": {
+      "title": "Challenges to Overcome",
+      "description": "Obstacles and strategies to overcome them",
+      "manifestation": "How it manifests:",
+      "strategy": "Strategy:",
+      "practices": "Practices:"
+    },
+    "opportunities": {
+      "title": "Talents & Opportunities",
+      "description": "Natural gifts and how to leverage them",
+      "leverage": "How to leverage:"
+    },
+    "purpose": {
+      "title": "Life Purpose & Direction",
+      "description": "Soul direction and vocation insights",
+      "soulDirection": "Soul Direction",
+      "vocation": "Vocation",
+      "contribution": "Contribution",
+      "integration": "Integration",
+      "nextSteps": "Next Steps"
     }
   }
 }

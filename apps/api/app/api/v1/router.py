@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     charts,
     geocoding,
     github,
+    growth,
     interpretations,
     oauth,
     password_reset,
@@ -119,4 +120,10 @@ api_router.include_router(
 api_router.include_router(
     public_charts.admin_router,
     tags=["admin-public-charts"],
+)
+
+# Personal growth suggestions endpoints
+api_router.include_router(
+    growth.router,
+    tags=["personal-growth"],
 )

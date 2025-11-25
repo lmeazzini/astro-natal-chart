@@ -20,6 +20,7 @@ import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
+import { GrowthSuggestions } from '../components/GrowthSuggestions';
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
@@ -594,6 +595,9 @@ export function ChartDetailPage() {
             <TabsTrigger value="arabic-parts">
               {t('chartDetail.tabs.arabicParts')} (4)
             </TabsTrigger>
+            <TabsTrigger value="growth">
+              {t('chartDetail.tabs.growth', { defaultValue: 'Growth' })}
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab Content: Visual */}
@@ -971,6 +975,11 @@ export function ChartDetailPage() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Tab Content: Growth */}
+          <TabsContent value="growth" className="mt-0">
+            {id && <GrowthSuggestions chartId={id} />}
           </TabsContent>
         </Tabs>
 

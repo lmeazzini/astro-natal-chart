@@ -94,6 +94,43 @@ ARABIC_PARTS: dict[str, dict[str, str]] = {
         "name": "Part of Necessity",
         "name_pt": "Lote da Necessidade",
     },
+    # Extended Arabic Parts (Issue #110 - Phase 2)
+    "marriage": {
+        "name": "Part of Marriage",
+        "name_pt": "Lote do Casamento",
+    },
+    "victory": {
+        "name": "Part of Victory",
+        "name_pt": "Lote da Vitória",
+    },
+    "father": {
+        "name": "Part of Father",
+        "name_pt": "Lote do Pai",
+    },
+    "mother": {
+        "name": "Part of Mother",
+        "name_pt": "Lote da Mãe",
+    },
+    "children": {
+        "name": "Part of Children",
+        "name_pt": "Lote dos Filhos",
+    },
+    "exaltation": {
+        "name": "Part of Exaltation",
+        "name_pt": "Lote da Exaltação",
+    },
+    "illness": {
+        "name": "Part of Illness",
+        "name_pt": "Lote da Doença",
+    },
+    "courage": {
+        "name": "Part of Courage",
+        "name_pt": "Lote da Coragem",
+    },
+    "reputation": {
+        "name": "Part of Reputation",
+        "name_pt": "Lote da Reputação",
+    },
 }
 
 

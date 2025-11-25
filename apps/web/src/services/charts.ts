@@ -87,6 +87,16 @@ export interface ArabicParts {
   spirit: ArabicPart;
   eros: ArabicPart;
   necessity: ArabicPart;
+  // Extended Arabic Parts (Issue #110 - Phase 2)
+  marriage?: ArabicPart;
+  victory?: ArabicPart;
+  father?: ArabicPart;
+  mother?: ArabicPart;
+  children?: ArabicPart;
+  exaltation?: ArabicPart;
+  illness?: ArabicPart;
+  courage?: ArabicPart;
+  reputation?: ArabicPart;
 }
 
 export interface PlanetSectStatus {

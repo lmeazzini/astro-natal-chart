@@ -7,12 +7,13 @@ Provides AI-powered personal development suggestions based on natal chart analys
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_db, require_verified_email
 from app.core.i18n import normalize_locale
+from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.schemas.growth import (
     GrowthSuggestionsRequest,
@@ -31,7 +32,7 @@ router = APIRouter()
     description=(
         "Generate AI-powered personal development suggestions based on the natal chart. "
         "Includes growth points, challenges, opportunities, and life purpose insights. "
-        "Requires verified email."
+        "Requires verified email. Rate limited to 10 requests per hour."
     ),
     responses={
         403: {
@@ -65,13 +66,23 @@ router = APIRouter()
                 }
             },
         },
+        429: {
+            "description": "Rate limit exceeded",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Rate limit exceeded: 10 per 1 hour"}
+                }
+            },
+        },
     },
 )
+@limiter.limit(RateLimits.GROWTH_SUGGESTIONS)
 async def generate_growth_suggestions(
+    request: Request,
     chart_id: UUID,
     current_user: Annotated[User, Depends(require_verified_email)],
     db: Annotated[AsyncSession, Depends(get_db)],
-    request: GrowthSuggestionsRequest | None = None,
+    body: GrowthSuggestionsRequest | None = None,
 ) -> GrowthSuggestionsResponse:
     """
     Generate personalized growth suggestions based on natal chart.
@@ -83,10 +94,11 @@ async def generate_growth_suggestions(
     - Purpose: Life direction and vocation insights
 
     Args:
+        request: FastAPI request object (for rate limiting)
         chart_id: Chart UUID
         current_user: Current authenticated user (must have verified email)
         db: Database session
-        request: Optional request body with focus areas
+        body: Optional request body with focus areas
 
     Returns:
         GrowthSuggestionsResponse with all suggestion categories
@@ -111,11 +123,11 @@ async def generate_growth_suggestions(
                 detail="Chart is still processing. Please wait until calculations are complete.",
             )
 
-        # Initialize growth service with user's language
-        growth_service = PersonalGrowthService(language=user_language)
+        # Initialize growth service with user's language and db for caching
+        growth_service = PersonalGrowthService(language=user_language, db=db)
 
-        # Extract focus areas from request if provided
-        focus_areas = request.focus_areas if request else None
+        # Extract focus areas from request body if provided
+        focus_areas = body.focus_areas if body else None
 
         # Generate suggestions
         suggestions = await growth_service.generate_growth_suggestions(
@@ -124,8 +136,10 @@ async def generate_growth_suggestions(
         )
 
         logger.info(
-            f"Generated growth suggestions for chart {chart_id} "
-            f"(user: {current_user.email}, language: {user_language})"
+            "Generated growth suggestions for chart {} (user: {}, language: {})",
+            chart_id,
+            current_user.email,
+            user_language,
         )
 
         # Convert to response model
@@ -145,7 +159,11 @@ async def generate_growth_suggestions(
         # Re-raise HTTP exceptions
         raise
     except Exception as e:
-        logger.error(f"Error generating growth suggestions for chart {chart_id}: {e}")
+        logger.error(
+            "Error generating growth suggestions for chart {}: {}",
+            chart_id,
+            str(e),
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error generating growth suggestions. Please try again.",

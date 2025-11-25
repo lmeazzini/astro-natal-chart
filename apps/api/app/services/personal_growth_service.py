@@ -4,30 +4,45 @@ Personal Growth Service - AI-powered development suggestions based on natal char
 This service analyzes natal chart data to generate personalized growth suggestions,
 challenges to overcome, opportunities to leverage, and life purpose insights.
 Uses OpenAI GPT-4o-mini with structured outputs for consistent response formats.
+
+Supports caching via InterpretationCacheService to reduce API costs.
 """
 
+import asyncio
 import json
 from typing import Any
 
 from loguru import logger
 from openai import AsyncOpenAI
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.services.interpretation_cache_service import InterpretationCacheService
+
+# Prompt version for cache invalidation (bump when prompts change)
+GROWTH_PROMPT_VERSION = "1.0.0"
 
 
 class PersonalGrowthService:
     """Service for generating personal development suggestions from natal charts."""
 
-    def __init__(self, language: str = "pt-BR"):
+    def __init__(
+        self,
+        language: str = "pt-BR",
+        db: AsyncSession | None = None,
+    ):
         """
         Initialize the PersonalGrowthService.
 
         Args:
             language: Language for suggestions ('pt-BR' or 'en-US')
+            db: Optional database session for caching
         """
         self.language = language
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = "gpt-4o-mini"
+        self.db = db
+        self.cache_service = InterpretationCacheService(db) if db else None
 
     def _get_language_instruction(self) -> str:
         """Get language instruction for the AI model."""
@@ -213,6 +228,24 @@ class PersonalGrowthService:
 
         return "\n".join(summary_parts)
 
+    def _get_focus_areas_instruction(self, focus_areas: list[str] | None) -> str:
+        """Get focus areas instruction for prompts."""
+        if not focus_areas:
+            return ""
+
+        areas_str = ", ".join(focus_areas)
+        if self.language.startswith("en"):
+            return (
+                f"\n\nFOCUS AREAS: The user wants to focus on: {areas_str}. "
+                "Prioritize insights related to these areas while still providing "
+                "a balanced analysis."
+            )
+        return (
+            f"\n\nÁREAS DE FOCO: O usuário quer focar em: {areas_str}. "
+            "Priorize insights relacionados a essas áreas, mantendo uma "
+            "análise equilibrada."
+        )
+
     async def generate_growth_suggestions(
         self,
         chart_data: dict[str, Any],
@@ -230,23 +263,23 @@ class PersonalGrowthService:
         """
         patterns = self.analyze_chart_patterns(chart_data)
         chart_summary = self._build_chart_summary(chart_data, patterns)
+        focus_instruction = self._get_focus_areas_instruction(focus_areas)
 
         suggestions: dict[str, Any] = {}
 
         try:
-            # Generate all sections in parallel-ish (sequentially but efficiently)
-            suggestions["growth_points"] = await self._generate_growth_points(
-                chart_summary, patterns
+            # Generate all sections in parallel using asyncio.gather
+            results = await asyncio.gather(
+                self._generate_growth_points(chart_summary, patterns, focus_instruction),
+                self._generate_challenges(chart_summary, patterns, focus_instruction),
+                self._generate_opportunities(chart_summary, patterns, focus_instruction),
+                self._generate_purpose(chart_summary, patterns, focus_instruction),
             )
-            suggestions["challenges"] = await self._generate_challenges(
-                chart_summary, patterns
-            )
-            suggestions["opportunities"] = await self._generate_opportunities(
-                chart_summary, patterns
-            )
-            suggestions["purpose"] = await self._generate_purpose(
-                chart_summary, patterns
-            )
+
+            suggestions["growth_points"] = results[0]
+            suggestions["challenges"] = results[1]
+            suggestions["opportunities"] = results[2]
+            suggestions["purpose"] = results[3]
 
             # Add metadata
             suggestions["metadata"] = {
@@ -258,18 +291,45 @@ class PersonalGrowthService:
                     "retrogrades": len(patterns.get("retrogrades", [])),
                     "stelliums": len(patterns.get("stelliums", [])),
                 },
+                "focus_areas": focus_areas,
+                "cached": False,  # Will be updated if any item was cached
             }
 
         except Exception as e:
-            logger.error(f"Error generating growth suggestions: {e}")
+            logger.error("Error generating growth suggestions: {}", str(e))
             raise
 
         return suggestions
 
     async def _generate_growth_points(
-        self, chart_summary: str, patterns: dict[str, Any]
+        self,
+        chart_summary: str,
+        patterns: dict[str, Any],
+        focus_instruction: str = "",
     ) -> list[dict[str, Any]]:
-        """Generate growth point suggestions."""
+        """Generate growth point suggestions with caching support."""
+        # Build cache parameters
+        cache_params = {
+            "chart_summary": chart_summary,
+            "retrogrades": patterns.get("retrogrades", []),
+            "weak_dignities": patterns.get("weak_dignities", []),
+            "difficult_aspects": patterns.get("difficult_aspects", [])[:5],
+            "focus_instruction": focus_instruction,
+        }
+
+        # Try to get from cache
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="growth_points",
+                parameters=cache_params,
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+            if cached:
+                cached_result: list[dict[str, Any]] = json.loads(cached)
+                return cached_result
+
         prompt = f"""You are an expert astrologer and personal development coach.
 {self._get_language_instruction()}
 
@@ -281,6 +341,7 @@ Chart Summary:
 Retrograde Planets: {json.dumps(patterns.get('retrogrades', []), indent=2)}
 Challenging Placements: {json.dumps(patterns.get('weak_dignities', []), indent=2)}
 Difficult Aspects: {json.dumps(patterns.get('difficult_aspects', [])[:5], indent=2)}
+{focus_instruction}
 
 For each growth point, provide:
 1. area: What needs development (e.g., "Communication", "Self-worth")
@@ -327,12 +388,49 @@ IMPORTANT:
 
         result = json.loads(content)
         growth_points: list[dict[str, Any]] = result.get("growth_points", [])
+
+        # Cache the result
+        if self.cache_service and growth_points:
+            await self.cache_service.set(
+                interpretation_type="growth_points",
+                subject="growth_analysis",
+                parameters=cache_params,
+                content=json.dumps(growth_points, ensure_ascii=False),
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+
         return growth_points
 
     async def _generate_challenges(
-        self, chart_summary: str, patterns: dict[str, Any]
+        self,
+        chart_summary: str,
+        patterns: dict[str, Any],
+        focus_instruction: str = "",
     ) -> list[dict[str, Any]]:
-        """Generate challenge insights with solutions."""
+        """Generate challenge insights with solutions and caching support."""
+        # Build cache parameters
+        cache_params = {
+            "chart_summary": chart_summary,
+            "difficult_aspects": patterns.get("difficult_aspects", [])[:5],
+            "weak_dignities": patterns.get("weak_dignities", []),
+            "focus_instruction": focus_instruction,
+        }
+
+        # Try to get from cache
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="growth_challenges",
+                parameters=cache_params,
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+            if cached:
+                cached_result: list[dict[str, Any]] = json.loads(cached)
+                return cached_result
+
         prompt = f"""You are an expert astrologer and personal development coach.
 {self._get_language_instruction()}
 
@@ -343,6 +441,7 @@ Chart Summary:
 
 Difficult Aspects: {json.dumps(patterns.get('difficult_aspects', [])[:5], indent=2)}
 Challenging Placements: {json.dumps(patterns.get('weak_dignities', []), indent=2)}
+{focus_instruction}
 
 For each challenge, provide:
 1. name: Challenge title (e.g., "Self-Criticism Pattern")
@@ -388,12 +487,50 @@ IMPORTANT:
 
         result = json.loads(content)
         challenges: list[dict[str, Any]] = result.get("challenges", [])
+
+        # Cache the result
+        if self.cache_service and challenges:
+            await self.cache_service.set(
+                interpretation_type="growth_challenges",
+                subject="challenges_analysis",
+                parameters=cache_params,
+                content=json.dumps(challenges, ensure_ascii=False),
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+
         return challenges
 
     async def _generate_opportunities(
-        self, chart_summary: str, patterns: dict[str, Any]
+        self,
+        chart_summary: str,
+        patterns: dict[str, Any],
+        focus_instruction: str = "",
     ) -> list[dict[str, Any]]:
-        """Generate opportunity and talent insights."""
+        """Generate opportunity and talent insights with caching support."""
+        # Build cache parameters
+        cache_params = {
+            "chart_summary": chart_summary,
+            "harmonious_aspects": patterns.get("harmonious_aspects", [])[:5],
+            "strong_dignities": patterns.get("strong_dignities", []),
+            "stelliums": patterns.get("stelliums", []),
+            "focus_instruction": focus_instruction,
+        }
+
+        # Try to get from cache
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="growth_opportunities",
+                parameters=cache_params,
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+            if cached:
+                cached_result: list[dict[str, Any]] = json.loads(cached)
+                return cached_result
+
         prompt = f"""You are an expert astrologer and personal development coach.
 {self._get_language_instruction()}
 
@@ -405,6 +542,7 @@ Chart Summary:
 Harmonious Aspects: {json.dumps(patterns.get('harmonious_aspects', [])[:5], indent=2)}
 Strong Placements: {json.dumps(patterns.get('strong_dignities', []), indent=2)}
 Stelliums: {json.dumps(patterns.get('stelliums', []), indent=2)}
+{focus_instruction}
 
 For each opportunity/talent, provide:
 1. talent: The natural talent or gift
@@ -448,13 +586,49 @@ IMPORTANT:
 
         result = json.loads(content)
         opportunities: list[dict[str, Any]] = result.get("opportunities", [])
+
+        # Cache the result
+        if self.cache_service and opportunities:
+            await self.cache_service.set(
+                interpretation_type="growth_opportunities",
+                subject="opportunities_analysis",
+                parameters=cache_params,
+                content=json.dumps(opportunities, ensure_ascii=False),
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+
         return opportunities
 
     async def _generate_purpose(
-        self, chart_summary: str, patterns: dict[str, Any]
+        self,
+        chart_summary: str,
+        patterns: dict[str, Any],
+        focus_instruction: str = "",
     ) -> dict[str, Any]:
-        """Generate life purpose insights."""
+        """Generate life purpose insights with caching support."""
         big_three = patterns.get("big_three", {})
+
+        # Build cache parameters
+        cache_params = {
+            "chart_summary": chart_summary,
+            "big_three": big_three,
+            "focus_instruction": focus_instruction,
+        }
+
+        # Try to get from cache
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="growth_purpose",
+                parameters=cache_params,
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+            if cached:
+                cached_result: dict[str, Any] = json.loads(cached)
+                return cached_result
 
         prompt = f"""You are an expert astrologer and personal development coach.
 {self._get_language_instruction()}
@@ -468,6 +642,7 @@ Big Three:
 - Sun: {big_three.get('sun', {}).get('sign', 'Unknown')} in House {big_three.get('sun', {}).get('house', '?')}
 - Moon: {big_three.get('moon', {}).get('sign', 'Unknown')} in House {big_three.get('moon', {}).get('house', '?')}
 - Ascendant: {big_three.get('ascendant', {}).get('sign', 'Unknown')}
+{focus_instruction}
 
 Provide insights about:
 1. soul_direction: The overall direction of soul evolution (2-3 sentences)
@@ -511,4 +686,17 @@ IMPORTANT:
 
         result = json.loads(content)
         purpose: dict[str, Any] = result.get("purpose", {})
+
+        # Cache the result
+        if self.cache_service and purpose:
+            await self.cache_service.set(
+                interpretation_type="growth_purpose",
+                subject="purpose_analysis",
+                parameters=cache_params,
+                content=json.dumps(purpose, ensure_ascii=False),
+                model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                language=self.language,
+            )
+
         return purpose

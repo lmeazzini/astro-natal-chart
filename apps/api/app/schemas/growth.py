@@ -64,6 +64,14 @@ class GrowthMetadata(BaseModel):
         default_factory=PatternsAnalyzed,
         description="Patterns analyzed in the chart",
     )
+    focus_areas: list[str] | None = Field(
+        default=None,
+        description="Focus areas requested by user",
+    )
+    cached: bool = Field(
+        default=False,
+        description="Whether results were served from cache",
+    )
 
 
 class GrowthSuggestionsResponse(BaseModel):

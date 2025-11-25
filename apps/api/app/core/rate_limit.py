@@ -91,3 +91,6 @@ class RateLimits:
     # Cache management endpoints (by user_id - admin only)
     CACHE_STATS = "60/minute"  # 60 stats requests per minute
     CACHE_CLEAR = "10/hour"  # 10 clear operations per hour (destructive)
+
+    # Personal growth suggestions (by user_id - expensive AI operations)
+    GROWTH_SUGGESTIONS = "10/hour"  # 10 growth suggestions per hour

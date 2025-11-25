@@ -359,3 +359,71 @@ class TestSchemaValidation:
         )
         assert purpose.vocation == "Leadership and innovation"
         assert len(purpose.next_steps) == 2
+
+    def test_metadata_with_focus_areas(self) -> None:
+        """Test GrowthMetadata with focus areas."""
+        from app.schemas.growth import GrowthMetadata, PatternsAnalyzed
+
+        metadata = GrowthMetadata(
+            language="en-US",
+            model="gpt-4o-mini",
+            patterns_analyzed=PatternsAnalyzed(
+                difficult_aspects=2,
+                harmonious_aspects=3,
+                retrogrades=1,
+                stelliums=1,
+            ),
+            focus_areas=["career", "relationships"],
+            cached=True,
+        )
+        assert metadata.focus_areas == ["career", "relationships"]
+        assert metadata.cached is True
+
+
+class TestFocusAreasInstruction:
+    """Tests for focus areas instruction generation."""
+
+    def test_english_focus_areas(self) -> None:
+        """Test focus areas instruction in English."""
+        service = PersonalGrowthService(language="en-US")
+        instruction = service._get_focus_areas_instruction(["career", "relationships"])
+
+        assert "FOCUS AREAS" in instruction
+        assert "career" in instruction
+        assert "relationships" in instruction
+
+    def test_portuguese_focus_areas(self) -> None:
+        """Test focus areas instruction in Portuguese."""
+        service = PersonalGrowthService(language="pt-BR")
+        instruction = service._get_focus_areas_instruction(["carreira", "relacionamentos"])
+
+        assert "ÁREAS DE FOCO" in instruction
+        assert "carreira" in instruction
+        assert "relacionamentos" in instruction
+
+    def test_no_focus_areas(self) -> None:
+        """Test that no instruction is returned when focus_areas is None."""
+        service = PersonalGrowthService(language="en-US")
+        instruction = service._get_focus_areas_instruction(None)
+
+        assert instruction == ""
+
+    def test_empty_focus_areas(self) -> None:
+        """Test that no instruction is returned when focus_areas is empty."""
+        service = PersonalGrowthService(language="en-US")
+        instruction = service._get_focus_areas_instruction([])
+
+        assert instruction == ""
+
+
+class TestServiceWithoutCache:
+    """Test service works correctly without database/cache."""
+
+    def test_service_initializes_without_db(self) -> None:
+        """Test service can be initialized without database session."""
+        service = PersonalGrowthService(language="en-US")
+
+        assert service.db is None
+        assert service.cache_service is None
+        assert service.language == "en-US"
+        assert service.model == "gpt-4o-mini"

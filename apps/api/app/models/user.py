@@ -25,6 +25,7 @@ class UserType(str, Enum):
 
 if TYPE_CHECKING:
     from app.models.chart import BirthChart
+    from app.models.subscription import Subscription
 
 
 class User(Base):
@@ -118,6 +119,12 @@ class User(Base):
     oauth_accounts: Mapped[list["OAuthAccount"]] = relationship(  # noqa: F821
         "OAuthAccount",
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    subscription: Mapped["Subscription | None"] = relationship(  # noqa: F821
+        "Subscription",
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan",
     )
 

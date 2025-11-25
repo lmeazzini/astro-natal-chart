@@ -15,10 +15,11 @@ from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.repositories.user_repository import OAuthAccountRepository
 from app.schemas.password import PasswordChange
+from app.schemas.subscription import UserSubscriptionRead
 from app.schemas.user import UserPublicProfile, UserRead, UserUpdate
 from app.schemas.user_activity import UserActivityList
 from app.schemas.user_stats import UserStats
-from app.services import user_service
+from app.services import subscription_service, user_service
 from app.services.s3_service import s3_service
 
 router = APIRouter()
@@ -462,3 +463,50 @@ async def get_public_profile(
         )
 
     return user
+
+
+@router.get(
+    "/me/subscription",
+    response_model=UserSubscriptionRead,
+    summary="Get current user's subscription status",
+    description="Get the subscription status of the currently authenticated user.",
+)
+async def get_my_subscription(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_db),
+) -> UserSubscriptionRead:
+    """
+    Get current user's subscription status.
+
+    Returns:
+        User subscription status with details if exists
+    """
+    from uuid import UUID as PyUUID
+
+    subscription = await subscription_service.get_user_subscription(
+        db=db,
+        user_id=PyUUID(str(current_user.id)),
+    )
+
+    from app.schemas.subscription import SubscriptionRead
+
+    subscription_data = None
+    if subscription:
+        subscription_data = SubscriptionRead(
+            id=subscription.id,
+            user_id=subscription.user_id,
+            status=subscription.status,
+            started_at=subscription.started_at,
+            expires_at=subscription.expires_at,
+            created_at=subscription.created_at,
+            updated_at=subscription.updated_at,
+            is_active=subscription.is_active,
+            is_expired=subscription.is_expired,
+            days_remaining=subscription.days_remaining,
+        )
+
+    return UserSubscriptionRead(
+        has_subscription=subscription is not None,
+        is_premium=current_user.is_premium,
+        subscription=subscription_data,
+    )

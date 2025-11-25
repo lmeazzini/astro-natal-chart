@@ -1383,5 +1383,164 @@
       "createAccount": "Create Free Account",
       "seeExample": "See Chart Example"
     }
+  },
+  "landing": {
+    "homeLabel": "Home",
+    "login": "Login",
+    "signup": "Sign Up",
+    "hero": {
+      "socialProof": "Over 1,000 charts created",
+      "traditional": "Traditional Astrology",
+      "title": "Discover Who You Really Are",
+      "subtitle": "Real Astrology uses ancient traditional astrology techniques to create a precise birth chart and deep interpretations about your personality, talents, and life path.",
+      "cta": "Create My Free Chart",
+      "noCreditCard": "No credit card required",
+      "dataSecure": "Your data is secure (GDPR)",
+      "twoMinutes": "Takes 2 minutes"
+    },
+    "pain": {
+      "title": "Have You Ever Felt Like This?",
+      "purpose": "\"I don't know what my life purpose is\"",
+      "talents": "\"I feel like I have talents I can't express\"",
+      "decisions": "\"I make decisions and then regret them\"",
+      "patterns": "\"I don't understand why I repeat the same patterns\"",
+      "horoscopes": "\"Generic horoscopes never make sense to me\"",
+      "selfknowledge": "\"I want to know myself better, but don't know how\"",
+      "transition": "You're not alone. Most people go through their entire lives without really knowing themselves. But it doesn't have to be that way."
+    },
+    "solution": {
+      "badge": "The Solution",
+      "title": "Real Astrology: Deep Self-Knowledge Through Traditional Astrology",
+      "description1": "Unlike generic horoscopes based only on your sun sign, Real Astrology creates your complete birth chart using the same techniques astrologers have used for over 2,000 years.",
+      "description2": "Your chart is as unique as your fingerprint — calculated for the exact moment and place of your birth."
+    },
+    "benefits": {
+      "title": "What You'll Discover",
+      "essence": {
+        "title": "Your Essence",
+        "description": "Understand your deep personality, beyond the sun sign. Discover why you are the way you are."
+      },
+      "talents": {
+        "title": "Your Hidden Talents",
+        "description": "Identify natural abilities you might not even know you have — and how to develop them."
+      },
+      "relationships": {
+        "title": "Your Relationship Patterns",
+        "description": "Understand how you love, what you seek in partners, and how to improve your connections."
+      },
+      "purpose": {
+        "title": "Your Purpose",
+        "description": "Find clues about your calling and the path that brings the most fulfillment to your life."
+      },
+      "challenges": {
+        "title": "Your Challenges",
+        "description": "Know your growth areas and transform obstacles into opportunities."
+      },
+      "moment": {
+        "title": "Your Current Moment",
+        "description": "Understand current planetary influences and how they're impacting your life right now."
+      }
+    },
+    "traditional": {
+      "title": "Why \"Real\" Astrology?",
+      "intro": "The astrology you see in magazines and popular apps is a simplified version created in the 20th century.",
+      "description": "Real Astrology revives traditional astrology — the same techniques used by ancient civilizations, refined through centuries of observation.",
+      "dignities": {
+        "title": "Essential Dignities",
+        "description": "The real strength of each planet in your chart"
+      },
+      "sect": {
+        "title": "Sect (Day/Night)",
+        "description": "Is your chart a day or night chart? This changes everything"
+      },
+      "arabicParts": {
+        "title": "Arabic Parts",
+        "description": "Sensitive points that reveal specific areas of life"
+      },
+      "temperament": {
+        "title": "Temperament",
+        "description": "Your balance of the 4 elements according to tradition"
+      },
+      "conclusion": "It's not guesswork. It's astronomy + tradition + deep interpretation."
+    },
+    "testimonials": {
+      "title": "What Our Users Say",
+      "t1": {
+        "quote": "\"I always thought I was 'just' an overly sensitive Cancer. When I saw my complete chart, I understood that I have Moon in Scorpio and Mars in the 1st House. It finally made sense why I'm so intense!\"",
+        "name": "Marina, 28",
+        "location": "São Paulo"
+      },
+      "t2": {
+        "quote": "\"I made my chart on several sites, but had never seen Sect and Dignities analysis. Real Astrology showed me that Saturn in my chart is much more positive than I thought. It changed my perspective.\"",
+        "name": "Carlos, 35",
+        "location": "Belo Horizonte"
+      },
+      "t3": {
+        "quote": "\"The AI interpretations are incredible. It's like someone who has known me for years wrote about me. I recommend it to anyone who wants to truly know themselves.\"",
+        "name": "Juliana, 42",
+        "location": "Porto Alegre"
+      }
+    },
+    "howItWorks": {
+      "title": "Creating Your Chart Is Simple",
+      "step1": {
+        "title": "Sign Up Free",
+        "description": "Takes less than 1 minute"
+      },
+      "step2": {
+        "title": "Enter Your Data",
+        "description": "Date, time, and place of birth"
+      },
+      "step3": {
+        "title": "Get Your Chart",
+        "description": "Professional visualization + interpretations"
+      },
+      "step4": {
+        "title": "Explore and Discover",
+        "description": "Navigate and discover every aspect of yourself"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Do I need to know my exact birth time?",
+        "answer": "The time is important for calculating the Ascendant and Houses. If you don't know it, you can check your birth certificate or use an approximate time (the chart will be less precise in those areas)."
+      },
+      "q2": {
+        "question": "What's the difference from other birth chart sites?",
+        "answer": "Real Astrology uses traditional astrology with techniques like Essential Dignities, Sect, and Arabic Parts — which most modern sites ignore. Additionally, our interpretations are generated by AI trained on classical astrology texts."
+      },
+      "q3": {
+        "question": "Is it really free?",
+        "answer": "Yes! The complete chart and basic interpretations are free. Premium features (like PDF reports and advanced analyses) may have additional cost in the future, but the essentials will always be free."
+      },
+      "q4": {
+        "question": "Is my data secure?",
+        "answer": "Absolutely. We follow GDPR and never share your data with third parties. You can delete your account at any time and all your data will be removed."
+      },
+      "q5": {
+        "question": "Do AI interpretations replace an astrologer?",
+        "answer": "Interpretations are an excellent starting point for self-knowledge, but they don't replace analysis by a professional astrologer for specific or complex questions. Use as a tool for study and reflection."
+      }
+    },
+    "finalCta": {
+      "title": "Ready to Truly Know Yourself?",
+      "subtitle": "Your birth chart is waiting. It's free, takes 2 minutes, and can change the way you see yourself forever.",
+      "button": "Create My Chart Now — It's Free",
+      "benefit1": "No credit card required",
+      "benefit2": "Your data is secure (GDPR)",
+      "benefit3": "Cancel anytime"
+    },
+    "footer": {
+      "tagline": "Traditional Astrology For the Modern World",
+      "legal": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy",
+      "access": "Access",
+      "login": "Login",
+      "register": "Sign Up",
+      "madeWith": "Made with ♄ and ♃ in Brazil."
+    }
   }
 }

@@ -1406,5 +1406,164 @@
     "spirit": "Lote do Espírito",
     "eros": "Lote de Eros",
     "necessity": "Lote da Necessidade"
+  },
+  "landing": {
+    "homeLabel": "Página Inicial",
+    "login": "Entrar",
+    "signup": "Criar Conta",
+    "hero": {
+      "socialProof": "Mais de 1.000 mapas criados",
+      "traditional": "Astrologia Tradicional",
+      "title": "Descubra Quem Você Realmente É",
+      "subtitle": "O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.",
+      "cta": "Criar Meu Mapa Grátis",
+      "noCreditCard": "Sem cartão de crédito",
+      "dataSecure": "Seus dados seguros (LGPD)",
+      "twoMinutes": "Leva 2 minutos"
+    },
+    "pain": {
+      "title": "Você Já Se Sentiu Assim?",
+      "purpose": "\"Não sei qual é meu propósito de vida\"",
+      "talents": "\"Sinto que tenho talentos que não consigo expressar\"",
+      "decisions": "\"Tomo decisões e depois me arrependo\"",
+      "patterns": "\"Não entendo por que repito os mesmos padrões\"",
+      "horoscopes": "\"Horóscopos genéricos nunca fazem sentido pra mim\"",
+      "selfknowledge": "\"Quero me conhecer melhor, mas não sei como\"",
+      "transition": "Você não está sozinho. A maioria das pessoas passa a vida inteira sem realmente se conhecer. Mas não precisa ser assim."
+    },
+    "solution": {
+      "badge": "A Solução",
+      "title": "Real Astrology: Autoconhecimento Profundo Através da Astrologia Tradicional",
+      "description1": "Diferente de horóscopos genéricos baseados apenas no signo solar, o Real Astrology cria seu mapa natal completo usando as mesmas técnicas que astrólogos usam há mais de 2.000 anos.",
+      "description2": "Seu mapa é único como sua impressão digital — calculado para o momento e local exatos do seu nascimento."
+    },
+    "benefits": {
+      "title": "O Que Você Vai Descobrir",
+      "essence": {
+        "title": "Sua Essência",
+        "description": "Entenda sua personalidade profunda, além do signo solar. Descubra por que você é do jeito que é."
+      },
+      "talents": {
+        "title": "Seus Talentos Ocultos",
+        "description": "Identifique habilidades naturais que você talvez nem saiba que tem — e como desenvolvê-las."
+      },
+      "relationships": {
+        "title": "Seus Padrões em Relacionamentos",
+        "description": "Compreenda como você ama, o que busca em parceiros e como melhorar suas conexões."
+      },
+      "purpose": {
+        "title": "Seu Propósito",
+        "description": "Encontre pistas sobre sua vocação e o caminho que traz mais realização para sua vida."
+      },
+      "challenges": {
+        "title": "Seus Desafios",
+        "description": "Conheça seus pontos de crescimento e transforme obstáculos em oportunidades."
+      },
+      "moment": {
+        "title": "Seu Momento Atual",
+        "description": "Entenda as influências planetárias atuais e como elas estão impactando sua vida agora."
+      }
+    },
+    "traditional": {
+      "title": "Por Que \"Real\" Astrology?",
+      "intro": "A astrologia que você vê em revistas e apps populares é uma versão simplificada criada no século XX.",
+      "description": "O Real Astrology resgata a astrologia tradicional — as mesmas técnicas usadas por civilizações antigas, refinadas por séculos de observação.",
+      "dignities": {
+        "title": "Dignidades Essenciais",
+        "description": "A força real de cada planeta no seu mapa"
+      },
+      "sect": {
+        "title": "Sect (Diurno/Noturno)",
+        "description": "Seu mapa é de dia ou de noite? Isso muda tudo"
+      },
+      "arabicParts": {
+        "title": "Partes Árabes",
+        "description": "Pontos sensíveis que revelam áreas específicas da vida"
+      },
+      "temperament": {
+        "title": "Temperamento",
+        "description": "Seu equilíbrio dos 4 elementos segundo a tradição"
+      },
+      "conclusion": "Não é achismo. É astronomia + tradição + interpretação profunda."
+    },
+    "testimonials": {
+      "title": "O Que Nossos Usuários Dizem",
+      "t1": {
+        "quote": "\"Eu sempre achei que era 'só' uma canceriana sensível demais. Quando vi meu mapa completo, entendi que tenho Lua em Escorpião e Marte na Casa 1. Finalmente fez sentido por que sou tão intensa!\"",
+        "name": "Marina, 28 anos",
+        "location": "São Paulo"
+      },
+      "t2": {
+        "quote": "\"Fiz meu mapa em vários sites, mas nunca tinha visto análise de Sect e Dignidades. O Real Astrology me mostrou que Saturno no meu mapa é muito mais positivo do que eu pensava. Mudou minha perspectiva.\"",
+        "name": "Carlos, 35 anos",
+        "location": "Belo Horizonte"
+      },
+      "t3": {
+        "quote": "\"As interpretações com IA são incríveis. Parece que alguém que me conhece há anos escreveu sobre mim. Recomendo para quem quer se conhecer de verdade.\"",
+        "name": "Juliana, 42 anos",
+        "location": "Porto Alegre"
+      }
+    },
+    "howItWorks": {
+      "title": "Criar Seu Mapa É Simples",
+      "step1": {
+        "title": "Cadastre-se Grátis",
+        "description": "Leva menos de 1 minuto"
+      },
+      "step2": {
+        "title": "Insira Seus Dados",
+        "description": "Data, hora e local de nascimento"
+      },
+      "step3": {
+        "title": "Receba Seu Mapa",
+        "description": "Visualização profissional + interpretações"
+      },
+      "step4": {
+        "title": "Explore e Descubra",
+        "description": "Navegue e descubra cada aspecto de si mesmo"
+      }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "q1": {
+        "question": "Precisa saber a hora exata de nascimento?",
+        "answer": "A hora é importante para calcular o Ascendente e as Casas. Se não souber, você pode consultar sua certidão de nascimento ou usar uma hora aproximada (o mapa será menos preciso nessas áreas)."
+      },
+      "q2": {
+        "question": "Qual a diferença para outros sites de mapa astral?",
+        "answer": "O Real Astrology usa astrologia tradicional com técnicas como Dignidades Essenciais, Sect e Partes Árabes — que a maioria dos sites modernos ignora. Além disso, nossas interpretações são geradas por IA treinada em textos clássicos de astrologia."
+      },
+      "q3": {
+        "question": "É realmente grátis?",
+        "answer": "Sim! O mapa completo e interpretações básicas são gratuitos. Funcionalidades premium (como relatórios em PDF e análises avançadas) podem ter custo adicional no futuro, mas o essencial será sempre grátis."
+      },
+      "q4": {
+        "question": "Meus dados estão seguros?",
+        "answer": "Absolutamente. Seguimos a LGPD e nunca compartilhamos seus dados com terceiros. Você pode excluir sua conta a qualquer momento e todos os seus dados serão removidos."
+      },
+      "q5": {
+        "question": "As interpretações com IA substituem um astrólogo?",
+        "answer": "As interpretações são um excelente ponto de partida para autoconhecimento, mas não substituem a análise de um astrólogo profissional para questões específicas ou complexas. Use como ferramenta de estudo e reflexão."
+      }
+    },
+    "finalCta": {
+      "title": "Pronto Para Se Conhecer de Verdade?",
+      "subtitle": "Seu mapa natal está esperando. É gratuito, leva 2 minutos e pode mudar a forma como você se vê para sempre.",
+      "button": "Criar Meu Mapa Agora — É Grátis",
+      "benefit1": "Sem cartão de crédito",
+      "benefit2": "Seus dados seguros (LGPD)",
+      "benefit3": "Cancele quando quiser"
+    },
+    "footer": {
+      "tagline": "Astrologia Tradicional Para o Mundo Moderno",
+      "legal": "Legal",
+      "terms": "Termos de Uso",
+      "privacy": "Política de Privacidade",
+      "cookies": "Política de Cookies",
+      "access": "Acesso",
+      "login": "Entrar",
+      "register": "Criar Conta",
+      "madeWith": "Feito com ♄ e ♃ no Brasil."
+    }
   }
 }

@@ -28,6 +28,7 @@ class BlogPostCreate(BlogPostBase):
 
     slug: str | None = Field(None, max_length=255)
     published: bool = False
+    is_featured: bool = False
 
 
 class BlogPostUpdate(BaseModel):
@@ -44,6 +45,7 @@ class BlogPostUpdate(BaseModel):
     seo_description: str | None = Field(None, max_length=160)
     seo_keywords: list[str] | None = None
     published: bool | None = None
+    is_featured: bool | None = None
 
 
 class AuthorInfo(BaseModel):
@@ -74,6 +76,7 @@ class BlogPostRead(BaseModel):
     seo_keywords: list[str] | None
     read_time_minutes: int
     views_count: int
+    is_featured: bool
     published_at: datetime | None
     created_at: datetime
     updated_at: datetime
@@ -105,6 +108,7 @@ class BlogPostListItem(BaseModel):
     featured_image_url: str | None
     read_time_minutes: int
     views_count: int
+    is_featured: bool
     published_at: datetime | None
     created_at: datetime
     author: AuthorInfo | None = None

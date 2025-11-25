@@ -17,10 +17,10 @@ import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { Clock, Eye, Calendar, ChevronLeft, ChevronRight, Tag, FolderOpen } from 'lucide-react';
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', {
+  return date.toLocaleDateString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -28,7 +28,7 @@ function formatDate(dateString: string | null): string {
 }
 
 export function BlogPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -234,7 +234,7 @@ export function BlogPage() {
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {formatDate(post.published_at)}
+                              {formatDate(post.published_at, i18n.language)}
                             </span>
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />

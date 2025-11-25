@@ -24,6 +24,7 @@ export interface BlogPost {
   seo_keywords: string[] | null;
   read_time_minutes: number;
   views_count: number;
+  is_featured: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -41,6 +42,7 @@ export interface BlogPostListItem {
   featured_image_url: string | null;
   read_time_minutes: number;
   views_count: number;
+  is_featured: boolean;
   published_at: string | null;
   created_at: string;
   author: AuthorInfo | null;

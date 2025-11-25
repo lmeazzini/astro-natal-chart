@@ -92,12 +92,16 @@ async def sitemap_xml(
 @router.get("/rss.xml", response_class=Response)
 async def rss_feed(
     request: Request,
+    full_content: bool = False,
     db: AsyncSession = Depends(get_db),
 ) -> Response:
     """
     Generate RSS feed for blog posts.
 
     Returns the 20 most recent published posts.
+
+    Args:
+        full_content: If True, includes full post content instead of just excerpt
     """
     base_url = get_base_url(request)
 
@@ -105,6 +109,7 @@ async def rss_feed(
     rss = Element("rss")
     rss.set("version", "2.0")
     rss.set("xmlns:atom", "http://www.w3.org/2005/Atom")
+    rss.set("xmlns:content", "http://purl.org/rss/1.0/modules/content/")
 
     channel = SubElement(rss, "channel")
 
@@ -144,7 +149,12 @@ async def rss_feed(
         item_link.text = f"{base_url}/blog/{post.slug}"
 
         item_description = SubElement(item, "description")
-        item_description.text = post.excerpt
+        item_description.text = post.content if full_content else post.excerpt
+
+        # Add content:encoded for full content (RSS best practice)
+        if full_content:
+            content_encoded = SubElement(item, "content:encoded")
+            content_encoded.text = post.content
 
         item_guid = SubElement(item, "guid")
         item_guid.text = f"{base_url}/blog/{post.slug}"

@@ -1519,6 +1519,8 @@
     "readTime": "read",
     "views": "views",
     "share": "Share",
+    "sharing": "Sharing...",
+    "copied": "Link copied!",
     "backToBlog": "Back to Blog",
     "recentPosts": "Recent Posts",
     "postNotFound": "Article not found",

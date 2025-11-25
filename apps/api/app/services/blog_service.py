@@ -2,10 +2,14 @@
 Blog service for business logic.
 """
 
+import json
 from uuid import UUID
 
+import redis.asyncio as aioredis
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.blog_post import BlogPost
 from app.repositories.blog_repository import BlogRepository
 from app.schemas.blog import (
@@ -18,6 +22,26 @@ from app.schemas.blog import (
     BlogPostUpdate,
     BlogTagCount,
 )
+
+# Redis connection pool (singleton)
+_redis_pool: aioredis.ConnectionPool | None = None
+
+# Cache settings
+BLOG_METADATA_CACHE_KEY = "blog:metadata"
+BLOG_METADATA_CACHE_TTL = 300  # 5 minutes
+
+
+def _get_redis_pool() -> aioredis.ConnectionPool:
+    """Get or create Redis connection pool."""
+    global _redis_pool
+    if _redis_pool is None:
+        _redis_pool = aioredis.ConnectionPool.from_url(
+            str(settings.REDIS_URL),
+            encoding="utf-8",
+            decode_responses=True,
+            max_connections=10,
+        )
+    return _redis_pool
 
 
 class BlogService:
@@ -122,6 +146,7 @@ class BlogService:
             seo_description=data.seo_description,
             seo_keywords=data.seo_keywords,
             read_time_minutes=read_time,
+            is_featured=data.is_featured,
             author_id=author_id,
         )
 
@@ -132,6 +157,10 @@ class BlogService:
             post.published_at = datetime.now(UTC)
 
         created_post = await self.repo.create(post)
+
+        # Invalidate metadata cache when a new post is created
+        await self.invalidate_metadata_cache()
+
         return BlogPostRead.model_validate(created_post)
 
     async def update_post(self, post_id: UUID, data: BlogPostUpdate) -> BlogPostRead | None:
@@ -164,6 +193,9 @@ class BlogService:
         await self.db.commit()
         await self.db.refresh(post)
 
+        # Invalidate metadata cache when a post is updated
+        await self.invalidate_metadata_cache()
+
         return BlogPostRead.model_validate(post)
 
     async def delete_post(self, post_id: UUID) -> bool:
@@ -173,12 +205,18 @@ class BlogService:
             return False
 
         await self.repo.delete(post)
+
+        # Invalidate metadata cache when a post is deleted
+        await self.invalidate_metadata_cache()
+
         return True
 
     async def publish_post(self, post_id: UUID) -> BlogPostRead | None:
         """Publish a blog post."""
         post = await self.repo.publish(post_id)
         if post:
+            # Invalidate metadata cache when a post is published
+            await self.invalidate_metadata_cache()
             return BlogPostRead.model_validate(post)
         return None
 
@@ -186,22 +224,60 @@ class BlogService:
         """Unpublish a blog post."""
         post = await self.repo.unpublish(post_id)
         if post:
+            # Invalidate metadata cache when a post is unpublished
+            await self.invalidate_metadata_cache()
             return BlogPostRead.model_validate(post)
         return None
 
     async def get_blog_metadata(self) -> BlogMetadata:
-        """Get blog metadata (categories, tags, total posts)."""
+        """Get blog metadata (categories, tags, total posts) with caching."""
+        # Try to get from Redis cache
+        try:
+            redis_client = aioredis.Redis(connection_pool=_get_redis_pool())
+            cached_data = await redis_client.get(BLOG_METADATA_CACHE_KEY)
+            if cached_data:
+                logger.debug("Blog metadata cache hit")
+                data = json.loads(cached_data)
+                return BlogMetadata(**data)
+        except Exception as e:
+            logger.warning(f"Redis cache read failed: {e}")
+
+        # Cache miss - fetch from database
+        logger.debug("Blog metadata cache miss, fetching from database")
         categories_data = await self.repo.get_categories_with_count()
         tags_data = await self.repo.get_popular_tags(limit=20)
         total = await self.repo.get_total_published_count()
 
-        return BlogMetadata(
+        metadata = BlogMetadata(
             categories=[
                 BlogCategoryCount(category=cat, count=count) for cat, count in categories_data
             ],
             popular_tags=[BlogTagCount(tag=tag, count=count) for tag, count in tags_data],
             total_posts=total,
         )
+
+        # Store in Redis cache
+        try:
+            redis_client = aioredis.Redis(connection_pool=_get_redis_pool())
+            await redis_client.setex(
+                BLOG_METADATA_CACHE_KEY,
+                BLOG_METADATA_CACHE_TTL,
+                metadata.model_dump_json(),
+            )
+            logger.debug("Blog metadata cached successfully")
+        except Exception as e:
+            logger.warning(f"Redis cache write failed: {e}")
+
+        return metadata
+
+    async def invalidate_metadata_cache(self) -> None:
+        """Invalidate the blog metadata cache."""
+        try:
+            redis_client = aioredis.Redis(connection_pool=_get_redis_pool())
+            await redis_client.delete(BLOG_METADATA_CACHE_KEY)
+            logger.debug("Blog metadata cache invalidated")
+        except Exception as e:
+            logger.warning(f"Redis cache invalidation failed: {e}")
 
     async def get_recent_posts(self, limit: int = 5) -> list[BlogPostListItem]:
         """Get recent published posts."""

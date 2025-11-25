@@ -16,12 +16,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
-import { Clock, Eye, Calendar, ArrowLeft, Share2, Tag, User, ChevronRight } from 'lucide-react';
+import {
+  Clock,
+  Eye,
+  Calendar,
+  ArrowLeft,
+  Share2,
+  Tag,
+  User,
+  ChevronRight,
+  Check,
+  Loader2,
+} from 'lucide-react';
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', {
+  return date.toLocaleDateString(locale, {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
@@ -29,7 +40,7 @@ function formatDate(dateString: string | null): string {
 }
 
 export function BlogPostPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -38,6 +49,8 @@ export function BlogPostPage() {
   const [recentPosts, setRecentPosts] = React.useState<BlogPostListItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [sharing, setSharing] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
     if (!slug) return;
@@ -73,19 +86,37 @@ export function BlogPostPage() {
   }, [slug]);
 
   async function handleShare() {
-    if (navigator.share && post) {
-      try {
+    if (sharing) return;
+    setSharing(true);
+    setCopied(false);
+
+    try {
+      if (navigator.share && post) {
         await navigator.share({
           title: post.title,
           text: post.excerpt,
           url: window.location.href,
         });
-      } catch (err) {
-        // User cancelled or share failed
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        // Reset copied state after 2 seconds
+        setTimeout(() => setCopied(false), 2000);
       }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+    } catch (err) {
+      // User cancelled or share failed - still try to copy
+      if (!navigator.share) {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          // Clipboard also failed
+        }
+      }
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -246,7 +277,7 @@ export function BlogPostPage() {
             <ol className="flex items-center gap-2 text-sm text-muted-foreground">
               <li>
                 <Link to="/" className="hover:text-primary">
-                  Home
+                  {t('nav.home')}
                 </Link>
               </li>
               <ChevronRight className="h-4 w-4" />
@@ -304,7 +335,7 @@ export function BlogPostPage() {
                   )}
                   <span className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {formatDate(post.published_at)}
+                    {formatDate(post.published_at, i18n.language)}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
@@ -314,9 +345,21 @@ export function BlogPostPage() {
                     <Eye className="h-4 w-4" />
                     {post.views_count} {t('blog.views')}
                   </span>
-                  <Button variant="ghost" size="sm" onClick={handleShare} className="ml-auto">
-                    <Share2 className="mr-2 h-4 w-4" />
-                    {t('blog.share')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleShare}
+                    disabled={sharing}
+                    className="ml-auto"
+                  >
+                    {sharing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : copied ? (
+                      <Check className="mr-2 h-4 w-4 text-green-500" />
+                    ) : (
+                      <Share2 className="mr-2 h-4 w-4" />
+                    )}
+                    {sharing ? t('blog.sharing') : copied ? t('blog.copied') : t('blog.share')}
                   </Button>
                 </div>
 
@@ -372,7 +415,7 @@ export function BlogPostPage() {
                               {recentPost.title}
                             </h4>
                             <span className="mt-1 text-xs text-muted-foreground">
-                              {formatDate(recentPost.published_at)}
+                              {formatDate(recentPost.published_at, i18n.language)}
                             </span>
                           </Link>
                         </li>

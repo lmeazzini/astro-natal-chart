@@ -76,7 +76,7 @@ def upload_documents(
     # Check S3 configuration
     if not settings.rag_s3_enabled:
         logger.error(
-            "S3 storage is not enabled. " "Set RAG_STORAGE_TYPE=s3 and configure AWS credentials."
+            "S3 storage is not enabled. Set RAG_STORAGE_TYPE=s3 and configure AWS credentials."
         )
         return {"error": "S3 not configured"}
 

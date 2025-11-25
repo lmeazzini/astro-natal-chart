@@ -351,6 +351,61 @@ arabic_part_prompts:
       keywords: "fado, karma, restrições, destino, desafios"
       nature: "Ponto saturnino - limitações e lições kármicas"
 
+    # Extended Arabic Parts (Issue #195)
+    marriage:
+      name: "Part of Marriage"
+      name_pt: "Lote do Casamento"
+      keywords: "uniões, compromisso, parceria, matrimônio, casamento"
+      nature: "Ponto Vênus-Saturno - compromisso duradouro e uniões"
+
+    victory:
+      name: "Part of Victory"
+      name_pt: "Lote da Vitória"
+      keywords: "sucesso, conquista, triunfo, superação, realização"
+      nature: "Ponto Júpiter-Espírito - vitória através do esforço intencional"
+
+    father:
+      name: "Part of Father"
+      name_pt: "Lote do Pai"
+      keywords: "pai, autoridade paterna, herança, legado paterno"
+      nature: "Ponto Sol-Saturno - relação com a figura paterna"
+
+    mother:
+      name: "Part of Mother"
+      name_pt: "Lote da Mãe"
+      keywords: "mãe, nutrição, cuidado, herança materna"
+      nature: "Ponto Lua-Vênus - relação com a figura materna"
+
+    children:
+      name: "Part of Children"
+      name_pt: "Lote dos Filhos"
+      keywords: "filhos, prole, fertilidade, criatividade geracional"
+      nature: "Ponto Júpiter-Saturno - capacidade para filhos e legado"
+
+    exaltation:
+      name: "Part of Exaltation"
+      name_pt: "Lote da Exaltação"
+      keywords: "honra, prestígio, reconhecimento, elevação, fama"
+      nature: "Ponto de exaltação solar - capacidade de distinção"
+
+    illness:
+      name: "Part of Illness"
+      name_pt: "Lote da Doença"
+      keywords: "saúde, vulnerabilidade, enfermidade, prevenção"
+      nature: "Ponto Marte-Saturno - áreas de fragilidade física"
+
+    courage:
+      name: "Part of Courage"
+      name_pt: "Lote da Coragem"
+      keywords: "bravura, audácia, força, determinação, ação"
+      nature: "Ponto Marte-Fortuna - capacidade de enfrentar desafios"
+
+    reputation:
+      name: "Part of Reputation"
+      name_pt: "Lote da Reputação"
+      keywords: "fama, renome, imagem pública, reconhecimento social"
+      nature: "Ponto Júpiter-Sol - potencial de reconhecimento público"
+
   examples:
     fortune_taurus_2: |
       "O Lote da Fortuna em Touro na casa 2 indica facilidade natural para acumular
@@ -375,6 +430,61 @@ arabic_part_prompts:
       relacionadas a trabalho, saúde e serviço. Desafios podem surgir através de
       responsabilidades laborais excessivas ou limitações físicas que exigem disciplina.
       O domínio de rotinas e estrutura é essencial para transcender estas restrições."
+
+    # Extended Arabic Parts examples (Issue #195)
+    marriage_libra_7: |
+      "O Lote do Casamento em Libra na casa 7 é uma posição fortíssima para uniões
+      harmoniosas e equilibradas. Com Vênus como regente em seu domicílio, há talento
+      natural para parcerias justas e culturalmente refinadas. O compromisso é vivido
+      com diplomacia e busca constante de equilíbrio na relação conjugal."
+
+    victory_sagittarius_9: |
+      "O Lote da Vitória em Sagitário na casa 9 promete triunfos expansivos através
+      de educação superior, filosofia e viagens internacionais. Júpiter em domicílio
+      maximiza o potencial de sucesso em empreendimentos que expandem horizontes.
+      A vitória vem quando se mantém a visão ampla e a fé no caminho escolhido."
+
+    father_leo_10: |
+      "O Lote do Pai em Leão na casa 10 indica um pai carismático, orgulhoso e
+      influente na carreira. O Sol como regente fortalece a conexão entre a figura
+      paterna e a trajetória profissional. Há herança de autoridade e capacidade
+      de liderança que se manifesta na vida pública."
+
+    mother_cancer_4: |
+      "O Lote da Mãe em Câncer na casa 4 é posição fortíssima para maternidade
+      nutritiva e emocionalmente conectada. A Lua em domicílio indica experiência
+      materna profunda e central na vida. O lar é sagrado e memórias de infância
+      são dominadas pela presença acolhedora da mãe."
+
+    children_leo_5: |
+      "O Lote dos Filhos em Leão na casa 5 indica grande alegria e orgulho através
+      da prole. O Sol como regente sugere filhos carismáticos e talentosos que
+      trazem brilho à vida dos pais. A criatividade se expressa plenamente através
+      dos filhos, com amor generoso e expressivo."
+
+    exaltation_capricorn_10: |
+      "O Lote da Exaltação em Capricórnio na casa 10 é posição máxima para conquistas
+      estruturadas e reconhecimento duradouro. Saturno como regente indica sucesso
+      através de trabalho árduo, perseverança e maturidade. O prestígio vem com
+      o tempo e permanece como legado respeitado."
+
+    illness_virgo_6: |
+      "O Lote da Doença em Virgem na casa 6 indica vulnerabilidade no sistema
+      digestivo e intestinal, além de tendência a preocupação excessiva com saúde.
+      Mercúrio como regente sugere que a ansiedade pode manifestar-se fisicamente.
+      Rotinas de saúde metódicas e equilíbrio mental são essenciais para prevenção."
+
+    courage_aries_1: |
+      "O Lote da Coragem em Áries na casa 1 indica bravura natural e instintiva
+      como característica central da personalidade. Marte em domicílio maximiza
+      a capacidade de ação decisiva e enfrentamento direto de desafios. A coragem
+      física é evidente e a pessoa inspira outros com sua determinação."
+
+    reputation_sagittarius_10: |
+      "O Lote da Reputação em Sagitário na casa 10 promete fama através de sabedoria,
+      expansão e visão filosófica. Júpiter como regente indica reconhecimento
+      internacional e acadêmico. A pessoa é conhecida por sua generosidade,
+      otimismo e capacidade de inspirar outros com sua visão ampla."
 
 # Guia de dignidades para contexto
 dignities_guide:

@@ -15,7 +15,8 @@
     "invalid_verification_token": "Invalid or expired verification token",
     "not_enough_privileges": "Not enough privileges",
     "admin_email_not_verified": "Email verification required for admin access",
-    "email_not_verified": "Email verification required to access this feature. Please verify your email first."
+    "email_not_verified": "Email verification required to access this feature. Please verify your email first.",
+    "premium_required": "This feature is exclusive to Premium subscribers. Upgrade your plan to access."
   },
   "password": {
     "reset_email_sent": "If the email exists, you will receive recovery instructions",

@@ -23,6 +23,7 @@ import { MethodologyPage } from './pages/Methodology';
 import { PublicChartsPage } from './pages/PublicCharts';
 import { PublicChartDetailPage } from './pages/PublicChartDetail';
 import { RagDocumentsPage } from './pages/RagDocuments';
+import { PricingPage } from './pages/Pricing';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
@@ -68,6 +69,8 @@ function App() {
           <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
           {/* RAG Knowledge Base */}
           <Route path="/rag-documents" element={<RagDocumentsPage />} />
+          {/* Pricing */}
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <CookieBanner />

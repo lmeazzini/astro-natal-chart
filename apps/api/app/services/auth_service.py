@@ -34,7 +34,7 @@ def determine_user_role(email: str) -> UserRole:
 
     Rules:
     - Emails ending with @realastrology.ai → ADMIN
-    - All other emails → GERAL
+    - All other emails → FREE
 
     Args:
         email: User email address
@@ -44,7 +44,7 @@ def determine_user_role(email: str) -> UserRole:
     """
     if email.lower().endswith(ADMIN_EMAIL_DOMAIN):
         return UserRole.ADMIN
-    return UserRole.GERAL
+    return UserRole.FREE
 
 
 class AuthenticationError(Exception):

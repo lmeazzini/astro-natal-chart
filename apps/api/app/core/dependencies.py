@@ -169,6 +169,39 @@ async def require_verified_email(
     return current_user
 
 
+async def require_premium(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Require premium or admin role for endpoint access.
+
+    This dependency ensures that only premium subscribers or admins can access
+    premium features like horary astrology, advanced interpretations, etc.
+
+    Hierarchy: FREE < PREMIUM < ADMIN
+    - PREMIUM users can access premium features
+    - ADMIN users can access all features (including premium)
+
+    Args:
+        current_user: Current user from get_current_user dependency
+
+    Returns:
+        User object
+
+    Raises:
+        HTTPException 403: If user does not have premium or admin role
+    """
+    if not current_user.is_premium:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "premium_required",
+                "message": _(AuthMessages.PREMIUM_REQUIRED),
+            },
+        )
+    return current_user
+
+
 async def require_admin(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:

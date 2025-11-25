@@ -27,6 +27,7 @@ class AuthMessages(StrEnum):
     NOT_ENOUGH_PRIVILEGES = "auth.not_enough_privileges"
     ADMIN_EMAIL_NOT_VERIFIED = "auth.admin_email_not_verified"
     EMAIL_NOT_VERIFIED = "auth.email_not_verified"
+    PREMIUM_REQUIRED = "auth.premium_required"
 
 
 class PasswordMessages(StrEnum):

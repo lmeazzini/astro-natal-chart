@@ -19,7 +19,10 @@
     "optional": "Optional",
     "required": "Required",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "pageOf": "Page {{current}} of {{total}}",
+    "myCharts": "My Charts",
+    "login": "Login"
   },
   "nav": {
     "home": "Home",
@@ -1502,5 +1505,29 @@
       "integration": "Integration",
       "nextSteps": "Next Steps"
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Articles about astrology, natal charts, and self-knowledge",
+    "description": "Explore our articles about traditional astrology, natal chart interpretation, and personal development.",
+    "noPosts": "No articles found",
+    "filteringBy": "Filtering by",
+    "clearFilter": "Clear filter",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "popularTags": "Popular Tags",
+    "readTime": "read",
+    "views": "views",
+    "share": "Share",
+    "backToBlog": "Back to Blog",
+    "recentPosts": "Recent Posts",
+    "postNotFound": "Article not found",
+    "postNotFoundDescription": "The article you're looking for doesn't exist or has been removed.",
+    "ctaTitle": "Create Your Chart",
+    "ctaDescription": "Discover your natal chart with detailed interpretations.",
+    "ctaButton": "Get Started"
+  },
+  "footer": {
+    "rights": "All rights reserved."
   }
 }

@@ -13,6 +13,7 @@ from app.core.config import settings
 
 # Import models to ensure they are registered with Base.metadata
 from app.core.database import Base
+from app.models.blog_post import BlogPost  # noqa: F401
 from app.models.chart import AuditLog, BirthChart  # noqa: F401
 from app.models.interpretation import ChartInterpretation  # noqa: F401
 from app.models.interpretation_cache import InterpretationCache  # noqa: F401

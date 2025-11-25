@@ -13,7 +13,6 @@ from app.services.interpretation_service_rag import (
     InterpretationServiceRAG,
 )
 
-
 # =============================================================================
 # Module-level fixtures to avoid duplication
 # =============================================================================
@@ -31,9 +30,7 @@ def mock_openai_client() -> MagicMock:
     mock_response = MagicMock()
     mock_response.choices = [
         MagicMock(
-            message=MagicMock(
-                content="Test interpretation for Arabic Part in Aries house 1."
-            )
+            message=MagicMock(content="Test interpretation for Arabic Part in Aries house 1.")
         )
     ]
     mock_client = MagicMock()
@@ -42,22 +39,16 @@ def mock_openai_client() -> MagicMock:
 
 
 @pytest.fixture
-def mock_rag_service(
-    mock_openai_client: MagicMock, mock_db: MagicMock
-) -> InterpretationServiceRAG:
+def mock_rag_service(mock_openai_client: MagicMock, mock_db: MagicMock) -> InterpretationServiceRAG:
     """Create InterpretationServiceRAG with mocked dependencies."""
     with patch(
         "app.services.interpretation_service_rag.AsyncOpenAI",
         return_value=mock_openai_client,
     ):
-        with patch(
-            "app.services.interpretation_service_rag.hybrid_search_service"
-        ) as mock_hybrid:
+        with patch("app.services.interpretation_service_rag.hybrid_search_service") as mock_hybrid:
             mock_hybrid.hybrid_search = AsyncMock(return_value=[])
             # Disable cache for testing to avoid async db issues
-            service = InterpretationServiceRAG(
-                db=mock_db, use_cache=False, language="pt-BR"
-            )
+            service = InterpretationServiceRAG(db=mock_db, use_cache=False, language="pt-BR")
             service.client = mock_openai_client
             return service
 
@@ -202,9 +193,7 @@ class TestCacheHitTracking:
     ) -> InterpretationServiceRAG:
         """Create service with cache service."""
         mock_response = MagicMock()
-        mock_response.choices = [
-            MagicMock(message=MagicMock(content="Generated interpretation"))
-        ]
+        mock_response.choices = [MagicMock(message=MagicMock(content="Generated interpretation"))]
         mock_client = MagicMock()
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
@@ -217,9 +206,7 @@ class TestCacheHitTracking:
             ) as mock_hybrid:
                 mock_hybrid.hybrid_search = AsyncMock(return_value=[])
                 # Create with cache disabled, then manually set mock cache
-                service = InterpretationServiceRAG(
-                    db=mock_db, use_cache=False, language="pt-BR"
-                )
+                service = InterpretationServiceRAG(db=mock_db, use_cache=False, language="pt-BR")
                 service.client = mock_client
                 service.cache_service = mock_cache_service
                 return service

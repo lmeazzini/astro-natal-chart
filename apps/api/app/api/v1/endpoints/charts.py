@@ -347,6 +347,7 @@ async def delete_chart(
 # PDF EXPORT ENDPOINTS
 # ============================================================
 
+
 @router.post(
     "/{chart_id}/generate-pdf",
     status_code=status.HTTP_202_ACCEPTED,
@@ -398,7 +399,7 @@ async def generate_chart_pdf(
         )
 
         # Verify chart has calculated data
-        if not chart.chart_data or chart.status != 'completed':
+        if not chart.chart_data or chart.status != "completed":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Chart must be fully calculated before generating PDF. Wait for chart calculations to complete.",
@@ -590,7 +591,9 @@ async def download_chart_pdf(
         filename = f"natal_chart_{chart.person_name}_{chart_id}.pdf".replace(" ", "_")
 
         # Set cache-control headers to prevent browser caching
-        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private, max-age=0"
+        response.headers["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, private, max-age=0"
+        )
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
 

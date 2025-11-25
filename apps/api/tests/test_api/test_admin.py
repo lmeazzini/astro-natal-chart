@@ -30,7 +30,10 @@ class TestUnverifiedAdminRestriction:
 
         assert response.status_code == 403
         # Should indicate email verification is required
-        assert "verification" in response.json()["detail"].lower() or "email" in response.json()["detail"].lower()
+        assert (
+            "verification" in response.json()["detail"].lower()
+            or "email" in response.json()["detail"].lower()
+        )
 
     async def test_unverified_admin_cannot_get_user_detail(
         self,

@@ -6,7 +6,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
-import { interpretationsService, RAGInterpretations, RAGSourceInfo } from '../services/interpretations';
+import {
+  interpretationsService,
+  RAGInterpretations,
+  RAGSourceInfo,
+} from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
@@ -102,7 +106,7 @@ export function ChartDetailPage() {
           clearInterval(pollInterval);
         } else {
           // Update progress
-          setChart((prev) => prev ? { ...prev, progress: status.progress } : null);
+          setChart((prev) => (prev ? { ...prev, progress: status.progress } : null));
         }
       } catch (err) {
         console.error('Polling error:', err);
@@ -128,7 +132,11 @@ export function ChartDetailPage() {
       const chartData = await chartsService.getById(id, token);
       setChart(chartData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('chartDetail.errors.loadError', { defaultValue: 'Error loading birth chart' }));
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('chartDetail.errors.loadError', { defaultValue: 'Error loading birth chart' })
+      );
     } finally {
       setIsLoading(false);
     }
@@ -217,7 +225,12 @@ export function ChartDetailPage() {
   }
 
   // Helper to get interpretations content from RAG format
-  function getCurrentInterpretations(): { planets?: Record<string, string>; houses?: Record<string, string>; aspects?: Record<string, string>; arabic_parts?: Record<string, string> } | null {
+  function getCurrentInterpretations(): {
+    planets?: Record<string, string>;
+    houses?: Record<string, string>;
+    aspects?: Record<string, string>;
+    arabic_parts?: Record<string, string>;
+  } | null {
     if (!interpretations) return null;
 
     return {
@@ -232,7 +245,10 @@ export function ChartDetailPage() {
       ),
       arabic_parts: interpretations.arabic_parts
         ? Object.fromEntries(
-            Object.entries(interpretations.arabic_parts).map(([key, item]) => [key, extractContent(item)])
+            Object.entries(interpretations.arabic_parts).map(([key, item]) => [
+              key,
+              extractContent(item),
+            ])
           )
         : undefined,
     };
@@ -294,7 +310,10 @@ export function ChartDetailPage() {
 
     // Require email verification for PDF export
     if (!isEmailVerified) {
-      requireEmailVerification(() => {}, t('chartDetail.pdf.export', { defaultValue: 'Export PDF' }));
+      requireEmailVerification(
+        () => {},
+        t('chartDetail.pdf.export', { defaultValue: 'Export PDF' })
+      );
       return;
     }
 
@@ -322,13 +341,20 @@ export function ChartDetailPage() {
           } else if (status.status === 'failed') {
             clearInterval(pollInterval);
             setPdfStatus('failed');
-            setPdfError(status.message || t('chartDetail.pdf.generateError', { defaultValue: 'Error generating PDF' }));
+            setPdfError(
+              status.message ||
+                t('chartDetail.pdf.generateError', { defaultValue: 'Error generating PDF' })
+            );
           }
           // If status is 'generating', continue polling
         } catch (err) {
           clearInterval(pollInterval);
           setPdfStatus('failed');
-          setPdfError(err instanceof Error ? err.message : t('chartDetail.pdf.statusError', { defaultValue: 'Error checking PDF status' }));
+          setPdfError(
+            err instanceof Error
+              ? err.message
+              : t('chartDetail.pdf.statusError', { defaultValue: 'Error checking PDF status' })
+          );
         }
       }, 2000); // Poll every 2 seconds
 
@@ -340,21 +366,33 @@ export function ChartDetailPage() {
           setPdfError(t('chartDetail.pdf.timeout', { defaultValue: 'PDF generation timed out' }));
         }
       }, 300000); // 5 minutes
-
     } catch (err) {
       setPdfStatus('failed');
-      setPdfError(err instanceof Error ? err.message : t('chartDetail.pdf.startError', { defaultValue: 'Error starting PDF generation' }));
+      setPdfError(
+        err instanceof Error
+          ? err.message
+          : t('chartDetail.pdf.startError', { defaultValue: 'Error starting PDF generation' })
+      );
     }
   }
-
 
   function getAscendantSign(): string {
     if (!chart?.chart_data) return '';
     const ascLongitude = chart.chart_data.ascendant;
     const signIndex = Math.floor(ascLongitude / 30);
     const signs = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ];
     return signs[signIndex];
   }
@@ -366,7 +404,9 @@ export function ChartDetailPage() {
           <div className="inline-block animate-shimmer mb-astro-md">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <p className="text-body text-muted-foreground">{t('chartDetail.loading', { defaultValue: 'Loading birth chart...' })}</p>
+          <p className="text-body text-muted-foreground">
+            {t('chartDetail.loading', { defaultValue: 'Loading birth chart...' })}
+          </p>
         </div>
       </div>
     );
@@ -380,9 +420,14 @@ export function ChartDetailPage() {
           <div className="inline-block animate-shimmer mb-astro-md">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <h2 className="text-headline-3 font-display mb-astro-sm">{t('chartDetail.generating', { defaultValue: 'Generating your Birth Chart...' })}</h2>
+          <h2 className="text-headline-3 font-display mb-astro-sm">
+            {t('chartDetail.generating', { defaultValue: 'Generating your Birth Chart...' })}
+          </h2>
           <p className="text-body text-muted-foreground mb-astro-md">
-            {t('chartDetail.generatingDesc', { defaultValue: 'We are calculating planetary positions and generating astrological interpretations.' })}
+            {t('chartDetail.generatingDesc', {
+              defaultValue:
+                'We are calculating planetary positions and generating astrological interpretations.',
+            })}
           </p>
           <div className="w-full bg-muted rounded-full h-2 mb-astro-sm">
             <div
@@ -407,9 +452,14 @@ export function ChartDetailPage() {
             {t('chartDetail.errors.generateFailed', { defaultValue: 'Error Generating Chart' })}
           </h2>
           <p className="text-body text-muted-foreground mb-astro-md">
-            {chart.error_message || t('chartDetail.errors.processError', { defaultValue: 'An error occurred while processing your birth chart.' })}
+            {chart.error_message ||
+              t('chartDetail.errors.processError', {
+                defaultValue: 'An error occurred while processing your birth chart.',
+              })}
           </p>
-          <Button onClick={() => navigate('/charts')}>{t('chartDetail.backToCharts', { defaultValue: 'Back to Charts' })}</Button>
+          <Button onClick={() => navigate('/charts')}>
+            {t('chartDetail.backToCharts', { defaultValue: 'Back to Charts' })}
+          </Button>
         </div>
       </div>
     );
@@ -420,9 +470,7 @@ export function ChartDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5 flex items-center justify-center px-4">
         <div className="max-w-md w-full animate-fade-in">
           <div className="bg-destructive/10 border border-destructive/20 rounded-astro-lg p-6">
-            <h2 className="text-lg font-semibold text-destructive mb-2">
-              {t('common.error')}
-            </h2>
+            <h2 className="text-lg font-semibold text-destructive mb-2">{t('common.error')}</h2>
             <p className="text-sm text-muted-foreground mb-4">
               {error || t('chartDetail.errors.notFound', { defaultValue: 'Birth chart not found' })}
             </p>
@@ -438,20 +486,18 @@ export function ChartDetailPage() {
   }
 
   const ascSign = getAscendantSign();
-  const ascDegree = chart.chart_data?.ascendant
-    ? Math.floor((chart.chart_data.ascendant % 30))
-    : 0;
+  const ascDegree = chart.chart_data?.ascendant ? Math.floor(chart.chart_data.ascendant % 30) : 0;
 
   // Get Sun and Moon signs for the "Big Three"
   function getSunSign(): string {
     if (!chart) return '';
-    const sun = chart.chart_data?.planets.find(p => p.name === 'Sun');
+    const sun = chart.chart_data?.planets.find((p) => p.name === 'Sun');
     return sun?.sign || '';
   }
 
   function getMoonSign(): string {
     if (!chart) return '';
-    const moon = chart.chart_data?.planets.find(p => p.name === 'Moon');
+    const moon = chart.chart_data?.planets.find((p) => p.name === 'Moon');
     return moon?.sign || '';
   }
 
@@ -470,18 +516,13 @@ export function ChartDetailPage() {
                 className="hover:opacity-80 transition-all duration-200 flex-shrink-0"
                 aria-label={t('common.back')}
               >
-                <img
-                  src="/logo.png"
-                  alt="Real Astrology"
-                  className="h-8 w-8"
-                />
+                <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
               </Link>
               <div>
-                <h1 className="text-h3 font-display text-foreground">
-                  {chart.person_name}
-                </h1>
+                <h1 className="text-h3 font-display text-foreground">{chart.person_name}</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {formatBirthDateTime(chart.birth_datetime, chart.birth_timezone || 'UTC', true)} • {chart.city}
+                  {formatBirthDateTime(chart.birth_datetime, chart.birth_timezone || 'UTC', true)} •{' '}
+                  {chart.city}
                   {chart.country && `, ${chart.country}`}
                 </p>
               </div>
@@ -522,11 +563,7 @@ export function ChartDetailPage() {
               </Button>
 
               {/* Edit Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/charts/${id}/edit`)}
-              >
+              <Button variant="outline" size="sm" onClick={() => navigate(`/charts/${id}/edit`)}>
                 <Edit className="mr-2 h-4 w-4" />
                 {t('common.edit', { defaultValue: 'Edit' })}
               </Button>
@@ -557,7 +594,9 @@ export function ChartDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">{t('chartDetail.ascendant')}</p>
+              <p className="text-sm text-muted-foreground mb-2 font-medium">
+                {t('chartDetail.ascendant')}
+              </p>
               <p className="text-h3 font-display text-foreground flex items-center gap-2">
                 {getSignSymbol(ascSign)} {translateSign(ascSign)} {ascDegree}°
               </p>
@@ -565,7 +604,9 @@ export function ChartDetailPage() {
           </Card>
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">{t('newChart.houseSystem')}</p>
+              <p className="text-sm text-muted-foreground mb-2 font-medium">
+                {t('newChart.houseSystem')}
+              </p>
               <p className="text-h3 font-display text-foreground capitalize">
                 {chart.house_system}
               </p>
@@ -573,10 +614,10 @@ export function ChartDetailPage() {
           </Card>
           <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">{t('newChart.zodiacType')}</p>
-              <p className="text-h3 font-display text-foreground capitalize">
-                {chart.zodiac_type}
+              <p className="text-sm text-muted-foreground mb-2 font-medium">
+                {t('newChart.zodiacType')}
               </p>
+              <p className="text-h3 font-display text-foreground capitalize">{chart.zodiac_type}</p>
             </CardContent>
           </Card>
         </div>
@@ -592,9 +633,7 @@ export function ChartDetailPage() {
             <TabsTrigger value="aspects">
               {t('chartDetail.tabs.aspects')} ({chart.chart_data?.aspects.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="arabic-parts">
-              {t('chartDetail.tabs.arabicParts')} (4)
-            </TabsTrigger>
+            <TabsTrigger value="arabic-parts">{t('chartDetail.tabs.arabicParts')} (4)</TabsTrigger>
             <TabsTrigger value="growth">
               {t('chartDetail.tabs.growth', { defaultValue: 'Growth' })}
             </TabsTrigger>
@@ -603,150 +642,188 @@ export function ChartDetailPage() {
           {/* Tab Content: Visual */}
           <TabsContent value="visual" className="mt-0">
             {chart.chart_data && (
-            <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-h3 font-display">{t('chartDetail.birthChart', { defaultValue: 'Birth Chart' })}</CardTitle>
-                <CardDescription>{t('chartDetail.birthChartDesc', { defaultValue: 'Complete visualization of your birth sky' })}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                {/* Big Three Summary */}
-                <div>
-                  <h3 className="text-h4 font-display mb-4">{t('chartDetail.astroEssence', { defaultValue: 'Astrological Essence' })}</h3>
-                  <BigThreeBadge
-                    sunSign={sunSign}
-                    moonSign={moonSign}
-                    risingSign={ascSign}
-                    variant="horizontal"
-                  />
-                </div>
-
-                {/* Big Three Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Sun */}
-                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl" title={t('chartDetail.sun')}>
-                      ☉
-                    </span>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          {t('chartDetail.bigThree.yourEssence', { defaultValue: 'Your essence' })}
-                        </p>
-                        <InfoTooltip
-                          content={t('chartDetail.bigThree.sunTooltip', { defaultValue: 'The Sun represents your core identity, life purpose and vitality. It is the nucleus of your conscious personality.' })}
-                          side="top"
-                        />
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        {translatePlanet('Sun')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(sunSign)} {translateSign(sunSign)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t('chartDetail.bigThree.sunDesc', { defaultValue: 'Identity and life purpose' })}
-                  </p>
-                </div>
-
-                {/* Moon */}
-                <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl" title={t('chartDetail.moon')}>
-                      ☽
-                    </span>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          {t('chartDetail.bigThree.yourEmotions', { defaultValue: 'Your emotions' })}
-                        </p>
-                        <InfoTooltip
-                          content={t('chartDetail.bigThree.moonTooltip', { defaultValue: 'The Moon represents your emotions, instinctive needs and unconscious reactions. It reveals how you feel safe and comfortable.' })}
-                          side="top"
-                        />
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        {translatePlanet('Moon')} {t('chartDetail.in', { defaultValue: 'in' })} {getSignSymbol(moonSign)} {translateSign(moonSign)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t('chartDetail.bigThree.moonDesc', { defaultValue: 'Emotional world and needs' })}
-                  </p>
-                </div>
-
-                {/* Ascendant */}
-                <div className="bg-gradient-to-br from-green-500/10 to-teal-500/10 border border-green-500/20 rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl font-bold text-primary" title={t('chartDetail.ascendant')}>
-                      ASC
-                    </span>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          {t('chartDetail.bigThree.yourAppearance', { defaultValue: 'Your appearance' })}
-                        </p>
-                        <InfoTooltip
-                          content={t('chartDetail.bigThree.ascTooltip', { defaultValue: 'The Ascendant is the sign that was rising on the eastern horizon at your birth. It represents your social mask and first impression.' })}
-                          side="top"
-                        />
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">
-                        {getSignSymbol(ascSign)} {translateSign(ascSign)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t('chartDetail.bigThree.ascDesc', { defaultValue: 'How others see you' })}
-                  </p>
-                </div>
-              </div>
-
-              {/* Chart Wheel - Professional visualization with AstroChart (PRIMEIRO) */}
-              <div>
-                <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
-                <ChartWheelAstro chartData={chart.chart_data} />
-              </div>
-
-              {/* Temperament (SEGUNDO) */}
-              {chart.chart_data.temperament && (
-                <div>
-                  <h3 className="text-h4 font-display mb-4">Cálculo Final do Temperamento</h3>
-                  <TemperamentDisplay temperament={chart.chart_data.temperament} />
-                </div>
-              )}
-
-              {/* Lord of Nativity */}
-              {chart.chart_data.lord_of_nativity && (
-                <div>
-                  <LordOfNativity lordOfNativity={chart.chart_data.lord_of_nativity} />
-                </div>
-              )}
-
-              {/* Lunar and Solar Phases - with explicit labels */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {chart.chart_data.lunar_phase && (
+              <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-h3 font-display">
+                    {t('chartDetail.birthChart', { defaultValue: 'Birth Chart' })}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('chartDetail.birthChartDesc', {
+                      defaultValue: 'Complete visualization of your birth sky',
+                    })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  {/* Big Three Summary */}
                   <div>
-                    <h3 className="text-h4 font-display mb-4">{t('chartDetail.lunarPhase', { defaultValue: 'Lunar Phase' })}</h3>
-                    <LunarPhase lunarPhase={chart.chart_data.lunar_phase} />
+                    <h3 className="text-h4 font-display mb-4">
+                      {t('chartDetail.astroEssence', { defaultValue: 'Astrological Essence' })}
+                    </h3>
+                    <BigThreeBadge
+                      sunSign={sunSign}
+                      moonSign={moonSign}
+                      risingSign={ascSign}
+                      variant="horizontal"
+                    />
                   </div>
-                )}
-                {chart.chart_data.solar_phase && (
-                  <div>
-                    <h3 className="text-h4 font-display mb-4">{t('chartDetail.solarPhase', { defaultValue: 'Solar Phase' })}</h3>
-                    <SolarPhase solarPhase={chart.chart_data.solar_phase} />
-                  </div>
-                )}
-              </div>
 
-              {/* Sect Analysis */}
-              {chart.chart_data.sect_analysis && (
-                <div>
-                  <h3 className="text-h4 font-display mb-4">{t('components.sect.title', { defaultValue: 'Sect Analysis' })}</h3>
-                  <SectAnalysis sectData={chart.chart_data.sect_analysis} />
-                </div>
-              )}
-              </CardContent>
-            </Card>
+                  {/* Big Three Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Sun */}
+                    <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-3xl" title={t('chartDetail.sun')}>
+                          ☉
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                              {t('chartDetail.bigThree.yourEssence', {
+                                defaultValue: 'Your essence',
+                              })}
+                            </p>
+                            <InfoTooltip
+                              content={t('chartDetail.bigThree.sunTooltip', {
+                                defaultValue:
+                                  'The Sun represents your core identity, life purpose and vitality. It is the nucleus of your conscious personality.',
+                              })}
+                              side="top"
+                            />
+                          </div>
+                          <p className="text-lg font-semibold text-foreground">
+                            {translatePlanet('Sun')} {t('chartDetail.in', { defaultValue: 'in' })}{' '}
+                            {getSignSymbol(sunSign)} {translateSign(sunSign)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t('chartDetail.bigThree.sunDesc', {
+                          defaultValue: 'Identity and life purpose',
+                        })}
+                      </p>
+                    </div>
+
+                    {/* Moon */}
+                    <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-3xl" title={t('chartDetail.moon')}>
+                          ☽
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                              {t('chartDetail.bigThree.yourEmotions', {
+                                defaultValue: 'Your emotions',
+                              })}
+                            </p>
+                            <InfoTooltip
+                              content={t('chartDetail.bigThree.moonTooltip', {
+                                defaultValue:
+                                  'The Moon represents your emotions, instinctive needs and unconscious reactions. It reveals how you feel safe and comfortable.',
+                              })}
+                              side="top"
+                            />
+                          </div>
+                          <p className="text-lg font-semibold text-foreground">
+                            {translatePlanet('Moon')} {t('chartDetail.in', { defaultValue: 'in' })}{' '}
+                            {getSignSymbol(moonSign)} {translateSign(moonSign)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t('chartDetail.bigThree.moonDesc', {
+                          defaultValue: 'Emotional world and needs',
+                        })}
+                      </p>
+                    </div>
+
+                    {/* Ascendant */}
+                    <div className="bg-gradient-to-br from-green-500/10 to-teal-500/10 border border-green-500/20 rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span
+                          className="text-3xl font-bold text-primary"
+                          title={t('chartDetail.ascendant')}
+                        >
+                          ASC
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                              {t('chartDetail.bigThree.yourAppearance', {
+                                defaultValue: 'Your appearance',
+                              })}
+                            </p>
+                            <InfoTooltip
+                              content={t('chartDetail.bigThree.ascTooltip', {
+                                defaultValue:
+                                  'The Ascendant is the sign that was rising on the eastern horizon at your birth. It represents your social mask and first impression.',
+                              })}
+                              side="top"
+                            />
+                          </div>
+                          <p className="text-lg font-semibold text-foreground">
+                            {getSignSymbol(ascSign)} {translateSign(ascSign)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t('chartDetail.bigThree.ascDesc', { defaultValue: 'How others see you' })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Chart Wheel - Professional visualization with AstroChart (PRIMEIRO) */}
+                  <div>
+                    <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
+                    <ChartWheelAstro chartData={chart.chart_data} />
+                  </div>
+
+                  {/* Temperament (SEGUNDO) */}
+                  {chart.chart_data.temperament && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">Cálculo Final do Temperamento</h3>
+                      <TemperamentDisplay temperament={chart.chart_data.temperament} />
+                    </div>
+                  )}
+
+                  {/* Lord of Nativity */}
+                  {chart.chart_data.lord_of_nativity && (
+                    <div>
+                      <LordOfNativity lordOfNativity={chart.chart_data.lord_of_nativity} />
+                    </div>
+                  )}
+
+                  {/* Lunar and Solar Phases - with explicit labels */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {chart.chart_data.lunar_phase && (
+                      <div>
+                        <h3 className="text-h4 font-display mb-4">
+                          {t('chartDetail.lunarPhase', { defaultValue: 'Lunar Phase' })}
+                        </h3>
+                        <LunarPhase lunarPhase={chart.chart_data.lunar_phase} />
+                      </div>
+                    )}
+                    {chart.chart_data.solar_phase && (
+                      <div>
+                        <h3 className="text-h4 font-display mb-4">
+                          {t('chartDetail.solarPhase', { defaultValue: 'Solar Phase' })}
+                        </h3>
+                        <SolarPhase solarPhase={chart.chart_data.solar_phase} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sect Analysis */}
+                  {chart.chart_data.sect_analysis && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('components.sect.title', { defaultValue: 'Sect Analysis' })}
+                      </h3>
+                      <SectAnalysis sectData={chart.chart_data.sect_analysis} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
@@ -759,7 +836,10 @@ export function ChartDetailPage() {
                     <CardTitle className="text-h3 font-display flex items-center gap-2">
                       {t('chartDetail.planetPositions', { defaultValue: 'Planetary Positions' })}
                       <InfoTooltip
-                        content={t('chartDetail.planetPositionsTooltip', { defaultValue: 'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.' })}
+                        content={t('chartDetail.planetPositionsTooltip', {
+                          defaultValue:
+                            'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.',
+                        })}
                         side="right"
                       />
                     </CardTitle>
@@ -768,7 +848,9 @@ export function ChartDetailPage() {
                       size="sm"
                       onClick={handleRefreshInterpretations}
                       disabled={isLoadingInterpretations}
-                      title={t('chartDetail.refreshInterpretations', { defaultValue: 'Refresh AI interpretations' })}
+                      title={t('chartDetail.refreshInterpretations', {
+                        defaultValue: 'Refresh AI interpretations',
+                      })}
                     >
                       {isLoadingInterpretations ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -789,7 +871,10 @@ export function ChartDetailPage() {
                         {t('rag.badge', 'Aprimorado com RAG')}
                       </Badge>
                       <InfoTooltip
-                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        content={t(
+                          'rag.tooltipLong',
+                          'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.'
+                        )}
                         side="right"
                       />
                     </CardDescription>
@@ -806,7 +891,9 @@ export function ChartDetailPage() {
                   {!interpretations && !isLoadingInterpretations && !isEmailVerified && (
                     <CardDescription className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400">
                       <Sparkles className="h-4 w-4" />
-                      {t('chartDetail.verifyForInterpretations', { defaultValue: 'Verify your email to unlock AI interpretations' })}
+                      {t('chartDetail.verifyForInterpretations', {
+                        defaultValue: 'Verify your email to unlock AI interpretations',
+                      })}
                     </CardDescription>
                   )}
                 </CardHeader>
@@ -831,7 +918,11 @@ export function ChartDetailPage() {
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
                     {t('chartDetail.astroHouses', { defaultValue: 'Astrological Houses' })}
                     <InfoTooltip
-                      content={t('chartDetail.astroHousesTooltip', { defaultValue: 'The 12 houses divide the sky into sectors representing life areas. System used: {{system}}. Each house has a cusp (beginning) and a planetary ruler.', system: chart.house_system })}
+                      content={t('chartDetail.astroHousesTooltip', {
+                        defaultValue:
+                          'The 12 houses divide the sky into sectors representing life areas. System used: {{system}}. Each house has a cusp (beginning) and a planetary ruler.',
+                        system: chart.house_system,
+                      })}
                       side="right"
                     />
                   </CardTitle>
@@ -842,7 +933,10 @@ export function ChartDetailPage() {
                         {t('rag.badge', 'Aprimorado com RAG')}
                       </Badge>
                       <InfoTooltip
-                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        content={t(
+                          'rag.tooltipLong',
+                          'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.'
+                        )}
                         side="right"
                       />
                     </CardDescription>
@@ -867,7 +961,10 @@ export function ChartDetailPage() {
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
                     {t('chartDetail.planetaryAspects', { defaultValue: 'Planetary Aspects' })}
                     <InfoTooltip
-                      content={t('chartDetail.planetaryAspectsTooltip', { defaultValue: 'Aspects are geometric angles between planets that reveal how they interact. We detect major aspects (conjunction, opposition, trine, square, sextile) and minor (quincunx, semisextile, etc.) with configurable orbs.' })}
+                      content={t('chartDetail.planetaryAspectsTooltip', {
+                        defaultValue:
+                          'Aspects are geometric angles between planets that reveal how they interact. We detect major aspects (conjunction, opposition, trine, square, sextile) and minor (quincunx, semisextile, etc.) with configurable orbs.',
+                      })}
                       side="right"
                     />
                   </CardTitle>
@@ -878,7 +975,10 @@ export function ChartDetailPage() {
                         {t('rag.badge', 'Aprimorado com RAG')}
                       </Badge>
                       <InfoTooltip
-                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        content={t(
+                          'rag.tooltipLong',
+                          'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.'
+                        )}
                         side="right"
                       />
                     </CardDescription>
@@ -903,12 +1003,17 @@ export function ChartDetailPage() {
                   <CardTitle className="text-h3 font-display flex items-center gap-2">
                     {t('chartDetail.arabicPartsLots', { defaultValue: 'Arabic Parts (Lots)' })}
                     <InfoTooltip
-                      content={t('chartDetail.arabicPartsTooltip', { defaultValue: 'Arabic Parts (or Lots) are mathematically calculated points from planetary positions. They reveal specific life themes according to Hellenistic tradition.' })}
+                      content={t('chartDetail.arabicPartsTooltip', {
+                        defaultValue:
+                          'Arabic Parts (or Lots) are mathematically calculated points from planetary positions. They reveal specific life themes according to Hellenistic tradition.',
+                      })}
                       side="right"
                     />
                   </CardTitle>
                   <CardDescription>
-                    {t('chartDetail.arabicPartsDesc', { defaultValue: 'Sensitive points from Hellenistic astrological tradition' })}
+                    {t('chartDetail.arabicPartsDesc', {
+                      defaultValue: 'Sensitive points from Hellenistic astrological tradition',
+                    })}
                   </CardDescription>
                   {interpretations && (
                     <div className="flex items-center gap-2 mt-2">
@@ -917,7 +1022,10 @@ export function ChartDetailPage() {
                         {t('rag.badge', 'Aprimorado com RAG')}
                       </Badge>
                       <InfoTooltip
-                        content={t('rag.tooltipLong', 'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.')}
+                        content={t(
+                          'rag.tooltipLong',
+                          'RAG (Retrieval-Augmented Generation) combina inteligência artificial com uma base de conhecimento de livros clássicos de astrologia, resultando em interpretações mais precisas e fundamentadas na tradição astrológica.'
+                        )}
                         side="right"
                       />
                     </div>
@@ -932,32 +1040,73 @@ export function ChartDetailPage() {
                   {/* Educational Section */}
                   <div className="mt-8 p-6 bg-muted/50 rounded-lg space-y-4">
                     <h4 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      📚 {t('chartDetail.arabicParts.aboutTitle', { defaultValue: 'About Arabic Parts' })}
+                      📚{' '}
+                      {t('chartDetail.arabicParts.aboutTitle', {
+                        defaultValue: 'About Arabic Parts',
+                      })}
                     </h4>
 
                     <div className="space-y-3 text-sm text-muted-foreground">
                       <p>
-                        <strong className="text-foreground">{t('chartDetail.arabicParts.whatAre', { defaultValue: 'What they are:' })}</strong> {t('chartDetail.arabicParts.whatAreDesc', { defaultValue: 'Arabic Parts (also called "Lots" in Hellenistic tradition) are mathematically calculated points from planetary and angular positions. They function as "virtual planets", revealing specific life themes.' })}
+                        <strong className="text-foreground">
+                          {t('chartDetail.arabicParts.whatAre', { defaultValue: 'What they are:' })}
+                        </strong>{' '}
+                        {t('chartDetail.arabicParts.whatAreDesc', {
+                          defaultValue:
+                            'Arabic Parts (also called "Lots" in Hellenistic tradition) are mathematically calculated points from planetary and angular positions. They function as "virtual planets", revealing specific life themes.',
+                        })}
                       </p>
 
                       <p>
-                        <strong className="text-foreground">{t('chartDetail.arabicParts.formula', { defaultValue: 'General formula:' })}</strong> {t('chartDetail.arabicParts.formulaDesc', { defaultValue: 'Part = Ascendant + Planet1 - Planet2 (all in degrees 0-360). Formulas differ between day charts (☀️ Sun above horizon) and night charts (🌙 Sun below horizon).' })}
+                        <strong className="text-foreground">
+                          {t('chartDetail.arabicParts.formula', {
+                            defaultValue: 'General formula:',
+                          })}
+                        </strong>{' '}
+                        {t('chartDetail.arabicParts.formulaDesc', {
+                          defaultValue:
+                            'Part = Ascendant + Planet1 - Planet2 (all in degrees 0-360). Formulas differ between day charts (☀️ Sun above horizon) and night charts (🌙 Sun below horizon).',
+                        })}
                       </p>
 
                       <p>
-                        <strong className="text-foreground">{t('chartDetail.arabicParts.importance', { defaultValue: 'Importance:' })}</strong> {t('chartDetail.arabicParts.importanceDesc', { defaultValue: 'The house where a Part falls and the aspects it receives from natal planets are significant. The Lot of Fortune is especially important - medieval astrologers treated it with the same importance as the Ascendant.' })}
+                        <strong className="text-foreground">
+                          {t('chartDetail.arabicParts.importance', { defaultValue: 'Importance:' })}
+                        </strong>{' '}
+                        {t('chartDetail.arabicParts.importanceDesc', {
+                          defaultValue:
+                            'The house where a Part falls and the aspects it receives from natal planets are significant. The Lot of Fortune is especially important - medieval astrologers treated it with the same importance as the Ascendant.',
+                        })}
                       </p>
 
                       <p>
-                        <strong className="text-foreground">{t('chartDetail.arabicParts.origin', { defaultValue: 'Origin:' })}</strong> {t('chartDetail.arabicParts.originDesc', { defaultValue: 'Developed in Hellenistic astrology (Greece/Rome, 100 BC - 600 AD) and expanded by medieval Arab astrologers (700-1400 AD). There are hundreds of cataloged Parts, but the 4 presented here are the most fundamental.' })}
+                        <strong className="text-foreground">
+                          {t('chartDetail.arabicParts.origin', { defaultValue: 'Origin:' })}
+                        </strong>{' '}
+                        {t('chartDetail.arabicParts.originDesc', {
+                          defaultValue:
+                            'Developed in Hellenistic astrology (Greece/Rome, 100 BC - 600 AD) and expanded by medieval Arab astrologers (700-1400 AD). There are hundreds of cataloged Parts, but the 4 presented here are the most fundamental.',
+                        })}
                       </p>
 
                       <div className="pt-4 border-t border-border">
                         <p className="text-xs italic">
-                          <strong>{t('chartDetail.arabicParts.technicalNote', { defaultValue: 'Technical note:' })}</strong> {t('chartDetail.arabicParts.technicalNoteDesc', {
-                            defaultValue: 'Your chart is {{sect}} ({{sectDesc}}), so the formulas used follow the sect rules of Hellenistic tradition.',
-                            sect: chart.chart_data.sect === 'diurnal' ? t('chartDetail.diurnal', { defaultValue: 'diurnal' }) : t('chartDetail.nocturnal', { defaultValue: 'nocturnal' }),
-                            sectDesc: chart.chart_data.sect === 'diurnal' ? t('chartDetail.sunAbove', { defaultValue: 'Sun above horizon' }) : t('chartDetail.sunBelow', { defaultValue: 'Sun below horizon' })
+                          <strong>
+                            {t('chartDetail.arabicParts.technicalNote', {
+                              defaultValue: 'Technical note:',
+                            })}
+                          </strong>{' '}
+                          {t('chartDetail.arabicParts.technicalNoteDesc', {
+                            defaultValue:
+                              'Your chart is {{sect}} ({{sectDesc}}), so the formulas used follow the sect rules of Hellenistic tradition.',
+                            sect:
+                              chart.chart_data.sect === 'diurnal'
+                                ? t('chartDetail.diurnal', { defaultValue: 'diurnal' })
+                                : t('chartDetail.nocturnal', { defaultValue: 'nocturnal' }),
+                            sectDesc:
+                              chart.chart_data.sect === 'diurnal'
+                                ? t('chartDetail.sunAbove', { defaultValue: 'Sun above horizon' })
+                                : t('chartDetail.sunBelow', { defaultValue: 'Sun below horizon' }),
                           })}
                         </p>
                       </div>
@@ -968,9 +1117,16 @@ export function ChartDetailPage() {
             ) : (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardContent className="pt-6 text-center text-muted-foreground">
-                  <p>{t('chartDetail.arabicParts.notAvailable', { defaultValue: 'Arabic Parts not available for this chart.' })}</p>
+                  <p>
+                    {t('chartDetail.arabicParts.notAvailable', {
+                      defaultValue: 'Arabic Parts not available for this chart.',
+                    })}
+                  </p>
                   <p className="text-sm mt-2">
-                    {t('chartDetail.arabicParts.willBeCalculated', { defaultValue: 'Parts will be automatically calculated for charts created or updated after this feature.' })}
+                    {t('chartDetail.arabicParts.willBeCalculated', {
+                      defaultValue:
+                        'Parts will be automatically calculated for charts created or updated after this feature.',
+                    })}
                   </p>
                 </CardContent>
               </Card>
@@ -990,9 +1146,7 @@ export function ChartDetailPage() {
               <CardTitle className="text-h4 font-display">{t('chartDetail.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-body text-muted-foreground whitespace-pre-wrap">
-                {chart.notes}
-              </p>
+              <p className="text-body text-muted-foreground whitespace-pre-wrap">{chart.notes}</p>
             </CardContent>
           </Card>
         )}

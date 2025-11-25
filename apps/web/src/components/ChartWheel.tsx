@@ -25,13 +25,7 @@ interface ChartWheelProps {
   midheaven: number;
 }
 
-export function ChartWheel({
-  planets,
-  houses,
-  aspects,
-  ascendant,
-  midheaven,
-}: ChartWheelProps) {
+export function ChartWheel({ planets, houses, aspects, ascendant, midheaven }: ChartWheelProps) {
   const size = 600;
   const center = size / 2;
   const outerRadius = 280;
@@ -90,7 +84,7 @@ export function ChartWheel({
             animate={{ scale: 1 }}
             transition={{
               delay: staggerDelay(index, 0.03) + 0.1,
-              ...spring.bouncy
+              ...spring.bouncy,
             }}
           >
             {getSignSymbol(sign)}
@@ -110,7 +104,7 @@ export function ChartWheel({
       const innerPoint = polarToCartesian(center, center, houseRadius, angle);
 
       // Calculate label position (middle of house)
-      const nextHouse = houses[(house.house % 12)];
+      const nextHouse = houses[house.house % 12];
       const nextAngle = longitudeToAngle(nextHouse.longitude);
       const midAngle = (angle + nextAngle) / 2;
       const labelPos = polarToCartesian(center, center, (signRadius + houseRadius) / 2, midAngle);
@@ -162,7 +156,7 @@ export function ChartWheel({
           animate={{ opacity: 1, scale: 1 }}
           transition={{
             delay: staggerDelay(index, 0.08) + 0.5,
-            ...spring.bouncy
+            ...spring.bouncy,
           }}
           whileHover={{ scale: 1.2 }}
           className="cursor-pointer"
@@ -240,7 +234,7 @@ export function ChartWheel({
           animate={{ pathLength: 1, opacity: 1 }}
           transition={{
             pathLength: { delay: staggerDelay(index, 0.05) + 0.3, duration: 0.8 },
-            opacity: { delay: staggerDelay(index, 0.05) + 0.3, duration: 0.3 }
+            opacity: { delay: staggerDelay(index, 0.05) + 0.3, duration: 0.3 },
           }}
         />
       );

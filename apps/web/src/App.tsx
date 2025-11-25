@@ -43,37 +43,37 @@ function App() {
       <MotionProvider>
         <AuthProvider>
           <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/charts" element={<ChartsPage />} />
-          <Route path="/charts/new" element={<NewChartPage />} />
-          <Route path="/charts/:id" element={<ChartDetailPage />} />
-          <Route path="/charts/:id/edit" element={<EditChartPage />} />
-          {/* Legal Pages */}
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/cookies" element={<CookiesPage />} />
-          <Route path="/consent" element={<ConsentPage />} />
-          {/* About Pages */}
-          <Route path="/about/methodology" element={<MethodologyPage />} />
-          {/* Public Charts */}
-          <Route path="/public-charts" element={<PublicChartsPage />} />
-          <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
-          {/* RAG Knowledge Base */}
-          <Route path="/rag-documents" element={<RagDocumentsPage />} />
-          {/* Pricing */}
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <CookieBanner />
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+              <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/charts" element={<ChartsPage />} />
+              <Route path="/charts/new" element={<NewChartPage />} />
+              <Route path="/charts/:id" element={<ChartDetailPage />} />
+              <Route path="/charts/:id/edit" element={<EditChartPage />} />
+              {/* Legal Pages */}
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/cookies" element={<CookiesPage />} />
+              <Route path="/consent" element={<ConsentPage />} />
+              {/* About Pages */}
+              <Route path="/about/methodology" element={<MethodologyPage />} />
+              {/* Public Charts */}
+              <Route path="/public-charts" element={<PublicChartsPage />} />
+              <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
+              {/* RAG Knowledge Base */}
+              <Route path="/rag-documents" element={<RagDocumentsPage />} />
+              {/* Pricing */}
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            <CookieBanner />
           </BrowserRouter>
         </AuthProvider>
       </MotionProvider>
@@ -100,7 +100,7 @@ function DashboardPage() {
 
       const response = await fetch('http://localhost:8000/api/v1/charts/?page=1&page_size=1', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -139,24 +139,16 @@ function DashboardPage() {
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             aria-label={t('common.back')}
           >
-            <img
-              src="/logo.png"
-              alt="Real Astrology"
-              className="h-8 w-8"
-            />
+            <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-4">
             <LanguageSelector />
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/profile">
-                {t('nav.profile')}
-              </Link>
+              <Link to="/profile">{t('nav.profile')}</Link>
             </Button>
-            <span className="text-sm text-muted-foreground">
-              {user.full_name}
-            </span>
+            <span className="text-sm text-muted-foreground">{user.full_name}</span>
             <Button variant="ghost" size="sm" onClick={logout}>
               {t('nav.logout')}
             </Button>
@@ -228,15 +220,11 @@ function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboardPage.createChart')}</CardTitle>
-              <CardDescription>
-                {t('dashboardPage.createChartDescription')}
-              </CardDescription>
+              <CardDescription>{t('dashboardPage.createChartDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" asChild>
-                <Link to="/charts/new">
-                  {t('dashboardPage.newChartButton')}
-                </Link>
+                <Link to="/charts/new">{t('dashboardPage.newChartButton')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -245,15 +233,11 @@ function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboardPage.myChartsCard')}</CardTitle>
-              <CardDescription>
-                {t('dashboardPage.myChartsDescription')}
-              </CardDescription>
+              <CardDescription>{t('dashboardPage.myChartsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="secondary" className="w-full" asChild>
-                <Link to="/charts">
-                  {t('dashboardPage.viewMyCharts')}
-                </Link>
+                <Link to="/charts">{t('dashboardPage.viewMyCharts')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -261,15 +245,11 @@ function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboardPage.famousChartsCard')}</CardTitle>
-              <CardDescription>
-                {t('dashboardPage.famousChartsDescription')}
-              </CardDescription>
+              <CardDescription>{t('dashboardPage.famousChartsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/public-charts">
-                  {t('dashboardPage.viewFamousCharts')}
-                </Link>
+                <Link to="/public-charts">{t('dashboardPage.viewFamousCharts')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -278,7 +258,10 @@ function DashboardPage() {
             <CardHeader>
               <CardTitle>{t('dashboardPage.ragKnowledgeBase', 'RAG Knowledge Base')}</CardTitle>
               <CardDescription>
-                {t('dashboardPage.ragKnowledgeBaseDescription', 'Documents used for AI-enhanced interpretations')}
+                {t(
+                  'dashboardPage.ragKnowledgeBaseDescription',
+                  'Documents used for AI-enhanced interpretations'
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -11,6 +11,7 @@ This migration:
 The role column is a VARCHAR(20), so no enum constraint exists in the database.
 New valid roles: 'free', 'premium', 'admin'
 """
+
 from collections.abc import Sequence
 
 from alembic import op

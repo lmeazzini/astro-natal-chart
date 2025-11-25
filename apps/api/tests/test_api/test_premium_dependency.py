@@ -209,9 +209,7 @@ class TestUserRoleProperty:
 class TestRequirePremiumDependency:
     """Test the require_premium dependency function directly."""
 
-    async def test_require_premium_blocks_free_user(
-        self, free_user: User
-    ) -> None:
+    async def test_require_premium_blocks_free_user(self, free_user: User) -> None:
         """require_premium should raise 403 for free users."""
         from fastapi import HTTPException
 
@@ -226,18 +224,14 @@ class TestRequirePremiumDependency:
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail["error"] == "premium_required"
 
-    async def test_require_premium_allows_premium_user(
-        self, premium_user: User
-    ) -> None:
+    async def test_require_premium_allows_premium_user(self, premium_user: User) -> None:
         """require_premium should allow premium users."""
         from app.core.dependencies import require_premium
 
         result = await require_premium(premium_user)
         assert result == premium_user
 
-    async def test_require_premium_allows_admin_user(
-        self, admin_user: User
-    ) -> None:
+    async def test_require_premium_allows_admin_user(self, admin_user: User) -> None:
         """require_premium should allow admin users."""
         from app.core.dependencies import require_premium
 

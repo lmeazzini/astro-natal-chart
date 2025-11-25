@@ -86,9 +86,7 @@ export function InterpretationLanguageNotice({
               disabled={isRegenerating}
               className="h-auto p-0 mt-1 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100"
             >
-              <RefreshCw
-                className={`h-3 w-3 mr-1 ${isRegenerating ? 'animate-spin' : ''}`}
-              />
+              <RefreshCw className={`h-3 w-3 mr-1 ${isRegenerating ? 'animate-spin' : ''}`} />
               {isRegenerating
                 ? t('components.interpretationLanguage.regenerating', {
                     defaultValue: 'Regenerating...',

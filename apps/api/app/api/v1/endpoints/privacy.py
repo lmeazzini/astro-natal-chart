@@ -115,13 +115,16 @@ async def export_user_data(
 
     # 5. Audit logs (últimos 90 dias apenas - para não expor demais)
     from datetime import timedelta
+
     cutoff_date = datetime.utcnow() - timedelta(days=90)
 
     audit_result = await db.execute(
-        select(AuditLog).where(
+        select(AuditLog)
+        .where(
             AuditLog.user_id == current_user.id,
             AuditLog.created_at >= cutoff_date,
-        ).order_by(AuditLog.created_at.desc())
+        )
+        .order_by(AuditLog.created_at.desc())
     )
     audit_logs = audit_result.scalars().all()
     audit_data = [
@@ -220,9 +223,7 @@ async def delete_user_account(
     return {
         "message": "Solicitação de exclusão registrada com sucesso",
         "deleted_at": current_user.deleted_at.isoformat(),
-        "permanent_deletion_date": (
-            current_user.deleted_at + timedelta(days=30)
-        ).isoformat(),
+        "permanent_deletion_date": (current_user.deleted_at + timedelta(days=30)).isoformat(),
         "cancellation_instructions": "Para cancelar a exclusão, faça login novamente nos próximos 30 dias",
     }
 

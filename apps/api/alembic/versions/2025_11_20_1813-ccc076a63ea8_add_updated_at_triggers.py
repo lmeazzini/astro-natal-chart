@@ -5,13 +5,14 @@ Revises: b0ef95f73d85
 Create Date: 2025-11-20 18:13:17.272364
 
 """
+
 from collections.abc import Sequence
 
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'ccc076a63ea8'
-down_revision: str | None = 'b0ef95f73d85'
+revision: str = "ccc076a63ea8"
+down_revision: str | None = "b0ef95f73d85"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -56,7 +57,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Drop all triggers
-    op.execute("DROP TRIGGER IF EXISTS update_chart_interpretations_updated_at ON chart_interpretations")
+    op.execute(
+        "DROP TRIGGER IF EXISTS update_chart_interpretations_updated_at ON chart_interpretations"
+    )
     op.execute("DROP TRIGGER IF EXISTS update_birth_charts_updated_at ON birth_charts")
     op.execute("DROP TRIGGER IF EXISTS update_users_updated_at ON users")
 

@@ -8,20 +8,20 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import {
-  Check,
-  Crown,
-  Sparkles,
-  Star,
-  Zap,
-  ArrowLeft,
-} from 'lucide-react';
+import { Check, Crown, Sparkles, Star, Zap, ArrowLeft } from 'lucide-react';
 
 interface PlanFeature {
   text: string;
@@ -56,14 +56,39 @@ export function PricingPage() {
       price: t('pricing.plans.free.price', { defaultValue: 'R$ 0' }),
       period: t('pricing.plans.free.period', { defaultValue: '/mês' }),
       features: [
-        { text: t('pricing.features.natalCharts', { defaultValue: 'Mapas natais ilimitados' }), included: true },
-        { text: t('pricing.features.basicInterpretations', { defaultValue: 'Interpretações básicas' }), included: true },
-        { text: t('pricing.features.chartVisualization', { defaultValue: 'Visualização de mapa SVG' }), included: true },
-        { text: t('pricing.features.horary', { defaultValue: 'Astrologia Horária' }), included: false },
-        { text: t('pricing.features.profections', { defaultValue: 'Profecções' }), included: false },
+        {
+          text: t('pricing.features.natalCharts', { defaultValue: 'Mapas natais ilimitados' }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.basicInterpretations', {
+            defaultValue: 'Interpretações básicas',
+          }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.chartVisualization', {
+            defaultValue: 'Visualização de mapa SVG',
+          }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.horary', { defaultValue: 'Astrologia Horária' }),
+          included: false,
+        },
+        {
+          text: t('pricing.features.profections', { defaultValue: 'Profecções' }),
+          included: false,
+        },
         { text: t('pricing.features.firdaria', { defaultValue: 'Firdária' }), included: false },
-        { text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }), included: false },
-        { text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }), included: false },
+        {
+          text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }),
+          included: false,
+        },
+        {
+          text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }),
+          included: false,
+        },
       ],
       ctaText: !user
         ? t('pricing.getStartedFree', { defaultValue: 'Começar Grátis' })
@@ -81,14 +106,36 @@ export function PricingPage() {
       price: t('pricing.plans.premium.price', { defaultValue: 'R$ 29,90' }),
       period: t('pricing.plans.premium.period', { defaultValue: '/mês' }),
       features: [
-        { text: t('pricing.features.natalCharts', { defaultValue: 'Mapas natais ilimitados' }), included: true },
-        { text: t('pricing.features.advancedInterpretations', { defaultValue: 'Interpretações avançadas com IA' }), included: true },
-        { text: t('pricing.features.chartVisualization', { defaultValue: 'Visualização de mapa SVG' }), included: true },
-        { text: t('pricing.features.horary', { defaultValue: 'Astrologia Horária' }), included: true },
+        {
+          text: t('pricing.features.natalCharts', { defaultValue: 'Mapas natais ilimitados' }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.advancedInterpretations', {
+            defaultValue: 'Interpretações avançadas com IA',
+          }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.chartVisualization', {
+            defaultValue: 'Visualização de mapa SVG',
+          }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.horary', { defaultValue: 'Astrologia Horária' }),
+          included: true,
+        },
         { text: t('pricing.features.profections', { defaultValue: 'Profecções' }), included: true },
         { text: t('pricing.features.firdaria', { defaultValue: 'Firdária' }), included: true },
-        { text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }), included: true },
-        { text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }), included: true },
+        {
+          text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }),
+          included: true,
+        },
+        {
+          text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }),
+          included: true,
+        },
       ],
       highlighted: true,
       badge: t('pricing.recommended', { defaultValue: 'Recomendado' }),
@@ -104,10 +151,7 @@ export function PricingPage() {
       {/* Header */}
       <nav className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
@@ -185,9 +229,7 @@ export function PricingPage() {
               <Card
                 key={plan.id}
                 className={`relative ${
-                  plan.highlighted
-                    ? 'border-primary shadow-lg shadow-primary/10'
-                    : 'border-border'
+                  plan.highlighted ? 'border-primary shadow-lg shadow-primary/10' : 'border-border'
                 }`}
               >
                 {plan.badge && (
@@ -218,7 +260,9 @@ export function PricingPage() {
                       <li
                         key={index}
                         className={`flex items-center gap-2 text-sm ${
-                          feature.included ? 'text-foreground' : 'text-muted-foreground line-through'
+                          feature.included
+                            ? 'text-foreground'
+                            : 'text-muted-foreground line-through'
                         }`}
                       >
                         <Check
@@ -235,11 +279,7 @@ export function PricingPage() {
                 <CardFooter>
                   {/* Non-authenticated users clicking free plan go to register */}
                   {!user && plan.id === 'free' ? (
-                    <Button
-                      asChild
-                      className="w-full"
-                      variant="outline"
-                    >
+                    <Button asChild className="w-full" variant="outline">
                       <Link to="/register">
                         <Zap className="h-4 w-4 mr-2" />
                         {plan.ctaText}

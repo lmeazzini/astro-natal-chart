@@ -66,9 +66,7 @@ class TestNeedsRecalculation:
         chart.zodiac_type = "tropical"
         chart.node_type = "true"
 
-        update_data = BirthChartUpdate(
-            birth_datetime=datetime(1990, 5, 15, 12, 0)
-        )
+        update_data = BirthChartUpdate(birth_datetime=datetime(1990, 5, 15, 12, 0))
 
         result = _needs_recalculation(update_data, chart)
         assert result is True
@@ -168,7 +166,7 @@ class TestNeedsRecalculation:
 
         update_data = BirthChartUpdate(
             person_name="New Name",  # No recalc
-            latitude=-22.9068  # Recalc needed
+            latitude=-22.9068,  # Recalc needed
         )
 
         result = _needs_recalculation(update_data, chart)

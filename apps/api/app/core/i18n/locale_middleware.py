@@ -99,9 +99,7 @@ class LocaleMiddleware(BaseHTTPMiddleware):
     after authentication, as the middleware runs before auth.
     """
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process the request and set the locale in context."""
         # Extract locale from Accept-Language header
         accept_language = request.headers.get("Accept-Language")

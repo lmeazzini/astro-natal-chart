@@ -67,18 +67,24 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
             {t('sunInHouse', {
               defaultValue: 'Sun in House {{house}} ({{position}})',
               house: sun_house,
-              position: sun_house >= 7
-                ? t('aboveHorizon', { defaultValue: 'above the horizon' })
-                : t('belowHorizon', { defaultValue: 'below the horizon' })
+              position:
+                sun_house >= 7
+                  ? t('aboveHorizon', { defaultValue: 'above the horizon' })
+                  : t('belowHorizon', { defaultValue: 'below the horizon' }),
             })}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
             {isDiurnal
-              ? t('diurnalDesc', { defaultValue: '☀️ Birth during the day - Sun above the horizon. Diurnal planets (Sun, Jupiter, Saturn) work better in this chart.' })
-              : t('nocturnalDesc', { defaultValue: '🌙 Birth during the night - Sun below the horizon. Nocturnal planets (Moon, Venus, Mars) work better in this chart.' })
-            }
+              ? t('diurnalDesc', {
+                  defaultValue:
+                    '☀️ Birth during the day - Sun above the horizon. Diurnal planets (Sun, Jupiter, Saturn) work better in this chart.',
+                })
+              : t('nocturnalDesc', {
+                  defaultValue:
+                    '🌙 Birth during the night - Sun below the horizon. Nocturnal planets (Moon, Venus, Mars) work better in this chart.',
+                })}
           </p>
         </CardContent>
       </Card>
@@ -142,7 +148,9 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
             {/* Sect Badge */}
             <div className="absolute top-2 right-2">
               <Badge variant={isDiurnal ? 'default' : 'secondary'} className="text-sm">
-                {isDiurnal ? '☀️ ' + t('diurnal', { defaultValue: 'Diurnal' }) : '🌙 ' + t('nocturnal', { defaultValue: 'Nocturnal' })}
+                {isDiurnal
+                  ? '☀️ ' + t('diurnal', { defaultValue: 'Diurnal' })
+                  : '🌙 ' + t('nocturnal', { defaultValue: 'Nocturnal' })}
               </Badge>
             </div>
           </div>
@@ -168,14 +176,15 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                 <div className="flex items-center gap-2 mb-1">
                   <CheckCircle className="text-green-600" size={20} />
                   <span className="font-semibold">
-                    {getPlanetSymbol(benefics.in_sect.name)} {benefics.in_sect.name} ({t('inSect', { defaultValue: 'In Sect' })}) ✓
+                    {getPlanetSymbol(benefics.in_sect.name)} {benefics.in_sect.name} (
+                    {t('inSect', { defaultValue: 'In Sect' })}) ✓
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t('beneficInSectDesc', {
                     defaultValue: '{{planet}} in {{sign}} works optimally - balanced generosity.',
                     planet: benefics.in_sect.name,
-                    sign: benefics.in_sect.sign
+                    sign: benefics.in_sect.sign,
                   })}
                 </p>
               </div>
@@ -186,14 +195,16 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                 <div className="flex items-center gap-2 mb-1">
                   <AlertCircle className="text-yellow-600" size={20} />
                   <span className="font-semibold">
-                    {getPlanetSymbol(benefics.out_of_sect.name)} {benefics.out_of_sect.name} ({t('outOfSect', { defaultValue: 'Out of Sect' })}) ⚠️
+                    {getPlanetSymbol(benefics.out_of_sect.name)} {benefics.out_of_sect.name} (
+                    {t('outOfSect', { defaultValue: 'Out of Sect' })}) ⚠️
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t('beneficOutOfSectDesc', {
-                    defaultValue: '{{planet}} in {{sign}} still helps, but may overdo it - indulgence.',
+                    defaultValue:
+                      '{{planet}} in {{sign}} still helps, but may overdo it - indulgence.',
                     planet: benefics.out_of_sect.name,
-                    sign: benefics.out_of_sect.sign
+                    sign: benefics.out_of_sect.sign,
                   })}
                 </p>
               </div>
@@ -209,7 +220,9 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
               {t('malefics', { defaultValue: 'Malefics' })}
             </CardTitle>
             <CardDescription>
-              {t('maleficsDesc', { defaultValue: 'Saturn and Mars - challenging but necessary planets' })}
+              {t('maleficsDesc', {
+                defaultValue: 'Saturn and Mars - challenging but necessary planets',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -218,14 +231,16 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                 <div className="flex items-center gap-2 mb-1">
                   <CheckCircle className="text-orange-600" size={20} />
                   <span className="font-semibold">
-                    {getPlanetSymbol(malefics.in_sect.name)} {malefics.in_sect.name} ({t('inSect', { defaultValue: 'In Sect' })}) ✓
+                    {getPlanetSymbol(malefics.in_sect.name)} {malefics.in_sect.name} (
+                    {t('inSect', { defaultValue: 'In Sect' })}) ✓
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t('maleficInSectDesc', {
-                    defaultValue: '{{planet}} in {{sign}} challenges constructively - useful discipline.',
+                    defaultValue:
+                      '{{planet}} in {{sign}} challenges constructively - useful discipline.',
                     planet: malefics.in_sect.name,
-                    sign: malefics.in_sect.sign
+                    sign: malefics.in_sect.sign,
                   })}
                 </p>
               </div>
@@ -236,14 +251,16 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                 <div className="flex items-center gap-2 mb-1">
                   <XCircle className="text-red-600" size={20} />
                   <span className="font-semibold">
-                    {getPlanetSymbol(malefics.out_of_sect.name)} {malefics.out_of_sect.name} ({t('outOfSect', { defaultValue: 'Out of Sect' })}) ✗
+                    {getPlanetSymbol(malefics.out_of_sect.name)} {malefics.out_of_sect.name} (
+                    {t('outOfSect', { defaultValue: 'Out of Sect' })}) ✗
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t('maleficOutOfSectDesc', {
-                    defaultValue: '{{planet}} in {{sign}} is more challenging - requires special attention.',
+                    defaultValue:
+                      '{{planet}} in {{sign}} is more challenging - requires special attention.',
                     planet: malefics.out_of_sect.name,
-                    sign: malefics.out_of_sect.sign
+                    sign: malefics.out_of_sect.sign,
                   })}
                 </p>
               </div>
@@ -257,7 +274,9 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
         <CardHeader>
           <CardTitle>{t('allPlanetsBySect', { defaultValue: 'All Planets by Sect' })}</CardTitle>
           <CardDescription>
-            {t('allPlanetsDesc', { defaultValue: 'Classification of each planet according to sect rules' })}
+            {t('allPlanetsDesc', {
+              defaultValue: 'Classification of each planet according to sect rules',
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -279,9 +298,12 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                   </TableCell>
                   <TableCell>{planet.sign}</TableCell>
                   <TableCell>
-                    {planet.planet_sect === 'diurnal' && '☀️ ' + t('diurnal', { defaultValue: 'Diurnal' })}
-                    {planet.planet_sect === 'nocturnal' && '🌙 ' + t('nocturnal', { defaultValue: 'Nocturnal' })}
-                    {planet.planet_sect === 'neutral' && '⚖️ ' + t('neutral', { defaultValue: 'Neutral' })}
+                    {planet.planet_sect === 'diurnal' &&
+                      '☀️ ' + t('diurnal', { defaultValue: 'Diurnal' })}
+                    {planet.planet_sect === 'nocturnal' &&
+                      '🌙 ' + t('nocturnal', { defaultValue: 'Nocturnal' })}
+                    {planet.planet_sect === 'neutral' &&
+                      '⚖️ ' + t('neutral', { defaultValue: 'Neutral' })}
                   </TableCell>
                   <TableCell>
                     {planet.in_sect ? (
@@ -289,9 +311,7 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                         {t('inSect', { defaultValue: 'In Sect' })} ✓
                       </Badge>
                     ) : planet.planet_sect === 'neutral' ? (
-                      <Badge variant="secondary">
-                        {t('neutral', { defaultValue: 'Neutral' })}
-                      </Badge>
+                      <Badge variant="secondary">{t('neutral', { defaultValue: 'Neutral' })}</Badge>
                     ) : (
                       <Badge variant="outline">
                         {t('outOfSect', { defaultValue: 'Out of Sect' })}
@@ -300,13 +320,19 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
                   </TableCell>
                   <TableCell>
                     {planet.performance === 'optimal' && (
-                      <span className="text-green-600 font-medium">{t('optimal', { defaultValue: 'Optimal' })}</span>
+                      <span className="text-green-600 font-medium">
+                        {t('optimal', { defaultValue: 'Optimal' })}
+                      </span>
                     )}
                     {planet.performance === 'moderate' && (
-                      <span className="text-yellow-600 font-medium">{t('moderate', { defaultValue: 'Moderate' })}</span>
+                      <span className="text-yellow-600 font-medium">
+                        {t('moderate', { defaultValue: 'Moderate' })}
+                      </span>
                     )}
                     {planet.performance === 'challenging' && (
-                      <span className="text-red-600 font-medium">{t('challenging', { defaultValue: 'Challenging' })}</span>
+                      <span className="text-red-600 font-medium">
+                        {t('challenging', { defaultValue: 'Challenging' })}
+                      </span>
                     )}
                   </TableCell>
                 </TableRow>
@@ -324,37 +350,61 @@ export function SectAnalysis({ sectData }: SectAnalysisProps) {
         <CardContent className="prose dark:prose-invert max-w-none">
           <div className="space-y-4 text-sm">
             <div>
-              <h4 className="font-semibold text-base mb-2">{t('whatIsSect', { defaultValue: 'What is Sect?' })}</h4>
+              <h4 className="font-semibold text-base mb-2">
+                {t('whatIsSect', { defaultValue: 'What is Sect?' })}
+              </h4>
               <p className="text-muted-foreground">
                 {t('whatIsSectDesc', {
-                  defaultValue: 'In traditional astrology, charts are divided into diurnal (day) and nocturnal (night) based on the Sun\'s position. Planets work better when they are "in sect" - aligned with the chart type.'
+                  defaultValue:
+                    'In traditional astrology, charts are divided into diurnal (day) and nocturnal (night) based on the Sun\'s position. Planets work better when they are "in sect" - aligned with the chart type.',
                 })}
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-base mb-2">{t('whyItMatters', { defaultValue: 'Why does it matter?' })}</h4>
+              <h4 className="font-semibold text-base mb-2">
+                {t('whyItMatters', { defaultValue: 'Why does it matter?' })}
+              </h4>
               <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                 <li>
-                  <strong>{t('beneficsInSect', { defaultValue: 'Benefics in sect' })}</strong> {t('beneficsInSectEffect', { defaultValue: '(Jupiter in day, Venus in night) are more generous and balanced' })}
+                  <strong>{t('beneficsInSect', { defaultValue: 'Benefics in sect' })}</strong>{' '}
+                  {t('beneficsInSectEffect', {
+                    defaultValue: '(Jupiter in day, Venus in night) are more generous and balanced',
+                  })}
                 </li>
                 <li>
-                  <strong>{t('beneficsOutOfSect', { defaultValue: 'Benefics out of sect' })}</strong> {t('beneficsOutOfSectEffect', { defaultValue: 'still help, but may overdo or be less effective' })}
+                  <strong>
+                    {t('beneficsOutOfSect', { defaultValue: 'Benefics out of sect' })}
+                  </strong>{' '}
+                  {t('beneficsOutOfSectEffect', {
+                    defaultValue: 'still help, but may overdo or be less effective',
+                  })}
                 </li>
                 <li>
-                  <strong>{t('maleficsInSect', { defaultValue: 'Malefics in sect' })}</strong> {t('maleficsInSectEffect', { defaultValue: '(Saturn in day, Mars in night) challenge constructively' })}
+                  <strong>{t('maleficsInSect', { defaultValue: 'Malefics in sect' })}</strong>{' '}
+                  {t('maleficsInSectEffect', {
+                    defaultValue: '(Saturn in day, Mars in night) challenge constructively',
+                  })}
                 </li>
                 <li>
-                  <strong>{t('maleficsOutOfSect', { defaultValue: 'Malefics out of sect' })}</strong> {t('maleficsOutOfSectEffect', { defaultValue: 'are harder to integrate and can be more destructive' })}
+                  <strong>
+                    {t('maleficsOutOfSect', { defaultValue: 'Malefics out of sect' })}
+                  </strong>{' '}
+                  {t('maleficsOutOfSectEffect', {
+                    defaultValue: 'are harder to integrate and can be more destructive',
+                  })}
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-base mb-2">{t('howToUse', { defaultValue: 'How to use this?' })}</h4>
+              <h4 className="font-semibold text-base mb-2">
+                {t('howToUse', { defaultValue: 'How to use this?' })}
+              </h4>
               <p className="text-muted-foreground">
                 {t('howToUseDesc', {
-                  defaultValue: 'Pay special attention to your out-of-sect malefics - these are areas that need more conscious work. Your in-sect benefics are natural resources you can leverage.'
+                  defaultValue:
+                    'Pay special attention to your out-of-sect malefics - these are areas that need more conscious work. Your in-sect benefics are natural resources you can leverage.',
                 })}
               </p>
             </div>

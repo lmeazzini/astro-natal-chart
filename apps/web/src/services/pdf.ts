@@ -36,14 +36,8 @@ export async function generateChartPDF(
  * @param token - JWT authentication token
  * @returns PDF status information
  */
-export async function getPDFStatus(
-  chartId: string,
-  token: string
-): Promise<PDFStatusResponse> {
-  return apiClient.get<PDFStatusResponse>(
-    `/api/v1/charts/${chartId}/pdf-status`,
-    token
-  );
+export async function getPDFStatus(chartId: string, token: string): Promise<PDFStatusResponse> {
+  return apiClient.get<PDFStatusResponse>(`/api/v1/charts/${chartId}/pdf-status`, token);
 }
 
 /**
@@ -61,7 +55,7 @@ export async function getPDFStatus(
 export async function downloadChartPDF(
   chartId: string,
   token: string,
-  _personName?: string  // Prefixed with _ to indicate it's intentionally unused
+  _personName?: string // Prefixed with _ to indicate it's intentionally unused
 ): Promise<void> {
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const url = `${API_BASE_URL}/api/v1/charts/${chartId}/download-pdf`;

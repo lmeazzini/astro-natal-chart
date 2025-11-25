@@ -5,7 +5,6 @@ This module provides rate limiting functionality for FastAPI endpoints
 using Redis as the storage backend.
 """
 
-
 from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -28,8 +27,8 @@ def get_identifier_from_request(request: Request) -> str:
         Identifier string (user_id or IP address)
     """
     # Try to get user from request state (set by get_current_user dependency)
-    if hasattr(request.state, 'user') and request.state.user:
-        user_id = getattr(request.state.user, 'id', None)
+    if hasattr(request.state, "user") and request.state.user:
+        user_id = getattr(request.state.user, "id", None)
         if user_id:
             return f"user:{user_id}"
 

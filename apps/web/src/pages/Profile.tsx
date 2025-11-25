@@ -23,16 +23,45 @@ import { LanguageSelector } from '../components/LanguageSelector';
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // User type options
@@ -87,25 +116,51 @@ export function ProfilePage() {
   // Form schemas (inside component to access t())
   const profileFormSchema = z.object({
     full_name: z.string().min(3, t('validation.minLength', { min: 3 })),
-    bio: z.string().max(500, t('validation.maxLength', { max: 500 })).optional(),
+    bio: z
+      .string()
+      .max(500, t('validation.maxLength', { max: 500 }))
+      .optional(),
     locale: z.string(),
     timezone: z.string(),
     profile_public: z.boolean(),
   });
 
-  const passwordFormSchema = z.object({
-    current_password: z.string().min(1, t('validation.required')),
-    new_password: z.string()
-      .min(8, t('auth.register.passwordMinLength'))
-      .regex(/[A-Z]/, t('validation.passwordUppercase', { defaultValue: 'Password must contain at least one uppercase letter' }))
-      .regex(/[a-z]/, t('validation.passwordLowercase', { defaultValue: 'Password must contain at least one lowercase letter' }))
-      .regex(/[0-9]/, t('validation.passwordNumber', { defaultValue: 'Password must contain at least one number' }))
-      .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, t('validation.passwordSpecial', { defaultValue: 'Password must contain at least one special character' })),
-    new_password_confirm: z.string().min(1, t('validation.required')),
-  }).refine((data) => data.new_password === data.new_password_confirm, {
-    message: t('validation.passwordMismatch'),
-    path: ['new_password_confirm'],
-  });
+  const passwordFormSchema = z
+    .object({
+      current_password: z.string().min(1, t('validation.required')),
+      new_password: z
+        .string()
+        .min(8, t('auth.register.passwordMinLength'))
+        .regex(
+          /[A-Z]/,
+          t('validation.passwordUppercase', {
+            defaultValue: 'Password must contain at least one uppercase letter',
+          })
+        )
+        .regex(
+          /[a-z]/,
+          t('validation.passwordLowercase', {
+            defaultValue: 'Password must contain at least one lowercase letter',
+          })
+        )
+        .regex(
+          /[0-9]/,
+          t('validation.passwordNumber', {
+            defaultValue: 'Password must contain at least one number',
+          })
+        )
+        .regex(
+          /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/,
+          t('validation.passwordSpecial', {
+            defaultValue: 'Password must contain at least one special character',
+          })
+        ),
+      new_password_confirm: z.string().min(1, t('validation.required')),
+    })
+    .refine((data) => data.new_password === data.new_password_confirm, {
+      message: t('validation.passwordMismatch'),
+      path: ['new_password_confirm'],
+    });
 
   const [activeTab, setActiveTab] = useState<string>('profile');
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -289,7 +344,11 @@ export function ProfilePage() {
 
   // Handle account deletion
   async function handleDeleteAccount() {
-    const password = prompt(t('profile.privacy.confirmPasswordPrompt', { defaultValue: 'Enter your password to confirm account deletion:' }));
+    const password = prompt(
+      t('profile.privacy.confirmPasswordPrompt', {
+        defaultValue: 'Enter your password to confirm account deletion:',
+      })
+    );
     if (!password) return;
 
     try {
@@ -311,9 +370,7 @@ export function ProfilePage() {
 
     try {
       await userService.disconnectOAuth(provider, token);
-      setOAuthConnections(
-        oauthConnections.filter((conn) => conn.provider !== provider)
-      );
+      setOAuthConnections(oauthConnections.filter((conn) => conn.provider !== provider));
     } catch (error) {
       alert(t('profile.security.disconnectError', { defaultValue: 'Error disconnecting OAuth' }));
     }
@@ -353,20 +410,13 @@ export function ProfilePage() {
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             aria-label={t('common.back')}
           >
-            <img
-              src="/logo.png"
-              alt="Real Astrology"
-              className="h-8 w-8"
-            />
+            <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
           </Link>
           <div className="flex items-center gap-3">
             <LanguageSelector />
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-            >
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
               ← {t('profile.backToDashboard', { defaultValue: 'Back to Dashboard' })}
             </Button>
           </div>
@@ -377,10 +427,18 @@ export function ProfilePage() {
       <div className="max-w-6xl mx-auto py-8 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-            <TabsTrigger value="profile">{t('profile.tabs.profile', { defaultValue: 'Profile' })}</TabsTrigger>
-            <TabsTrigger value="password">{t('profile.tabs.password', { defaultValue: 'Password' })}</TabsTrigger>
-            <TabsTrigger value="security">{t('profile.tabs.security', { defaultValue: 'Security' })}</TabsTrigger>
-            <TabsTrigger value="privacy">{t('profile.tabs.privacy', { defaultValue: 'Privacy' })}</TabsTrigger>
+            <TabsTrigger value="profile">
+              {t('profile.tabs.profile', { defaultValue: 'Profile' })}
+            </TabsTrigger>
+            <TabsTrigger value="password">
+              {t('profile.tabs.password', { defaultValue: 'Password' })}
+            </TabsTrigger>
+            <TabsTrigger value="security">
+              {t('profile.tabs.security', { defaultValue: 'Security' })}
+            </TabsTrigger>
+            <TabsTrigger value="privacy">
+              {t('profile.tabs.privacy', { defaultValue: 'Privacy' })}
+            </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -388,16 +446,12 @@ export function ProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>{t('profile.personalInfo')}</CardTitle>
-                <CardDescription>
-                  {t('profile.subtitle')}
-                </CardDescription>
+                <CardDescription>{t('profile.subtitle')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {profileSuccess && (
                   <Alert className="mb-4">
-                    <AlertDescription className="text-green-600">
-                      {profileSuccess}
-                    </AlertDescription>
+                    <AlertDescription className="text-green-600">{profileSuccess}</AlertDescription>
                   </Alert>
                 )}
 
@@ -416,7 +470,12 @@ export function ProfilePage() {
                         <FormItem>
                           <FormLabel>{t('profile.name')} *</FormLabel>
                           <FormControl>
-                            <Input placeholder={t('profile.namePlaceholder', { defaultValue: 'Your full name' })} {...field} />
+                            <Input
+                              placeholder={t('profile.namePlaceholder', {
+                                defaultValue: 'Your full name',
+                              })}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -431,7 +490,9 @@ export function ProfilePage() {
                           <FormLabel>{t('profile.bio', { defaultValue: 'Bio' })}</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder={t('profile.bioPlaceholder', { defaultValue: 'Tell us a little about yourself...' })}
+                              placeholder={t('profile.bioPlaceholder', {
+                                defaultValue: 'Tell us a little about yourself...',
+                              })}
                               className="resize-none"
                               {...field}
                             />
@@ -454,7 +515,11 @@ export function ProfilePage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder={t('profile.selectLocale', { defaultValue: 'Select a language' })} />
+                                  <SelectValue
+                                    placeholder={t('profile.selectLocale', {
+                                      defaultValue: 'Select a language',
+                                    })}
+                                  />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -479,7 +544,11 @@ export function ProfilePage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder={t('profile.selectTimezone', { defaultValue: 'Select your timezone' })} />
+                                  <SelectValue
+                                    placeholder={t('profile.selectTimezone', {
+                                      defaultValue: 'Select your timezone',
+                                    })}
+                                  />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -604,7 +673,11 @@ export function ProfilePage() {
                                     max={new Date().getFullYear()}
                                     {...field}
                                     value={field.value || ''}
-                                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value ? parseInt(e.target.value) : null
+                                      )
+                                    }
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -622,14 +695,17 @@ export function ProfilePage() {
                                   <Input
                                     placeholder="Mapas Natais, Sinastria, Trânsitos"
                                     value={field.value?.join(', ') || ''}
-                                    onChange={(e) => field.onChange(
-                                      e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                                    )}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value
+                                          .split(',')
+                                          .map((s) => s.trim())
+                                          .filter(Boolean)
+                                      )
+                                    }
                                   />
                                 </FormControl>
-                                <FormDescription>
-                                  Separe por vírgula
-                                </FormDescription>
+                                <FormDescription>Separe por vírgula</FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -648,21 +724,22 @@ export function ProfilePage() {
                               {t('profile.publicProfile', { defaultValue: 'Public Profile' })}
                             </FormLabel>
                             <FormDescription>
-                              {t('profile.publicProfileDesc', { defaultValue: 'Allow other users to view your profile' })}
+                              {t('profile.publicProfileDesc', {
+                                defaultValue: 'Allow other users to view your profile',
+                              })}
                             </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                         </FormItem>
                       )}
                     />
 
                     <Button type="submit" disabled={profileLoading}>
-                      {profileLoading ? t('profile.saving', { defaultValue: 'Saving...' }) : t('profile.updateProfile')}
+                      {profileLoading
+                        ? t('profile.saving', { defaultValue: 'Saving...' })
+                        : t('profile.updateProfile')}
                     </Button>
                   </form>
                 </Form>
@@ -676,7 +753,9 @@ export function ProfilePage() {
               <CardHeader>
                 <CardTitle>{t('profile.changePassword')}</CardTitle>
                 <CardDescription>
-                  {t('profile.changePasswordDesc', { defaultValue: 'Update your password to keep your account secure' })}
+                  {t('profile.changePasswordDesc', {
+                    defaultValue: 'Update your password to keep your account secure',
+                  })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -695,7 +774,10 @@ export function ProfilePage() {
                 )}
 
                 <Form {...passwordForm}>
-                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={passwordForm.control}
                       name="current_password"
@@ -740,19 +822,39 @@ export function ProfilePage() {
 
                     <Alert>
                       <AlertDescription>
-                        <p className="font-medium mb-2">{t('profile.passwordRequirements', { defaultValue: 'Password requirements:' })}</p>
+                        <p className="font-medium mb-2">
+                          {t('profile.passwordRequirements', {
+                            defaultValue: 'Password requirements:',
+                          })}
+                        </p>
                         <ul className="text-xs space-y-1 list-disc list-inside">
-                          <li>{t('profile.passwordReqMin', { defaultValue: 'Minimum 8 characters' })}</li>
-                          <li>{t('profile.passwordReqUpper', { defaultValue: 'One uppercase letter' })}</li>
-                          <li>{t('profile.passwordReqLower', { defaultValue: 'One lowercase letter' })}</li>
+                          <li>
+                            {t('profile.passwordReqMin', { defaultValue: 'Minimum 8 characters' })}
+                          </li>
+                          <li>
+                            {t('profile.passwordReqUpper', {
+                              defaultValue: 'One uppercase letter',
+                            })}
+                          </li>
+                          <li>
+                            {t('profile.passwordReqLower', {
+                              defaultValue: 'One lowercase letter',
+                            })}
+                          </li>
                           <li>{t('profile.passwordReqNumber', { defaultValue: 'One number' })}</li>
-                          <li>{t('profile.passwordReqSpecial', { defaultValue: 'One special character' })}</li>
+                          <li>
+                            {t('profile.passwordReqSpecial', {
+                              defaultValue: 'One special character',
+                            })}
+                          </li>
                         </ul>
                       </AlertDescription>
                     </Alert>
 
                     <Button type="submit" disabled={passwordLoading}>
-                      {passwordLoading ? t('profile.changing', { defaultValue: 'Changing...' }) : t('profile.updatePassword')}
+                      {passwordLoading
+                        ? t('profile.changing', { defaultValue: 'Changing...' })
+                        : t('profile.updatePassword')}
                     </Button>
                   </form>
                 </Form>
@@ -796,7 +898,11 @@ export function ProfilePage() {
                   <>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardDescription>{t('profile.security.accountDays', { defaultValue: 'Account Age (days)' })}</CardDescription>
+                        <CardDescription>
+                          {t('profile.security.accountDays', {
+                            defaultValue: 'Account Age (days)',
+                          })}
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{stats.account_age_days}</div>
@@ -804,7 +910,9 @@ export function ProfilePage() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardDescription>{t('profile.security.chartsCreated', { defaultValue: 'Charts Created' })}</CardDescription>
+                        <CardDescription>
+                          {t('profile.security.chartsCreated', { defaultValue: 'Charts Created' })}
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{stats.total_charts}</div>
@@ -812,13 +920,15 @@ export function ProfilePage() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardDescription>{t('profile.security.memberSince', { defaultValue: 'Member Since' })}</CardDescription>
+                        <CardDescription>
+                          {t('profile.security.memberSince', { defaultValue: 'Member Since' })}
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
                           {new Date(user.created_at).toLocaleDateString(i18n.language || 'pt-BR', {
                             month: 'short',
-                            year: 'numeric'
+                            year: 'numeric',
                           })}
                         </div>
                       </CardContent>
@@ -830,9 +940,13 @@ export function ProfilePage() {
               {/* OAuth Connections */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('profile.security.oauthConnections', { defaultValue: 'OAuth Connections' })}</CardTitle>
+                  <CardTitle>
+                    {t('profile.security.oauthConnections', { defaultValue: 'OAuth Connections' })}
+                  </CardTitle>
                   <CardDescription>
-                    {t('profile.security.oauthDesc', { defaultValue: 'Manage your connections with external providers' })}
+                    {t('profile.security.oauthDesc', {
+                      defaultValue: 'Manage your connections with external providers',
+                    })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -849,11 +963,12 @@ export function ProfilePage() {
                           className="flex items-center justify-between p-3 border rounded-lg"
                         >
                           <div className="flex items-center gap-3">
-                            <Badge variant="secondary">
-                              {conn.provider}
-                            </Badge>
+                            <Badge variant="secondary">{conn.provider}</Badge>
                             <span className="text-sm text-muted-foreground">
-                              {t('profile.security.connectedOn', { defaultValue: 'Connected on' })} {new Date(conn.connected_at).toLocaleDateString(i18n.language || 'pt-BR')}
+                              {t('profile.security.connectedOn', { defaultValue: 'Connected on' })}{' '}
+                              {new Date(conn.connected_at).toLocaleDateString(
+                                i18n.language || 'pt-BR'
+                              )}
                             </span>
                           </div>
                           <Dialog>
@@ -868,11 +983,21 @@ export function ProfilePage() {
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>{t('profile.security.disconnectTitle', { defaultValue: 'Disconnect' })} {conn.provider}?</DialogTitle>
+                                <DialogTitle>
+                                  {t('profile.security.disconnectTitle', {
+                                    defaultValue: 'Disconnect',
+                                  })}{' '}
+                                  {conn.provider}?
+                                </DialogTitle>
                                 <DialogDescription>
                                   {oauthConnections.length === 1
-                                    ? t('profile.security.lastProviderWarning', { defaultValue: 'This is your last OAuth provider. Make sure you have a password set before disconnecting.' })
-                                    : t('profile.security.reconnectInfo', { defaultValue: 'You can reconnect this account later.' })}
+                                    ? t('profile.security.lastProviderWarning', {
+                                        defaultValue:
+                                          'This is your last OAuth provider. Make sure you have a password set before disconnecting.',
+                                      })
+                                    : t('profile.security.reconnectInfo', {
+                                        defaultValue: 'You can reconnect this account later.',
+                                      })}
                                 </DialogDescription>
                               </DialogHeader>
                               <DialogFooter>
@@ -891,7 +1016,9 @@ export function ProfilePage() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      {t('profile.security.noOauthConnections', { defaultValue: 'No OAuth connections configured' })}
+                      {t('profile.security.noOauthConnections', {
+                        defaultValue: 'No OAuth connections configured',
+                      })}
                     </p>
                   )}
                 </CardContent>
@@ -900,9 +1027,13 @@ export function ProfilePage() {
               {/* Activity Log */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('profile.security.recentActivity', { defaultValue: 'Recent Activity' })}</CardTitle>
+                  <CardTitle>
+                    {t('profile.security.recentActivity', { defaultValue: 'Recent Activity' })}
+                  </CardTitle>
                   <CardDescription>
-                    {t('profile.security.recentActivityDesc', { defaultValue: 'Latest activities on your account' })}
+                    {t('profile.security.recentActivityDesc', {
+                      defaultValue: 'Latest activities on your account',
+                    })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -916,20 +1047,28 @@ export function ProfilePage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>{t('profile.security.action', { defaultValue: 'Action' })}</TableHead>
+                          <TableHead>
+                            {t('profile.security.action', { defaultValue: 'Action' })}
+                          </TableHead>
                           <TableHead>{t('profile.security.ip', { defaultValue: 'IP' })}</TableHead>
-                          <TableHead>{t('profile.security.date', { defaultValue: 'Date' })}</TableHead>
+                          <TableHead>
+                            {t('profile.security.date', { defaultValue: 'Date' })}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {activities.map((activity) => (
                           <TableRow key={activity.id}>
                             <TableCell>
-                              <Badge variant={
-                                activity.action === 'login' ? 'default' :
-                                activity.action === 'logout' ? 'secondary' :
-                                'outline'
-                              }>
+                              <Badge
+                                variant={
+                                  activity.action === 'login'
+                                    ? 'default'
+                                    : activity.action === 'logout'
+                                      ? 'secondary'
+                                      : 'outline'
+                                }
+                              >
                                 {activity.action}
                               </Badge>
                             </TableCell>
@@ -959,14 +1098,21 @@ export function ProfilePage() {
               {/* Data Export */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('profile.privacy.exportTitle', { defaultValue: 'Export Data' })}</CardTitle>
+                  <CardTitle>
+                    {t('profile.privacy.exportTitle', { defaultValue: 'Export Data' })}
+                  </CardTitle>
                   <CardDescription>
-                    {t('profile.privacy.exportDesc', { defaultValue: 'Download a copy of all your data (LGPD/GDPR)' })}
+                    {t('profile.privacy.exportDesc', {
+                      defaultValue: 'Download a copy of all your data (LGPD/GDPR)',
+                    })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    {t('profile.privacy.exportInfo', { defaultValue: 'You can export all your personal data at any time. The file will include your profile, birth charts, and settings.' })}
+                    {t('profile.privacy.exportInfo', {
+                      defaultValue:
+                        'You can export all your personal data at any time. The file will include your profile, birth charts, and settings.',
+                    })}
                   </p>
                   <Button onClick={handleExportData} variant="outline">
                     {t('profile.privacy.exportButton', { defaultValue: 'Export My Data' })}
@@ -977,9 +1123,13 @@ export function ProfilePage() {
               {/* Danger Zone */}
               <Card className="border-destructive">
                 <CardHeader>
-                  <CardTitle className="text-destructive">{t('profile.privacy.dangerZone', { defaultValue: 'Danger Zone' })}</CardTitle>
+                  <CardTitle className="text-destructive">
+                    {t('profile.privacy.dangerZone', { defaultValue: 'Danger Zone' })}
+                  </CardTitle>
                   <CardDescription>
-                    {t('profile.privacy.dangerZoneDesc', { defaultValue: 'Irreversible actions on your account' })}
+                    {t('profile.privacy.dangerZoneDesc', {
+                      defaultValue: 'Irreversible actions on your account',
+                    })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -992,23 +1142,31 @@ export function ProfilePage() {
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="destructive">
-                            {t('profile.privacy.deleteMyAccount', { defaultValue: 'Delete My Account' })}
+                            {t('profile.privacy.deleteMyAccount', {
+                              defaultValue: 'Delete My Account',
+                            })}
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>{t('profile.privacy.confirmDeleteTitle', { defaultValue: 'Are you absolutely sure?' })}</DialogTitle>
+                            <DialogTitle>
+                              {t('profile.privacy.confirmDeleteTitle', {
+                                defaultValue: 'Are you absolutely sure?',
+                              })}
+                            </DialogTitle>
                             <DialogDescription>
-                              {t('profile.privacy.confirmDeleteDesc', { defaultValue: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.' })}
+                              {t('profile.privacy.confirmDeleteDesc', {
+                                defaultValue:
+                                  'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
+                              })}
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>
                             <Button variant="outline">{t('common.cancel')}</Button>
-                            <Button
-                              variant="destructive"
-                              onClick={handleDeleteAccount}
-                            >
-                              {t('profile.privacy.yesDeleteAccount', { defaultValue: 'Yes, delete my account' })}
+                            <Button variant="destructive" onClick={handleDeleteAccount}>
+                              {t('profile.privacy.yesDeleteAccount', {
+                                defaultValue: 'Yes, delete my account',
+                              })}
                             </Button>
                           </DialogFooter>
                         </DialogContent>

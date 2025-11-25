@@ -50,8 +50,17 @@ class TestConstants:
     def test_planets_contains_expected_bodies(self):
         """Test that PLANETS dict contains all expected celestial bodies."""
         expected_planets = [
-            "Sun", "Moon", "Mercury", "Venus", "Mars",
-            "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "North Node"
+            "Sun",
+            "Moon",
+            "Mercury",
+            "Venus",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+            "Uranus",
+            "Neptune",
+            "Pluto",
+            "North Node",
         ]
         for planet in expected_planets:
             assert planet in PLANETS, f"{planet} missing from PLANETS"
@@ -73,9 +82,7 @@ class TestConstants:
 
     def test_aspects_have_orbs(self):
         """Test that all aspects have angle and orb defined."""
-        expected_aspects = [
-            "Conjunction", "Opposition", "Trine", "Square", "Sextile"
-        ]
+        expected_aspects = ["Conjunction", "Opposition", "Trine", "Square", "Sextile"]
         for aspect in expected_aspects:
             assert aspect in ASPECTS
             assert "angle" in ASPECTS[aspect]
@@ -209,8 +216,20 @@ class TestGetHouseForPlanet:
 
     def test_planet_wrap_around(self):
         """Test planet near 360/0 degree boundary."""
-        house_cusps = [330.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            330.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
         # Planet at 10 degrees should be in house 1 (between 330 and 30)
         house = get_house_for_planet(10.0, house_cusps)
         assert house == 1
@@ -326,12 +345,28 @@ class TestCalculateAspects:
         """Test that conjunction is detected when planets are close."""
         planets = [
             PlanetPosition(
-                name="Sun", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=1, retrograde=False
+                name="Sun",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Moon", longitude=103.0, latitude=0, speed=13.0,
-                sign="Cancer", degree=13, minute=0, second=0, house=1, retrograde=False
+                name="Moon",
+                longitude=103.0,
+                latitude=0,
+                speed=13.0,
+                sign="Cancer",
+                degree=13,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
         ]
 
@@ -343,12 +378,28 @@ class TestCalculateAspects:
         """Test that opposition is detected at 180 degrees."""
         planets = [
             PlanetPosition(
-                name="Sun", longitude=0.0, latitude=0, speed=1.0,
-                sign="Aries", degree=0, minute=0, second=0, house=1, retrograde=False
+                name="Sun",
+                longitude=0.0,
+                latitude=0,
+                speed=1.0,
+                sign="Aries",
+                degree=0,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Moon", longitude=180.0, latitude=0, speed=13.0,
-                sign="Libra", degree=0, minute=0, second=0, house=7, retrograde=False
+                name="Moon",
+                longitude=180.0,
+                latitude=0,
+                speed=13.0,
+                sign="Libra",
+                degree=0,
+                minute=0,
+                second=0,
+                house=7,
+                retrograde=False,
             ),
         ]
 
@@ -359,12 +410,28 @@ class TestCalculateAspects:
         """Test that trine is detected at 120 degrees."""
         planets = [
             PlanetPosition(
-                name="Mars", longitude=0.0, latitude=0, speed=0.5,
-                sign="Aries", degree=0, minute=0, second=0, house=1, retrograde=False
+                name="Mars",
+                longitude=0.0,
+                latitude=0,
+                speed=0.5,
+                sign="Aries",
+                degree=0,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Jupiter", longitude=120.0, latitude=0, speed=0.1,
-                sign="Leo", degree=0, minute=0, second=0, house=5, retrograde=False
+                name="Jupiter",
+                longitude=120.0,
+                latitude=0,
+                speed=0.1,
+                sign="Leo",
+                degree=0,
+                minute=0,
+                second=0,
+                house=5,
+                retrograde=False,
             ),
         ]
 
@@ -375,12 +442,28 @@ class TestCalculateAspects:
         """Test that square is detected at 90 degrees."""
         planets = [
             PlanetPosition(
-                name="Venus", longitude=45.0, latitude=0, speed=1.2,
-                sign="Taurus", degree=15, minute=0, second=0, house=2, retrograde=False
+                name="Venus",
+                longitude=45.0,
+                latitude=0,
+                speed=1.2,
+                sign="Taurus",
+                degree=15,
+                minute=0,
+                second=0,
+                house=2,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Saturn", longitude=135.0, latitude=0, speed=0.03,
-                sign="Leo", degree=15, minute=0, second=0, house=5, retrograde=False
+                name="Saturn",
+                longitude=135.0,
+                latitude=0,
+                speed=0.03,
+                sign="Leo",
+                degree=15,
+                minute=0,
+                second=0,
+                house=5,
+                retrograde=False,
             ),
         ]
 
@@ -391,30 +474,66 @@ class TestCalculateAspects:
         """Test that no aspect is detected when planets are too far apart."""
         planets = [
             PlanetPosition(
-                name="Sun", longitude=0.0, latitude=0, speed=1.0,
-                sign="Aries", degree=0, minute=0, second=0, house=1, retrograde=False
+                name="Sun",
+                longitude=0.0,
+                latitude=0,
+                speed=1.0,
+                sign="Aries",
+                degree=0,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Moon", longitude=50.0, latitude=0, speed=13.0,
-                sign="Taurus", degree=20, minute=0, second=0, house=2, retrograde=False
+                name="Moon",
+                longitude=50.0,
+                latitude=0,
+                speed=13.0,
+                sign="Taurus",
+                degree=20,
+                minute=0,
+                second=0,
+                house=2,
+                retrograde=False,
             ),
         ]
 
         aspects = calculate_aspects(planets)
         # 50 degrees doesn't match any major aspect
-        major_aspects = [a for a in aspects if a.aspect in ["Conjunction", "Opposition", "Trine", "Square", "Sextile"]]
+        major_aspects = [
+            a
+            for a in aspects
+            if a.aspect in ["Conjunction", "Opposition", "Trine", "Square", "Sextile"]
+        ]
         assert len(major_aspects) == 0
 
     def test_aspect_orb_calculated(self):
         """Test that aspect orb is correctly calculated."""
         planets = [
             PlanetPosition(
-                name="Sun", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=1, retrograde=False
+                name="Sun",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Moon", longitude=103.0, latitude=0, speed=13.0,
-                sign="Cancer", degree=13, minute=0, second=0, house=1, retrograde=False
+                name="Moon",
+                longitude=103.0,
+                latitude=0,
+                speed=13.0,
+                sign="Cancer",
+                degree=13,
+                minute=0,
+                second=0,
+                house=1,
+                retrograde=False,
             ),
         ]
 
@@ -436,16 +555,16 @@ class TestIsAspectApplying:
         # Planet1 at 170°, Planet2 at 0° - current angle is 170°, target is 180°
         # Planet1 moving faster, will reach 180° opposition
         applying = is_aspect_applying(
-            lon1=170.0, lon2=0.0,
-            speed1=1.0, speed2=0.1,  # Planet1 faster
-            aspect_angle=180  # Opposition
+            lon1=170.0,
+            lon2=0.0,
+            speed1=1.0,
+            speed2=0.1,  # Planet1 faster
+            aspect_angle=180,  # Opposition
         )
 
         # Test a separating scenario for comparison
         separating = is_aspect_applying(
-            lon1=190.0, lon2=0.0,
-            speed1=1.0, speed2=0.1,
-            aspect_angle=180
+            lon1=190.0, lon2=0.0, speed1=1.0, speed2=0.1, aspect_angle=180
         )
 
         # The results depend on implementation - just verify function runs
@@ -456,9 +575,7 @@ class TestIsAspectApplying:
         """Test that aspect is separating when faster planet leaves."""
         # Moon (faster) at 100°, Sun at 90° - Moon already past
         applying = is_aspect_applying(
-            lon1=100.0, lon2=90.0,
-            speed1=13.0, speed2=1.0,
-            aspect_angle=0
+            lon1=100.0, lon2=90.0, speed1=13.0, speed2=1.0, aspect_angle=0
         )
         assert applying is False
 
@@ -770,9 +887,9 @@ class TestCalculateSectAnalysis:
         analysis = calculate_sect_analysis(planets, "diurnal")
 
         all_planet_names = (
-            [p["name"] for p in analysis["planets_by_sect"]["in_sect"]] +
-            [p["name"] for p in analysis["planets_by_sect"]["out_of_sect"]] +
-            [p["name"] for p in analysis["planets_by_sect"]["neutral"]]
+            [p["name"] for p in analysis["planets_by_sect"]["in_sect"]]
+            + [p["name"] for p in analysis["planets_by_sect"]["out_of_sect"]]
+            + [p["name"] for p in analysis["planets_by_sect"]["neutral"]]
         )
 
         # Modern planets should not be in the analysis
@@ -806,15 +923,39 @@ class TestGetHouseForPosition:
 
     def test_position_in_first_house(self):
         """Test position clearly in first house."""
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
         house = get_house_for_position(15.0, house_cusps)
         assert house == 1
 
     def test_position_with_wrap_around(self):
         """Test position that wraps around 360/0 degrees."""
-        house_cusps = [330.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            330.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
         house = get_house_for_position(350.0, house_cusps)
         assert house == 1
 
@@ -827,16 +968,44 @@ class TestCalculateArabicParts:
         # Diurnal formula: ASC + Moon - Sun
         planets = [
             PlanetPosition(
-                name="Venus", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+                name="Venus",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=4,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Mercury", longitude=80.0, latitude=0, speed=1.5,
-                sign="Gemini", degree=20, minute=0, second=0, house=3, retrograde=False
+                name="Mercury",
+                longitude=80.0,
+                latitude=0,
+                speed=1.5,
+                sign="Gemini",
+                degree=20,
+                minute=0,
+                second=0,
+                house=3,
+                retrograde=False,
             ),
         ]
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=0.0,
@@ -844,7 +1013,7 @@ class TestCalculateArabicParts:
             moon_longitude=90.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         assert "fortune" in parts
@@ -855,8 +1024,20 @@ class TestCalculateArabicParts:
         """Test Part of Fortune calculation for night chart."""
         # Nocturnal formula: ASC + Sun - Moon
         planets = []
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=0.0,
@@ -864,7 +1045,7 @@ class TestCalculateArabicParts:
             moon_longitude=90.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="nocturnal"
+            sect="nocturnal",
         )
 
         # ASC(0) + Sun(270) - Moon(90) = 180
@@ -872,8 +1053,20 @@ class TestCalculateArabicParts:
 
     def test_part_of_spirit(self):
         """Test Part of Spirit calculation."""
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=0.0,
@@ -881,7 +1074,7 @@ class TestCalculateArabicParts:
             moon_longitude=180.0,
             planets=[],
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         assert "spirit" in parts
@@ -892,16 +1085,44 @@ class TestCalculateArabicParts:
         """Test that all Arabic Parts are returned."""
         planets = [
             PlanetPosition(
-                name="Venus", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+                name="Venus",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=4,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Mercury", longitude=80.0, latitude=0, speed=1.5,
-                sign="Gemini", degree=20, minute=0, second=0, house=3, retrograde=False
+                name="Mercury",
+                longitude=80.0,
+                latitude=0,
+                speed=1.5,
+                sign="Gemini",
+                degree=20,
+                minute=0,
+                second=0,
+                house=3,
+                retrograde=False,
             ),
         ]
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=100.0,
@@ -909,7 +1130,7 @@ class TestCalculateArabicParts:
             moon_longitude=200.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         expected_parts = ["fortune", "spirit", "eros", "necessity"]
@@ -923,28 +1144,80 @@ class TestCalculateArabicParts:
         """Test that all 13 Arabic Parts (including extended) are calculated."""
         planets = [
             PlanetPosition(
-                name="Venus", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+                name="Venus",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=4,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Mercury", longitude=80.0, latitude=0, speed=1.5,
-                sign="Gemini", degree=20, minute=0, second=0, house=3, retrograde=False
+                name="Mercury",
+                longitude=80.0,
+                latitude=0,
+                speed=1.5,
+                sign="Gemini",
+                degree=20,
+                minute=0,
+                second=0,
+                house=3,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Saturn", longitude=200.0, latitude=0, speed=0.1,
-                sign="Libra", degree=20, minute=0, second=0, house=7, retrograde=False
+                name="Saturn",
+                longitude=200.0,
+                latitude=0,
+                speed=0.1,
+                sign="Libra",
+                degree=20,
+                minute=0,
+                second=0,
+                house=7,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Mars", longitude=150.0, latitude=0, speed=0.8,
-                sign="Virgo", degree=0, minute=0, second=0, house=6, retrograde=False
+                name="Mars",
+                longitude=150.0,
+                latitude=0,
+                speed=0.8,
+                sign="Virgo",
+                degree=0,
+                minute=0,
+                second=0,
+                house=6,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Jupiter", longitude=250.0, latitude=0, speed=0.2,
-                sign="Sagittarius", degree=10, minute=0, second=0, house=9, retrograde=False
+                name="Jupiter",
+                longitude=250.0,
+                latitude=0,
+                speed=0.2,
+                sign="Sagittarius",
+                degree=10,
+                minute=0,
+                second=0,
+                house=9,
+                retrograde=False,
             ),
         ]
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=100.0,
@@ -952,14 +1225,24 @@ class TestCalculateArabicParts:
             moon_longitude=200.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         # All 13 parts should be calculated
         expected_parts = [
-            "fortune", "spirit", "eros", "necessity",
-            "marriage", "victory", "father", "mother",
-            "children", "exaltation", "illness", "courage", "reputation"
+            "fortune",
+            "spirit",
+            "eros",
+            "necessity",
+            "marriage",
+            "victory",
+            "father",
+            "mother",
+            "children",
+            "exaltation",
+            "illness",
+            "courage",
+            "reputation",
         ]
         for part_name in expected_parts:
             assert part_name in parts, f"Missing part: {part_name}"
@@ -972,16 +1255,44 @@ class TestCalculateArabicParts:
         """Test Part of Marriage: ASC + Venus - Saturn (day)."""
         planets = [
             PlanetPosition(
-                name="Venus", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+                name="Venus",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=4,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Saturn", longitude=200.0, latitude=0, speed=0.1,
-                sign="Libra", degree=20, minute=0, second=0, house=7, retrograde=False
+                name="Saturn",
+                longitude=200.0,
+                latitude=0,
+                speed=0.1,
+                sign="Libra",
+                degree=20,
+                minute=0,
+                second=0,
+                house=7,
+                retrograde=False,
             ),
         ]
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=50.0,
@@ -989,7 +1300,7 @@ class TestCalculateArabicParts:
             moon_longitude=200.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         assert "marriage" in parts
@@ -1000,16 +1311,44 @@ class TestCalculateArabicParts:
         """Test Part of Marriage: ASC + Saturn - Venus (night)."""
         planets = [
             PlanetPosition(
-                name="Venus", longitude=100.0, latitude=0, speed=1.0,
-                sign="Cancer", degree=10, minute=0, second=0, house=4, retrograde=False
+                name="Venus",
+                longitude=100.0,
+                latitude=0,
+                speed=1.0,
+                sign="Cancer",
+                degree=10,
+                minute=0,
+                second=0,
+                house=4,
+                retrograde=False,
             ),
             PlanetPosition(
-                name="Saturn", longitude=200.0, latitude=0, speed=0.1,
-                sign="Libra", degree=20, minute=0, second=0, house=7, retrograde=False
+                name="Saturn",
+                longitude=200.0,
+                latitude=0,
+                speed=0.1,
+                sign="Libra",
+                degree=20,
+                minute=0,
+                second=0,
+                house=7,
+                retrograde=False,
             ),
         ]
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=50.0,
@@ -1017,7 +1356,7 @@ class TestCalculateArabicParts:
             moon_longitude=200.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="nocturnal"
+            sect="nocturnal",
         )
 
         assert "marriage" in parts
@@ -1027,8 +1366,20 @@ class TestCalculateArabicParts:
     def test_part_of_exaltation_fixed_formula(self):
         """Test Part of Exaltation uses fixed formula regardless of sect."""
         planets = []
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts_day = calculate_arabic_parts(
             ascendant=100.0,
@@ -1036,7 +1387,7 @@ class TestCalculateArabicParts:
             moon_longitude=200.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         parts_night = calculate_arabic_parts(
@@ -1045,7 +1396,7 @@ class TestCalculateArabicParts:
             moon_longitude=200.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="nocturnal"
+            sect="nocturnal",
         )
 
         # Exaltation uses fixed formula: ASC + 19 - Sun (does NOT reverse)
@@ -1061,12 +1412,32 @@ class TestCalculateArabicParts:
         """Test Part of Courage correctly uses Part of Fortune in calculation."""
         planets = [
             PlanetPosition(
-                name="Mars", longitude=150.0, latitude=0, speed=0.8,
-                sign="Virgo", degree=0, minute=0, second=0, house=6, retrograde=False
+                name="Mars",
+                longitude=150.0,
+                latitude=0,
+                speed=0.8,
+                sign="Virgo",
+                degree=0,
+                minute=0,
+                second=0,
+                house=6,
+                retrograde=False,
             ),
         ]
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=0.0,
@@ -1074,7 +1445,7 @@ class TestCalculateArabicParts:
             moon_longitude=180.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         # Fortune (diurnal): ASC(0) + Moon(180) - Sun(90) = 90
@@ -1086,8 +1457,20 @@ class TestCalculateArabicParts:
     def test_part_of_reputation_uses_fortune_and_spirit(self):
         """Test Part of Reputation correctly uses Fortune and Spirit."""
         planets = []
-        house_cusps = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0,
-                       180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+        house_cusps = [
+            0.0,
+            30.0,
+            60.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+        ]
 
         parts = calculate_arabic_parts(
             ascendant=0.0,
@@ -1095,7 +1478,7 @@ class TestCalculateArabicParts:
             moon_longitude=180.0,
             planets=planets,
             house_cusps=house_cusps,
-            sect="diurnal"
+            sect="diurnal",
         )
 
         # Fortune (diurnal): ASC(0) + Moon(180) - Sun(90) = 90
@@ -1117,13 +1500,21 @@ class TestCalculateBirthChart:
             timezone="America/Sao_Paulo",
             latitude=-23.5505,
             longitude=-46.6333,
-            house_system="placidus"
+            house_system="placidus",
         )
 
         required_keys = [
-            "planets", "houses", "aspects", "ascendant", "midheaven",
-            "sect", "lunar_phase", "solar_phase", "lord_of_nativity",
-            "temperament", "arabic_parts"
+            "planets",
+            "houses",
+            "aspects",
+            "ascendant",
+            "midheaven",
+            "sect",
+            "lunar_phase",
+            "solar_phase",
+            "lord_of_nativity",
+            "temperament",
+            "arabic_parts",
         ]
         for key in required_keys:
             assert key in chart, f"Missing key: {key}"

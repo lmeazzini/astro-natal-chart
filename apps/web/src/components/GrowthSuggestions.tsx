@@ -5,7 +5,16 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, AlertTriangle, Star, Target, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  TrendingUp,
+  AlertTriangle,
+  Star,
+  Target,
+  Loader2,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getToken } from '@/services/api';
@@ -98,30 +107,38 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
     try {
       const token = getToken();
       if (!token) {
-        setError(t('growth.errors.notAuthenticated', { defaultValue: 'Please log in to generate suggestions' }));
+        setError(
+          t('growth.errors.notAuthenticated', {
+            defaultValue: 'Please log in to generate suggestions',
+          })
+        );
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/api/v1/charts/${chartId}/growth-suggestions`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/v1/charts/${chartId}/growth-suggestions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 403) {
-          setError(t('growth.errors.emailRequired', { defaultValue: 'Please verify your email to access this feature' }));
+          setError(
+            t('growth.errors.emailRequired', {
+              defaultValue: 'Please verify your email to access this feature',
+            })
+          );
         } else if (response.status === 404) {
           setError(t('growth.errors.chartNotFound', { defaultValue: 'Chart not found' }));
         } else {
-          setError(errorData.detail || t('growth.errors.generateFailed', { defaultValue: 'Failed to generate suggestions' }));
+          setError(
+            errorData.detail ||
+              t('growth.errors.generateFailed', { defaultValue: 'Failed to generate suggestions' })
+          );
         }
         return;
       }
@@ -130,7 +147,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
       setSuggestions(data);
     } catch (err) {
       console.error('Error generating growth suggestions:', err);
-      setError(t('growth.errors.networkError', { defaultValue: 'Network error. Please try again.' }));
+      setError(
+        t('growth.errors.networkError', { defaultValue: 'Network error. Please try again.' })
+      );
     } finally {
       setLoading(false);
     }
@@ -146,13 +165,16 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
             {t('growth.title', { defaultValue: 'Personal Development Suggestions' })}
           </CardTitle>
           <CardDescription>
-            {t('growth.description', { defaultValue: 'Discover growth paths based on your natal chart' })}
+            {t('growth.description', {
+              defaultValue: 'Discover growth paths based on your natal chart',
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
             {t('growth.intro', {
-              defaultValue: 'Our AI analyzes your birth chart to identify growth opportunities, challenges to overcome, natural talents, and life purpose insights.',
+              defaultValue:
+                'Our AI analyzes your birth chart to identify growth opportunities, challenges to overcome, natural talents, and life purpose insights.',
             })}
           </p>
           {error && (
@@ -166,7 +188,8 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
           </Button>
           <p className="text-xs text-muted-foreground">
             {t('growth.disclaimer', {
-              defaultValue: 'These suggestions are based on astrological analysis and should not replace professional advice.',
+              defaultValue:
+                'These suggestions are based on astrological analysis and should not replace professional advice.',
             })}
           </p>
         </CardContent>
@@ -182,7 +205,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
           <div className="flex flex-col items-center justify-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
             <p className="text-muted-foreground">
-              {t('growth.generating', { defaultValue: 'Analyzing your chart and generating personalized suggestions...' })}
+              {t('growth.generating', {
+                defaultValue: 'Analyzing your chart and generating personalized suggestions...',
+              })}
             </p>
             <p className="text-xs text-muted-foreground">
               {t('growth.generatingTime', { defaultValue: 'This may take 15-30 seconds' })}
@@ -205,7 +230,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
               {t('growth.growthPoints.title', { defaultValue: 'Growth Points' })}
             </CardTitle>
             <CardDescription>
-              {t('growth.growthPoints.description', { defaultValue: 'Areas for personal development and actionable steps' })}
+              {t('growth.growthPoints.description', {
+                defaultValue: 'Areas for personal development and actionable steps',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -225,7 +252,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
                     </p>
                     <ul className="list-disc list-inside space-y-1">
                       {point.practical_actions.map((action, i) => (
-                        <li key={i} className="text-sm text-muted-foreground">{action}</li>
+                        <li key={i} className="text-sm text-muted-foreground">
+                          {action}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -234,7 +263,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
                     <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                       {t('growth.growthPoints.mindset', { defaultValue: 'Mindset Shift:' })}
                     </p>
-                    <p className="text-sm italic text-blue-600 dark:text-blue-400">"{point.mindset_shift}"</p>
+                    <p className="text-sm italic text-blue-600 dark:text-blue-400">
+                      "{point.mindset_shift}"
+                    </p>
                   </div>
                 </div>
               </CollapsibleSection>
@@ -252,7 +283,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
               {t('growth.challenges.title', { defaultValue: 'Challenges to Overcome' })}
             </CardTitle>
             <CardDescription>
-              {t('growth.challenges.description', { defaultValue: 'Obstacles and strategies to overcome them' })}
+              {t('growth.challenges.description', {
+                defaultValue: 'Obstacles and strategies to overcome them',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -285,7 +318,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
                     </p>
                     <ul className="list-disc list-inside space-y-1">
                       {challenge.practices.map((practice, i) => (
-                        <li key={i} className="text-sm text-orange-600 dark:text-orange-400">{practice}</li>
+                        <li key={i} className="text-sm text-orange-600 dark:text-orange-400">
+                          {practice}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -305,7 +340,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
               {t('growth.opportunities.title', { defaultValue: 'Talents & Opportunities' })}
             </CardTitle>
             <CardDescription>
-              {t('growth.opportunities.description', { defaultValue: 'Natural gifts and how to leverage them' })}
+              {t('growth.opportunities.description', {
+                defaultValue: 'Natural gifts and how to leverage them',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -325,7 +362,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
                     </p>
                     <ul className="list-disc list-inside space-y-1">
                       {opp.leverage_tips.map((tip, i) => (
-                        <li key={i} className="text-sm text-yellow-600 dark:text-yellow-400">{tip}</li>
+                        <li key={i} className="text-sm text-yellow-600 dark:text-yellow-400">
+                          {tip}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -345,7 +384,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
               {t('growth.purpose.title', { defaultValue: 'Life Purpose & Direction' })}
             </CardTitle>
             <CardDescription>
-              {t('growth.purpose.description', { defaultValue: 'Soul direction and vocation insights' })}
+              {t('growth.purpose.description', {
+                defaultValue: 'Soul direction and vocation insights',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -354,28 +395,36 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
                 <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
                   {t('growth.purpose.soulDirection', { defaultValue: 'Soul Direction' })}
                 </h4>
-                <p className="text-sm text-purple-600 dark:text-purple-400">{suggestions.purpose.soul_direction}</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  {suggestions.purpose.soul_direction}
+                </p>
               </div>
 
               <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
                 <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
                   {t('growth.purpose.vocation', { defaultValue: 'Vocation' })}
                 </h4>
-                <p className="text-sm text-purple-600 dark:text-purple-400">{suggestions.purpose.vocation}</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  {suggestions.purpose.vocation}
+                </p>
               </div>
 
               <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
                 <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
                   {t('growth.purpose.contribution', { defaultValue: 'Contribution' })}
                 </h4>
-                <p className="text-sm text-purple-600 dark:text-purple-400">{suggestions.purpose.contribution}</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  {suggestions.purpose.contribution}
+                </p>
               </div>
 
               <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
                 <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
                   {t('growth.purpose.integration', { defaultValue: 'Integration' })}
                 </h4>
-                <p className="text-sm text-purple-600 dark:text-purple-400">{suggestions.purpose.integration}</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  {suggestions.purpose.integration}
+                </p>
               </div>
             </div>
 
@@ -386,7 +435,9 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
                 </h4>
                 <ol className="list-decimal list-inside space-y-2">
                   {suggestions.purpose.next_steps.map((step, i) => (
-                    <li key={i} className="text-sm text-purple-600 dark:text-purple-400">{step}</li>
+                    <li key={i} className="text-sm text-purple-600 dark:text-purple-400">
+                      {step}
+                    </li>
                   ))}
                 </ol>
               </div>
@@ -406,7 +457,8 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
       {/* Disclaimer */}
       <p className="text-xs text-center text-muted-foreground">
         {t('growth.disclaimer', {
-          defaultValue: 'These suggestions are based on astrological analysis and should not replace professional advice.',
+          defaultValue:
+            'These suggestions are based on astrological analysis and should not replace professional advice.',
         })}
       </p>
     </div>

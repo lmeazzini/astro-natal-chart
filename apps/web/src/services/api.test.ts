@@ -370,9 +370,7 @@ describe('ApiClient', () => {
       expect(result).toEqual({ data: 'success' });
 
       // Verify refresh was called
-      const refreshCalls = mockFetch.mock.calls.filter((call) =>
-        call[0].includes('/auth/refresh')
-      );
+      const refreshCalls = mockFetch.mock.calls.filter((call) => call[0].includes('/auth/refresh'));
       expect(refreshCalls.length).toBe(1);
     });
   });

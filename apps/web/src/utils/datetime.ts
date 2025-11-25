@@ -87,10 +87,7 @@ function getDateFormat(includeTime: boolean): string {
  * formatLocalDateTime("2025-03-15T17:30:00Z")
  * // => "03/15/2025 2:30 PM"
  */
-export function formatLocalDateTime(
-  isoString: string,
-  includeTime = true
-): string {
+export function formatLocalDateTime(isoString: string, includeTime = true): string {
   const userTz = getUserTimezone();
   const format = getDateFormat(includeTime);
   return dayjs(isoString).tz(userTz).format(format);
@@ -113,10 +110,7 @@ export function formatLocalDateTime(
  * formatRelativeTime("2025-01-10T15:00:00Z")  // 10 days ago
  * // => "10/01/2025"
  */
-export function formatRelativeTime(
-  isoString: string,
-  maxDays = 7
-): string {
+export function formatRelativeTime(isoString: string, maxDays = 7): string {
   const date = dayjs(isoString);
   const now = dayjs();
   const daysDiff = now.diff(date, 'days');
@@ -195,10 +189,7 @@ export function formatDateForInput(isoString: string): string {
  * formatTimeForInput("1990-03-15T14:30:00-03:00", "America/Sao_Paulo")
  * // => "14:30"
  */
-export function formatTimeForInput(
-  isoString: string,
-  birthTimezone: string
-): string {
+export function formatTimeForInput(isoString: string, birthTimezone: string): string {
   return dayjs(isoString).tz(birthTimezone).format('HH:mm');
 }
 
@@ -216,11 +207,7 @@ export function formatTimeForInput(
  * parseDateTime("1990-03-15", "14:30", "America/Sao_Paulo")
  * // => "1990-03-15T14:30:00-03:00"
  */
-export function parseDateTime(
-  date: string,
-  time: string,
-  timezone: string
-): string {
+export function parseDateTime(date: string, time: string, timezone: string): string {
   const dateTime = `${date} ${time}`;
   return dayjs.tz(dateTime, 'YYYY-MM-DD HH:mm', timezone).toISOString();
 }
@@ -354,10 +341,7 @@ export function formatNumber(value: number, decimals = 2): string {
  * // en-US locale:
  * formatCurrency(1234.56) // => "$1,234.56"
  */
-export function formatCurrency(
-  value: number,
-  currency?: string
-): string {
+export function formatCurrency(value: number, currency?: string): string {
   const locale = getIntlLocale();
   const currencyCode = currency || (locale === 'pt-BR' ? 'BRL' : 'USD');
 

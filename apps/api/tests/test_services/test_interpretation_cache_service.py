@@ -488,9 +488,7 @@ class TestRAGCacheTypes:
         assert stats["total_entries"] == 3
 
     @pytest.mark.asyncio
-    async def test_rag_cache_clear_by_version_affects_all_types(
-        self, db_session: AsyncSession
-    ):
+    async def test_rag_cache_clear_by_version_affects_all_types(self, db_session: AsyncSession):
         """Test that clearing by prompt version affects all RAG types."""
         cache_service = InterpretationCacheService(db_session)
 

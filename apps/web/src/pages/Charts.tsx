@@ -11,7 +11,14 @@ import { getToken } from '../services/api';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EmptyState } from '@/components/ui/empty-state';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
@@ -84,9 +91,13 @@ export function ChartsPage() {
       await interpretationsService.regenerate(chartId, token);
 
       // Update the chart in the list
-      setCharts(charts.map((c) => c.id === chartId ? updatedChart : c));
+      setCharts(charts.map((c) => (c.id === chartId ? updatedChart : c)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('charts.recalculateError', { defaultValue: 'Erro ao recalcular mapa' }));
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('charts.recalculateError', { defaultValue: 'Erro ao recalcular mapa' })
+      );
     } finally {
       setRecalculatingChartId(null);
     }
@@ -95,8 +106,18 @@ export function ChartsPage() {
   function getSignFromLongitude(longitude: number): string {
     const signIndex = Math.floor(longitude / 30);
     const signs = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ];
     return signs[signIndex] || 'N/A';
   }
@@ -108,7 +129,9 @@ export function ChartsPage() {
           <div className="inline-block animate-shimmer mb-astro-md">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <p className="text-body text-muted-foreground">{t('dashboard.loading', { defaultValue: 'Carregando mapas...' })}</p>
+          <p className="text-body text-muted-foreground">
+            {t('dashboard.loading', { defaultValue: 'Carregando mapas...' })}
+          </p>
         </div>
       </div>
     );
@@ -124,11 +147,7 @@ export function ChartsPage() {
             className="flex items-center gap-2 hover:opacity-80 transition-all duration-200"
             aria-label={t('common.back')}
           >
-            <img
-              src="/logo.png"
-              alt="Real Astrology"
-              className="h-8 w-8"
-            />
+            <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-h3 font-display text-foreground">{t('dashboard.title')}</h1>
           </Link>
           <div className="flex items-center gap-4">
@@ -140,11 +159,7 @@ export function ChartsPage() {
                 {t('dashboard.newChart')}
               </Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('nav.dashboard')}
             </Button>
@@ -192,7 +207,10 @@ export function ChartsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
             {charts.map((chart) => (
-              <Card key={chart.id} className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-card/90 backdrop-blur-sm">
+              <Card
+                key={chart.id}
+                className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-card/90 backdrop-blur-sm"
+              >
                 <CardHeader className="pb-3 border-b border-border/30">
                   <div className="flex justify-between items-start">
                     <div>
@@ -217,9 +235,13 @@ export function ChartsPage() {
                         onClick={() => handleRecalculate(chart.id)}
                         disabled={recalculatingChartId === chart.id}
                         className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                        title={t('charts.recalculate', { defaultValue: 'Recalcular mapa e interpretações' })}
+                        title={t('charts.recalculate', {
+                          defaultValue: 'Recalcular mapa e interpretações',
+                        })}
                       >
-                        <RefreshCw className={`h-4 w-4 ${recalculatingChartId === chart.id ? 'animate-spin' : ''}`} />
+                        <RefreshCw
+                          className={`h-4 w-4 ${recalculatingChartId === chart.id ? 'animate-spin' : ''}`}
+                        />
                       </Button>
                       <Button
                         variant="ghost"
@@ -238,23 +260,35 @@ export function ChartsPage() {
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p>
                       <strong className="text-foreground">{t('chartDetail.birthDateTime')}:</strong>{' '}
-                      {formatBirthDateTime(chart.birth_datetime, chart.birth_timezone || 'UTC', false)}
+                      {formatBirthDateTime(
+                        chart.birth_datetime,
+                        chart.birth_timezone || 'UTC',
+                        false
+                      )}
                     </p>
                     <p>
-                      <strong className="text-foreground">{t('chartDetail.location')}:</strong> {chart.city}
+                      <strong className="text-foreground">{t('chartDetail.location')}:</strong>{' '}
+                      {chart.city}
                       {chart.country && `, ${chart.country}`}
                     </p>
                     <p>
-                      <strong className="text-foreground">{t('newChart.houseSystem')}:</strong> {chart.house_system}
+                      <strong className="text-foreground">{t('newChart.houseSystem')}:</strong>{' '}
+                      {chart.house_system}
                     </p>
                   </div>
 
                   {chart.chart_data && (
                     <div className="pt-4 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground mb-3 font-medium">{t('chartDetail.bigThree.title')}</p>
+                      <p className="text-xs text-muted-foreground mb-3 font-medium">
+                        {t('chartDetail.bigThree.title')}
+                      </p>
                       <BigThreeBadge
-                        sunSign={chart.chart_data.planets.find(p => p.name === 'Sun')?.sign || 'N/A'}
-                        moonSign={chart.chart_data.planets.find(p => p.name === 'Moon')?.sign || 'N/A'}
+                        sunSign={
+                          chart.chart_data.planets.find((p) => p.name === 'Sun')?.sign || 'N/A'
+                        }
+                        moonSign={
+                          chart.chart_data.planets.find((p) => p.name === 'Moon')?.sign || 'N/A'
+                        }
                         risingSign={getSignFromLongitude(chart.chart_data.ascendant)}
                         variant="vertical"
                       />
@@ -263,9 +297,7 @@ export function ChartsPage() {
 
                   {chart.notes && (
                     <div className="pt-4 border-t border-border">
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {chart.notes}
-                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{chart.notes}</p>
                     </div>
                   )}
                 </CardContent>

@@ -13,15 +13,37 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getToken } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { AlertCircle, ArrowLeft, ArrowRight, Loader2, MapPin, Check, Mail, AlertTriangle } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Loader2,
+  MapPin,
+  Check,
+  Mail,
+  AlertTriangle,
+} from 'lucide-react';
 import { TimezoneSelect } from '@/components/TimezoneSelect';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -85,10 +107,26 @@ export function NewChartPage() {
   });
 
   const STEPS = [
-    { number: 1, title: t('newChart.step1Title', { defaultValue: 'Informações Pessoais' }), description: t('newChart.step1Desc', { defaultValue: 'Nome e gênero' }) },
-    { number: 2, title: t('newChart.step2Title', { defaultValue: 'Data e Hora' }), description: t('newChart.step2Desc', { defaultValue: 'Nascimento' }) },
-    { number: 3, title: t('newChart.step3Title', { defaultValue: 'Local' }), description: t('newChart.step3Desc', { defaultValue: 'Cidade e coordenadas' }) },
-    { number: 4, title: t('newChart.step4Title', { defaultValue: 'Revisão' }), description: t('newChart.step4Desc', { defaultValue: 'Confirmar dados' }) },
+    {
+      number: 1,
+      title: t('newChart.step1Title', { defaultValue: 'Informações Pessoais' }),
+      description: t('newChart.step1Desc', { defaultValue: 'Nome e gênero' }),
+    },
+    {
+      number: 2,
+      title: t('newChart.step2Title', { defaultValue: 'Data e Hora' }),
+      description: t('newChart.step2Desc', { defaultValue: 'Nascimento' }),
+    },
+    {
+      number: 3,
+      title: t('newChart.step3Title', { defaultValue: 'Local' }),
+      description: t('newChart.step3Desc', { defaultValue: 'Cidade e coordenadas' }),
+    },
+    {
+      number: 4,
+      title: t('newChart.step4Title', { defaultValue: 'Revisão' }),
+      description: t('newChart.step4Desc', { defaultValue: 'Confirmar dados' }),
+    },
   ];
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -281,11 +319,7 @@ export function NewChartPage() {
           <div className="flex items-center gap-3">
             <LanguageSelector />
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('common.back')}
             </Button>
@@ -309,15 +343,10 @@ export function NewChartPage() {
             <CardContent className="space-y-4">
               <Alert className="border-primary/20 bg-primary/5">
                 <Mail className="h-4 w-4 text-primary" />
-                <AlertDescription>
-                  {t('verification.verifyEmail')}
-                </AlertDescription>
+                <AlertDescription>{t('verification.verifyEmail')}</AlertDescription>
               </Alert>
               <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => navigate('/profile')}
-                  className="w-full"
-                >
+                <Button onClick={() => navigate('/profile')} className="w-full">
                   <Mail className="mr-2 h-4 w-4" />
                   {t('verification.resendVerification')}
                 </Button>
@@ -352,7 +381,9 @@ export function NewChartPage() {
                 ? t('verification.chartLimitTitle')
                 : t('verification.emailNotVerified')}
             </AlertTitle>
-            <AlertDescription className={hasReachedLimit ? '' : 'text-amber-700 dark:text-amber-300'}>
+            <AlertDescription
+              className={hasReachedLimit ? '' : 'text-amber-700 dark:text-amber-300'}
+            >
               {hasReachedLimit ? (
                 t('verification.chartLimitMessage', { limit: UNVERIFIED_USER_CHART_LIMIT })
               ) : (
@@ -382,7 +413,9 @@ export function NewChartPage() {
                   active={currentStep === step.number}
                 />
                 <div className="text-center">
-                  <p className={`text-sm font-medium ${currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <p
+                    className={`text-sm font-medium ${currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'}`}
+                  >
                     {step.title}
                   </p>
                   <p className="text-xs text-muted-foreground hidden sm:block">
@@ -391,7 +424,9 @@ export function NewChartPage() {
                 </div>
               </div>
               {index < STEPS.length - 1 && (
-                <div className={`h-0.5 w-12 hidden sm:block ${currentStep > step.number ? 'bg-primary' : 'bg-border'}`} />
+                <div
+                  className={`h-0.5 w-12 hidden sm:block ${currentStep > step.number ? 'bg-primary' : 'bg-border'}`}
+                />
               )}
             </div>
           ))}
@@ -406,11 +441,14 @@ export function NewChartPage() {
 
         <Card className="shadow-xl border-0 animate-fade-in">
           <CardHeader>
-            <CardTitle className="text-h2">
-              {STEPS[currentStep - 1].title}
-            </CardTitle>
+            <CardTitle className="text-h2">{STEPS[currentStep - 1].title}</CardTitle>
             <CardDescription className="text-base">
-              {t('newChart.stepOf', { current: currentStep, total: STEPS.length, defaultValue: `Passo ${currentStep} de ${STEPS.length}` })} - {STEPS[currentStep - 1].description}
+              {t('newChart.stepOf', {
+                current: currentStep,
+                total: STEPS.length,
+                defaultValue: `Passo ${currentStep} de ${STEPS.length}`,
+              })}{' '}
+              - {STEPS[currentStep - 1].description}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -427,7 +465,9 @@ export function NewChartPage() {
                           <FormLabel className="text-base">{t('newChart.personName')} *</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t('newChart.personNamePlaceholder', { defaultValue: 'João da Silva' })}
+                              placeholder={t('newChart.personNamePlaceholder', {
+                                defaultValue: 'João da Silva',
+                              })}
                               className="text-base"
                               {...field}
                             />
@@ -442,11 +482,17 @@ export function NewChartPage() {
                       name="gender"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.gender')} ({t('common.optional')})</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.gender')} ({t('common.optional')})
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="text-base">
-                                <SelectValue placeholder={t('newChart.selectGender', { defaultValue: 'Selecione o gênero' })} />
+                                <SelectValue
+                                  placeholder={t('newChart.selectGender', {
+                                    defaultValue: 'Selecione o gênero',
+                                  })}
+                                />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -472,14 +518,13 @@ export function NewChartPage() {
                         <FormItem>
                           <FormLabel className="text-base">{t('newChart.birthDate')} *</FormLabel>
                           <FormControl>
-                            <Input
-                              type="datetime-local"
-                              className="text-base"
-                              {...field}
-                            />
+                            <Input type="datetime-local" className="text-base" {...field} />
                           </FormControl>
                           <p className="text-sm text-muted-foreground">
-                            {t('newChart.precisionNote', { defaultValue: 'Quanto mais precisa a hora, mais preciso será o mapa natal' })}
+                            {t('newChart.precisionNote', {
+                              defaultValue:
+                                'Quanto mais precisa a hora, mais preciso será o mapa natal',
+                            })}
                           </p>
                           <FormMessage />
                         </FormItem>
@@ -498,13 +543,19 @@ export function NewChartPage() {
                               onChange={field.onChange}
                               coordinates={
                                 form.watch('latitude') && form.watch('longitude')
-                                  ? { latitude: form.watch('latitude'), longitude: form.watch('longitude') }
+                                  ? {
+                                      latitude: form.watch('latitude'),
+                                      longitude: form.watch('longitude'),
+                                    }
                                   : null
                               }
                             />
                           </FormControl>
                           <p className="text-sm text-muted-foreground">
-                            {t('newChart.timezoneAutoDetect', 'Automatically detected from location. Adjust if needed.')}
+                            {t(
+                              'newChart.timezoneAutoDetect',
+                              'Automatically detected from location. Adjust if needed.'
+                            )}
                           </p>
                           <FormMessage />
                         </FormItem>
@@ -522,7 +573,9 @@ export function NewChartPage() {
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.birthLocation')} *</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.birthLocation')} *
+                          </FormLabel>
                           <FormControl>
                             <div className="relative" ref={suggestionRef}>
                               <Input
@@ -566,7 +619,8 @@ export function NewChartPage() {
                                             {location.display_name}
                                           </p>
                                           <p className="text-xs text-primary/80 mt-1.5 font-mono">
-                                            {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                            {location.latitude.toFixed(4)},{' '}
+                                            {location.longitude.toFixed(4)}
                                           </p>
                                         </div>
                                       </div>
@@ -586,7 +640,9 @@ export function NewChartPage() {
                       name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.country', { defaultValue: 'País' })}</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.country', { defaultValue: 'País' })}
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="Brasil" className="text-base" {...field} />
                           </FormControl>
@@ -640,7 +696,11 @@ export function NewChartPage() {
                     <Alert className="border-primary/20 bg-primary/5">
                       <AlertCircle className="h-4 w-4 text-primary" />
                       <AlertDescription className="text-sm">
-                        <strong>{t('newChart.important', { defaultValue: 'Importante' })}:</strong> {t('newChart.coordinatesNote', { defaultValue: 'As coordenadas são preenchidas automaticamente ao selecionar uma cidade. Para melhor precisão, use a busca ou ajuste manualmente.' })}
+                        <strong>{t('newChart.important', { defaultValue: 'Importante' })}:</strong>{' '}
+                        {t('newChart.coordinatesNote', {
+                          defaultValue:
+                            'As coordenadas são preenchidas automaticamente ao selecionar uma cidade. Para melhor precisão, use a busca ou ajuste manualmente.',
+                        })}
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -652,53 +712,79 @@ export function NewChartPage() {
                     <div className="rounded-astro-md bg-muted/30 p-6 space-y-4">
                       <h3 className="text-h4 mb-4 flex items-center gap-2">
                         <Check className="h-5 w-5 text-primary" />
-                        {t('newChart.confirmData', { defaultValue: 'Confirme os dados do mapa natal' })}
+                        {t('newChart.confirmData', {
+                          defaultValue: 'Confirme os dados do mapa natal',
+                        })}
                       </h3>
 
                       <div className="grid gap-4">
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('newChart.personName')}</span>
-                          <span className="text-sm font-semibold text-right">{form.getValues('person_name') || '-'}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.personName')}
+                          </span>
+                          <span className="text-sm font-semibold text-right">
+                            {form.getValues('person_name') || '-'}
+                          </span>
                         </div>
 
                         {form.getValues('gender') && (
                           <div className="flex justify-between items-start py-3 border-b border-border">
-                            <span className="text-sm text-muted-foreground">{t('newChart.gender')}</span>
-                            <span className="text-sm font-semibold">{form.getValues('gender')}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {t('newChart.gender')}
+                            </span>
+                            <span className="text-sm font-semibold">
+                              {form.getValues('gender')}
+                            </span>
                           </div>
                         )}
 
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('chartDetail.birthDateTime')}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('chartDetail.birthDateTime')}
+                          </span>
                           <span className="text-sm font-semibold text-right font-mono">
                             {form.getValues('birth_datetime')
                               ? new Date(form.getValues('birth_datetime')).toLocaleString('pt-BR')
-                              : '-'
-                            }
+                              : '-'}
                           </span>
                         </div>
 
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('newChart.timezone')}</span>
-                          <span className="text-sm font-semibold">{form.getValues('birth_timezone')}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.timezone')}
+                          </span>
+                          <span className="text-sm font-semibold">
+                            {form.getValues('birth_timezone')}
+                          </span>
                         </div>
 
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('newChart.birthLocation')}</span>
-                          <span className="text-sm font-semibold text-right">{form.getValues('city') || '-'}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.birthLocation')}
+                          </span>
+                          <span className="text-sm font-semibold text-right">
+                            {form.getValues('city') || '-'}
+                          </span>
                         </div>
 
                         {form.getValues('country') && (
                           <div className="flex justify-between items-start py-3 border-b border-border">
-                            <span className="text-sm text-muted-foreground">{t('newChart.country', { defaultValue: 'País' })}</span>
-                            <span className="text-sm font-semibold">{form.getValues('country')}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {t('newChart.country', { defaultValue: 'País' })}
+                            </span>
+                            <span className="text-sm font-semibold">
+                              {form.getValues('country')}
+                            </span>
                           </div>
                         )}
 
                         <div className="flex justify-between items-start py-3">
-                          <span className="text-sm text-muted-foreground">{t('newChart.coordinates', { defaultValue: 'Coordenadas' })}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.coordinates', { defaultValue: 'Coordenadas' })}
+                          </span>
                           <span className="text-xs font-mono text-primary">
-                            {form.getValues('latitude').toFixed(6)}, {form.getValues('longitude').toFixed(6)}
+                            {form.getValues('latitude').toFixed(6)},{' '}
+                            {form.getValues('longitude').toFixed(6)}
                           </span>
                         </div>
                       </div>
@@ -709,10 +795,15 @@ export function NewChartPage() {
                       name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.notes')} ({t('common.optional')})</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.notes')} ({t('common.optional')})
+                          </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder={t('newChart.notesPlaceholder', { defaultValue: 'Adicione observações, contexto ou informações adicionais sobre este mapa...' })}
+                              placeholder={t('newChart.notesPlaceholder', {
+                                defaultValue:
+                                  'Adicione observações, contexto ou informações adicionais sobre este mapa...',
+                              })}
                               rows={4}
                               className="text-base resize-none"
                               {...field}
@@ -739,11 +830,7 @@ export function NewChartPage() {
                   </Button>
 
                   {currentStep < 4 ? (
-                    <Button
-                      type="button"
-                      onClick={handleNext}
-                      className="gap-2"
-                    >
+                    <Button type="button" onClick={handleNext} className="gap-2">
                       {t('common.next')}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
@@ -753,10 +840,10 @@ export function NewChartPage() {
                       disabled={form.formState.isSubmitting}
                       className="gap-2 min-w-[200px]"
                     >
-                      {form.formState.isSubmitting && (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      )}
-                      {form.formState.isSubmitting ? t('newChart.calculating') : t('newChart.submit')}
+                      {form.formState.isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {form.formState.isSubmitting
+                        ? t('newChart.calculating')
+                        : t('newChart.submit')}
                       {!form.formState.isSubmitting && <Check className="h-4 w-4" />}
                     </Button>
                   )}

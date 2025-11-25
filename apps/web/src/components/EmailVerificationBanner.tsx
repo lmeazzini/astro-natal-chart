@@ -17,7 +17,10 @@ interface EmailVerificationBannerProps {
   showPremiumHint?: boolean;
 }
 
-export function EmailVerificationBanner({ onDismiss, showPremiumHint = true }: EmailVerificationBannerProps) {
+export function EmailVerificationBanner({
+  onDismiss,
+  showPremiumHint = true,
+}: EmailVerificationBannerProps) {
   const { t } = useTranslation();
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
@@ -45,7 +48,11 @@ export function EmailVerificationBanner({ onDismiss, showPremiumHint = true }: E
       if (error instanceof Error) {
         setResendError(error.message);
       } else {
-        setResendError(t('components.emailVerification.genericError', { defaultValue: 'Erro ao reenviar email. Tente novamente mais tarde.' }));
+        setResendError(
+          t('components.emailVerification.genericError', {
+            defaultValue: 'Erro ao reenviar email. Tente novamente mais tarde.',
+          })
+        );
       }
     } finally {
       setIsResending(false);
@@ -69,30 +76,40 @@ export function EmailVerificationBanner({ onDismiss, showPremiumHint = true }: E
             </span>
           </div>
           <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
-            {t('components.emailVerification.message', { defaultValue: 'Verifique seu email para ter acesso completo à plataforma.' })}{' '}
-            {t('components.emailVerification.didntReceive', { defaultValue: 'Não recebeu o email?' })}{' '}
+            {t('components.emailVerification.message', {
+              defaultValue: 'Verifique seu email para ter acesso completo à plataforma.',
+            })}{' '}
+            {t('components.emailVerification.didntReceive', {
+              defaultValue: 'Não recebeu o email?',
+            })}{' '}
             <button
               onClick={handleResendEmail}
               disabled={isResending || resendSuccess}
               className="font-medium underline hover:no-underline disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isResending ? t('components.emailVerification.sending', { defaultValue: 'Enviando...' }) : resendSuccess ? t('components.emailVerification.sent', { defaultValue: 'Email enviado!' }) : t('components.emailVerification.resend', { defaultValue: 'Reenviar' })}
+              {isResending
+                ? t('components.emailVerification.sending', { defaultValue: 'Enviando...' })
+                : resendSuccess
+                  ? t('components.emailVerification.sent', { defaultValue: 'Email enviado!' })
+                  : t('components.emailVerification.resend', { defaultValue: 'Reenviar' })}
             </button>
           </p>
           {showPremiumHint && (
             <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
-              {t('components.emailVerificationBanner.premiumHint', { defaultValue: 'Desbloqueie interpretações com IA e exportação em PDF' })}
+              {t('components.emailVerificationBanner.premiumHint', {
+                defaultValue: 'Desbloqueie interpretações com IA e exportação em PDF',
+              })}
             </p>
           )}
           {resendError && (
-            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-              {resendError}
-            </p>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{resendError}</p>
           )}
           {resendSuccess && (
             <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-              {t('components.emailVerification.success', { defaultValue: 'Email de verificação enviado! Verifique sua caixa de entrada.' })}
+              {t('components.emailVerification.success', {
+                defaultValue: 'Email de verificação enviado! Verifique sua caixa de entrada.',
+              })}
             </p>
           )}
         </div>

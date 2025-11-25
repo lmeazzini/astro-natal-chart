@@ -127,7 +127,9 @@ export function useTokenMonitor({ onLogout, enabled = true }: UseTokenMonitorOpt
 
       // If token expires in less than threshold, refresh it proactively
       if (timeUntilExpiry < REFRESH_THRESHOLD) {
-        console.log(`[Auth] Token expires in ${Math.round(timeUntilExpiry)}s, refreshing proactively`);
+        console.log(
+          `[Auth] Token expires in ${Math.round(timeUntilExpiry)}s, refreshing proactively`
+        );
         isRefreshingRef.current = true;
 
         const success = await refreshToken();
@@ -142,7 +144,7 @@ export function useTokenMonitor({ onLogout, enabled = true }: UseTokenMonitorOpt
             const backoffDelay = getBackoffDelay(failedAttemptsRef.current);
             console.warn(
               `[Auth] Proactive refresh failed (attempt ${failedAttemptsRef.current}/${MAX_RETRIES}), ` +
-              `will retry in ${backoffDelay / 1000}s`
+                `will retry in ${backoffDelay / 1000}s`
             );
 
             // Schedule a retry with backoff

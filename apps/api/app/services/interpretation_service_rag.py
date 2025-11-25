@@ -188,7 +188,9 @@ class InterpretationServiceRAG:
                 "planet_prompts": {"base": "Interprete {planet} em {sign} na casa {house}."},
                 "house_prompts": {"base": "Interprete a casa {house} em {sign}."},
                 "aspect_prompts": {"base": "Interprete {aspect} entre {planet1} e {planet2}."},
-                "arabic_part_prompts": {"base": "Interprete {part_name} em {sign} na casa {house}."},
+                "arabic_part_prompts": {
+                    "base": "Interprete {part_name} em {sign} na casa {house}."
+                },
             }
 
     def _get_language_instruction(self) -> str:
@@ -218,7 +220,9 @@ class InterpretationServiceRAG:
         system_prompt: str = self.prompts["system_prompt"]
         return system_prompt + self._get_language_instruction()
 
-    def _validate_dignities(self, planet: str, sign: str, dignities: dict[str, Any]) -> dict[str, Any]:
+    def _validate_dignities(
+        self, planet: str, sign: str, dignities: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Validate and ensure dignities are properly formatted.
 
@@ -431,7 +435,9 @@ class InterpretationServiceRAG:
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {planet} in {sign} ({self.language})")
+                logger.info(
+                    f"Using cached RAG interpretation for {planet} in {sign} ({self.language})"
+                )
                 return cached
 
         self._cache_misses += 1
@@ -554,7 +560,9 @@ class InterpretationServiceRAG:
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for house {house} in {sign} ({self.language})")
+                logger.info(
+                    f"Using cached RAG interpretation for house {house} in {sign} ({self.language})"
+                )
                 return cached
 
         self._cache_misses += 1
@@ -684,7 +692,9 @@ class InterpretationServiceRAG:
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {planet1} {aspect} {planet2} ({self.language})")
+                logger.info(
+                    f"Using cached RAG interpretation for {planet1} {aspect} {planet2} ({self.language})"
+                )
                 return cached
 
         self._cache_misses += 1
@@ -812,7 +822,9 @@ class InterpretationServiceRAG:
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {part_name} in {sign} ({self.language})")
+                logger.info(
+                    f"Using cached RAG interpretation for {part_name} in {sign} ({self.language})"
+                )
                 return cached
 
         self._cache_misses += 1
@@ -1014,8 +1026,12 @@ class InterpretationServiceRAG:
 
             try:
                 # Get planet signs and dignities
-                planet1_data: dict[str, Any] = next((p for p in planets if p.get("name") == planet1), {})
-                planet2_data: dict[str, Any] = next((p for p in planets if p.get("name") == planet2), {})
+                planet1_data: dict[str, Any] = next(
+                    (p for p in planets if p.get("name") == planet1), {}
+                )
+                planet2_data: dict[str, Any] = next(
+                    (p for p in planets if p.get("name") == planet2), {}
+                )
 
                 interpretation = await self.generate_aspect_interpretation(
                     planet1=planet1,
@@ -1072,7 +1088,9 @@ class InterpretationServiceRAG:
                 )
                 self.db.add(interp_record)
             except Exception as e:
-                logger.error(f"Failed to generate RAG Arabic Part interpretation for {part_key}: {e}")
+                logger.error(
+                    f"Failed to generate RAG Arabic Part interpretation for {part_key}: {e}"
+                )
 
         # Commit all interpretations
         await self.db.commit()

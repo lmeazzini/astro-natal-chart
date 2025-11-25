@@ -1,4 +1,5 @@
 """Tests for RAG services."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -61,7 +62,7 @@ class TestBM25Service:
         documents = [
             "Mercury in retrograde affects communication",
             "Venus conjunction Jupiter brings abundance",
-            "Mars square Saturn creates tension"
+            "Mars square Saturn creates tension",
         ]
         document_ids = ["doc1", "doc2", "doc3"]
 
@@ -77,7 +78,7 @@ class TestBM25Service:
         documents = [
             "Mercury in retrograde affects communication and travel",
             "Venus conjunction Jupiter brings love and abundance",
-            "Mars square Saturn creates conflict and tension"
+            "Mars square Saturn creates conflict and tension",
         ]
         document_ids = ["doc1", "doc2", "doc3"]
 
@@ -151,7 +152,7 @@ class TestBM25Service:
 class TestQdrantService:
     """Test Qdrant vector search service."""
 
-    @patch('app.services.rag.qdrant_service.QdrantClient')
+    @patch("app.services.rag.qdrant_service.QdrantClient")
     def test_initialization_success(self, mock_client):
         """Test successful Qdrant initialization."""
         mock_client.return_value.get_collections.return_value.collections = []
@@ -162,7 +163,7 @@ class TestQdrantService:
         assert service.enabled is True
         assert service.collection_name == "astrology_knowledge"
 
-    @patch('app.services.rag.qdrant_service.QdrantClient')
+    @patch("app.services.rag.qdrant_service.QdrantClient")
     def test_initialization_failure(self, mock_client):
         """Test Qdrant initialization failure."""
         mock_client.side_effect = Exception("Connection failed")
@@ -173,7 +174,7 @@ class TestQdrantService:
         assert service.enabled is False
 
     @pytest.mark.asyncio
-    @patch('app.services.rag.qdrant_service.QdrantClient')
+    @patch("app.services.rag.qdrant_service.QdrantClient")
     async def test_upsert_vectors(self, mock_client):
         """Test vector upsert."""
         service = QdrantService()
@@ -190,7 +191,7 @@ class TestQdrantService:
         service.client.upsert.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('app.services.rag.qdrant_service.QdrantClient')
+    @patch("app.services.rag.qdrant_service.QdrantClient")
     async def test_search(self, mock_client):
         """Test vector search."""
         service = QdrantService()
@@ -212,7 +213,7 @@ class TestQdrantService:
         assert results[0]["score"] == 0.95
 
     @pytest.mark.asyncio
-    @patch('app.services.rag.qdrant_service.QdrantClient')
+    @patch("app.services.rag.qdrant_service.QdrantClient")
     async def test_delete_vectors(self, mock_client):
         """Test vector deletion."""
         service = QdrantService()
@@ -294,22 +295,15 @@ class TestHybridSearchService:
         service = HybridSearchService()
 
         # Mock underlying services
-        with patch.object(service.qdrant, 'search') as mock_qdrant:
-            with patch.object(service.bm25, 'search') as mock_bm25:
+        with patch.object(service.qdrant, "search") as mock_qdrant:
+            with patch.object(service.bm25, "search") as mock_bm25:
                 service.qdrant.enabled = True
 
-                mock_qdrant.return_value = [
-                    {"id": "doc1", "score": 0.9, "payload": {}}
-                ]
-                mock_bm25.return_value = [
-                    {"document_id": "doc1", "score": 10}
-                ]
+                mock_qdrant.return_value = [{"id": "doc1", "score": 0.9, "payload": {}}]
+                mock_bm25.return_value = [{"document_id": "doc1", "score": 10}]
 
                 results = await service.search(
-                    query="test query",
-                    query_vector=[0.1, 0.2, 0.3],
-                    limit=5,
-                    fusion_method="rrf"
+                    query="test query", query_vector=[0.1, 0.2, 0.3], limit=5, fusion_method="rrf"
                 )
 
                 assert len(results) > 0
@@ -380,14 +374,14 @@ class TestDocumentIngestionService:
         mock_db.commit = AsyncMock()
 
         # Mock BM25 service
-        with patch.object(service.bm25, 'add_document'):
+        with patch.object(service.bm25, "add_document"):
             documents = await service.ingest_text(
                 db=mock_db,
                 title="Test Document",
                 content="This is test content for RAG system",
                 document_type="text",
                 metadata={"author": "test"},
-                get_embeddings_func=None
+                get_embeddings_func=None,
             )
 
             assert len(documents) > 0
@@ -408,7 +402,7 @@ class TestDocumentIngestionService:
             document_type="text",
             title="Test",
             content="Content",
-            vector_id="vec1"
+            vector_id="vec1",
         )
         mock_db.get = AsyncMock(return_value=mock_doc)
         mock_db.delete = AsyncMock()
@@ -416,8 +410,8 @@ class TestDocumentIngestionService:
         mock_db.commit = AsyncMock()
 
         # Mock services
-        with patch.object(service.qdrant, 'delete_vectors') as mock_qdrant:
-            with patch.object(service.bm25, 'remove_document') as mock_bm25:
+        with patch.object(service.qdrant, "delete_vectors") as mock_qdrant:
+            with patch.object(service.bm25, "remove_document") as mock_bm25:
                 service.qdrant.enabled = True
                 mock_qdrant.return_value = True
                 mock_bm25.return_value = True
@@ -442,11 +436,8 @@ class TestDocumentIngestionService:
         mock_db.execute = AsyncMock(return_value=mock_result)
 
         # Mock BM25 stats
-        with patch.object(service.bm25, 'get_index_stats') as mock_bm25_stats:
-            mock_bm25_stats.return_value = {
-                "num_documents": 10,
-                "avg_doc_length": 100
-            }
+        with patch.object(service.bm25, "get_index_stats") as mock_bm25_stats:
+            mock_bm25_stats.return_value = {"num_documents": 10, "avg_doc_length": 100}
 
             stats = await service.get_ingestion_stats(mock_db)
 

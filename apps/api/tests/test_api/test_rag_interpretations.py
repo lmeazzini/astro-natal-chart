@@ -1,4 +1,5 @@
 """Tests for RAG interpretation endpoints (available to all users)."""
+
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
@@ -135,7 +136,14 @@ async def test_chart_with_interpretations(
         content="Cached interpretation for Sun in Taurus...",
         openai_model="gpt-4o-mini-rag",
         prompt_version=RAG_PROMPT_VERSION,
-        rag_sources=[{"source": "Test Book", "page": "42", "relevance_score": 0.95, "content_preview": "Preview..."}],
+        rag_sources=[
+            {
+                "source": "Test Book",
+                "page": "42",
+                "relevance_score": 0.95,
+                "content_preview": "Preview...",
+            }
+        ],
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -149,21 +157,23 @@ async def test_chart_with_interpretations(
 @pytest.fixture
 def mock_rag_services():
     """Mock RAG services for interpretation generation."""
-    with patch('app.api.v1.endpoints.interpretations.InterpretationServiceRAG') as mock_rag_class:
+    with patch("app.api.v1.endpoints.interpretations.InterpretationServiceRAG") as mock_rag_class:
         mock_instance = AsyncMock()
         mock_rag_class.return_value = mock_instance
 
         # Mock methods using the new public method name
-        mock_instance.retrieve_context = AsyncMock(return_value=[
-            {
-                "payload": {
-                    "content": "Test astrological content about Sun in Taurus",
-                    "title": "Traditional Astrology",
-                    "metadata": {"source": "Test Source", "page": 42},
-                },
-                "score": 0.95,
-            }
-        ])
+        mock_instance.retrieve_context = AsyncMock(
+            return_value=[
+                {
+                    "payload": {
+                        "content": "Test astrological content about Sun in Taurus",
+                        "title": "Traditional Astrology",
+                        "metadata": {"source": "Test Source", "page": 42},
+                    },
+                    "score": 0.95,
+                }
+            ]
+        )
         mock_instance._format_rag_context = AsyncMock(
             return_value="Contexto Astrológico Relevante:\nTest astrological context..."
         )
@@ -420,9 +430,10 @@ class TestRAGServiceIntegration:
         from app.services.interpretation_service_rag import InterpretationServiceRAG
 
         # Check method exists and is not private (doesn't start with _)
-        assert hasattr(InterpretationServiceRAG, 'retrieve_context')
-        assert not hasattr(InterpretationServiceRAG, '_retrieve_context') or \
-               hasattr(InterpretationServiceRAG, 'retrieve_context')
+        assert hasattr(InterpretationServiceRAG, "retrieve_context")
+        assert not hasattr(InterpretationServiceRAG, "_retrieve_context") or hasattr(
+            InterpretationServiceRAG, "retrieve_context"
+        )
 
     @pytest.mark.asyncio
     async def test_constants_are_exported(self):

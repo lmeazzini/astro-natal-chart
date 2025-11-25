@@ -111,9 +111,7 @@ export async function getPublicChart(slug: string): Promise<PublicChartDetail> {
  * Get featured public charts
  */
 export async function getFeaturedCharts(limit: number = 10): Promise<PublicChartPreview[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/public-charts/featured?limit=${limit}`
-  );
+  const response = await fetch(`${API_BASE_URL}/api/v1/public-charts/featured?limit=${limit}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch featured charts');

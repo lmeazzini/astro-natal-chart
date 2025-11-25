@@ -40,16 +40,18 @@ async def recalculate_all_sects():
         print("\nProcessing public_charts...")
 
         # Ascendant is in houses[0].longitude (House 1 cusp = ASC)
-        result = await db.execute(text(
-            "SELECT id, full_name, "
-            "chart_data->>'sect' as current_sect, "
-            "(chart_data->'houses'->0->>'longitude')::float as ascendant, "
-            "(SELECT (p->>'longitude')::float "
-            "FROM jsonb_array_elements(chart_data->'planets') p "
-            "WHERE p->>'name' = 'Sun' LIMIT 1) as sun_longitude "
-            "FROM public_charts "
-            "WHERE chart_data IS NOT NULL"
-        ))
+        result = await db.execute(
+            text(
+                "SELECT id, full_name, "
+                "chart_data->>'sect' as current_sect, "
+                "(chart_data->'houses'->0->>'longitude')::float as ascendant, "
+                "(SELECT (p->>'longitude')::float "
+                "FROM jsonb_array_elements(chart_data->'planets') p "
+                "WHERE p->>'name' = 'Sun' LIMIT 1) as sun_longitude "
+                "FROM public_charts "
+                "WHERE chart_data IS NOT NULL"
+            )
+        )
 
         public_charts = result.fetchall()
 
@@ -72,7 +74,7 @@ async def recalculate_all_sects():
                         "updated_at = NOW() "
                         "WHERE id = :chart_id"
                     ),
-                    {"chart_id": str(chart_id), "new_sect": f'"{correct_sect}"'}
+                    {"chart_id": str(chart_id), "new_sect": f'"{correct_sect}"'},
                 )
 
                 print(f"  [UPDATED] {name}: {current_sect} -> {correct_sect}")
@@ -85,20 +87,22 @@ async def recalculate_all_sects():
         print("\nProcessing birth_charts...")
 
         # Try both structures: chart_info.ascendant OR houses[0].longitude
-        result = await db.execute(text(
-            "SELECT id, person_name, "
-            "chart_data->>'sect' as current_sect, "
-            "COALESCE("
-            "  (chart_data->'chart_info'->>'ascendant')::float, "
-            "  (chart_data->'houses'->0->>'longitude')::float"
-            ") as ascendant, "
-            "(SELECT (p->>'longitude')::float "
-            "FROM jsonb_array_elements(chart_data->'planets') p "
-            "WHERE p->>'name' = 'Sun' LIMIT 1) as sun_longitude "
-            "FROM birth_charts "
-            "WHERE deleted_at IS NULL "
-            "AND chart_data IS NOT NULL"
-        ))
+        result = await db.execute(
+            text(
+                "SELECT id, person_name, "
+                "chart_data->>'sect' as current_sect, "
+                "COALESCE("
+                "  (chart_data->'chart_info'->>'ascendant')::float, "
+                "  (chart_data->'houses'->0->>'longitude')::float"
+                ") as ascendant, "
+                "(SELECT (p->>'longitude')::float "
+                "FROM jsonb_array_elements(chart_data->'planets') p "
+                "WHERE p->>'name' = 'Sun' LIMIT 1) as sun_longitude "
+                "FROM birth_charts "
+                "WHERE deleted_at IS NULL "
+                "AND chart_data IS NOT NULL"
+            )
+        )
 
         birth_charts = result.fetchall()
 
@@ -121,7 +125,7 @@ async def recalculate_all_sects():
                         "updated_at = NOW() "
                         "WHERE id = :chart_id"
                     ),
-                    {"chart_id": str(chart_id), "new_sect": f'"{correct_sect}"'}
+                    {"chart_id": str(chart_id), "new_sect": f'"{correct_sect}"'},
                 )
 
                 print(f"  [UPDATED] {name}: {current_sect} -> {correct_sect}")

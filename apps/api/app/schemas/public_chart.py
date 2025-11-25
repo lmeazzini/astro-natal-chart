@@ -44,9 +44,7 @@ class PublicChartUpdate(BaseModel):
     slug: str | None = Field(None, min_length=1, max_length=255, pattern=r"^[a-z0-9-]+$")
     full_name: str | None = Field(None, min_length=1, max_length=255)
     category: str | None = Field(None, max_length=100)
-    birth_datetime: datetime | None = Field(
-        None, description="Birth date and time in ISO format"
-    )
+    birth_datetime: datetime | None = Field(None, description="Birth date and time in ISO format")
     birth_timezone: str | None = Field(
         None, max_length=100, description="Timezone (e.g., America/Sao_Paulo)"
     )

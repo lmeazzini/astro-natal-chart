@@ -1,4 +1,5 @@
 """Search index model for BM25 sparse search."""
+
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -15,14 +16,10 @@ class SearchIndex(Base):
 
     __tablename__ = "search_indices"
 
-    id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
 
     # Index identification
-    index_name: Mapped[str] = mapped_column(
-        String(100), nullable=False, index=True
-    )
+    index_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     index_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default="bm25"
     )  # Future: 'tf-idf', 'bm25plus'
@@ -31,9 +28,7 @@ class SearchIndex(Base):
     document_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), nullable=False, index=True
     )  # References vector_documents.id
-    tokens: Mapped[str] = mapped_column(
-        Text, nullable=False
-    )  # Space-separated tokens
+    tokens: Mapped[str] = mapped_column(Text, nullable=False)  # Space-separated tokens
     token_frequencies: Mapped[dict[str, int]] = mapped_column(
         JSON, default=dict
     )  # {"token": frequency}

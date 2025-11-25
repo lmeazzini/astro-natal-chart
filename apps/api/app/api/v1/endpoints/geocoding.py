@@ -2,7 +2,6 @@
 Geocoding endpoints for location search.
 """
 
-
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import BaseModel
 

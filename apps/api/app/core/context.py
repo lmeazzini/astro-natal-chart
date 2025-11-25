@@ -11,9 +11,7 @@ from typing import Any
 from uuid import uuid4
 
 # Context variable to store request-scoped data
-_request_context: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar(
-    "request_context", default={}
-)
+_request_context: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar("request_context")
 
 
 def set_request_context(**kwargs: Any) -> None:
@@ -26,7 +24,10 @@ def set_request_context(**kwargs: Any) -> None:
     Example:
         set_request_context(request_id="abc123", user_id="user-456")
     """
-    context = _request_context.get().copy()
+    try:
+        context = _request_context.get().copy()
+    except LookupError:
+        context = {}
     context.update(kwargs)
     _request_context.set(context)
 
@@ -42,7 +43,10 @@ def get_request_context() -> dict[str, Any]:
         context = get_request_context()
         request_id = context.get("request_id")
     """
-    return _request_context.get()
+    try:
+        return _request_context.get()
+    except LookupError:
+        return {}
 
 
 def clear_request_context() -> None:

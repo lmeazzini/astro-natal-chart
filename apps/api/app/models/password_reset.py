@@ -34,10 +34,14 @@ class PasswordResetToken(Base):
         nullable=False,
         index=True,
     )
-    token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)  # SHA256 hash
+    token: Mapped[str] = mapped_column(
+        String(64), unique=True, nullable=False, index=True
+    )  # SHA256 hash
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+    )
 
     @property
     def is_valid(self) -> bool:

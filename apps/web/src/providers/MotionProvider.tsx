@@ -17,9 +17,7 @@ export function MotionProvider({ children }: MotionProviderProps) {
     <MotionConfig
       reducedMotion={prefersReducedMotion ? 'always' : 'never'}
       transition={
-        prefersReducedMotion
-          ? { duration: 0 }
-          : { type: 'spring', damping: 20, stiffness: 100 }
+        prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 20, stiffness: 100 }
       }
     >
       {children}

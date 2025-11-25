@@ -46,10 +46,7 @@ export const interpretationsService = {
    * Get all RAG-enhanced interpretations for a birth chart
    */
   async getByChartId(chartId: string, token: string): Promise<RAGInterpretations> {
-    return apiClient.get<RAGInterpretations>(
-      `/api/v1/charts/${chartId}/interpretations`,
-      token
-    );
+    return apiClient.get<RAGInterpretations>(`/api/v1/charts/${chartId}/interpretations`, token);
   },
 
   /**

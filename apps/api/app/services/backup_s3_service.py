@@ -55,9 +55,7 @@ class BackupS3Service:
                 logger.error(f"Failed to initialize Backup S3 client: {e}")
                 self.enabled = False
         else:
-            logger.warning(
-                "[DEV MODE] BackupS3Service not configured - uploads will be simulated"
-            )
+            logger.warning("[DEV MODE] BackupS3Service not configured - uploads will be simulated")
 
     def _build_key(self, filename: str) -> str:
         """
@@ -80,7 +78,9 @@ class BackupS3Service:
         except (IndexError, ValueError):
             # Fallback to current date if filename format unexpected
             date_str = datetime.now(UTC).strftime("%Y%m%d")
-            logger.warning(f"Could not parse date from filename '{filename}', using today: {date_str}")
+            logger.warning(
+                f"Could not parse date from filename '{filename}', using today: {date_str}"
+            )
 
         # Build key: prefix/YYYYMMDD/filename
         parts = [part for part in [self.prefix, date_str, filename] if part]
@@ -355,17 +355,23 @@ class BackupS3Service:
                 except (IndexError, ValueError):
                     date_str = obj["LastModified"].strftime("%Y-%m-%d")
 
-                backups.append({
-                    "filename": filename,
-                    "date": date_str,
-                    "size": obj["Size"],
-                    "url": f"s3://{self.bucket_name}/{key}",
-                    "last_modified": obj["LastModified"],
-                })
+                backups.append(
+                    {
+                        "filename": filename,
+                        "date": date_str,
+                        "size": obj["Size"],
+                        "url": f"s3://{self.bucket_name}/{key}",
+                        "last_modified": obj["LastModified"],
+                    }
+                )
 
             # Sort by last modified (newest first)
             from datetime import datetime as dt
-            backups.sort(key=lambda x: x["last_modified"] if isinstance(x["last_modified"], dt) else dt.min, reverse=True)
+
+            backups.sort(
+                key=lambda x: x["last_modified"] if isinstance(x["last_modified"], dt) else dt.min,
+                reverse=True,
+            )
 
             logger.info(f"Found {len(backups)} backups in S3")
             return backups[:limit]

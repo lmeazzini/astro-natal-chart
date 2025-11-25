@@ -8,7 +8,14 @@ import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import type { RAGSourceInfo } from '../services/interpretations';
 
 // shadcn/ui components
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -31,20 +38,16 @@ interface HouseTableProps {
   ragSources?: Record<string, RAGSourceInfo[]>;
 }
 
-export function HouseTable({
-  houses,
-  interpretations,
-  ragSources,
-}: HouseTableProps) {
+export function HouseTable({ houses, interpretations, ragSources }: HouseTableProps) {
   const { t } = useTranslation();
   const { translateSign } = useAstroTranslation();
 
   // Translation function for house types
   const getHouseTypeTranslated = (type: string) => {
     const typeMap: Record<string, string> = {
-      'Angular': t('components.houseTable.angular', { defaultValue: 'Angular' }),
-      'Succedent': t('components.houseTable.succedent', { defaultValue: 'Sucedente' }),
-      'Cadent': t('components.houseTable.cadent', { defaultValue: 'Cadente' }),
+      Angular: t('components.houseTable.angular', { defaultValue: 'Angular' }),
+      Succedent: t('components.houseTable.succedent', { defaultValue: 'Sucedente' }),
+      Cadent: t('components.houseTable.cadent', { defaultValue: 'Cadente' }),
     };
     return typeMap[type] || type;
   };
@@ -56,9 +59,15 @@ export function HouseTable({
           <TableHeader>
             <TableRow>
               <TableHead>{t('components.houseTable.house', { defaultValue: 'Casa' })}</TableHead>
-              <TableHead>{t('components.houseTable.signOnCusp', { defaultValue: 'Signo na Cúspide' })}</TableHead>
-              <TableHead>{t('components.houseTable.position', { defaultValue: 'Posição' })}</TableHead>
-              <TableHead className="text-center">{t('components.houseTable.type', { defaultValue: 'Tipo' })}</TableHead>
+              <TableHead>
+                {t('components.houseTable.signOnCusp', { defaultValue: 'Signo na Cúspide' })}
+              </TableHead>
+              <TableHead>
+                {t('components.houseTable.position', { defaultValue: 'Posição' })}
+              </TableHead>
+              <TableHead className="text-center">
+                {t('components.houseTable.type', { defaultValue: 'Tipo' })}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -80,9 +89,7 @@ export function HouseTable({
                       >
                         {house.house}
                       </span>
-                      {angular && (
-                        <span className="text-xs text-primary">●</span>
-                      )}
+                      {angular && <span className="text-xs text-primary">●</span>}
                     </div>
                   </TableCell>
 
@@ -100,7 +107,9 @@ export function HouseTable({
 
                   {/* Position (Degree, Minute, Second) */}
                   <TableCell>
-                    <span className={`font-mono ${angular ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <span
+                      className={`font-mono ${angular ? 'text-foreground' : 'text-muted-foreground'}`}
+                    >
                       {formatDMS(house.degree, house.minute, house.second)}
                     </span>
                   </TableCell>
@@ -112,8 +121,8 @@ export function HouseTable({
                         houseType === 'Angular'
                           ? 'default'
                           : houseType === 'Succedent'
-                          ? 'secondary'
-                          : 'outline'
+                            ? 'secondary'
+                            : 'outline'
                       }
                     >
                       {getHouseTypeTranslated(houseType)}
@@ -129,20 +138,41 @@ export function HouseTable({
       {/* Legend */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">{t('components.houseTable.houseTypes', { defaultValue: 'Tipos de Casas' })}</CardTitle>
+          <CardTitle className="text-sm">
+            {t('components.houseTable.houseTypes', { defaultValue: 'Tipos de Casas' })}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <Badge>{t('components.houseTable.angular', { defaultValue: 'Angular' })}</Badge>
-            <span className="text-muted-foreground">(1, 4, 7, 10) - {t('components.houseTable.angularDesc', { defaultValue: 'Casas de ação e iniciativa' })}</span>
+            <span className="text-muted-foreground">
+              (1, 4, 7, 10) -{' '}
+              {t('components.houseTable.angularDesc', {
+                defaultValue: 'Casas de ação e iniciativa',
+              })}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{t('components.houseTable.succedent', { defaultValue: 'Sucedente' })}</Badge>
-            <span className="text-muted-foreground">(2, 5, 8, 11) - {t('components.houseTable.succedentDesc', { defaultValue: 'Casas de recursos e valores' })}</span>
+            <Badge variant="secondary">
+              {t('components.houseTable.succedent', { defaultValue: 'Sucedente' })}
+            </Badge>
+            <span className="text-muted-foreground">
+              (2, 5, 8, 11) -{' '}
+              {t('components.houseTable.succedentDesc', {
+                defaultValue: 'Casas de recursos e valores',
+              })}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">{t('components.houseTable.cadent', { defaultValue: 'Cadente' })}</Badge>
-            <span className="text-muted-foreground">(3, 6, 9, 12) - {t('components.houseTable.cadentDesc', { defaultValue: 'Casas de aprendizado e adaptação' })}</span>
+            <Badge variant="outline">
+              {t('components.houseTable.cadent', { defaultValue: 'Cadente' })}
+            </Badge>
+            <span className="text-muted-foreground">
+              (3, 6, 9, 12) -{' '}
+              {t('components.houseTable.cadentDesc', {
+                defaultValue: 'Casas de aprendizado e adaptação',
+              })}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -151,7 +181,9 @@ export function HouseTable({
       {interpretations && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-foreground">
-            {t('components.houseTable.astrologicalInterpretations', { defaultValue: 'Interpretações Astrológicas' })}
+            {t('components.houseTable.astrologicalInterpretations', {
+              defaultValue: 'Interpretações Astrológicas',
+            })}
           </h3>
 
           <div className="space-y-4">
@@ -167,11 +199,18 @@ export function HouseTable({
                       <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
                         {houseNum}
                       </span>
-                      {t('components.houseTable.houseNumber', { defaultValue: 'Casa {{num}}', num: houseNum })}
+                      {t('components.houseTable.houseNumber', {
+                        defaultValue: 'Casa {{num}}',
+                        num: houseNum,
+                      })}
                       {sources.length > 0 && (
-                        <Badge variant="outline" className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20">
+                        <Badge
+                          variant="outline"
+                          className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
+                        >
                           <BookOpen className="h-3 w-3 mr-1" />
-                          {sources.length} {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
+                          {sources.length}{' '}
+                          {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
                         </Badge>
                       )}
                     </CardTitle>
@@ -185,7 +224,11 @@ export function HouseTable({
                     {sources.length > 0 && (
                       <Collapsible>
                         <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10"
+                          >
                             <span className="flex items-center gap-2">
                               <BookOpen className="h-4 w-4" />
                               {t('chartDetail.rag.sources', { defaultValue: 'Fontes RAG' })}
@@ -196,14 +239,20 @@ export function HouseTable({
                         <CollapsibleContent className="mt-2">
                           <div className="space-y-2 p-3 bg-purple-500/5 rounded-lg border border-purple-500/10">
                             <p className="text-xs text-muted-foreground mb-2">
-                              {t('chartDetail.rag.sourcesDesc', { defaultValue: 'Documentos usados para esta interpretação' })}
+                              {t('chartDetail.rag.sourcesDesc', {
+                                defaultValue: 'Documentos usados para esta interpretação',
+                              })}
                             </p>
                             {sources.map((source, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-2 bg-background rounded border text-xs">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between p-2 bg-background rounded border text-xs"
+                              >
                                 <span className="font-medium text-foreground">{source.source}</span>
                                 {source.page && (
                                   <Badge variant="secondary" className="text-xs">
-                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })} {source.page}
+                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })}{' '}
+                                    {source.page}
                                   </Badge>
                                 )}
                               </div>
@@ -218,7 +267,9 @@ export function HouseTable({
             })}
             {Object.keys(interpretations).length === 0 && (
               <p className="text-center text-muted-foreground py-8">
-                {t('components.houseTable.noInterpretations', { defaultValue: 'Nenhuma interpretação disponível' })}
+                {t('components.houseTable.noInterpretations', {
+                  defaultValue: 'Nenhuma interpretação disponível',
+                })}
               </p>
             )}
           </div>
@@ -226,7 +277,16 @@ export function HouseTable({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>{t('components.houseTable.aboutInterpretations', { defaultValue: 'Sobre as interpretações' })}:</strong> {t('components.houseTable.interpretationsDesc', { defaultValue: 'Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram o signo na cúspide e significado de cada casa.' })}
+              <strong>
+                {t('components.houseTable.aboutInterpretations', {
+                  defaultValue: 'Sobre as interpretações',
+                })}
+                :
+              </strong>{' '}
+              {t('components.houseTable.interpretationsDesc', {
+                defaultValue:
+                  'Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram o signo na cúspide e significado de cada casa.',
+              })}
             </AlertDescription>
           </Alert>
         </div>

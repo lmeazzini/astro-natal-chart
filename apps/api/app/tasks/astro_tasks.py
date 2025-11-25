@@ -41,7 +41,7 @@ def generate_birth_chart_task(self: "Task", chart_id: str) -> dict[str, str]:
     except Exception as exc:
         # Retry with exponential backoff: 60s, 120s, 240s
         logger.error(f"Chart generation failed (attempt {self.request.retries + 1}): {exc}")
-        raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries)) from exc
+        raise self.retry(exc=exc, countdown=60 * (2**self.request.retries)) from exc
 
 
 async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, str]:

@@ -584,6 +584,30 @@
       "aboutInterpretations": "Sobre as interpretações",
       "interpretationsDesc": "Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram a natureza do aspecto e os planetas envolvidos."
     },
+    "chartTooltip": {
+      "position": "Posição",
+      "house": "Casa",
+      "speed": "Velocidade",
+      "dignities": "Dignidades",
+      "score": "Score",
+      "ascendant": "Ascendente",
+      "midheaven": "Meio do Céu",
+      "houseN": "Casa {{n}}",
+      "cusp": "Cúspide",
+      "longitude": "Longitude",
+      "angle": "Ângulo",
+      "orb": "Orbe",
+      "applying": "Aplicando",
+      "harmonic": "Harmônico",
+      "tense": "Tenso",
+      "neutral": "Neutro"
+    },
+    "chartWheel": {
+      "zoomIn": "Ampliar",
+      "zoomOut": "Reduzir",
+      "resetZoom": "Resetar zoom",
+      "dragToPan": "Arraste para mover"
+    },
     "arabicParts": {
       "fortune": "Lote da Fortuna",
       "fortuneDesc": "Corpo, saúde, riqueza material",

@@ -203,7 +203,7 @@ async def test_user_factory(db_session: AsyncSession):
         email_verified: bool = True,
         is_active: bool = True,
         is_superuser: bool = False,
-        role: str = UserRole.GERAL.value,
+        role: str = UserRole.FREE.value,
         **kwargs,
     ) -> User:
         user = User(

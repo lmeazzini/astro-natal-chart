@@ -110,3 +110,7 @@ class RAGInterpretationsResponse(BaseModel):
     documents_used: int = Field(
         default=0, description="Total number of RAG documents used"
     )
+    language: str = Field(
+        default="pt-BR",
+        description="Language code for interpretations (pt-BR or en-US)",
+    )

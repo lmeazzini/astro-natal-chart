@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
 from app.core.dependencies import get_db, require_verified_email
+from app.core.i18n import SUPPORTED_LOCALES, normalize_locale
 from app.models.chart import BirthChart
 from app.models.interpretation import ChartInterpretation
 from app.models.user import User
@@ -92,6 +93,9 @@ async def get_chart_interpretations(
         HTTPException: If chart not found or user unauthorized
     """
     try:
+        # Get user's preferred language
+        user_language = normalize_locale(current_user.locale) or "pt-BR"
+
         # Verify user owns the chart
         chart = await chart_service.get_chart_by_id(
             db=db,
@@ -106,12 +110,18 @@ async def get_chart_interpretations(
             )
 
         # Use RAG-enhanced interpretation service with caching
-        rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
+        rag_service = InterpretationServiceRAG(
+            db, use_cache=True, use_rag=True, language=user_language
+        )
 
-        # Check if RAG interpretations already exist for this chart
+        # Check if RAG interpretations already exist for this chart in user's language
         repo = InterpretationRepository(db)
         existing = await repo.get_by_chart_id(chart_id)
-        rag_existing = [i for i in existing if i.prompt_version == RAG_PROMPT_VERSION]
+        rag_existing = [
+            i for i in existing
+            if i.prompt_version == RAG_PROMPT_VERSION
+            and getattr(i, 'language', 'pt-BR') == user_language
+        ]
 
         if rag_existing:
             # Return existing interpretations from database
@@ -157,10 +167,13 @@ async def get_chart_interpretations(
                 arabic_parts=arabic_parts_data,
                 source="rag",
                 documents_used=total_documents,
+                language=user_language,
             )
 
         # Generate new interpretations and save to DB
-        response = await _generate_rag_interpretations(chart, rag_service, db, save_to_db=True)
+        response = await _generate_rag_interpretations(
+            chart, rag_service, db, save_to_db=True, language=user_language
+        )
 
         logger.info(
             f"Generated RAG interpretations for chart {chart_id} "
@@ -256,6 +269,9 @@ async def regenerate_chart_interpretations(
         HTTPException: If chart not found or user unauthorized
     """
     try:
+        # Get user's preferred language
+        user_language = normalize_locale(current_user.locale) or "pt-BR"
+
         # Verify user owns the chart
         chart = await chart_service.get_chart_by_id(
             db=db,
@@ -271,19 +287,30 @@ async def regenerate_chart_interpretations(
             )
 
         # Use RAG service with cache disabled for regeneration
-        rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+        rag_service = InterpretationServiceRAG(
+            db, use_cache=False, use_rag=True, language=user_language
+        )
 
-        # Delete existing interpretations for this chart
+        # Delete existing interpretations for this chart in user's language
         repo = InterpretationRepository(db)
         existing = await repo.get_by_chart_id(chart_id)
-        for interp in existing:
+        existing_in_language = [
+            i for i in existing
+            if getattr(i, 'language', 'pt-BR') == user_language
+        ]
+        for interp in existing_in_language:
             await repo.delete(interp)
-        if existing:
+        if existing_in_language:
             await db.commit()
-            logger.info(f"Deleted {len(existing)} existing interpretations for chart {chart_id}")
+            logger.info(
+                f"Deleted {len(existing_in_language)} existing interpretations "
+                f"for chart {chart_id} in {user_language}"
+            )
 
         # Generate new interpretations and save to DB
-        response = await _generate_rag_interpretations(chart, rag_service, db, save_to_db=True)
+        response = await _generate_rag_interpretations(
+            chart, rag_service, db, save_to_db=True, language=user_language
+        )
 
         logger.info(
             f"Regenerated RAG interpretations for chart {chart_id} "
@@ -317,12 +344,13 @@ async def regenerate_chart_interpretations(
 # RAG Interpretation Helper Function
 # ============================================================================
 
-
 async def _generate_rag_interpretations(
     chart: BirthChart,
     rag_service: InterpretationServiceRAG,
     db: AsyncSession,
     save_to_db: bool = True,
+    language: str = "pt-BR",
+    generate_all_languages: bool = True,
 ) -> RAGInterpretationsResponse:
     """
     Generate RAG-enhanced interpretations for a birth chart.
@@ -330,14 +358,21 @@ async def _generate_rag_interpretations(
     This helper function contains the common logic for generating RAG interpretations,
     used by both get and regenerate endpoints.
 
+    When generate_all_languages is True (default), it generates interpretations in
+    all supported languages (pt-BR and en-US) so users can switch languages without
+    waiting for regeneration.
+
     Args:
         chart: The birth chart with chart_data
-        rag_service: Configured RAG interpretation service
+        rag_service: Configured RAG interpretation service (used for primary language)
         db: Database session for saving interpretations
         save_to_db: Whether to save interpretations to the database
+        language: Primary language for interpretations ('pt-BR' or 'en-US')
+        generate_all_languages: If True, also generates in other supported languages
 
     Returns:
         RAGInterpretationsResponse with planets, houses, and aspects interpretations
+        (in the primary language specified)
     """
     planets_data: dict[str, InterpretationItem] = {}
     houses_data: dict[str, InterpretationItem] = {}
@@ -409,6 +444,7 @@ async def _generate_rag_interpretations(
                 content=interpretation,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
+                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(planet_interpretation)
@@ -471,6 +507,7 @@ async def _generate_rag_interpretations(
                 content=house_interpretation,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
+                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(house_interpretation_record)
@@ -544,6 +581,7 @@ async def _generate_rag_interpretations(
                 content=interpretation,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
+                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(aspect_interpretation)
@@ -593,6 +631,7 @@ async def _generate_rag_interpretations(
                 content=interpretation,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
+                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
             await repo.create(arabic_part_interpretation)
@@ -603,8 +642,52 @@ async def _generate_rag_interpretations(
         logger.info(
             f"Saved {len(planets_data)} planet, {len(houses_data)} house, "
             f"{len(aspects_data)} aspect, and {len(arabic_parts_data)} Arabic Part "
-            f"RAG interpretations to database for chart {chart.id}"
+            f"RAG interpretations to database for chart {chart.id} ({language})"
         )
+
+    # Generate interpretations in other languages if requested.
+    # This runs after primary language is saved, so failures don't affect the main response.
+    #
+    # PERFORMANCE NOTE: This doubles the OpenAI API calls and response time for first-time
+    # generation. The tradeoff is that users can instantly switch languages without waiting.
+    # For high-traffic scenarios, consider moving secondary language generation to a Celery
+    # background task. Current approach prioritizes UX over response time.
+    if save_to_db and generate_all_languages and repo:
+        other_languages = [lang for lang in SUPPORTED_LOCALES if lang != language]
+        for other_lang in other_languages:
+            try:
+                # Check if interpretations already exist for this language
+                chart_uuid = UUID(str(chart.id))
+                existing = await repo.get_by_chart_id(chart_uuid)
+                existing_in_lang = [
+                    i for i in existing
+                    if i.prompt_version == RAG_PROMPT_VERSION
+                    and getattr(i, 'language', 'pt-BR') == other_lang
+                ]
+
+                if not existing_in_lang:
+                    logger.info(
+                        f"Generating additional interpretations in {other_lang} for chart {chart.id}"
+                    )
+                    # Create a new service instance for the other language
+                    other_lang_service = InterpretationServiceRAG(
+                        db, use_cache=True, use_rag=True, language=other_lang
+                    )
+                    # Generate in other language (don't recurse - set generate_all_languages=False)
+                    await _generate_rag_interpretations(
+                        chart=chart,
+                        rag_service=other_lang_service,
+                        db=db,
+                        save_to_db=True,
+                        language=other_lang,
+                        generate_all_languages=False,  # Prevent infinite recursion
+                    )
+            except Exception as e:
+                # Log error but don't fail the main request - secondary language can be generated later
+                logger.warning(
+                    f"Failed to generate interpretations in {other_lang} for chart {chart.id}: {e}. "
+                    "User can regenerate later by switching language."
+                )
 
     return RAGInterpretationsResponse(
         planets=planets_data,
@@ -613,6 +696,7 @@ async def _generate_rag_interpretations(
         arabic_parts=arabic_parts_data,
         source="rag",
         documents_used=total_documents_used,
+        language=language,
     )
 
 

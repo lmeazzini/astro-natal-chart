@@ -27,6 +27,7 @@ import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { EmailVerificationModal } from '../components/EmailVerificationModal';
+import { InterpretationLanguageNotice } from '../components/InterpretationLanguageNotice';
 import { useEmailVerification } from '../hooks/useEmailVerification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -179,6 +180,30 @@ export function ChartDetailPage() {
       return;
     }
     await loadInterpretations();
+  }
+
+  // Regenerate interpretations (forces new generation, used for language change)
+  async function handleRegenerateInterpretations() {
+    if (!isEmailVerified) {
+      requireEmailVerification(
+        () => {},
+        t('chartDetail.interpretations', { defaultValue: 'AI Interpretations' })
+      );
+      return;
+    }
+
+    try {
+      const token = getToken();
+      if (!token || !id) return;
+
+      setIsLoadingInterpretations(true);
+      const data = await interpretationsService.regenerate(id, token);
+      setInterpretations(data);
+    } catch (err) {
+      console.error('Failed to regenerate interpretations:', err);
+    } finally {
+      setIsLoadingInterpretations(false);
+    }
   }
 
   // Helper to extract content from interpretation item (handles both string and object formats)
@@ -764,6 +789,15 @@ export function ChartDetailPage() {
                         side="right"
                       />
                     </CardDescription>
+                  )}
+                  {interpretations?.language && (
+                    <div className="mt-3">
+                      <InterpretationLanguageNotice
+                        interpretationLanguage={interpretations.language}
+                        onRegenerate={handleRegenerateInterpretations}
+                        isRegenerating={isLoadingInterpretations}
+                      />
+                    </div>
                   )}
                   {!interpretations && !isLoadingInterpretations && !isEmailVerified && (
                     <CardDescription className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400">

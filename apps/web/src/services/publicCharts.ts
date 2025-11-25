@@ -61,6 +61,8 @@ export interface PublicChartInterpretations {
   aspects: Record<string, string>;
   arabic_parts?: Record<string, string>;
   source?: 'standard' | 'rag';
+  /** Language code of the interpretations (e.g., 'pt-BR' or 'en-US') */
+  language?: string;
 }
 
 /**
@@ -158,13 +160,21 @@ export function getCategoryLabel(category: string): string {
 
 /**
  * Get interpretations for a public chart
+ * @param slug - The chart's URL slug
+ * @param lang - Optional language code (e.g., 'pt-BR' or 'en-US')
  */
 export async function getPublicChartInterpretations(
-  slug: string
+  slug: string,
+  lang?: string
 ): Promise<PublicChartInterpretations> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/public-charts/${slug}/interpretations`
-  );
+  const searchParams = new URLSearchParams();
+  if (lang) {
+    searchParams.set('lang', lang);
+  }
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/api/v1/public-charts/${slug}/interpretations${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     if (response.status === 404) {

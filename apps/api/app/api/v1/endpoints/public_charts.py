@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import require_admin
+from app.core.i18n import SUPPORTED_LOCALES, normalize_locale
 from app.core.rate_limit import RateLimits, limiter
 from app.models.public_chart import PublicChart
 from app.models.public_chart_interpretation import PublicChartInterpretation
@@ -166,15 +167,20 @@ async def get_public_chart_interpretations(
     response: Response,
     slug: str,
     db: Annotated[AsyncSession, Depends(get_db)],
+    lang: Annotated[str | None, Query(description="Language: 'pt-BR' or 'en-US'")] = None,
 ) -> ChartInterpretationsResponse:
     """
     Get all interpretations for a public chart by its slug.
 
     - **slug**: URL-friendly identifier (e.g., 'albert-einstein')
+    - **lang**: Language for interpretations (default: 'pt-BR')
 
     Returns interpretations for planets, houses, aspects, and Arabic parts.
-    If interpretations don't exist, they will be generated using RAG-enhanced AI.
+    If interpretations don't exist in the requested language, they will be generated using RAG-enhanced AI.
     """
+    # Normalize language parameter
+    language = normalize_locale(lang) if lang else "pt-BR"
+
     # Get the public chart
     service = PublicChartService(db)
     chart = await service.get_chart_by_slug(slug)
@@ -191,9 +197,10 @@ async def get_public_chart_interpretations(
             detail="Chart data is not available yet.",
         )
 
-    # Check for existing interpretations
+    # Check for existing interpretations in the requested language
     stmt = select(PublicChartInterpretation).where(
-        PublicChartInterpretation.chart_id == chart.id
+        PublicChartInterpretation.chart_id == chart.id,
+        PublicChartInterpretation.language == language,
     )
     result = await db.execute(stmt)
     existing = result.scalars().all()
@@ -216,7 +223,7 @@ async def get_public_chart_interpretations(
                 arabic_parts[interp.subject] = interp.content
 
         logger.info(
-            f"Returning {len(existing)} existing interpretations for public chart {slug}"
+            f"Returning {len(existing)} existing interpretations for public chart {slug} ({language})"
         )
 
         return ChartInterpretationsResponse(
@@ -232,8 +239,9 @@ async def get_public_chart_interpretations(
         interpretations = await _generate_public_chart_interpretations(
             chart=chart,
             db=db,
+            language=language,
         )
-        logger.info(f"Generated new interpretations for public chart {slug}")
+        logger.info(f"Generated new interpretations for public chart {slug} ({language})")
         return interpretations
     except Exception as e:
         logger.error(f"Error generating interpretations for public chart {slug}: {e}")
@@ -246,19 +254,31 @@ async def get_public_chart_interpretations(
 async def _generate_public_chart_interpretations(
     chart: PublicChart,
     db: AsyncSession,
+    language: str = "pt-BR",
+    generate_all_languages: bool = True,
 ) -> ChartInterpretationsResponse:
     """
     Generate RAG-enhanced interpretations for a public chart.
 
     This helper function generates interpretations and saves them to the database.
+    When generate_all_languages is True (default), it generates interpretations in
+    all supported languages (pt-BR and en-US).
+
+    Args:
+        chart: The public chart with chart_data
+        db: Database session
+        language: Primary language for the returned response
+        generate_all_languages: If True, also generates in other supported languages
     """
     planets: dict[str, str] = {}
     houses: dict[str, str] = {}
     aspects: dict[str, str] = {}
     arabic_parts: dict[str, str] = {}
 
-    # Initialize RAG service
-    rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
+    # Initialize RAG service with language
+    rag_service = InterpretationServiceRAG(
+        db, use_cache=True, use_rag=True, language=language
+    )
 
     chart_data = chart.chart_data
     assert chart_data is not None, "chart_data must not be None"
@@ -298,6 +318,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -339,6 +360,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -393,6 +415,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -423,6 +446,7 @@ async def _generate_public_chart_interpretations(
             content=interpretation,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
+            language=language,
         )
         db.add(interp_record)
 
@@ -432,8 +456,46 @@ async def _generate_public_chart_interpretations(
     logger.info(
         f"Saved {len(planets)} planet, {len(houses)} house, "
         f"{len(aspects)} aspect, and {len(arabic_parts)} Arabic Part "
-        f"interpretations for public chart {chart.id}"
+        f"interpretations for public chart {chart.id} ({language})"
     )
+
+    # Generate interpretations in other languages if requested.
+    # This runs after primary language is saved, so failures don't affect the main response.
+    #
+    # PERFORMANCE NOTE: This doubles the OpenAI API calls and response time for first-time
+    # generation. The tradeoff is that users can instantly switch languages without waiting.
+    # For high-traffic scenarios, consider moving secondary language generation to a Celery
+    # background task. Current approach prioritizes UX over response time.
+    if generate_all_languages:
+        other_languages = [lang for lang in SUPPORTED_LOCALES if lang != language]
+        for other_lang in other_languages:
+            try:
+                # Check if interpretations already exist for this language
+                existing_query = select(PublicChartInterpretation).where(
+                    PublicChartInterpretation.chart_id == chart.id,
+                    PublicChartInterpretation.language == other_lang,
+                )
+                result = await db.execute(existing_query)
+                existing_in_lang = result.scalars().all()
+
+                if not existing_in_lang:
+                    logger.info(
+                        f"Generating additional interpretations in {other_lang} "
+                        f"for public chart {chart.id}"
+                    )
+                    # Generate in other language (don't recurse)
+                    await _generate_public_chart_interpretations(
+                        chart=chart,
+                        db=db,
+                        language=other_lang,
+                        generate_all_languages=False,  # Prevent infinite recursion
+                    )
+            except Exception as e:
+                # Log error but don't fail the main request - secondary language can be generated later
+                logger.warning(
+                    f"Failed to generate interpretations in {other_lang} for public chart {chart.id}: {e}. "
+                    "Will be generated on next request in that language."
+                )
 
     return ChartInterpretationsResponse(
         planets=planets,

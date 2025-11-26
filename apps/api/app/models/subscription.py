@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.models.enums import SubscriptionStatus
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -39,10 +40,10 @@ class Subscription(Base):
     # Subscription status
     status: Mapped[str] = mapped_column(
         String(20),
-        default="active",
+        default=SubscriptionStatus.ACTIVE.value,
         nullable=False,
         index=True,
-    )  # Values: "active", "expired", "cancelled"
+    )
 
     # Dates (timezone-aware)
     started_at: Mapped[datetime] = mapped_column(
@@ -76,7 +77,7 @@ class Subscription(Base):
     @property
     def is_active(self) -> bool:
         """Check if subscription is currently active."""
-        if self.status != "active":
+        if self.status != SubscriptionStatus.ACTIVE.value:
             return False
         if self.expires_at is None:
             return True  # Lifetime premium

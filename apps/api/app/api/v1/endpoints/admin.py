@@ -301,18 +301,7 @@ async def grant_subscription(
             admin_id=admin_user.id,
         ).info("Premium subscription granted", days=request.days)
 
-        return SubscriptionRead(
-            id=subscription.id,
-            user_id=subscription.user_id,
-            status=subscription.status,
-            started_at=subscription.started_at,
-            expires_at=subscription.expires_at,
-            created_at=subscription.created_at,
-            updated_at=subscription.updated_at,
-            is_active=subscription.is_active,
-            is_expired=subscription.is_expired,
-            days_remaining=subscription.days_remaining,
-        )
+        return SubscriptionRead.model_validate(subscription)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
 
@@ -369,18 +358,4 @@ async def list_subscriptions(
     subscription_repo = SubscriptionRepository(db)
     subscriptions = await subscription_repo.get_all_active(skip=skip, limit=limit)
 
-    return [
-        SubscriptionRead(
-            id=sub.id,
-            user_id=sub.user_id,
-            status=sub.status,
-            started_at=sub.started_at,
-            expires_at=sub.expires_at,
-            created_at=sub.created_at,
-            updated_at=sub.updated_at,
-            is_active=sub.is_active,
-            is_expired=sub.is_expired,
-            days_remaining=sub.days_remaining,
-        )
-        for sub in subscriptions
-    ]
+    return [SubscriptionRead.model_validate(sub) for sub in subscriptions]

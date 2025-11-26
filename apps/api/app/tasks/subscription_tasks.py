@@ -23,7 +23,7 @@ def check_and_expire_subscriptions() -> dict[str, int | str]:
     3. Downgrades user role from PREMIUM to FREE
     4. Creates audit logs for compliance
 
-    **Scheduling**: Run daily at 3 AM (low traffic period).
+    **Scheduling**: Run daily at 2 AM (low traffic period).
 
     Returns:
         Dict with expiration statistics

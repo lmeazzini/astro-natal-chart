@@ -6,7 +6,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import UserRole
+from app.models.enums import SubscriptionStatus, UserRole
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.repositories.audit_repository import AuditRepository
@@ -51,19 +51,17 @@ async def grant_premium_subscription(
 
     if existing_subscription:
         # Update existing subscription
-        existing_subscription.status = "active"
+        existing_subscription.status = SubscriptionStatus.ACTIVE.value
         existing_subscription.started_at = now
         existing_subscription.expires_at = expires_at
         existing_subscription.updated_at = now
-        await db.commit()
-        await db.refresh(existing_subscription)
         subscription = existing_subscription
         action = "extended"
     else:
         # Create new subscription
         subscription = Subscription(
             user_id=user_id,
-            status="active",
+            status=SubscriptionStatus.ACTIVE.value,
             started_at=now,
             expires_at=expires_at,
         )
@@ -72,9 +70,8 @@ async def grant_premium_subscription(
 
     # Update user role to PREMIUM
     user.role = UserRole.PREMIUM.value
-    await db.commit()
 
-    # Create audit log
+    # Create audit log BEFORE commit (atomic transaction)
     audit_repo = AuditRepository(db)
     await audit_repo.create_log(
         user_id=user_id,
@@ -89,6 +86,10 @@ async def grant_premium_subscription(
             "action": action,
         },
     )
+
+    # Commit everything atomically
+    await db.commit()
+    await db.refresh(subscription)
 
     logger.bind(user_id=user_id, admin_id=admin_user.id).info(
         f"Premium subscription {action}",
@@ -129,15 +130,13 @@ async def revoke_premium_subscription(
         raise ValueError(f"Subscription not found for user {user_id}")
 
     # Update subscription status
-    subscription.status = "cancelled"
+    subscription.status = SubscriptionStatus.CANCELLED.value
     subscription.updated_at = datetime.now(UTC)
 
     # Downgrade user role to FREE
     user.role = UserRole.FREE.value
 
-    await db.commit()
-
-    # Create audit log
+    # Create audit log BEFORE commit (atomic transaction)
     audit_repo = AuditRepository(db)
     await audit_repo.create_log(
         user_id=user_id,
@@ -152,6 +151,9 @@ async def revoke_premium_subscription(
             else None,
         },
     )
+
+    # Commit everything atomically
+    await db.commit()
 
     logger.bind(user_id=user_id, admin_id=admin_user.id).info("Premium subscription revoked")
 
@@ -193,9 +195,11 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
     expired_subscriptions = await subscription_repo.get_expired_subscriptions()
 
     count = 0
+    audit_repo = AuditRepository(db)
+
     for subscription in expired_subscriptions:
         # Update subscription status
-        subscription.status = "expired"
+        subscription.status = SubscriptionStatus.EXPIRED.value
         subscription.updated_at = datetime.now(UTC)
 
         # Downgrade user role to FREE
@@ -203,8 +207,7 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
         if user:
             user.role = UserRole.FREE.value
 
-        # Create audit log
-        audit_repo = AuditRepository(db)
+        # Create audit log (will be committed atomically with all changes)
         await audit_repo.create_log(
             user_id=subscription.user_id,
             action="subscription_expired",
@@ -220,6 +223,7 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
 
         count += 1
 
+    # Commit all changes atomically
     await db.commit()
 
     if count > 0:

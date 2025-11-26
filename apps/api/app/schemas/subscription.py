@@ -23,7 +23,8 @@ class SubscriptionCreate(BaseModel):
     days: int | None = Field(
         None,
         ge=1,
-        description="Number of days for subscription (None = lifetime premium)",
+        le=3650,  # Max 10 years
+        description="Number of days for subscription (None = lifetime premium, max 3650 days)",
     )
 
 

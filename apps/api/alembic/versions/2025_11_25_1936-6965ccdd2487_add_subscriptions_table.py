@@ -52,12 +52,20 @@ def upgrade() -> None:
 
     # Create indexes
     op.create_index(op.f("ix_subscriptions_id"), "subscriptions", ["id"], unique=False)
-    op.create_index(op.f("ix_subscriptions_user_id"), "subscriptions", ["user_id"], unique=True)
-    op.create_index(op.f("ix_subscriptions_status"), "subscriptions", ["status"], unique=False)
+    op.create_index(
+        op.f("ix_subscriptions_user_id"), "subscriptions", ["user_id"], unique=True
+    )
+    op.create_index(
+        op.f("ix_subscriptions_status"), "subscriptions", ["status"], unique=False
+    )
+    op.create_index(
+        op.f("ix_subscriptions_expires_at"), "subscriptions", ["expires_at"], unique=False
+    )
 
 
 def downgrade() -> None:
     """Drop subscriptions table."""
+    op.drop_index(op.f("ix_subscriptions_expires_at"), table_name="subscriptions")
     op.drop_index(op.f("ix_subscriptions_status"), table_name="subscriptions")
     op.drop_index(op.f("ix_subscriptions_user_id"), table_name="subscriptions")
     op.drop_index(op.f("ix_subscriptions_id"), table_name="subscriptions")

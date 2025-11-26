@@ -15,7 +15,7 @@ from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.repositories.user_repository import OAuthAccountRepository
 from app.schemas.password import PasswordChange
-from app.schemas.subscription import UserSubscriptionRead
+from app.schemas.subscription import SubscriptionRead, UserSubscriptionRead
 from app.schemas.user import UserPublicProfile, UserRead, UserUpdate
 from app.schemas.user_activity import UserActivityList
 from app.schemas.user_stats import UserStats
@@ -481,29 +481,14 @@ async def get_my_subscription(
     Returns:
         User subscription status with details if exists
     """
-    from uuid import UUID as PyUUID
-
     subscription = await subscription_service.get_user_subscription(
         db=db,
-        user_id=PyUUID(str(current_user.id)),
+        user_id=UUID(str(current_user.id)),
     )
-
-    from app.schemas.subscription import SubscriptionRead
 
     subscription_data = None
     if subscription:
-        subscription_data = SubscriptionRead(
-            id=subscription.id,
-            user_id=subscription.user_id,
-            status=subscription.status,
-            started_at=subscription.started_at,
-            expires_at=subscription.expires_at,
-            created_at=subscription.created_at,
-            updated_at=subscription.updated_at,
-            is_active=subscription.is_active,
-            is_expired=subscription.is_expired,
-            days_remaining=subscription.days_remaining,
-        )
+        subscription_data = SubscriptionRead.model_validate(subscription)
 
     return UserSubscriptionRead(
         has_subscription=subscription is not None,

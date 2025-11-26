@@ -20,3 +20,19 @@ class UserRole(str, Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+class SubscriptionStatus(str, Enum):
+    """Subscription status values.
+
+    - ACTIVE: Subscription is currently active and valid
+    - EXPIRED: Subscription has passed its expiration date
+    - CANCELLED: Subscription was manually cancelled by admin
+    """
+
+    ACTIVE = "active"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+    def __str__(self) -> str:
+        return self.value

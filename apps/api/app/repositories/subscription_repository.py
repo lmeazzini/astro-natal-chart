@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.enums import SubscriptionStatus
 from app.models.subscription import Subscription
 from app.repositories.base import BaseRepository
 
@@ -25,17 +26,31 @@ class SubscriptionRepository(BaseRepository[Subscription]):
 
     async def get_all_active(self, skip: int = 0, limit: int = 100) -> list[Subscription]:
         """Get all active subscriptions."""
-        stmt = select(Subscription).where(Subscription.status == "active").offset(skip).limit(limit)
+        stmt = (
+            select(Subscription)
+            .where(Subscription.status == SubscriptionStatus.ACTIVE.value)
+            .offset(skip)
+            .limit(limit)
+        )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
     async def get_expired_subscriptions(self) -> list[Subscription]:
-        """Get subscriptions that have expired but status is still 'active'."""
+        """
+        Get subscriptions that have expired but status is still 'active'.
+
+        Uses row-level locking with SKIP LOCKED to prevent race conditions
+        when multiple workers try to process the same subscriptions.
+        """
         now = datetime.now(UTC)
-        stmt = select(Subscription).where(
-            Subscription.status == "active",
-            Subscription.expires_at.isnot(None),
-            Subscription.expires_at < now,
+        stmt = (
+            select(Subscription)
+            .where(
+                Subscription.status == SubscriptionStatus.ACTIVE.value,
+                Subscription.expires_at.isnot(None),
+                Subscription.expires_at < now,
+            )
+            .with_for_update(skip_locked=True)
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

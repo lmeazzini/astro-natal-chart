@@ -74,7 +74,7 @@ class TestGeneratePDFEndpoint:
         )
 
         # get_current_user raises HTTPException with 403 when no auth
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     async def test_generate_pdf_wrong_user(
         self,
@@ -285,7 +285,7 @@ class TestPDFStatusEndpoint:
         )
 
         # get_current_user raises HTTPException with 403 when no auth
-        assert response.status_code == 403
+        assert response.status_code == 401
 
 
 @pytest.mark.asyncio
@@ -406,4 +406,4 @@ class TestDownloadPDFEndpoint:
         )
 
         # get_current_user raises HTTPException with 403 when no auth
-        assert response.status_code == 403
+        assert response.status_code == 401

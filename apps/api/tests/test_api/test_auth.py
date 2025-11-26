@@ -62,11 +62,11 @@ class TestTokenVerify:
         assert response.status_code == 401
 
     async def test_verify_no_token(self, client: AsyncClient):
-        """Test that missing token returns 403 (forbidden)."""
+        """Test that missing token returns 401 (unauthorized)."""
         response = await client.get("/api/v1/auth/verify")
 
-        # FastAPI returns 403 for missing credentials (401 requires WWW-Authenticate header)
-        assert response.status_code == 403
+        # FastAPI HTTPBearer returns 401 for missing credentials
+        assert response.status_code == 401
 
     async def test_verify_returns_correct_expiration(
         self,

@@ -252,13 +252,13 @@ class TestRAGInterpretationsEndpoints:
         client: AsyncClient,
         test_chart_for_user: BirthChart,
     ):
-        """Test unauthorized access returns 403 (no token provided)."""
+        """Test unauthorized request returns 401 (no token provided)."""
         response = await client.get(
             f"/api/v1/charts/{test_chart_for_user.id}/interpretations",
         )
 
         # FastAPI returns 403 when no token is provided via get_current_user dependency
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_get_interpretations_chart_not_found(
@@ -396,13 +396,13 @@ class TestRAGInterpretationsEndpoints:
         client: AsyncClient,
         test_chart_for_user: BirthChart,
     ):
-        """Test unauthorized regeneration returns 403 (no token provided)."""
+        """Test unauthorized request returns 401 (no token provided)."""
         response = await client.post(
             f"/api/v1/charts/{test_chart_for_user.id}/interpretations/regenerate",
         )
 
         # FastAPI returns 403 when no token is provided via get_current_user dependency
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_regenerate_interpretations_chart_not_found(

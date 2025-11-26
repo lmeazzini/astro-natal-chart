@@ -122,7 +122,7 @@ class TestRAGSearch:
         )
 
         # FastAPI returns 403 Forbidden when no authentication is provided
-        assert response.status_code == 403
+        assert response.status_code == 401
 
 
 class TestRAGIngestion:

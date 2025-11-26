@@ -144,11 +144,11 @@ async def test_admin_endpoints_require_auth(client: AsyncClient):
             "longitude": 0,
         },
     )
-    assert response.status_code == 403
+    assert response.status_code == 401
 
     # Try to list admin without auth
     response = await client.get("/api/v1/admin/public-charts")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio

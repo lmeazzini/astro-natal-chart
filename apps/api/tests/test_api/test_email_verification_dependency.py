@@ -307,18 +307,18 @@ class TestRequireVerifiedEmailDependency:
             assert data.get("detail", {}).get("error") != "email_not_verified"
 
     @pytest.mark.asyncio
-    async def test_no_token_returns_403(
+    async def test_no_token_returns_401(
         self,
         client: AsyncClient,
         chart_for_verified_user: BirthChart,
     ):
-        """Test that requests without token return 403."""
+        """Test that requests without token return 401."""
         response = await client.get(
             f"/api/v1/charts/{chart_for_verified_user.id}/interpretations",
         )
 
-        # FastAPI returns 403 when no Bearer token is provided
-        assert response.status_code == 403
+        # FastAPI HTTPBearer returns 401 when no Bearer token is provided
+        assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_error_message_is_translated(

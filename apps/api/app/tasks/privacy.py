@@ -86,25 +86,25 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
             charts_result = await db.execute(
                 delete(BirthChart).where(BirthChart.user_id == user.id)
             )
-            stats["birth_charts_deleted"] += charts_result.rowcount or 0
+            stats["birth_charts_deleted"] += charts_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 2. Deletar contas OAuth
             oauth_result = await db.execute(
                 delete(OAuthAccount).where(OAuthAccount.user_id == user.id)
             )
-            stats["oauth_accounts_deleted"] += oauth_result.rowcount or 0
+            stats["oauth_accounts_deleted"] += oauth_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 3. Deletar consentimentos
             consents_result = await db.execute(
                 delete(UserConsent).where(UserConsent.user_id == user.id)
             )
-            stats["consents_deleted"] += consents_result.rowcount or 0
+            stats["consents_deleted"] += consents_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 4. Deletar tokens de reset
             tokens_result = await db.execute(
                 delete(PasswordResetToken).where(PasswordResetToken.user_id == user.id)
             )
-            stats["password_reset_tokens_deleted"] += tokens_result.rowcount or 0
+            stats["password_reset_tokens_deleted"] += tokens_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 5. Deletar usuário
             await db.delete(user)

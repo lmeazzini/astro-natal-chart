@@ -109,7 +109,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
         stmt = delete(ChartInterpretation).where(ChartInterpretation.chart_id == chart_id)
         result = await self.db.execute(stmt)
         await self.db.commit()
-        return result.rowcount  # type: ignore[return-value]
+        return result.rowcount  # type: ignore[attr-defined, no-any-return]
 
     async def exists_for_chart(self, chart_id: UUID) -> bool:
         """

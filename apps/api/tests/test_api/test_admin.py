@@ -145,8 +145,8 @@ class TestListUsers:
         """Unauthenticated request should be rejected."""
         response = await client.get("/api/v1/admin/users")
 
-        # Without auth header, FastAPI HTTPBearer returns 403 (Forbidden)
-        assert response.status_code == 403
+        # Without auth header, FastAPI HTTPBearer returns 401 (Unauthorized)
+        assert response.status_code == 401
 
     async def test_list_users_pagination(
         self,

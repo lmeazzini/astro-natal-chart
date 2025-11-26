@@ -195,7 +195,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        deleted = result.rowcount > 0
+        deleted: bool = result.rowcount > 0  # type: ignore[attr-defined]
         if deleted:
             logger.info(f"Deleted cache entry {cache_id}")
         return deleted
@@ -217,7 +217,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        count = result.rowcount
+        count: int = result.rowcount  # type: ignore[attr-defined]
         if count > 0:
             logger.info(f"Cleared {count} expired cache entries (TTL: {ttl} days)")
         return count
@@ -240,7 +240,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        count = result.rowcount
+        count: int = result.rowcount  # type: ignore[attr-defined]
         if count > 0:
             logger.info(f"Cleared {count} cache entries for prompt version {prompt_version}")
         return count
@@ -256,7 +256,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        count = result.rowcount
+        count: int = result.rowcount  # type: ignore[attr-defined]
         logger.warning(f"Cleared ALL {count} cache entries")
         return count
 

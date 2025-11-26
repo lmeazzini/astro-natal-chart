@@ -34,6 +34,18 @@ class SubscriptionRevoke(BaseModel):
     user_id: UUID = Field(..., description="User ID to revoke subscription from")
 
 
+class SubscriptionExtend(BaseModel):
+    """Schema for extending an existing subscription (admin only)."""
+
+    user_id: UUID = Field(..., description="User ID whose subscription to extend")
+    extend_days: int = Field(
+        ...,
+        ge=1,
+        le=3650,  # Max 10 years extension
+        description="Number of days to extend the subscription (max 3650 days)",
+    )
+
+
 class SubscriptionRead(SubscriptionBase):
     """Schema for reading subscription data."""
 

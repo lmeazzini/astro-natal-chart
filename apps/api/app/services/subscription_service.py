@@ -158,6 +158,93 @@ async def revoke_premium_subscription(
     logger.bind(user_id=user_id, admin_id=admin_user.id).info("Premium subscription revoked")
 
 
+async def extend_premium_subscription(
+    db: AsyncSession,
+    user_id: UUID,
+    extend_days: int,
+    admin_user: User,
+) -> Subscription:
+    """
+    Extend an existing premium subscription without resetting started_at.
+
+    This is different from grant_premium_subscription which resets the started_at date.
+    Use this when you want to add more time to an existing subscription while preserving
+    the original start date.
+
+    Args:
+        db: Database session
+        user_id: User ID whose subscription to extend
+        extend_days: Number of days to add to the subscription
+        admin_user: Admin user performing the action
+
+    Returns:
+        Updated subscription
+
+    Raises:
+        ValueError: If user not found or subscription doesn't exist
+    """
+    subscription_repo = SubscriptionRepository(db)
+    user_repo = UserRepository(db)
+
+    # Get user
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        raise ValueError(f"User {user_id} not found")
+
+    # Get existing subscription
+    subscription = await subscription_repo.get_by_user_id(user_id)
+    if not subscription:
+        raise ValueError(f"No subscription found for user {user_id}. Use grant instead.")
+
+    # Calculate new expiration date
+    now = datetime.now(UTC)
+    if subscription.expires_at is None:
+        # Lifetime subscription - cannot extend further
+        raise ValueError("Cannot extend lifetime subscription")
+
+    # Extend from current expires_at (if in future) or from now (if expired)
+    base_date = max(subscription.expires_at, now)
+    new_expires_at = base_date + timedelta(days=extend_days)
+
+    # Update subscription
+    old_expires_at = subscription.expires_at
+    subscription.expires_at = new_expires_at
+    subscription.updated_at = now
+
+    # Reactivate if expired or cancelled
+    if subscription.status != SubscriptionStatus.ACTIVE.value:
+        subscription.status = SubscriptionStatus.ACTIVE.value
+        user.role = UserRole.PREMIUM.value
+
+    # Create audit log BEFORE commit (atomic transaction)
+    audit_repo = AuditRepository(db)
+    await audit_repo.create_log(
+        user_id=user_id,
+        action="subscription_extended",
+        resource_type="subscription",
+        resource_id=subscription.id,
+        extra_data={
+            "admin_id": str(admin_user.id),
+            "admin_email": admin_user.email,
+            "extend_days": extend_days,
+            "old_expires_at": old_expires_at.isoformat(),
+            "new_expires_at": new_expires_at.isoformat(),
+        },
+    )
+
+    # Commit everything atomically
+    await db.commit()
+    await db.refresh(subscription)
+
+    logger.bind(user_id=user_id, admin_id=admin_user.id).info(
+        f"Premium subscription extended by {extend_days} days",
+        old_expires_at=old_expires_at,
+        new_expires_at=new_expires_at,
+    )
+
+    return subscription
+
+
 async def get_user_subscription(
     db: AsyncSession,
     user_id: UUID,

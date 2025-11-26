@@ -23,7 +23,12 @@ from app.schemas.admin import (
     UpdateUserRoleRequest,
     UpdateUserRoleResponse,
 )
-from app.schemas.subscription import SubscriptionCreate, SubscriptionRead, SubscriptionRevoke
+from app.schemas.subscription import (
+    SubscriptionCreate,
+    SubscriptionExtend,
+    SubscriptionRead,
+    SubscriptionRevoke,
+)
 from app.services import subscription_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -337,6 +342,55 @@ async def revoke_subscription(
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.patch(
+    "/subscriptions/extend",
+    response_model=SubscriptionRead,
+    summary="Extend premium subscription",
+    description="**Admin only**. Extend an existing subscription without resetting the start date.",
+    responses={
+        403: {"description": "Admin privileges required"},
+        404: {"description": "User or subscription not found"},
+        400: {"description": "Cannot extend lifetime subscription"},
+    },
+)
+@limiter.limit(RateLimits.ADMIN_ROLE_UPDATE)
+async def extend_subscription(
+    request: SubscriptionExtend,
+    admin_user: User = Depends(require_verified_admin),
+    db: AsyncSession = Depends(get_db),
+) -> SubscriptionRead:
+    """
+    Extend an existing premium subscription (admin only).
+
+    This endpoint extends the expiration date without resetting the started_at date.
+    Use this when you want to add more time to an existing subscription.
+
+    - If subscription is active: extends from current expires_at
+    - If subscription is expired: extends from now and reactivates
+    - If subscription is cancelled: extends from now and reactivates
+    """
+    try:
+        subscription = await subscription_service.extend_premium_subscription(
+            db=db,
+            user_id=request.user_id,
+            extend_days=request.extend_days,
+            admin_user=admin_user,
+        )
+
+        logger.bind(
+            user_id=request.user_id,
+            admin_id=admin_user.id,
+        ).info("Premium subscription extended", extend_days=request.extend_days)
+
+        return SubscriptionRead.model_validate(subscription)
+    except ValueError as e:
+        # Determine appropriate status code based on error message
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        else:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.get(

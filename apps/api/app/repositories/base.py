@@ -13,7 +13,7 @@ from app.core.database import Base
 ModelType = TypeVar("ModelType", bound=Base)
 
 
-class BaseRepository(Generic[ModelType]):
+class BaseRepository(Generic[ModelType]):  # noqa: UP046
     """Base repository class with common database operations."""
 
     def __init__(self, model: type[ModelType], db: AsyncSession):

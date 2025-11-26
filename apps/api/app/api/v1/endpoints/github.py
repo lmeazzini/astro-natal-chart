@@ -60,7 +60,7 @@ def _get_redis_pool() -> aioredis.ConnectionPool:
 
 
 @asynccontextmanager
-async def get_redis_client() -> AsyncGenerator[Redis | None, None]:
+async def get_redis_client() -> AsyncGenerator[Redis | None, None]:  # type: ignore[misc]  # noqa: UP043
     """Get Redis client from connection pool with automatic cleanup."""
     try:
         pool = _get_redis_pool()

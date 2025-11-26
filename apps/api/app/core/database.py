@@ -35,7 +35,7 @@ class Base(DeclarativeBase):
     pass
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:  # type: ignore[misc]  # noqa: UP043
     """
     Dependency to get database session.
 

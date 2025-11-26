@@ -71,7 +71,7 @@ async def setup_test_database():
 
 
 @pytest.fixture
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
+async def db_session() -> AsyncGenerator[AsyncSession, None]:  # type: ignore[misc]  # noqa: UP043
     """
     Create a clean database session for each test.
 
@@ -129,7 +129,7 @@ async def reset_rate_limits():
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:  # type: ignore[misc]  # noqa: UP043
     """
     Create an async HTTP client for testing.
 

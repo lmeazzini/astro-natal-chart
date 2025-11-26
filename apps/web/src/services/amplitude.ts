@@ -96,14 +96,13 @@ class AmplitudeService {
   /**
    * Flush pending events (useful for testing and page navigation).
    */
-  flush(): Promise<void> {
+  async flush(): Promise<void> {
     if (!this.initialized) return Promise.resolve();
 
     try {
-      return amplitude.flush();
+      await amplitude.flush();
     } catch (error) {
       console.error('[Amplitude] Failed to flush events:', error);
-      return Promise.resolve();
     }
   }
 }

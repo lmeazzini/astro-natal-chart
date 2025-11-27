@@ -226,16 +226,19 @@ async def get_chart_interpretations(
                 f"(user: {current_user.email}, documents used: {response.metadata.documents_used})"
             )
 
-        # Handle growth suggestions AFTER main response is created
+        # Commit the main transaction before handling growth suggestions
+        # This ensures no session conflicts when creating a new session for growth
+        await db.commit()
+
+        # Handle growth suggestions AFTER main transaction is committed
         # This runs for both existing and new interpretations
         if "growth" in regenerate_types:
             logger.info(f"Generating growth suggestions for chart {chart_id}")
 
-            # Create a new independent database session for growth generation
-            # This prevents "another operation is in progress" errors with AsyncPG
-            async with AsyncSessionLocal() as growth_db:
-                try:
-                    # Pass new db session for dual persistence (cache + database)
+            try:
+                # Create a new independent database session for growth generation
+                # Safe to do this now since main transaction is committed
+                async with AsyncSessionLocal() as growth_db:
                     growth_service = PersonalGrowthService(language=user_language, db=growth_db)
                     growth_dict = await growth_service.generate_growth_suggestions(
                         chart_data=chart.chart_data,
@@ -249,10 +252,10 @@ async def get_chart_interpretations(
                     # Update metadata to reflect growth generation
                     response.metadata.rag_generations += 1
                     logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
-                except Exception as e:
-                    logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
-                    await growth_db.rollback()
-                    response.growth = None
+            except Exception as e:
+                logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
+                # Set growth to None on error - don't let it bubble up to fail the whole request
+                response.growth = None
 
         return response
 

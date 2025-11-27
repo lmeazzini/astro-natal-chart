@@ -19,11 +19,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getToken } from '@/services/api';
-import { interpretationsService, type GrowthSuggestionsData } from '@/services/interpretations';
+import {
+  interpretationsService,
+  type GrowthSuggestionsData,
+  type InterpretationItem,
+} from '@/services/interpretations';
 
 interface GrowthSuggestionsProps {
   chartId: string;
-  initialGrowth?: GrowthSuggestionsData | null;
+  initialGrowth?: Record<string, InterpretationItem> | null;
 }
 
 interface CollapsibleSectionProps {
@@ -53,10 +57,42 @@ function CollapsibleSection({ title, children, defaultOpen = true }: Collapsible
   );
 }
 
+/**
+ * Convert growth interpretation items to GrowthSuggestionsData structure
+ */
+function parseGrowthItems(
+  growthItems: Record<string, InterpretationItem> | null
+): GrowthSuggestionsData | null {
+  if (!growthItems || Object.keys(growthItems).length === 0) {
+    return null;
+  }
+
+  try {
+    // Parse each component from JSON content
+    const points = growthItems.points ? JSON.parse(growthItems.points.content) : [];
+    const challenges = growthItems.challenges ? JSON.parse(growthItems.challenges.content) : [];
+    const opportunities = growthItems.opportunities
+      ? JSON.parse(growthItems.opportunities.content)
+      : [];
+    const purpose = growthItems.purpose ? JSON.parse(growthItems.purpose.content) : null;
+
+    return {
+      growth_points: points,
+      challenges,
+      opportunities,
+      purpose,
+      summary: '',
+    };
+  } catch (error) {
+    console.error('Error parsing growth items:', error);
+    return null;
+  }
+}
+
 export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsProps) {
   const { t } = useTranslation();
   const [suggestions, setSuggestions] = useState<GrowthSuggestionsData | null>(
-    initialGrowth ?? null
+    parseGrowthItems(initialGrowth ?? null)
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +101,8 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
   // Initialize suggestions from prop when available
   useEffect(() => {
     if (initialGrowth) {
-      setSuggestions(initialGrowth);
+      const parsed = parseGrowthItems(initialGrowth);
+      setSuggestions(parsed);
     }
     setInitialLoad(false);
   }, [initialGrowth]);
@@ -88,8 +125,9 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
       // Use unified interpretations endpoint with regenerate parameter for growth only
       const data = await interpretationsService.regenerate(chartId, token, ['growth']);
 
-      if (data.growth) {
-        setSuggestions(data.growth);
+      if (data.growth && Object.keys(data.growth).length > 0) {
+        const parsed = parseGrowthItems(data.growth);
+        setSuggestions(parsed);
       } else {
         setError(
           t('growth.errors.generateFailed', { defaultValue: 'Failed to generate suggestions' })

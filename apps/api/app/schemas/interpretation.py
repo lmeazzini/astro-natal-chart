@@ -169,8 +169,9 @@ class RAGInterpretationsResponse(BaseModel):
         default_factory=dict,
         description="Arabic Parts interpretations with metadata (fortune, spirit, eros, necessity)",
     )
-    growth: GrowthSuggestionsData | None = Field(
-        default=None, description="Personal growth suggestions"
+    growth: dict[str, InterpretationItem] = Field(
+        default_factory=dict,
+        description="Growth interpretations (points, challenges, opportunities, purpose)",
     )
     metadata: InterpretationMetadata = Field(
         default_factory=InterpretationMetadata, description="Generation metadata and statistics"

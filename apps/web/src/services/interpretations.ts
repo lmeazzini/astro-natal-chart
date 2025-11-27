@@ -92,7 +92,7 @@ export interface UnifiedInterpretationsResponse {
   houses: Record<string, InterpretationItem>;
   aspects: Record<string, InterpretationItem>;
   arabic_parts: Record<string, InterpretationItem>;
-  growth: GrowthSuggestionsData | null;
+  growth: Record<string, InterpretationItem>;
   metadata: InterpretationMetadata;
   language: string;
 }

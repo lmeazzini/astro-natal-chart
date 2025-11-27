@@ -20,7 +20,6 @@ from app.models.interpretation import ChartInterpretation
 from app.models.user import User
 from app.repositories.interpretation_repository import InterpretationRepository
 from app.schemas.interpretation import (
-    GrowthSuggestionsData,
     InterpretationItem,
     InterpretationMetadata,
     RAGInterpretationsResponse,
@@ -144,7 +143,7 @@ async def get_chart_interpretations(
             houses_data: dict[str, InterpretationItem] = {}
             aspects_data: dict[str, InterpretationItem] = {}
             arabic_parts_data: dict[str, InterpretationItem] = {}
-            growth_components: dict[str, Any] = {}  # Store growth components
+            growth_data: dict[str, InterpretationItem] = {}
 
             total_documents = 0
             for interp in rag_existing:
@@ -171,17 +170,8 @@ async def get_chart_interpretations(
                 elif interp.interpretation_type == "arabic_part":
                     arabic_parts_data[interp.subject] = item
                 elif interp.interpretation_type == "growth":
-                    # Load growth components from database
-                    # subject determines the component: points, challenges, opportunities, purpose
-                    content_data = json.loads(interp.content)
-                    if interp.subject == "points":
-                        growth_components["growth_points"] = content_data
-                    elif interp.subject == "challenges":
-                        growth_components["challenges"] = content_data
-                    elif interp.subject == "opportunities":
-                        growth_components["opportunities"] = content_data
-                    elif interp.subject == "purpose":
-                        growth_components["purpose"] = content_data
+                    # Load growth interpretations (points, challenges, opportunities, purpose)
+                    growth_data[interp.subject] = item
 
             # Build metadata
             metadata = InterpretationMetadata(
@@ -195,24 +185,12 @@ async def get_chart_interpretations(
                 response_time_ms=0,
             )
 
-            # Reconstruct growth data from components if all 4 are present
-            growth_data = None
-            if len(growth_components) == 4:
-                growth_data = GrowthSuggestionsData(
-                    growth_points=growth_components["growth_points"],
-                    challenges=growth_components["challenges"],
-                    opportunities=growth_components["opportunities"],
-                    purpose=growth_components["purpose"],
-                    summary=None,  # Summary is optional
-                )
-                logger.info(f"Loaded growth suggestions from database for chart {chart_id}")
-
             response = RAGInterpretationsResponse(
                 planets=planets_data,
                 houses=houses_data,
                 aspects=aspects_data,
                 arabic_parts=arabic_parts_data,
-                growth=growth_data,  # Include loaded growth data
+                growth=growth_data,
                 metadata=metadata,
                 language=user_language,
             )
@@ -248,15 +226,38 @@ async def get_chart_interpretations(
                     # Commit the growth session
                     await growth_db.commit()
 
-                    # Convert dict to Pydantic model
-                    response.growth = GrowthSuggestionsData(**growth_dict)
+                    # Convert growth dict to InterpretationItems and add to response
+                    # Map the keys from growth_dict to subject names
+                    growth_items = {
+                        "points": InterpretationItem(
+                            content=json.dumps(growth_dict["growth_points"], ensure_ascii=False),
+                            source="rag",
+                            rag_sources=[],
+                        ),
+                        "challenges": InterpretationItem(
+                            content=json.dumps(growth_dict["challenges"], ensure_ascii=False),
+                            source="rag",
+                            rag_sources=[],
+                        ),
+                        "opportunities": InterpretationItem(
+                            content=json.dumps(growth_dict["opportunities"], ensure_ascii=False),
+                            source="rag",
+                            rag_sources=[],
+                        ),
+                        "purpose": InterpretationItem(
+                            content=json.dumps(growth_dict["purpose"], ensure_ascii=False),
+                            source="rag",
+                            rag_sources=[],
+                        ),
+                    }
+                    response.growth = growth_items
                     # Update metadata to reflect growth generation
                     response.metadata.rag_generations += 1
                     logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
             except Exception as e:
                 logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
-                # Set growth to None on error - don't let it bubble up to fail the whole request
-                response.growth = None
+                # Set growth to empty dict on error - don't let it bubble up to fail the whole request
+                response.growth = {}
 
         return response
 

@@ -170,16 +170,17 @@ async def get_chart_interpretations(
                     aspects_data[interp.subject] = item
                 elif interp.interpretation_type == "arabic_part":
                     arabic_parts_data[interp.subject] = item
-                elif interp.interpretation_type.startswith("growth_"):
+                elif interp.interpretation_type == "growth":
                     # Load growth components from database
+                    # subject determines the component: points, challenges, opportunities, purpose
                     content_data = json.loads(interp.content)
-                    if interp.interpretation_type == "growth_points":
+                    if interp.subject == "points":
                         growth_components["growth_points"] = content_data
-                    elif interp.interpretation_type == "growth_challenges":
+                    elif interp.subject == "challenges":
                         growth_components["challenges"] = content_data
-                    elif interp.interpretation_type == "growth_opportunities":
+                    elif interp.subject == "opportunities":
                         growth_components["opportunities"] = content_data
-                    elif interp.interpretation_type == "growth_purpose":
+                    elif interp.subject == "purpose":
                         growth_components["purpose"] = content_data
 
             # Build metadata

@@ -756,22 +756,23 @@ IMPORTANT:
         # Delete old growth interpretations for this chart (if regenerating)
         existing = await repo.get_by_chart_id(chart_id)
         for interp in existing:
-            if interp.interpretation_type.startswith("growth_"):
+            if interp.interpretation_type == "growth":
                 await repo.delete(interp)
 
         # Save each component as separate row
+        # interpretation_type = "growth" for all, subject varies by component
         components_map = {
-            "growth_points": growth_data["growth_points"],
-            "growth_challenges": growth_data["challenges"],
-            "growth_opportunities": growth_data["opportunities"],
-            "growth_purpose": growth_data["purpose"],
+            "points": growth_data["growth_points"],
+            "challenges": growth_data["challenges"],
+            "opportunities": growth_data["opportunities"],
+            "purpose": growth_data["purpose"],
         }
 
-        for interpretation_type, content_data in components_map.items():
+        for subject, content_data in components_map.items():
             interpretation = ChartInterpretation(
                 chart_id=chart_id,
-                interpretation_type=interpretation_type,
-                subject="growth_analysis",
+                interpretation_type="growth",
+                subject=subject,
                 content=json.dumps(content_data, ensure_ascii=False),
                 language=self.language,
                 openai_model=self.model,

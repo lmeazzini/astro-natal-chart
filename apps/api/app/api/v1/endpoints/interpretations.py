@@ -767,7 +767,7 @@ async def _generate_rag_interpretations(
         houses=houses_data,
         aspects=aspects_data,
         arabic_parts=arabic_parts_data,
-        growth=None,  # Growth not generated in this path
+        growth={},  # Growth not generated in this path
         metadata=InterpretationMetadata(
             total_items=(
                 len(planets_data) + len(houses_data) + len(aspects_data) + len(arabic_parts_data)

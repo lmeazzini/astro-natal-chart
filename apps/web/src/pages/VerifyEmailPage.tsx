@@ -7,6 +7,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Logo } from '../components/Logo';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,9 @@ export function VerifyEmailPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
 
+  // Track page view
+  useAmplitudePageView('Email Verification Page');
+
   const [state, setState] = useState<VerificationState>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [userName, setUserName] = useState('');
@@ -37,6 +42,11 @@ export function VerifyEmailPage() {
     async (verificationToken: string) => {
       try {
         setState('loading');
+
+        // Track email verification attempt
+        amplitudeService.track('email_verification_attempted', {
+          source: 'email_verification_page',
+        });
 
         const response = await fetch(`${API_URL}/api/v1/auth/verify-email/${verificationToken}`, {
           method: 'GET',
@@ -47,6 +57,13 @@ export function VerifyEmailPage() {
 
         if (!response.ok) {
           const error = await response.json();
+
+          // Track verification failure
+          amplitudeService.track('email_verification_failed', {
+            error_type: 'api_error',
+            source: 'email_verification_page',
+          });
+
           throw new Error(error.detail || t('auth.verifyEmail.error'));
         }
 
@@ -54,12 +71,24 @@ export function VerifyEmailPage() {
         setUserName(user.full_name || '');
         setState('success');
 
+        // Track successful email verification
+        amplitudeService.track('email_verified', {
+          source: 'email_verification_page',
+        });
+
         // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/login');
         }, 3000);
       } catch (error) {
         setState('error');
+
+        // Track verification error
+        amplitudeService.track('email_verification_failed', {
+          error_type: error instanceof Error ? error.name : 'unknown_error',
+          source: 'email_verification_page',
+        });
+
         if (error instanceof Error) {
           setErrorMessage(error.message);
         } else {
@@ -72,6 +101,12 @@ export function VerifyEmailPage() {
 
   useEffect(() => {
     if (!token) {
+      // Track invalid token access
+      amplitudeService.track('email_verification_failed', {
+        error_type: 'token_missing',
+        source: 'email_verification_page',
+      });
+
       setState('error');
       setErrorMessage(t('auth.verifyEmail.invalidToken'));
       return;

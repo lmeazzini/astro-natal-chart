@@ -327,8 +327,26 @@ async def verify_email(
     """
     try:
         user = await auth_service.verify_email(db, token)
+
+        # Track successful email verification
+        amplitude_service.track(
+            event_type="email_verified",
+            user_id=str(user.id),
+            event_properties={
+                "method": "email_link",
+            },
+        )
+
         return user
     except auth_service.AuthenticationError as e:
+        # Track email verification failure
+        amplitude_service.track(
+            event_type="email_verification_failed",
+            event_properties={
+                "error_type": "invalid_or_expired_token",
+            },
+        )
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -363,8 +381,27 @@ async def resend_verification_email(
     """
     try:
         await auth_service.resend_verification_email(db, current_user)
+
+        # Track verification email resend
+        amplitude_service.track(
+            event_type="verification_email_resent",
+            user_id=str(current_user.id),
+            event_properties={
+                "method": "user_request",
+            },
+        )
+
         return {"message": "Verification email sent successfully"}
     except auth_service.AuthenticationError as e:
+        # Track verification email resend failure
+        amplitude_service.track(
+            event_type="verification_email_resend_failed",
+            user_id=str(current_user.id),
+            event_properties={
+                "error_type": type(e).__name__,
+            },
+        )
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),

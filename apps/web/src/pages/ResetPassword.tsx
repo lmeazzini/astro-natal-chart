@@ -9,6 +9,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -31,6 +33,9 @@ type ResetPasswordValues = {
 
 export function ResetPasswordPage() {
   const { t } = useTranslation();
+
+  // Track page view
+  useAmplitudePageView('Reset Password Page');
 
   // Zod schema inside component to access t()
   const resetPasswordSchema = z
@@ -78,7 +83,18 @@ export function ResetPasswordPage() {
   useEffect(() => {
     // Check if token exists
     if (!token) {
+      // Track invalid token access
+      amplitudeService.track('password_reset_failed', {
+        error_type: 'token_missing',
+        source: 'reset_password_page',
+      });
+
       setGeneralError(t('auth.resetPassword.invalidToken'));
+    } else {
+      // Track successful token access (reset link clicked)
+      amplitudeService.track('password_reset_link_accessed', {
+        source: 'reset_password_page',
+      });
     }
   }, [token, t]);
 
@@ -87,6 +103,12 @@ export function ResetPasswordPage() {
     setSuccessMessage('');
 
     if (!token) {
+      // Track token not found error
+      amplitudeService.track('password_reset_failed', {
+        error_type: 'token_not_found',
+        source: 'reset_password_page',
+      });
+
       setGeneralError(
         t('auth.resetPassword.tokenNotFound', {
           defaultValue: 'Token de recuperação não encontrado',
@@ -95,19 +117,41 @@ export function ResetPasswordPage() {
       return;
     }
 
+    // Track form submission
+    amplitudeService.track('password_reset_form_submitted', {
+      source: 'reset_password_page',
+    });
+
     try {
       const response = await passwordResetService.confirmReset(token, values.password);
 
       if (response.success) {
+        // Track successful password reset
+        amplitudeService.track('password_reset_completed', {
+          source: 'reset_password_page',
+        });
+
         setSuccessMessage(response.message);
         // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/login');
         }, 3000);
       } else {
+        // Track reset failure
+        amplitudeService.track('password_reset_failed', {
+          error_type: 'reset_failed',
+          source: 'reset_password_page',
+        });
+
         setGeneralError(response.message);
       }
     } catch (error) {
+      // Track error
+      amplitudeService.track('password_reset_failed', {
+        error_type: error instanceof Error ? error.name : 'unknown_error',
+        source: 'reset_password_page',
+      });
+
       setGeneralError(error instanceof Error ? error.message : t('auth.resetPassword.error'));
     }
   }

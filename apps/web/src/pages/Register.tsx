@@ -14,6 +14,8 @@ import { Logo } from '../components/Logo';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Eye, EyeOff } from 'lucide-react';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -50,6 +52,9 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const { t } = useTranslation();
+
+  // Track page view
+  useAmplitudePageView('Register Page');
 
   // Complex password validation schema (inside component to access t())
   const registerFormSchema = z
@@ -126,12 +131,23 @@ export function RegisterPage() {
   }
 
   function handleOAuthLogin(provider: string) {
+    // Track OAuth registration initiated
+    amplitudeService.track('oauth_login_initiated', {
+      provider: provider,
+      source: 'register_page',
+    });
+
     oauthService.initiateLogin(provider);
   }
 
   async function onSubmit(data: RegisterFormValues) {
     setGeneralError('');
     setIsLoading(true);
+
+    // Track form submission
+    amplitudeService.track('registration_form_submitted', {
+      source: 'register_page',
+    });
 
     try {
       await register(
@@ -143,6 +159,12 @@ export function RegisterPage() {
       );
       navigate('/dashboard');
     } catch (error) {
+      // Track registration failure
+      amplitudeService.track('registration_failed', {
+        error_type: error instanceof Error ? error.name : 'unknown_error',
+        source: 'register_page',
+      });
+
       setGeneralError(error instanceof Error ? error.message : t('auth.register.error'));
     } finally {
       setIsLoading(false);

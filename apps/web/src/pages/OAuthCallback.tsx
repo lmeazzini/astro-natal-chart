@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { amplitudeService } from '../services/amplitude';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
@@ -29,6 +30,11 @@ export function OAuthCallbackPage() {
       const tokens = oauthService.parseCallbackParams();
 
       if (!tokens || !tokens.access_token || !tokens.refresh_token) {
+        // Track OAuth failure
+        amplitudeService.track('oauth_login_failed', {
+          error_type: 'tokens_not_found',
+        });
+
         setError(
           t('pages.oauthCallback.tokensNotFound', {
             defaultValue: 'Falha na autenticação OAuth. Tokens não encontrados.',
@@ -49,6 +55,11 @@ export function OAuthCallbackPage() {
       });
 
       if (!response.ok) {
+        // Track OAuth failure
+        amplitudeService.track('oauth_login_failed', {
+          error_type: 'user_fetch_failed',
+        });
+
         throw new Error(
           t('pages.oauthCallback.userFetchFailed', {
             defaultValue: 'Falha ao buscar dados do usuário',
@@ -59,9 +70,21 @@ export function OAuthCallbackPage() {
       const userData = await response.json();
       setUser(userData);
 
+      // Track OAuth success (backend will also track)
+      // Note: Backend tracks with user_id, this is just for frontend funnel
+      // Provider info is not available in the tokens, but backend will track it
+      amplitudeService.track('oauth_login_completed', {
+        provider: 'unknown', // Provider info not passed from backend in callback URL
+      });
+
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
+      // Track generic OAuth failure
+      amplitudeService.track('oauth_login_failed', {
+        error_type: err instanceof Error ? err.name : 'unknown_error',
+      });
+
       setError(
         err instanceof Error
           ? err.message

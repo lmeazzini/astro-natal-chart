@@ -14,6 +14,8 @@ import { oauthService, OAuthProvider } from '../services/oauth';
 import { Logo } from '../components/Logo';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -46,6 +48,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { t } = useTranslation();
+
+  // Track page view
+  useAmplitudePageView('Login Page');
 
   // Form validation schema (must be inside component to access t())
   const loginFormSchema = z.object({
@@ -83,6 +88,12 @@ export function LoginPage() {
   }
 
   function handleOAuthLogin(provider: string) {
+    // Track OAuth login initiated
+    amplitudeService.track('oauth_login_initiated', {
+      provider: provider,
+      source: 'login_page',
+    });
+
     oauthService.initiateLogin(provider);
   }
 
@@ -90,10 +101,21 @@ export function LoginPage() {
     setGeneralError('');
     setIsLoading(true);
 
+    // Track form submission
+    amplitudeService.track('login_form_submitted', {
+      source: 'login_page',
+    });
+
     try {
       await login(data.email, data.password);
       navigate('/dashboard');
     } catch (error) {
+      // Track login failure
+      amplitudeService.track('login_failed', {
+        error_type: error instanceof Error ? error.name : 'unknown_error',
+        source: 'login_page',
+      });
+
       setGeneralError(error instanceof Error ? error.message : t('auth.login.error'));
     } finally {
       setIsLoading(false);

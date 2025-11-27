@@ -9,6 +9,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -30,6 +32,9 @@ type ForgotPasswordValues = {
 export function ForgotPasswordPage() {
   const { t } = useTranslation();
 
+  // Track page view
+  useAmplitudePageView('Forgot Password Page');
+
   // Zod schema inside component to access t()
   const forgotPasswordSchema = z.object({
     email: z.string().min(1, t('validation.required')).email(t('validation.email')),
@@ -48,16 +53,38 @@ export function ForgotPasswordPage() {
     setGeneralError('');
     setSuccessMessage('');
 
+    // Track password reset request
+    amplitudeService.track('password_reset_requested', {
+      source: 'forgot_password_page',
+    });
+
     try {
       const response = await passwordResetService.requestReset(values.email);
 
       if (response.success) {
+        // Track success (email sent)
+        amplitudeService.track('password_reset_email_sent', {
+          source: 'forgot_password_page',
+        });
+
         setSuccessMessage(response.message);
         form.reset();
       } else {
+        // Track failure
+        amplitudeService.track('password_reset_failed', {
+          error_type: 'request_failed',
+          source: 'forgot_password_page',
+        });
+
         setGeneralError(response.message);
       }
     } catch (error) {
+      // Track error
+      amplitudeService.track('password_reset_failed', {
+        error_type: error instanceof Error ? error.name : 'unknown_error',
+        source: 'forgot_password_page',
+      });
+
       setGeneralError(error instanceof Error ? error.message : t('auth.forgotPassword.error'));
     }
   }

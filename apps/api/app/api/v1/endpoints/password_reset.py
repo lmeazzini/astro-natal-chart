@@ -13,6 +13,7 @@ from app.schemas.auth import (
     PasswordResetResponse,
 )
 from app.services.password_reset import PasswordResetService
+from app.services.amplitude_service import amplitude_service
 
 router = APIRouter(prefix="/password-reset", tags=["Password Reset"])
 
@@ -45,6 +46,22 @@ async def request_password_reset(
     """
     service = PasswordResetService()
     result = await service.request_password_reset(db, request.email)
+
+    # Track password reset request (success or not)
+    if result["success"]:
+        amplitude_service.track(
+            event_type="password_reset_email_sent",
+            event_properties={
+                "method": "email_request",
+            },
+        )
+    else:
+        amplitude_service.track(
+            event_type="password_reset_failed",
+            event_properties={
+                "error_type": "request_failed",
+            },
+        )
 
     return PasswordResetResponse(
         message=result["message"],
@@ -82,11 +99,30 @@ async def confirm_password_reset(
     try:
         result = await service.confirm_password_reset(db, request.token, request.new_password)
 
+        # Track successful password reset
+        if result["success"]:
+            # Note: We don't have user_id here as the service returns success/message
+            # The user_id would need to be added to the service response to track with user context
+            amplitude_service.track(
+                event_type="password_reset_completed",
+                event_properties={
+                    "method": "email_link",
+                },
+            )
+
         return PasswordResetResponse(
             message=result["message"],
             success=result["success"],
         )
     except ValueError as e:
+        # Track password reset failure
+        amplitude_service.track(
+            event_type="password_reset_failed",
+            event_properties={
+                "error_type": "invalid_token_or_password",
+            },
+        )
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),

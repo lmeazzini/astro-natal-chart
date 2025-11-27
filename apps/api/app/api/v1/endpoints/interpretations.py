@@ -229,6 +229,9 @@ async def get_chart_interpretations(
         # This runs for both existing and new interpretations
         if "growth" in regenerate_types:
             logger.info(f"Generating growth suggestions for chart {chart_id}")
+            # Commit current transaction to avoid "another operation is in progress" error
+            await db.commit()
+
             # Pass db session for dual persistence (cache + database)
             growth_service = PersonalGrowthService(language=user_language, db=db)
             try:
@@ -240,9 +243,12 @@ async def get_chart_interpretations(
                 response.growth = GrowthSuggestionsData(**growth_dict)
                 # Update metadata to reflect growth generation
                 response.metadata.rag_generations += 1
+                # Commit growth persistence
+                await db.commit()
                 logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
             except Exception as e:
                 logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
+                await db.rollback()
                 response.growth = None
 
         return response

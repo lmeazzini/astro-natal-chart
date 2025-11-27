@@ -10,6 +10,8 @@ import { interpretationsService } from '../services/interpretations';
 import { getToken } from '../services/api';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -33,6 +35,9 @@ export function ChartsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Track page view
+  useAmplitudePageView('Charts List Page');
+
   const [charts, setCharts] = useState<BirthChart[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -53,6 +58,12 @@ export function ChartsPage() {
 
       const response = await chartsService.list(token);
       setCharts(response.charts);
+
+      // Track chart list viewed with count
+      amplitudeService.track('chart_list_viewed', {
+        chart_count: response.charts.length,
+        source: 'charts_page',
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('dashboard.deleteError'));
     } finally {
@@ -62,6 +73,11 @@ export function ChartsPage() {
 
   async function handleDelete(chartId: string) {
     if (!confirm(t('dashboard.confirmDelete'))) {
+      // Track deletion cancellation
+      amplitudeService.track('chart_deletion_cancelled', {
+        chart_id: chartId,
+        source: 'charts_page',
+      });
       return;
     }
 
@@ -70,6 +86,14 @@ export function ChartsPage() {
       if (!token) return;
 
       await chartsService.delete(chartId, token);
+
+      // Track successful deletion
+      amplitudeService.track('chart_deleted', {
+        chart_id: chartId,
+        soft_delete: true,
+        source: 'charts_page',
+      });
+
       setCharts(charts.filter((c) => c.id !== chartId));
     } catch (err) {
       alert(t('dashboard.deleteError'));

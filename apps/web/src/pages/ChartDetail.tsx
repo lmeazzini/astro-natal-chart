@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import {
   interpretationsService,
   RAGInterpretations,
@@ -46,6 +48,9 @@ export function ChartDetailPage() {
   const { translateSign, translatePlanet } = useAstroTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // Track page view
+  useAmplitudePageView('Chart Detail Page');
 
   const [chart, setChart] = useState<BirthChart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,6 +136,15 @@ export function ChartDetailPage() {
 
       const chartData = await chartsService.getById(id, token);
       setChart(chartData);
+
+      // Track chart detail viewed
+      amplitudeService.track('chart_detail_viewed', {
+        chart_id: id,
+        has_interpretations: !!chartData.interpretations,
+        is_own_chart: true, // User's own chart (not public)
+        house_system: chartData.house_system,
+        source: 'chart_detail_page',
+      });
     } catch (err) {
       setError(
         err instanceof Error
@@ -154,14 +168,49 @@ export function ChartDetailPage() {
       }
 
       setIsLoadingInterpretations(true);
+
+      // Track interpretation generation started
+      amplitudeService.track('interpretation_generation_started', {
+        chart_id: id,
+        interpretation_type: 'rag',
+        source: 'chart_detail_page',
+      });
+
+      const startTime = Date.now();
       const data = await interpretationsService.getByChartId(id, token);
+      const generationTime = Date.now() - startTime;
+
       setInterpretations(data);
+
+      // Track interpretation generated
+      amplitudeService.track('interpretation_generated', {
+        chart_id: id,
+        interpretation_type: 'rag',
+        generation_time_ms: generationTime,
+        used_cache: false, // TODO: Add cache indicator from API
+        source: 'chart_detail_page',
+      });
     } catch (err) {
       // Check if it's a 403 email verification error
       if (err instanceof Error && err.message.includes('403')) {
         console.log('Interpretations require email verification');
+
+        // Track interpretation failure
+        amplitudeService.track('interpretation_generation_failed', {
+          chart_id: id,
+          error_type: 'email_not_verified',
+          source: 'chart_detail_page',
+        });
         return;
       }
+
+      // Track interpretation failure
+      amplitudeService.track('interpretation_generation_failed', {
+        chart_id: id,
+        error_type: err instanceof Error ? err.name : 'unknown_error',
+        source: 'chart_detail_page',
+      });
+
       // Silently fail - interpretations are optional
       console.error('Failed to load interpretations:', err);
     } finally {

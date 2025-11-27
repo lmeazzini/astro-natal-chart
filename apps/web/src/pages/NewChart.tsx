@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChartCreate } from '../services/charts';
 import { useAuth } from '@/contexts/AuthContext';
 import { getToken } from '@/services/api';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -89,6 +91,15 @@ export function NewChartPage() {
   const { user } = useAuth();
   const [chartCount, setChartCount] = useState<number | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
+
+  // Track page view and chart creation started
+  useAmplitudePageView('New Chart Page');
+
+  useEffect(() => {
+    amplitudeService.track('chart_creation_started', {
+      source: 'new_chart_page',
+    });
+  }, []);
 
   // Zod schema inside component to access t()
   const chartFormSchema = z.object({
@@ -197,6 +208,12 @@ export function NewChartPage() {
       return;
     }
 
+    // Track location search
+    amplitudeService.track('chart_location_searched', {
+      search_query: query,
+      source: 'new_chart_page',
+    });
+
     setSearchingLocation(true);
 
     try {
@@ -229,6 +246,13 @@ export function NewChartPage() {
   }
 
   function selectLocation(location: LocationSuggestion) {
+    // Track location selection
+    amplitudeService.track('chart_location_selected', {
+      city: location.city,
+      country: location.country,
+      source: 'new_chart_page',
+    });
+
     form.setValue('city', location.city || location.display_name.split(',')[0]);
     form.setValue('country', location.country);
     form.setValue('latitude', location.latitude);
@@ -239,6 +263,16 @@ export function NewChartPage() {
 
   async function onSubmit(values: ChartFormValues) {
     setGeneralError('');
+
+    // Track form submission
+    amplitudeService.track('chart_creation_submitted', {
+      house_system: values.house_system,
+      zodiac_type: values.zodiac_type,
+      node_type: values.node_type,
+      has_name: !!values.person_name,
+      has_notes: !!values.notes,
+      source: 'new_chart_page',
+    });
 
     try {
       const token = localStorage.getItem(TOKEN_KEY);
@@ -261,10 +295,29 @@ export function NewChartPage() {
         birth_datetime: isoDatetime,
       };
 
-      await chartsService.create(chartData, token);
+      const createdChart = await chartsService.create(chartData, token);
+
+      // Track successful chart creation
+      amplitudeService.track('chart_created', {
+        house_system: values.house_system,
+        zodiac_type: values.zodiac_type,
+        node_type: values.node_type,
+        has_name: !!values.person_name,
+        location_type: 'geocoded',
+        timezone: values.birth_timezone,
+        source: 'new_chart_page',
+      });
+
       navigate('/charts');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t('newChart.error');
+
+      // Track chart creation failure
+      amplitudeService.track('chart_creation_failed', {
+        error_type: error instanceof Error ? error.name : 'unknown_error',
+        is_limit_error: errorMessage.includes('limit') || errorMessage.includes('limite'),
+        source: 'new_chart_page',
+      });
 
       // Check if it's a chart limit error (403)
       if (errorMessage.includes('limit') || errorMessage.includes('limite')) {

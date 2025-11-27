@@ -1190,7 +1190,9 @@ export function ChartDetailPage() {
 
           {/* Tab Content: Growth */}
           <TabsContent value="growth" className="mt-0">
-            {id && <GrowthSuggestions chartId={id} />}
+            {id && (
+              <GrowthSuggestions chartId={id} initialGrowth={interpretations?.growth ?? null} />
+            )}
           </TabsContent>
         </Tabs>
 

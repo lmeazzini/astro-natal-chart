@@ -23,6 +23,7 @@ import { interpretationsService, type GrowthSuggestionsData } from '@/services/i
 
 interface GrowthSuggestionsProps {
   chartId: string;
+  initialGrowth?: GrowthSuggestionsData | null;
 }
 
 interface CollapsibleSectionProps {
@@ -52,38 +53,22 @@ function CollapsibleSection({ title, children, defaultOpen = true }: Collapsible
   );
 }
 
-export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
+export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsProps) {
   const { t } = useTranslation();
-  const [suggestions, setSuggestions] = useState<GrowthSuggestionsData | null>(null);
+  const [suggestions, setSuggestions] = useState<GrowthSuggestionsData | null>(
+    initialGrowth ?? null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  // Load cached suggestions from unified interpretations endpoint on mount
+  // Initialize suggestions from prop when available
   useEffect(() => {
-    const loadCachedSuggestions = async () => {
-      try {
-        const token = getToken();
-        if (!token) return;
-
-        // Use unified interpretations service
-        const data = await interpretationsService.getByChartId(chartId, token);
-
-        // Growth suggestions are now directly in the response
-        if (data.growth) {
-          setSuggestions(data.growth);
-        }
-        // If no growth suggestions, user needs to generate them
-      } catch (err) {
-        console.error('Error loading cached growth suggestions:', err);
-        // Silently fail - user can still generate new suggestions
-      } finally {
-        setInitialLoad(false);
-      }
-    };
-
-    loadCachedSuggestions();
-  }, [chartId]);
+    if (initialGrowth) {
+      setSuggestions(initialGrowth);
+    }
+    setInitialLoad(false);
+  }, [initialGrowth]);
 
   const generateSuggestions = async () => {
     setLoading(true);

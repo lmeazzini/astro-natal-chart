@@ -343,7 +343,10 @@ export function PublicChartDetailPage() {
             <TabsTrigger value="aspects">
               {t('chartDetail.tabs.aspects')} ({chartData?.aspects?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="arabic-parts">{t('chartDetail.tabs.arabicParts')} (4)</TabsTrigger>
+            <TabsTrigger value="arabic-parts">
+              {t('chartDetail.tabs.arabicParts')} (
+              {chartData?.arabic_parts ? Object.keys(chartData.arabic_parts).length : 0})
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab Content: Visual */}

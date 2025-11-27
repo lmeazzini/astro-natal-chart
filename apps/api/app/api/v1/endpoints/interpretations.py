@@ -2,6 +2,7 @@
 Chart interpretation endpoints for AI-generated astrological interpretations.
 """
 
+import json
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -18,7 +19,9 @@ from app.models.interpretation import ChartInterpretation
 from app.models.user import User
 from app.repositories.interpretation_repository import InterpretationRepository
 from app.schemas.interpretation import (
+    GrowthSuggestionsData,
     InterpretationItem,
+    InterpretationMetadata,
     RAGInterpretationsResponse,
     RAGSourceInfo,
 )
@@ -30,6 +33,7 @@ from app.services.interpretation_service_rag import (
     InterpretationServiceRAG,
     PlanetData,
 )
+from app.services.personal_growth_service import PersonalGrowthService
 
 router = APIRouter()
 
@@ -73,6 +77,7 @@ async def get_chart_interpretations(
     chart_id: UUID,
     current_user: Annotated[User, Depends(require_verified_email)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    regenerate: str | None = None,
 ) -> RAGInterpretationsResponse:
     """
     Get all interpretations for a birth chart using RAG-enhanced AI.
@@ -105,6 +110,12 @@ async def get_chart_interpretations(
                 detail="Chart is still processing. Please wait until calculations are complete.",
             )
 
+        # Parse regenerate parameter for selective regeneration
+        regenerate_types = set()
+        if regenerate:
+            regenerate_types = {t.strip() for t in regenerate.split(",") if t.strip()}
+            logger.info(f"Regeneration requested for types: {regenerate_types}")
+
         # Use RAG-enhanced interpretation service with caching
         rag_service = InterpretationServiceRAG(
             db, use_cache=True, use_rag=True, language=user_language
@@ -120,7 +131,10 @@ async def get_chart_interpretations(
             and getattr(i, "language", "pt-BR") == user_language
         ]
 
-        if rag_existing:
+        # Check if we should use existing or generate new interpretations
+        should_use_existing = rag_existing and not regenerate_types
+
+        if should_use_existing:
             # Return existing interpretations from database
             logger.info(
                 f"Returning {len(rag_existing)} existing RAG interpretations for chart {chart_id}"
@@ -129,6 +143,7 @@ async def get_chart_interpretations(
             houses_data: dict[str, InterpretationItem] = {}
             aspects_data: dict[str, InterpretationItem] = {}
             arabic_parts_data: dict[str, InterpretationItem] = {}
+            growth_components: dict[str, Any] = {}  # Store growth components
 
             total_documents = 0
             for interp in rag_existing:
@@ -154,26 +169,81 @@ async def get_chart_interpretations(
                     aspects_data[interp.subject] = item
                 elif interp.interpretation_type == "arabic_part":
                     arabic_parts_data[interp.subject] = item
+                elif interp.interpretation_type.startswith("growth_"):
+                    # Load growth components from database
+                    content_data = json.loads(interp.content)
+                    if interp.interpretation_type == "growth_points":
+                        growth_components["growth_points"] = content_data
+                    elif interp.interpretation_type == "growth_challenges":
+                        growth_components["challenges"] = content_data
+                    elif interp.interpretation_type == "growth_opportunities":
+                        growth_components["opportunities"] = content_data
+                    elif interp.interpretation_type == "growth_purpose":
+                        growth_components["purpose"] = content_data
 
-            return RAGInterpretationsResponse(
+            # Build metadata
+            metadata = InterpretationMetadata(
+                total_items=len(rag_existing),
+                cache_hits_db=len(rag_existing),
+                cache_hits_cache=0,
+                rag_generations=0,
+                outdated_count=0,
+                documents_used=total_documents,
+                current_prompt_version=RAG_PROMPT_VERSION,
+                response_time_ms=0,
+            )
+
+            # Reconstruct growth data from components if all 4 are present
+            growth_data = None
+            if len(growth_components) == 4:
+                growth_data = GrowthSuggestionsData(
+                    growth_points=growth_components["growth_points"],
+                    challenges=growth_components["challenges"],
+                    opportunities=growth_components["opportunities"],
+                    purpose=growth_components["purpose"],
+                    summary=None,  # Summary is optional
+                )
+                logger.info(f"Loaded growth suggestions from database for chart {chart_id}")
+
+            response = RAGInterpretationsResponse(
                 planets=planets_data,
                 houses=houses_data,
                 aspects=aspects_data,
                 arabic_parts=arabic_parts_data,
-                source="rag",
-                documents_used=total_documents,
+                growth=growth_data,  # Include loaded growth data
+                metadata=metadata,
                 language=user_language,
             )
+        else:
+            # Generate new interpretations and save to DB
+            response = await _generate_rag_interpretations(
+                chart, rag_service, db, save_to_db=True, language=user_language
+            )
 
-        # Generate new interpretations and save to DB
-        response = await _generate_rag_interpretations(
-            chart, rag_service, db, save_to_db=True, language=user_language
-        )
+            logger.info(
+                f"Generated RAG interpretations for chart {chart_id} "
+                f"(user: {current_user.email}, documents used: {response.metadata.documents_used})"
+            )
 
-        logger.info(
-            f"Generated RAG interpretations for chart {chart_id} "
-            f"(user: {current_user.email}, documents used: {response.documents_used})"
-        )
+        # Handle growth suggestions AFTER main response is created
+        # This runs for both existing and new interpretations
+        if "growth" in regenerate_types:
+            logger.info(f"Generating growth suggestions for chart {chart_id}")
+            # Pass db session for dual persistence (cache + database)
+            growth_service = PersonalGrowthService(language=user_language, db=db)
+            try:
+                growth_dict = await growth_service.generate_growth_suggestions(
+                    chart_data=chart.chart_data,
+                    chart_id=chart_id,  # Enable persistence to ChartInterpretation table
+                )
+                # Convert dict to Pydantic model
+                response.growth = GrowthSuggestionsData(**growth_dict)
+                # Update metadata to reflect growth generation
+                response.metadata.rag_generations += 1
+                logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
+            except Exception as e:
+                logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
+                response.growth = None
 
         return response
 
@@ -304,7 +374,7 @@ async def regenerate_chart_interpretations(
 
         logger.info(
             f"Regenerated RAG interpretations for chart {chart_id} "
-            f"(user: {current_user.email}, documents used: {response.documents_used})"
+            f"(user: {current_user.email}, documents used: {response.metadata.documents_used})"
         )
 
         return response
@@ -457,7 +527,8 @@ async def _generate_rag_interpretations(
 
         # Find ruler's dignities from planet data
         ruler_dignities: dict[str, Any] = {}
-        for planet_data in planets:  # type: PlanetData
+        planet_data: PlanetData
+        for planet_data in planets:
             if planet_data.get("name") == ruler:
                 ruler_dignities = planet_data.get("dignities", {})
                 break
@@ -682,8 +753,21 @@ async def _generate_rag_interpretations(
         houses=houses_data,
         aspects=aspects_data,
         arabic_parts=arabic_parts_data,
-        source="rag",
-        documents_used=total_documents_used,
+        growth=None,  # Growth not generated in this path
+        metadata=InterpretationMetadata(
+            total_items=(
+                len(planets_data) + len(houses_data) + len(aspects_data) + len(arabic_parts_data)
+            ),
+            cache_hits_db=0,
+            cache_hits_cache=0,
+            rag_generations=(
+                len(planets_data) + len(houses_data) + len(aspects_data) + len(arabic_parts_data)
+            ),
+            outdated_count=0,
+            documents_used=total_documents_used,
+            current_prompt_version=RAG_PROMPT_VERSION,
+            response_time_ms=0,
+        ),
         language=language,
     )
 

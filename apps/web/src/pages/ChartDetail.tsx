@@ -682,7 +682,13 @@ export function ChartDetailPage() {
             <TabsTrigger value="aspects">
               {t('chartDetail.tabs.aspects')} ({chart.chart_data?.aspects.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="arabic-parts">{t('chartDetail.tabs.arabicParts')} (4)</TabsTrigger>
+            <TabsTrigger value="arabic-parts">
+              {t('chartDetail.tabs.arabicParts')} (
+              {chart.chart_data?.arabic_parts
+                ? Object.keys(chart.chart_data.arabic_parts).length
+                : 0}
+              )
+            </TabsTrigger>
             <TabsTrigger value="growth">
               {t('chartDetail.tabs.growth', { defaultValue: 'Growth' })}
             </TabsTrigger>

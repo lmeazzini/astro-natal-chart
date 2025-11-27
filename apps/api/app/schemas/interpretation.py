@@ -17,6 +17,69 @@ class RAGSourceInfo(BaseModel):
     content_preview: str = Field(..., description="Preview of source content used")
 
 
+# Growth Suggestions Schemas
+class GrowthPoint(BaseModel):
+    """A growth point with practical actions."""
+
+    area: str
+    indicator: str
+    explanation: str
+    practical_actions: list[str]
+    mindset_shift: str
+
+
+class Challenge(BaseModel):
+    """A challenge to overcome."""
+
+    name: str
+    pattern: str
+    manifestation: str
+    strategy: str
+    practices: list[str]
+
+
+class Opportunity(BaseModel):
+    """An opportunity to leverage."""
+
+    talent: str
+    indicator: str
+    description: str
+    leverage_tips: list[str]
+
+
+class Purpose(BaseModel):
+    """Life purpose insights."""
+
+    soul_direction: str
+    vocation: str
+    contribution: str
+    integration: str
+    next_steps: list[str]
+
+
+class GrowthSuggestionsData(BaseModel):
+    """Complete growth suggestions response."""
+
+    growth_points: list[GrowthPoint]
+    challenges: list[Challenge]
+    opportunities: list[Opportunity]
+    purpose: Purpose | None
+    summary: str | None = None
+
+
+class InterpretationMetadata(BaseModel):
+    """Metadata about interpretation generation."""
+
+    total_items: int = Field(default=0, description="Total number of interpretations")
+    cache_hits_db: int = Field(default=0, description="Items from database cache")
+    cache_hits_cache: int = Field(default=0, description="Items from memory cache")
+    rag_generations: int = Field(default=0, description="Items freshly generated with RAG")
+    outdated_count: int = Field(default=0, description="Items with outdated prompt version")
+    documents_used: int = Field(default=0, description="Total RAG documents used")
+    current_prompt_version: str = Field(default="", description="Current prompt version")
+    response_time_ms: int = Field(default=0, description="Total response time in milliseconds")
+
+
 class InterpretationBase(BaseModel):
     """Base schema for interpretation."""
 
@@ -91,7 +154,7 @@ class ChartInterpretationsResponse(BaseModel):
 
 
 class RAGInterpretationsResponse(BaseModel):
-    """Response schema for RAG-enhanced interpretations (admin only)."""
+    """Response schema for unified RAG-enhanced interpretations."""
 
     planets: dict[str, InterpretationItem] = Field(
         default_factory=dict, description="Planet interpretations with metadata"
@@ -106,8 +169,12 @@ class RAGInterpretationsResponse(BaseModel):
         default_factory=dict,
         description="Arabic Parts interpretations with metadata (fortune, spirit, eros, necessity)",
     )
-    source: str = Field(default="rag", description="Always 'rag' for this response")
-    documents_used: int = Field(default=0, description="Total number of RAG documents used")
+    growth: GrowthSuggestionsData | None = Field(
+        default=None, description="Personal growth suggestions"
+    )
+    metadata: InterpretationMetadata = Field(
+        default_factory=InterpretationMetadata, description="Generation metadata and statistics"
+    )
     language: str = Field(
         default="pt-BR",
         description="Language code for interpretations (pt-BR or en-US)",

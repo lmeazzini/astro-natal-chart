@@ -123,9 +123,10 @@ async def generate_growth_suggestions(
         # Extract focus areas from request body if provided
         focus_areas = body.focus_areas if body else None
 
-        # Generate suggestions
+        # Generate suggestions (with chart_id for dual persistence)
         suggestions = await growth_service.generate_growth_suggestions(
             chart_data=chart.chart_data,
+            chart_id=chart_id,  # Enable persistence to ChartInterpretation table
             focus_areas=focus_areas,
         )
 

@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.rate_limit import RateLimits, limiter
-from app.services.oauth_service import OAuthService, oauth
 from app.services.amplitude_service import amplitude_service
+from app.services.oauth_service import OAuthService, oauth
 
 router = APIRouter()
 

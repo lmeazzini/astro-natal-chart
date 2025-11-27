@@ -3,7 +3,7 @@
  * Displays AI-generated personal development suggestions based on natal chart
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TrendingUp,
@@ -14,54 +14,12 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getToken } from '@/services/api';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-interface GrowthPoint {
-  area: string;
-  indicator: string;
-  explanation: string;
-  practical_actions: string[];
-  mindset_shift: string;
-}
-
-interface Challenge {
-  name: string;
-  pattern: string;
-  manifestation: string;
-  strategy: string;
-  practices: string[];
-}
-
-interface Opportunity {
-  talent: string;
-  indicator: string;
-  description: string;
-  leverage_tips: string[];
-}
-
-interface Purpose {
-  soul_direction: string;
-  vocation: string;
-  contribution: string;
-  integration: string;
-  next_steps: string[];
-}
-
-interface GrowthSuggestionsData {
-  growth_points: GrowthPoint[];
-  challenges: Challenge[];
-  opportunities: Opportunity[];
-  purpose: Purpose | null;
-  metadata?: {
-    language: string;
-    model: string;
-  };
-}
+import { interpretationsService, type GrowthSuggestionsData } from '@/services/interpretations';
 
 interface GrowthSuggestionsProps {
   chartId: string;
@@ -99,6 +57,33 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<GrowthSuggestionsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  // Load cached suggestions from unified interpretations endpoint on mount
+  useEffect(() => {
+    const loadCachedSuggestions = async () => {
+      try {
+        const token = getToken();
+        if (!token) return;
+
+        // Use unified interpretations service
+        const data = await interpretationsService.getByChartId(chartId, token);
+
+        // Growth suggestions are now directly in the response
+        if (data.growth) {
+          setSuggestions(data.growth);
+        }
+        // If no growth suggestions, user needs to generate them
+      } catch (err) {
+        console.error('Error loading cached growth suggestions:', err);
+        // Silently fail - user can still generate new suggestions
+      } finally {
+        setInitialLoad(false);
+      }
+    };
+
+    loadCachedSuggestions();
+  }, [chartId]);
 
   const generateSuggestions = async () => {
     setLoading(true);
@@ -115,47 +100,63 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/v1/charts/${chartId}/growth-suggestions`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
+      // Use unified interpretations endpoint with regenerate parameter for growth only
+      const data = await interpretationsService.regenerate(chartId, token, ['growth']);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        if (response.status === 403) {
+      if (data.growth) {
+        setSuggestions(data.growth);
+      } else {
+        setError(
+          t('growth.errors.generateFailed', { defaultValue: 'Failed to generate suggestions' })
+        );
+      }
+    } catch (err) {
+      console.error('Error generating growth suggestions:', err);
+      if (err instanceof Error) {
+        if (err.message.includes('403')) {
           setError(
             t('growth.errors.emailRequired', {
               defaultValue: 'Please verify your email to access this feature',
             })
           );
-        } else if (response.status === 404) {
+        } else if (err.message.includes('404')) {
           setError(t('growth.errors.chartNotFound', { defaultValue: 'Chart not found' }));
         } else {
-          setError(
-            errorData.detail ||
-              t('growth.errors.generateFailed', { defaultValue: 'Failed to generate suggestions' })
-          );
+          setError(err.message);
         }
-        return;
+      } else {
+        setError(
+          t('growth.errors.networkError', { defaultValue: 'Network error. Please try again.' })
+        );
       }
-
-      const data = await response.json();
-      setSuggestions(data);
-    } catch (err) {
-      console.error('Error generating growth suggestions:', err);
-      setError(
-        t('growth.errors.networkError', { defaultValue: 'Network error. Please try again.' })
-      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial state - show button to generate
+  const regenerateSuggestions = async () => {
+    // Regeneration now simply calls generateSuggestions
+    // The unified endpoint handles regeneration via ?regenerate=growth parameter
+    await generateSuggestions();
+  };
+
+  // Initial loading state while checking cache
+  if (initialLoad) {
+    return (
+      <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
+        <CardContent className="py-12">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">
+              {t('growth.loading', { defaultValue: 'Loading growth suggestions...' })}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Initial state - show button to generate (no cached suggestions found)
   if (!suggestions && !loading) {
     return (
       <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
@@ -448,8 +449,12 @@ export function GrowthSuggestions({ chartId }: GrowthSuggestionsProps) {
 
       {/* Regenerate Button */}
       <div className="flex justify-center">
-        <Button onClick={generateSuggestions} variant="outline" disabled={loading}>
-          <Sparkles className="mr-2 h-4 w-4" />
+        <Button onClick={regenerateSuggestions} variant="outline" disabled={loading}>
+          {loading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
           {t('growth.regenerate', { defaultValue: 'Regenerate Suggestions' })}
         </Button>
       </div>

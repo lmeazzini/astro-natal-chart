@@ -11,6 +11,7 @@ Supports caching via InterpretationCacheService to reduce API costs.
 import asyncio
 import json
 from typing import Any
+from uuid import UUID
 
 from loguru import logger
 from openai import AsyncOpenAI
@@ -261,6 +262,7 @@ class PersonalGrowthService:
     async def generate_growth_suggestions(
         self,
         chart_data: dict[str, Any],
+        chart_id: UUID | None = None,
         focus_areas: list[str] | None = None,
     ) -> dict[str, Any]:
         """
@@ -268,6 +270,7 @@ class PersonalGrowthService:
 
         Args:
             chart_data: Complete birth chart data
+            chart_id: Optional chart ID for dual persistence (cache + database)
             focus_areas: Optional focus areas (e.g., ['career', 'relationships'])
 
         Returns:
@@ -306,6 +309,18 @@ class PersonalGrowthService:
                 "focus_areas": focus_areas,
                 "cached": False,  # Will be updated if any item was cached
             }
+
+            # Dual persistence: Save to both InterpretationCache and ChartInterpretation
+            if chart_id and self.db:
+                await self._save_to_chart_interpretations(
+                    chart_id=chart_id,
+                    growth_data={
+                        "growth_points": suggestions["growth_points"],
+                        "challenges": suggestions["challenges"],
+                        "opportunities": suggestions["opportunities"],
+                        "purpose": suggestions["purpose"],
+                    },
+                )
 
         except Exception as e:
             logger.error("Error generating growth suggestions: {}", str(e))
@@ -712,3 +727,57 @@ IMPORTANT:
             )
 
         return purpose
+
+    async def _save_to_chart_interpretations(
+        self,
+        chart_id: UUID,
+        growth_data: dict[str, Any],
+    ) -> None:
+        """
+        Save growth components to ChartInterpretation table for chart-specific retrieval.
+
+        This enables dual persistence:
+        - InterpretationCache: Shared across users with similar charts (cost reduction)
+        - ChartInterpretation: Chart-specific for fast retrieval
+
+        Args:
+            chart_id: Chart UUID to associate interpretations with
+            growth_data: Dictionary with growth_points, challenges, opportunities, purpose
+        """
+        from app.models.interpretation import ChartInterpretation
+        from app.repositories.interpretation_repository import InterpretationRepository
+
+        if not self.db:
+            logger.warning("No database session available for saving growth interpretations")
+            return
+
+        repo = InterpretationRepository(self.db)
+
+        # Delete old growth interpretations for this chart (if regenerating)
+        existing = await repo.get_by_chart_id(chart_id)
+        for interp in existing:
+            if interp.interpretation_type.startswith("growth_"):
+                await repo.delete(interp)
+
+        # Save each component as separate row
+        components_map = {
+            "growth_points": growth_data["growth_points"],
+            "growth_challenges": growth_data["challenges"],
+            "growth_opportunities": growth_data["opportunities"],
+            "growth_purpose": growth_data["purpose"],
+        }
+
+        for interpretation_type, content_data in components_map.items():
+            interpretation = ChartInterpretation(
+                chart_id=chart_id,
+                interpretation_type=interpretation_type,
+                subject="growth_analysis",
+                content=json.dumps(content_data, ensure_ascii=False),
+                language=self.language,
+                openai_model=self.model,
+                prompt_version=GROWTH_PROMPT_VERSION,
+                rag_sources=None,
+            )
+            await repo.create(interpretation)
+
+        logger.info(f"Saved growth interpretations to database for chart {chart_id}")

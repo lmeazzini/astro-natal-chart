@@ -2,6 +2,11 @@
 Script to populate initial public charts with famous people's birth data.
 
 Run with: cd apps/api && uv run python ../../scripts/populate_public_charts.py
+
+This script:
+1. Creates public charts for famous people
+2. Generates RAG-based astrological interpretations
+3. Creates personal growth suggestions
 """
 
 import asyncio
@@ -14,6 +19,7 @@ from zoneinfo import ZoneInfo
 # Script is at /astro/scripts/, api is at /astro/apps/api/
 sys.path.insert(0, str(Path(__file__).parent.parent / "apps" / "api"))
 
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -21,9 +27,24 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
 # Import all models to register them with SQLAlchemy
-from app.models import PublicChart  # noqa: F401
+from app.models import (  # noqa: F401
+    AuditLog,
+    BirthChart,
+    InterpretationCache,
+    OAuthAccount,
+    PasswordResetToken,
+    PublicChart,
+    SearchIndex,
+    User,
+    UserConsent,
+    VectorDocument,
+)
 from app.models.interpretation import ChartInterpretation  # noqa: F401
+from app.models.public_chart_interpretation import PublicChartInterpretation  # noqa: F401
+from app.models.subscription import Subscription  # noqa: F401
 from app.services.astro_service import calculate_birth_chart
+from app.services.interpretation_service_rag import InterpretationServiceRAG
+from app.services.personal_growth_service import PersonalGrowthService
 
 # Famous people birth data from AstroDatabank and historical records
 FAMOUS_PEOPLE = [
@@ -275,6 +296,180 @@ FAMOUS_PEOPLE = [
 ]
 
 
+async def _generate_chart_interpretations(
+    chart: PublicChart,
+    db: AsyncSession,
+    language: str = "pt-BR",
+) -> int:
+    """
+    Generate RAG-enhanced interpretations for a public chart.
+
+    Args:
+        chart: The public chart with chart_data
+        db: Database session
+        language: Language for interpretations
+
+    Returns:
+        Number of interpretations generated
+    """
+    # Initialize RAG service with language
+    rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True, language=language)
+
+    chart_data = chart.chart_data
+    if not chart_data:
+        logger.warning(f"No chart_data available for {chart.full_name}")
+        return 0
+
+    planets_data = chart_data.get("planets", [])
+    houses_data = chart_data.get("houses", [])
+    aspects_data = chart_data.get("aspects", [])
+    arabic_parts_data = chart_data.get("arabic_parts", {})
+    sect = chart_data.get("sect", "diurnal")
+
+    interp_count = 0
+
+    # Process planets
+    for planet in planets_data:
+        planet_name = planet.get("name", "")
+        if not planet_name:
+            continue
+
+        sign = planet.get("sign", "")
+        house = planet.get("house", 1)
+        retrograde = planet.get("retrograde", False)
+        dignities = planet.get("dignities", {})
+
+        try:
+            content = await rag_service.generate_planet_interpretation(
+                planet=planet_name,
+                sign=sign,
+                house=house,
+                dignities=dignities,
+                sect=sect,
+                retrograde=retrograde,
+            )
+
+            if content:
+                public_interp = PublicChartInterpretation(
+                    chart_id=chart.id,
+                    interpretation_type="planet",
+                    subject=planet_name,
+                    content=content,
+                    openai_model=settings.OPENAI_MODEL,
+                    prompt_version="1.0",
+                    language=language,
+                )
+                db.add(public_interp)
+                interp_count += 1
+        except Exception as e:
+            logger.warning(f"  ⚠ Failed to generate {planet_name} interpretation: {e}")
+
+    # Process houses
+    for house in houses_data[:12]:  # First 12 houses only
+        house_num = house.get("number")
+        sign = house.get("sign", "")
+
+        if not house_num or not sign:
+            continue
+
+        try:
+            content = await rag_service.generate_house_interpretation(
+                house_number=house_num,
+                sign=sign,
+            )
+
+            if content:
+                public_interp = PublicChartInterpretation(
+                    chart_id=chart.id,
+                    interpretation_type="house",
+                    subject=str(house_num),
+                    content=content,
+                    openai_model=settings.OPENAI_MODEL,
+                    prompt_version="1.0",
+                    language=language,
+                )
+                db.add(public_interp)
+                interp_count += 1
+        except Exception as e:
+            logger.warning(f"  ⚠ Failed to generate House {house_num} interpretation: {e}")
+
+    # Process aspects (major aspects only)
+    major_aspects = ["conjunction", "opposition", "trine", "square", "sextile"]
+    for aspect in aspects_data:
+        aspect_type = aspect.get("aspect", "")
+        if aspect_type not in major_aspects:
+            continue
+
+        planet1 = aspect.get("planet1", "")
+        planet2 = aspect.get("planet2", "")
+        orb = aspect.get("orb", 0)
+        applying = aspect.get("applying", False)
+
+        if not planet1 or not planet2:
+            continue
+
+        try:
+            content = await rag_service.generate_aspect_interpretation(
+                planet1=planet1,
+                planet2=planet2,
+                aspect_type=aspect_type,
+                orb=orb,
+                applying=applying,
+            )
+
+            if content:
+                subject = f"{planet1}-{aspect_type}-{planet2}"
+                public_interp = PublicChartInterpretation(
+                    chart_id=chart.id,
+                    interpretation_type="aspect",
+                    subject=subject,
+                    content=content,
+                    openai_model=settings.OPENAI_MODEL,
+                    prompt_version="1.0",
+                    language=language,
+                )
+                db.add(public_interp)
+                interp_count += 1
+        except Exception as e:
+            logger.warning(f"  ⚠ Failed to generate {planet1}-{planet2} aspect interpretation: {e}")
+
+    # Process Arabic Parts (select few key ones)
+    key_parts = ["lot_of_fortune", "lot_of_spirit", "lot_of_eros"]
+    for part_name in key_parts:
+        part_data = arabic_parts_data.get(part_name)
+        if not part_data:
+            continue
+
+        sign = part_data.get("sign", "")
+        house = part_data.get("house", 1)
+        ruler_dignity = part_data.get("ruler_dignity")
+
+        try:
+            content = await rag_service.generate_arabic_part_interpretation(
+                part_name=part_name,
+                sign=sign,
+                house=house,
+                ruler_dignity=ruler_dignity,
+            )
+
+            if content:
+                public_interp = PublicChartInterpretation(
+                    chart_id=chart.id,
+                    interpretation_type="arabic_part",
+                    subject=part_name,
+                    content=content,
+                    openai_model=settings.OPENAI_MODEL,
+                    prompt_version="1.0",
+                    language=language,
+                )
+                db.add(public_interp)
+                interp_count += 1
+        except Exception as e:
+            logger.warning(f"  ⚠ Failed to generate {part_name} interpretation: {e}")
+
+    return interp_count
+
+
 async def populate_public_charts():
     """Populate the public_charts table with famous people's data."""
     # Create async engine
@@ -282,56 +477,173 @@ async def populate_public_charts():
     engine = create_async_engine(db_url, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+    stats = {
+        "total": len(FAMOUS_PEOPLE),
+        "created": 0,
+        "skipped": 0,
+        "interpretations": 0,
+        "growth_suggestions": 0,
+        "errors": 0,
+    }
+
     async with async_session() as session:
+        # Initialize services with db session
+        interpretation_service = InterpretationServiceRAG(db=session, use_cache=False)
+        growth_service = PersonalGrowthService()
+
         for person in FAMOUS_PEOPLE:
+            logger.info(f"\n{'='*60}")
+            logger.info(f"Processing: {person['full_name']}")
+            logger.info(f"{'='*60}")
+
             # Check if already exists
             stmt = select(PublicChart).where(PublicChart.slug == person["slug"])
             result = await session.execute(stmt)
             existing = result.scalar_one_or_none()
 
             if existing:
-                print(f"Skipping {person['full_name']} - already exists")
-                continue
+                logger.info(f"✓ Chart already exists for {person['full_name']}")
+                stats["skipped"] += 1
 
-            # Calculate chart data
-            print(f"Calculating chart for {person['full_name']}...")
-            try:
-                chart_data = calculate_birth_chart(
+                # Check if interpretations exist
+                stmt_interp = select(PublicChartInterpretation).where(
+                    PublicChartInterpretation.chart_id == existing.id
+                )
+                result_interp = await session.execute(stmt_interp)
+                existing_interps = result_interp.scalars().all()
+
+                if existing_interps:
+                    logger.info(f"  ✓ {len(existing_interps)} interpretations already exist - skipping")
+                    stats["interpretations"] += len(existing_interps)
+                    continue
+                else:
+                    logger.info("  → No interpretations found, will generate...")
+                    chart = existing
+            else:
+                # Calculate chart data
+                logger.info(f"→ Calculating birth chart...")
+                try:
+                    chart_data = calculate_birth_chart(
+                        birth_datetime=person["birth_datetime"],
+                        timezone=person["birth_timezone"],
+                        latitude=person["latitude"],
+                        longitude=person["longitude"],
+                        house_system="placidus",
+                    )
+                except Exception as e:
+                    logger.error(f"✗ Error calculating chart: {e}")
+                    stats["errors"] += 1
+                    continue
+
+                # Create PublicChart
+                chart = PublicChart(
+                    slug=person["slug"],
+                    full_name=person["full_name"],
+                    category=person["category"],
                     birth_datetime=person["birth_datetime"],
-                    timezone=person["birth_timezone"],
+                    birth_timezone=person["birth_timezone"],
                     latitude=person["latitude"],
                     longitude=person["longitude"],
+                    city=person["city"],
+                    country=person["country"],
+                    chart_data=chart_data,
                     house_system="placidus",
+                    photo_url=person.get("photo_url"),
+                    short_bio=person.get("short_bio"),
+                    highlights=person.get("highlights"),
+                    is_published=person.get("is_published", False),
+                    featured=person.get("featured", False),
                 )
+
+                session.add(chart)
+                await session.flush()  # Get the chart ID
+                logger.info(f"✓ Chart created (ID: {chart.id})")
+                stats["created"] += 1
+
+            # Generate interpretations using the same logic as the API endpoint
+            logger.info("→ Generating RAG-based interpretations...")
+            try:
+                interp_count = await _generate_chart_interpretations(
+                    chart=chart,
+                    db=session,
+                    language="pt-BR",
+                )
+                stats["interpretations"] += interp_count
+                logger.info(f"✓ Generated {interp_count} interpretations")
             except Exception as e:
-                print(f"  Error calculating chart: {e}")
-                continue
+                logger.error(f"✗ Error generating interpretations: {e}")
+                import traceback
 
-            # Create PublicChart
-            chart = PublicChart(
-                slug=person["slug"],
-                full_name=person["full_name"],
-                category=person["category"],
-                birth_datetime=person["birth_datetime"],
-                birth_timezone=person["birth_timezone"],
-                latitude=person["latitude"],
-                longitude=person["longitude"],
-                city=person["city"],
-                country=person["country"],
-                chart_data=chart_data,
-                house_system="placidus",
-                photo_url=person.get("photo_url"),
-                short_bio=person.get("short_bio"),
-                highlights=person.get("highlights"),
-                is_published=person.get("is_published", False),
-                featured=person.get("featured", False),
-            )
+                traceback.print_exc()
+                stats["errors"] += 1
 
-            session.add(chart)
-            print(f"  Created {person['full_name']}")
+            # Generate personal growth suggestions
+            logger.info("→ Generating personal growth suggestions...")
+            try:
+                growth_data = await growth_service.generate_growth_suggestions(
+                    chart_data=chart.chart_data,
+                )
 
-        await session.commit()
-        print("\nDone! Public charts populated successfully.")
+                # Save growth suggestions as interpretation type "growth"
+                if growth_data:
+                    # Convert growth data to formatted text
+                    import json
+
+                    growth_sections = []
+
+                    if "strengths" in growth_data and growth_data["strengths"]:
+                        growth_sections.append("## 🌟 Pontos Fortes\n")
+                        for strength in growth_data["strengths"]:
+                            growth_sections.append(f"- {strength}\n")
+
+                    if "challenges" in growth_data and growth_data["challenges"]:
+                        growth_sections.append("\n## 💪 Desafios e Oportunidades de Crescimento\n")
+                        for challenge in growth_data["challenges"]:
+                            growth_sections.append(f"- {challenge}\n")
+
+                    if "opportunities" in growth_data and growth_data["opportunities"]:
+                        growth_sections.append("\n## ✨ Oportunidades\n")
+                        for opp in growth_data["opportunities"]:
+                            growth_sections.append(f"- {opp}\n")
+
+                    if "life_purpose" in growth_data and growth_data["life_purpose"]:
+                        growth_sections.append(f"\n## 🎯 Propósito de Vida\n{growth_data['life_purpose']}\n")
+
+                    growth_text = "".join(growth_sections)
+
+                    growth_interp = PublicChartInterpretation(
+                        chart_id=chart.id,
+                        interpretation_type="growth",
+                        subject="personal_growth",
+                        content=growth_text,
+                        openai_model=settings.OPENAI_MODEL,
+                        prompt_version="1.0",
+                        language="pt-BR",
+                    )
+                    session.add(growth_interp)
+                    stats["growth_suggestions"] += 1
+                    logger.info(f"✓ Generated growth suggestions")
+
+            except Exception as e:
+                logger.error(f"✗ Error generating growth suggestions: {e}")
+                stats["errors"] += 1
+
+            # Commit after each person to avoid losing work
+            await session.commit()
+            logger.info(f"✓ Saved all data for {person['full_name']}")
+
+        # Print final statistics
+        logger.info(f"\n{'='*60}")
+        logger.info("FINAL STATISTICS")
+        logger.info(f"{'='*60}")
+        logger.info(f"Total people: {stats['total']}")
+        logger.info(f"Charts created: {stats['created']}")
+        logger.info(f"Charts skipped (already exist): {stats['skipped']}")
+        logger.info(f"Interpretations generated: {stats['interpretations']}")
+        logger.info(f"Growth suggestions generated: {stats['growth_suggestions']}")
+        logger.info(f"Errors: {stats['errors']}")
+        logger.info(f"{'='*60}")
+        logger.info("✓ Public charts population complete!")
 
 
 if __name__ == "__main__":

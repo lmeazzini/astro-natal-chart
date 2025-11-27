@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
+from app.core.database import AsyncSessionLocal
 from app.core.dependencies import get_db, require_verified_email
 from app.core.i18n import SUPPORTED_LOCALES, normalize_locale
 from app.models.chart import BirthChart
@@ -229,25 +230,29 @@ async def get_chart_interpretations(
         # This runs for both existing and new interpretations
         if "growth" in regenerate_types:
             logger.info(f"Generating growth suggestions for chart {chart_id}")
-            # Flush current transaction to ensure all previous writes are visible
-            await db.flush()
 
-            # Pass db session for dual persistence (cache + database)
-            growth_service = PersonalGrowthService(language=user_language, db=db)
-            try:
-                growth_dict = await growth_service.generate_growth_suggestions(
-                    chart_data=chart.chart_data,
-                    chart_id=chart_id,  # Enable persistence to ChartInterpretation table
-                )
-                # Convert dict to Pydantic model
-                response.growth = GrowthSuggestionsData(**growth_dict)
-                # Update metadata to reflect growth generation
-                response.metadata.rag_generations += 1
-                logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
-            except Exception as e:
-                logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
-                # Don't rollback - let the endpoint's error handler deal with it
-                response.growth = None
+            # Create a new independent database session for growth generation
+            # This prevents "another operation is in progress" errors with AsyncPG
+            async with AsyncSessionLocal() as growth_db:
+                try:
+                    # Pass new db session for dual persistence (cache + database)
+                    growth_service = PersonalGrowthService(language=user_language, db=growth_db)
+                    growth_dict = await growth_service.generate_growth_suggestions(
+                        chart_data=chart.chart_data,
+                        chart_id=chart_id,  # Enable persistence to ChartInterpretation table
+                    )
+                    # Commit the growth session
+                    await growth_db.commit()
+
+                    # Convert dict to Pydantic model
+                    response.growth = GrowthSuggestionsData(**growth_dict)
+                    # Update metadata to reflect growth generation
+                    response.metadata.rag_generations += 1
+                    logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
+                except Exception as e:
+                    logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
+                    await growth_db.rollback()
+                    response.growth = None
 
         return response
 

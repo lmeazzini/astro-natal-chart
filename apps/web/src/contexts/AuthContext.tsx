@@ -8,6 +8,7 @@ import { authService, User } from '../services/auth';
 import { getToken, setToken, setRefreshToken, clearTokens, authEvents } from '../services/api';
 import { useLocaleSync } from '../hooks/useLocaleSync';
 import { useTokenMonitor } from '../hooks/useTokenMonitor';
+import { amplitudeService } from '../services/amplitude';
 
 interface AuthContextData {
   user: User | null;
@@ -46,6 +47,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (token) {
       authService.logout(token).catch(console.error);
     }
+
+    // Track logout event
+    amplitudeService.reset();
 
     clearTokens();
     setUser(null);
@@ -97,6 +101,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const userData = await authService.getCurrentUser(tokens.access_token);
       setUser(userData);
+
+      // Track login event
+      amplitudeService.identify(userData.id, {
+        email: userData.email,
+        full_name: userData.full_name,
+        email_verified: userData.email_verified,
+      });
+      amplitudeService.track('user_logged_in', {
+        method: 'email_password',
+      });
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -117,6 +131,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password,
         password_confirm: passwordConfirm,
         accept_terms: acceptTerms,
+      });
+
+      // Track registration event (before auto-login)
+      amplitudeService.track('user_registered', {
+        method: 'email_password',
+        accept_terms: acceptTerms ?? false,
       });
 
       // Auto-login after registration

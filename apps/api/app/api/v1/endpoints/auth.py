@@ -15,6 +15,7 @@ from app.models.user import User
 from app.schemas.auth import LoginRequest, RefreshTokenRequest, Token, TokenVerify
 from app.schemas.user import UserCreate, UserRead
 from app.services import auth_service
+from app.services.amplitude_service import amplitude_service
 
 router = APIRouter()
 
@@ -57,6 +58,17 @@ async def register(
             ip_address=ip_address,
             user_agent=user_agent,
         )
+
+        # Track registration event
+        amplitude_service.track(
+            event_type="user_registered",
+            user_id=str(user.id),
+            event_properties={
+                "method": "email_password",
+                "accept_terms": user_data.accept_terms or False,
+            },
+        )
+
         return user
     except auth_service.UserAlreadyExistsError as e:
         raise HTTPException(
@@ -92,11 +104,33 @@ async def login(
         HTTPException 401: If credentials are invalid
     """
     try:
+        # Authenticate user first
+        user = await auth_service.authenticate_user(db, login_data.email, login_data.password)
+
+        # Generate tokens
         token = await auth_service.login_user(
             db,
             email=login_data.email,
             password=login_data.password,
         )
+
+        # Track login event
+        amplitude_service.identify(
+            user_id=str(user.id),
+            user_properties={
+                "email": user.email,
+                "full_name": user.full_name,
+                "email_verified": user.email_verified,
+            },
+        )
+        amplitude_service.track(
+            event_type="user_logged_in",
+            user_id=str(user.id),
+            event_properties={
+                "method": "email_password",
+            },
+        )
+
         return token
     except auth_service.AuthenticationError as e:
         raise HTTPException(

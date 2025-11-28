@@ -175,7 +175,7 @@ class Settings(BaseSettings):
     COOKIE_DOMAIN: str | None = None  # Cookie domain (None = current domain)
 
     # Unverified User Limits
-    UNVERIFIED_USER_CHART_LIMIT: int = 5  # Max charts for unverified users
+    UNVERIFIED_USER_CHART_LIMIT: int = 1  # Max charts for unverified users
 
     # Amplitude Analytics
     AMPLITUDE_API_KEY: str | None = None

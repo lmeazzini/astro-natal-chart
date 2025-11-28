@@ -28,6 +28,11 @@ DB_NAME="${DB_NAME:-astro}"
 DB_USER="${DB_USER:-astro_user}"
 DB_PASSWORD="${DB_PASSWORD:-}"
 
+# S3 configuration (from environment)
+BACKUP_S3_BUCKET="${BACKUP_S3_BUCKET:-}"
+BACKUP_S3_PREFIX="${BACKUP_S3_PREFIX:-backups}"
+AWS_REGION="${AWS_REGION:-us-east-1}"
+
 # Log file
 LOG_FILE="${RESTORE_LOG_FILE:-/var/log/astro-restore.log}"
 
@@ -37,6 +42,10 @@ SKIP_BACKUP=false
 SKIP_SERVICES=false
 CONFIRMED=false
 BACKUP_FILE=""
+FROM_S3=false
+FROM_S3_LATEST=false
+S3_URL=""
+LIST_S3=false
 
 # ============================================================================
 # Functions
@@ -56,38 +65,53 @@ warn() {
 
 show_usage() {
     cat <<EOF
-Usage: $0 --backup-file <path> [OPTIONS]
+Usage: $0 [OPTIONS]
 
 Restore PostgreSQL database from backup file with safety checks.
 
-Required:
-  --backup-file PATH    Path to backup file (e.g., /var/backups/astro-db/astro_backup_20250125_120000.sql.gz)
+Backup Source (choose one):
+  --backup-file PATH       Path to local backup file
+  --from-s3-latest         Download and restore latest backup from S3
+  --from-s3 S3_URL         Download and restore specific S3 backup
+  --list-s3                List available backups in S3 and exit
 
 Options:
-  --dry-run             Validate backup but don't restore
-  --skip-backup         Skip pre-restore backup (DANGEROUS)
-  --skip-services       Don't stop/start Docker services
-  --confirm             Skip confirmation prompt (for automation)
-  -h, --help            Show this help message
+  --dry-run                Validate backup but don't restore
+  --skip-backup            Skip pre-restore backup (DANGEROUS)
+  --skip-services          Don't stop/start Docker services
+  --confirm                Skip confirmation prompt (for automation)
+  -h, --help               Show this help message
 
 Examples:
-  # Interactive restore (recommended)
+  # Restore from local file (interactive)
   $0 --backup-file /var/backups/astro-db/astro_backup_20250125_120000.sql.gz
 
-  # Dry run to validate backup
-  $0 --backup-file /path/to/backup.sql.gz --dry-run
+  # Restore latest backup from S3
+  $0 --from-s3-latest
 
-  # Automated restore (CI/CD)
-  $0 --backup-file /path/to/backup.sql.gz --confirm
+  # Restore specific backup from S3
+  $0 --from-s3 s3://genesis-559050210551-backup-dev/backups/20250128/astro_backup_20250128_030000.sql.gz
+
+  # List available S3 backups
+  $0 --list-s3
+
+  # Automated restore with latest S3 backup (CI/CD)
+  $0 --from-s3-latest --confirm
+
+  # Dry run to validate S3 backup
+  $0 --from-s3-latest --dry-run
 
 Environment Variables:
-  DB_HOST              Database host (default: localhost)
-  DB_PORT              Database port (default: 5432)
-  DB_NAME              Database name (default: astro)
-  DB_USER              Database user (default: astro_user)
-  DB_PASSWORD          Database password
-  BACKUP_DIR           Backup directory (default: /var/backups/astro-db)
-  RESTORE_LOG_FILE     Log file path (default: /var/log/astro-restore.log)
+  DB_HOST                Database host (default: localhost)
+  DB_PORT                Database port (default: 5432)
+  DB_NAME                Database name (default: astro)
+  DB_USER                Database user (default: astro_user)
+  DB_PASSWORD            Database password
+  BACKUP_DIR             Backup directory (default: /var/backups/astro-db)
+  BACKUP_S3_BUCKET       S3 bucket for backups
+  BACKUP_S3_PREFIX       S3 prefix (default: backups)
+  AWS_REGION             AWS region (default: us-east-1)
+  RESTORE_LOG_FILE       Log file path (default: /var/log/astro-restore.log)
 
 EOF
 }
@@ -98,6 +122,20 @@ parse_args() {
             --backup-file)
                 BACKUP_FILE="$2"
                 shift 2
+                ;;
+            --from-s3-latest)
+                FROM_S3_LATEST=true
+                FROM_S3=true
+                shift
+                ;;
+            --from-s3)
+                S3_URL="$2"
+                FROM_S3=true
+                shift 2
+                ;;
+            --list-s3)
+                LIST_S3=true
+                shift
                 ;;
             --dry-run)
                 DRY_RUN=true
@@ -127,10 +165,117 @@ parse_args() {
         esac
     done
 
-    if [ -z "$BACKUP_FILE" ]; then
-        error "Missing required argument: --backup-file"
+    # Validation: need at least one backup source (unless --list-s3)
+    if [ "$LIST_S3" = false ] && [ -z "$BACKUP_FILE" ] && [ "$FROM_S3" = false ]; then
+        error "Missing backup source. Use --backup-file, --from-s3-latest, or --from-s3"
         show_usage
         exit 1
+    fi
+
+    # Validation: cannot use both local file and S3
+    if [ -n "$BACKUP_FILE" ] && [ "$FROM_S3" = true ]; then
+        error "Cannot use both --backup-file and S3 options. Choose one."
+        show_usage
+        exit 1
+    fi
+}
+
+check_s3_configured() {
+    if [ -z "$BACKUP_S3_BUCKET" ]; then
+        error "S3 not configured. Set BACKUP_S3_BUCKET environment variable."
+        return 1
+    fi
+
+    if ! command -v aws >/dev/null 2>&1; then
+        error "AWS CLI not found. Please install: https://aws.amazon.com/cli/"
+        return 1
+    fi
+
+    # Test AWS credentials
+    if ! aws sts get-caller-identity >/dev/null 2>&1; then
+        error "AWS credentials not configured or invalid"
+        error "Run: aws configure"
+        return 1
+    fi
+
+    return 0
+}
+
+list_s3_backups() {
+    log "Listing backups in S3 bucket: s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/"
+
+    if ! check_s3_configured; then
+        return 1
+    fi
+
+    # List objects in S3
+    local backups
+    backups=$(aws s3 ls "s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/" \
+        --recursive \
+        --region "$AWS_REGION" \
+        --human-readable \
+        --summarize 2>&1)
+
+    if [ $? -ne 0 ]; then
+        error "Failed to list S3 backups"
+        echo "$backups" >&2
+        return 1
+    fi
+
+    echo "$backups" | grep ".sql.gz$"
+
+    return 0
+}
+
+get_latest_s3_backup() {
+    log "Finding latest backup in S3..."
+
+    if ! check_s3_configured; then
+        return 1
+    fi
+
+    # Get latest backup URL
+    local latest_backup
+    latest_backup=$(aws s3 ls "s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/" \
+        --recursive \
+        --region "$AWS_REGION" 2>&1 | \
+        grep ".sql.gz$" | \
+        sort -r | \
+        head -n 1 | \
+        awk '{print $4}')
+
+    if [ -z "$latest_backup" ]; then
+        error "No backups found in S3"
+        return 1
+    fi
+
+    # Return full S3 URL
+    echo "s3://${BACKUP_S3_BUCKET}/${latest_backup}"
+    return 0
+}
+
+download_from_s3() {
+    local s3_url="$1"
+    local local_path="$2"
+
+    log "Downloading backup from S3..."
+    log "Source: $s3_url"
+    log "Destination: $local_path"
+
+    if ! check_s3_configured; then
+        return 1
+    fi
+
+    # Create parent directory if needed
+    mkdir -p "$(dirname "$local_path")"
+
+    # Download with AWS CLI
+    if aws s3 cp "$s3_url" "$local_path" --region "$AWS_REGION" 2>&1 | tee -a "$LOG_FILE"; then
+        log "Download completed successfully ✓"
+        return 0
+    else
+        error "Failed to download backup from S3"
+        return 1
     fi
 }
 
@@ -381,6 +526,47 @@ main() {
     log "Starting database restore"
     log "=========================================="
     log "Database: ${DB_NAME}@${DB_HOST}:${DB_PORT}"
+
+    # Handle --list-s3 flag (list and exit)
+    if [ "$LIST_S3" = true ]; then
+        list_s3_backups
+        exit $?
+    fi
+
+    # Handle S3 restore
+    if [ "$FROM_S3" = true ]; then
+        log "S3 restore mode enabled"
+
+        # Determine S3 URL
+        if [ "$FROM_S3_LATEST" = true ]; then
+            log "Getting latest backup from S3..."
+            S3_URL=$(get_latest_s3_backup)
+            if [ $? -ne 0 ]; then
+                error "Failed to find latest S3 backup"
+                exit 1
+            fi
+            log "Latest backup: $S3_URL"
+        fi
+
+        if [ -z "$S3_URL" ]; then
+            error "No S3 URL provided or found"
+            exit 1
+        fi
+
+        # Extract filename from S3 URL
+        local backup_filename
+        backup_filename=$(basename "$S3_URL")
+
+        # Download to backup directory
+        BACKUP_FILE="${BACKUP_DIR}/${backup_filename}"
+
+        log "Downloading backup from S3..."
+        if ! download_from_s3 "$S3_URL" "$BACKUP_FILE"; then
+            error "Failed to download backup from S3"
+            exit 1
+        fi
+    fi
+
     log "Backup file: $BACKUP_FILE"
     log "Dry run: $DRY_RUN"
 
@@ -457,7 +643,11 @@ main() {
 parse_args "$@"
 
 # Create log file parent directory if it doesn't exist
-mkdir -p "$(dirname "$LOG_FILE")"
+# Use temp log if we don't have permission to write to default location
+if ! mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || ! touch "$LOG_FILE" 2>/dev/null; then
+    LOG_FILE="/tmp/astro-restore-$(date +%Y%m%d-%H%M%S).log"
+    warn "Cannot write to default log location, using: $LOG_FILE"
+fi
 
 # Run main function
 main

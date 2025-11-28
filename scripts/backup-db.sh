@@ -479,7 +479,11 @@ main() {
 # ============================================================================
 
 # Create log file parent directory if it doesn't exist
-mkdir -p "$(dirname "$LOG_FILE")"
+# Use temp log if we don't have permission to write to default location
+if ! mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || ! touch "$LOG_FILE" 2>/dev/null; then
+    LOG_FILE="/tmp/astro-backup-$(date +%Y%m%d-%H%M%S).log"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] WARNING: Cannot write to default log location, using: $LOG_FILE" >&2
+fi
 
 # Run main function
 main

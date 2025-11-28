@@ -34,7 +34,7 @@ import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import { useAuth } from '../contexts/AuthContext';
 
 // Components
-import { ChartWheelAstro } from '../components/ChartWheelAstro';
+import { ChartWheel } from '../components/ChartWheel';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
@@ -487,7 +487,13 @@ export function PublicChartDetailPage() {
                     <h3 className="text-h4 font-display mb-4">
                       {t('chartDetail.chartWheel', { defaultValue: 'Natal Chart Wheel' })}
                     </h3>
-                    <ChartWheelAstro chartData={chartData} />
+                    <ChartWheel
+                      planets={chartData.planets}
+                      houses={chartData.houses}
+                      aspects={chartData.aspects}
+                      ascendant={chartData.ascendant}
+                      midheaven={chartData.midheaven}
+                    />
                   </div>
 
                   {/* Temperament */}

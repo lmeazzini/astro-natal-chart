@@ -16,7 +16,7 @@ import {
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
-import { ChartWheelAstro } from '../components/ChartWheelAstro';
+import { ChartWheel } from '../components/ChartWheel';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
@@ -827,10 +827,16 @@ export function ChartDetailPage() {
                     </div>
                   </div>
 
-                  {/* Chart Wheel - Professional visualization with AstroChart (PRIMEIRO) */}
+                  {/* Chart Wheel (PRIMEIRO) */}
                   <div>
                     <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
-                    <ChartWheelAstro chartData={chart.chart_data} />
+                    <ChartWheel
+                      planets={chart.chart_data.planets}
+                      houses={chart.chart_data.houses}
+                      aspects={chart.chart_data.aspects}
+                      ascendant={chart.chart_data.ascendant}
+                      midheaven={chart.chart_data.midheaven}
+                    />
                   </div>
 
                   {/* Temperament (SEGUNDO) */}

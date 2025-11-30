@@ -23,7 +23,9 @@
     "pageOf": "Page {{page}} of {{total}}",
     "myCharts": "My Charts",
     "login": "Login",
-    "search": "Search"
+    "search": "Search",
+    "refresh": "Refresh",
+    "retry": "Try again"
   },
   "nav": {
     "home": "Home",

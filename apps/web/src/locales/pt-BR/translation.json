@@ -22,7 +22,9 @@
     "hide": "Ocultar",
     "pageOf": "Página {{page}} de {{total}}",
     "myCharts": "Meus Mapas",
-    "login": "Entrar"
+    "login": "Entrar",
+    "refresh": "Atualizar",
+    "retry": "Tentar novamente"
   },
   "nav": {
     "home": "Início",

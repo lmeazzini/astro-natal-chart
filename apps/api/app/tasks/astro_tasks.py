@@ -88,12 +88,29 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             await db.commit()
             logger.info(f"Preparing AI interpretations for {chart_id}")
 
-            # Generate RAG-enhanced interpretations
-            rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
-            await rag_service.generate_all_rag_interpretations(
-                chart=chart,
-                chart_data=calculated_data,
-            )
+            # Generate RAG-enhanced interpretations in BOTH languages
+            # This ensures users can switch languages without waiting for generation
+            for language in ["pt-BR", "en-US"]:
+                logger.info(f"Generating {language} interpretations for {chart_id}")
+                rag_service = InterpretationServiceRAG(
+                    db, use_cache=True, use_rag=True, language=language
+                )
+                await rag_service.generate_all_rag_interpretations(
+                    chart=chart,
+                    chart_data=calculated_data,
+                )
+
+            # Step 3.5: Generate growth interpretations in BOTH languages
+            logger.info(f"Generating growth interpretations for {chart_id}")
+            from app.services.personal_growth_service import PersonalGrowthService
+
+            for language in ["pt-BR", "en-US"]:
+                logger.info(f"Generating {language} growth interpretations for {chart_id}")
+                growth_service = PersonalGrowthService(language=language, db=db)
+                await growth_service.generate_growth_suggestions(
+                    chart_data=calculated_data,
+                    chart_id=UUID(chart_id),
+                )
 
             # Step 4: Mark as completed
             chart.status = "completed"

@@ -109,7 +109,7 @@ export function BlogPage() {
   return (
     <>
       <Helmet>
-        <title>{pageTitle} | Astro</title>
+        <title>{pageTitle} | Real Astrology</title>
         <meta name="description" content={t('blog.description')} />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={t('blog.description')} />
@@ -122,7 +122,7 @@ export function BlogPage() {
         <header className="border-b bg-card">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <Link to="/" className="text-xl font-bold text-primary">
-              Astro
+              Real Astrology
             </Link>
             <div className="flex items-center gap-4">
               <LanguageSelector />
@@ -265,7 +265,7 @@ export function BlogPage() {
                     {t('common.previous')}
                   </Button>
                   <span className="px-4 text-sm text-muted-foreground">
-                    {t('common.pageOf', { current: page, total: totalPages })}
+                    {t('common.pageOf', { page, total: totalPages })}
                   </span>
                   <Button
                     variant="outline"
@@ -344,18 +344,76 @@ export function BlogPage() {
         </main>
 
         {/* Footer */}
-        <footer className="border-t bg-card py-8">
-          <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Astro. {t('footer.rights')}
-            </p>
-            <div className="mt-2 flex justify-center gap-4">
-              <Link to="/privacidade" className="hover:text-primary">
-                {t('footer.privacy')}
-              </Link>
-              <Link to="/termos" className="hover:text-primary">
-                {t('footer.terms')}
-              </Link>
+        <footer className="bg-card border-t border-border py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <img src="/logo.png" alt="Real Astrology" className="h-6 w-6" />
+                  <span className="font-bold text-foreground">Real Astrology</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t('landing.footer.tagline', {
+                    defaultValue: 'Astrologia Tradicional Para o Mundo Moderno',
+                  })}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">
+                  {t('landing.footer.legal', { defaultValue: 'Legal' })}
+                </h4>
+                <div className="space-y-2">
+                  <Link
+                    to="/terms"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.terms', { defaultValue: 'Termos de Uso' })}
+                  </Link>
+                  <Link
+                    to="/privacy"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.privacy', { defaultValue: 'Política de Privacidade' })}
+                  </Link>
+                  <Link
+                    to="/cookies"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.cookies', { defaultValue: 'Política de Cookies' })}
+                  </Link>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">
+                  {t('landing.footer.access', { defaultValue: 'Acesso' })}
+                </h4>
+                <div className="space-y-2">
+                  <Link
+                    to="/login"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.login', { defaultValue: 'Entrar' })}
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.register', { defaultValue: 'Criar Conta' })}
+                  </Link>
+                  <Link
+                    to="/dashboard"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.dashboard', { defaultValue: 'Dashboard' })}
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className="pt-8 border-t border-border text-center">
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} Real Astrology.{' '}
+                {t('landing.footer.madeWith', { defaultValue: 'Feito com ♄ e ♃ no Brasil.' })}
+              </p>
             </div>
           </div>
         </footer>

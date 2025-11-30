@@ -5,7 +5,7 @@
  * user-specific features (edit, delete, PDF export, RAG toggle).
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -34,7 +34,7 @@ import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import { useAuth } from '../contexts/AuthContext';
 
 // Components
-import { ChartWheel } from '../components/ChartWheel';
+import { ChartWheelAstro } from '../components/ChartWheelAstro';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
@@ -72,7 +72,7 @@ interface PublicChartData {
 }
 
 export function PublicChartDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { translateSign, translatePlanet } = useAstroTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
@@ -81,6 +81,9 @@ export function PublicChartDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [interpretations, setInterpretations] = useState<PublicChartInterpretations | null>(null);
+
+  // Track the last language we loaded interpretations for (to avoid reload loops)
+  const lastLoadedLanguageRef = useRef<string | null>(null);
 
   const loadChart = useCallback(async () => {
     if (!slug) return;
@@ -102,13 +105,13 @@ export function PublicChartDetailPage() {
     if (!slug) return;
 
     try {
-      const data = await getPublicChartInterpretations(slug);
+      const data = await getPublicChartInterpretations(slug, i18n.language);
       setInterpretations(data);
     } catch (err) {
       console.error('Failed to load interpretations:', err);
       // Silently fail - interpretations are optional
     }
-  }, [slug]);
+  }, [slug, i18n.language]);
 
   useEffect(() => {
     loadChart();
@@ -120,6 +123,43 @@ export function PublicChartDetailPage() {
       loadInterpretations();
     }
   }, [chart?.chart_data, loadInterpretations]);
+
+  // Reload interpretations when UI language changes (if language mismatch detected)
+  useEffect(() => {
+    const normalizedUiLang = i18n.language.split('-')[0];
+    const normalizedInterpLang = interpretations?.language?.split('-')[0];
+
+    console.log('[Public Chart - Language Change Effect] Triggered', {
+      chartLoaded: !!chart?.chart_data,
+      interpretationLanguage: interpretations?.language,
+      normalizedInterpLang,
+      uiLanguage: i18n.language,
+      normalizedUiLang,
+      lastLoadedLanguage: lastLoadedLanguageRef.current,
+      hasInterpretations: !!interpretations,
+    });
+
+    // Only reload if:
+    // 1. Chart data is loaded
+    // 2. Interpretations already loaded
+    // 3. Current UI language differs from interpretation language
+    // 4. Haven't already loaded for this language (avoid reload loops)
+    if (
+      chart?.chart_data &&
+      interpretations?.language &&
+      normalizedInterpLang &&
+      normalizedUiLang !== normalizedInterpLang &&
+      lastLoadedLanguageRef.current !== normalizedUiLang
+    ) {
+      // Language mismatch detected - reload interpretations in new language
+      console.log(
+        `[Public Chart - Auto-Reload] Language mismatch detected: UI is ${i18n.language}, interpretations are ${interpretations.language}. Reloading interpretations...`
+      );
+      lastLoadedLanguageRef.current = normalizedUiLang;
+      loadInterpretations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language]);
 
   // Helper functions
   function getAscendantSign(): string {
@@ -217,7 +257,7 @@ export function PublicChartDetailPage() {
                 <div className="flex items-center gap-2">
                   <h1 className="text-h3 font-display text-foreground">{chart.full_name}</h1>
                   {chart.category && (
-                    <Badge variant="secondary">{getCategoryLabel(chart.category)}</Badge>
+                    <Badge variant="secondary">{getCategoryLabel(chart.category, t)}</Badge>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -487,13 +527,7 @@ export function PublicChartDetailPage() {
                     <h3 className="text-h4 font-display mb-4">
                       {t('chartDetail.chartWheel', { defaultValue: 'Natal Chart Wheel' })}
                     </h3>
-                    <ChartWheel
-                      planets={chartData.planets}
-                      houses={chartData.houses}
-                      aspects={chartData.aspects}
-                      ascendant={chartData.ascendant}
-                      midheaven={chartData.midheaven}
-                    />
+                    <ChartWheelAstro chartData={chartData} width={600} height={600} />
                   </div>
 
                   {/* Temperament */}

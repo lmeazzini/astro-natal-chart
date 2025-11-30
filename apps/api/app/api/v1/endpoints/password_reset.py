@@ -34,9 +34,9 @@ router = APIRouter(prefix="/password-reset", tags=["Password Reset"])
 )
 @limiter.limit(RateLimits.PASSWORD_RESET_REQUEST)
 async def request_password_reset(
-    http_request: Request,
-    http_response: Response,
-    request: PasswordResetRequest,
+    request: Request,
+    response: Response,
+    reset_request: PasswordResetRequest,
     db: AsyncSession = Depends(get_db),
 ) -> PasswordResetResponse:
     """
@@ -45,7 +45,7 @@ async def request_password_reset(
     Envia email com link de recuperação se o email existir no sistema.
     """
     service = PasswordResetService()
-    result = await service.request_password_reset(db, request.email)
+    result = await service.request_password_reset(db, reset_request.email)
 
     # Track password reset request (success or not)
     if result["success"]:
@@ -84,9 +84,9 @@ async def request_password_reset(
 )
 @limiter.limit(RateLimits.PASSWORD_RESET_CONFIRM)
 async def confirm_password_reset(
-    http_request: Request,
-    http_response: Response,
-    request: PasswordResetConfirm,
+    request: Request,
+    response: Response,
+    reset_confirm: PasswordResetConfirm,
     db: AsyncSession = Depends(get_db),
 ) -> PasswordResetResponse:
     """
@@ -97,7 +97,9 @@ async def confirm_password_reset(
     service = PasswordResetService()
 
     try:
-        result = await service.confirm_password_reset(db, request.token, request.new_password)
+        result = await service.confirm_password_reset(
+            db, reset_confirm.token, reset_confirm.new_password
+        )
 
         # Track successful password reset
         if result["success"]:

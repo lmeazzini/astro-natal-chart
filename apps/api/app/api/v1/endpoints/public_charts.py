@@ -232,6 +232,7 @@ async def get_public_chart_interpretations(
             aspects=aspects,
             arabic_parts=arabic_parts,
             source="rag",
+            language=language,
         )
 
     # Generate new interpretations
@@ -501,6 +502,7 @@ async def _generate_public_chart_interpretations(
         aspects=aspects,
         arabic_parts=arabic_parts,
         source="rag",
+        language=language,
     )
 
 

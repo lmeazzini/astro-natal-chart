@@ -48,6 +48,14 @@ i18n
       escapeValue: false, // React already escapes
     },
 
+    // Return key instead of empty string when translation is missing
+    returnNull: false,
+    returnEmptyString: false,
+
+    // Use key as fallback when translation is missing
+    saveMissing: false,
+    parseMissingKeyHandler: (key) => key,
+
     // Enable debug in development
     debug: import.meta.env.DEV,
   });

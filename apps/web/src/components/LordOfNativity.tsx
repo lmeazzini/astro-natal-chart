@@ -46,12 +46,6 @@ const classificationColors: Record<string, string> = {
   debilitated: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
 };
 
-const classificationLabels: Record<string, string> = {
-  dignified: 'Dignificado',
-  peregrine: 'Peregrino',
-  debilitated: 'Debilitado',
-};
-
 export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
   const { t } = useTranslation();
   const { translatePlanet, translateSign } = useAstroTranslation();
@@ -60,8 +54,18 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
   const classificationColor =
     classificationColors[lordOfNativity.classification] ||
     'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20';
-  const classificationLabel =
-    classificationLabels[lordOfNativity.classification] || lordOfNativity.classification;
+
+  // Get classification label with translation
+  const getClassificationLabel = (classification: string) => {
+    const labels: Record<string, string> = {
+      dignified: t('components.lordOfNativity.dignified', { defaultValue: 'Dignificado' }),
+      peregrine: t('components.lordOfNativity.peregrine', { defaultValue: 'Peregrino' }),
+      debilitated: t('components.lordOfNativity.debilitated', { defaultValue: 'Debilitado' }),
+    };
+    return labels[classification] || classification;
+  };
+
+  const classificationLabel = getClassificationLabel(lordOfNativity.classification);
 
   return (
     <Card className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-amber-500/20">

@@ -87,7 +87,7 @@ async def create_birth_chart(
     # Generate AI interpretations automatically using RAG
     if generate_interpretations:
         try:
-            rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+            rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
             await rag_service.generate_all_rag_interpretations(
                 chart=created_chart,
                 chart_data=calculated_data,
@@ -308,7 +308,7 @@ async def update_birth_chart(
 
         # Regenerate RAG-enhanced interpretations for recalculated chart
         try:
-            rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+            rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
             await rag_service.generate_all_rag_interpretations(
                 chart=chart,
                 chart_data=calculated_data,

@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
 from app.models.chart import BirthChart
-from app.models.interpretation import ChartInterpretation
 from app.services.interpretation_cache_service import InterpretationCacheService
 from app.services.rag import hybrid_search_service
 
@@ -164,6 +163,11 @@ class InterpretationServiceRAG:
 
         # Initialize cache service
         self.cache_service = InterpretationCacheService(db) if use_cache else None
+
+        # Initialize interpretation repository for upsert operations
+        from app.repositories.interpretation_repository import InterpretationRepository
+
+        self.repo = InterpretationRepository(db)
 
         # Cache statistics
         self._cache_hits = 0
@@ -906,6 +910,7 @@ class InterpretationServiceRAG:
         self,
         chart: BirthChart,
         chart_data: dict[str, Any],
+        force: bool = False,
     ) -> dict[str, dict[str, str]]:
         """
         Generate all RAG-enhanced interpretations for a chart and save to database.
@@ -913,6 +918,8 @@ class InterpretationServiceRAG:
         Args:
             chart: BirthChart model instance
             chart_data: Calculated chart data
+            force: If True, regenerate interpretations even if they exist.
+                   If False (default), skip generation if interpretation already exists.
 
         Returns:
             Dictionary with all interpretations grouped by type
@@ -942,6 +949,22 @@ class InterpretationServiceRAG:
             dignities = planet.get("dignities", {})
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=planet_name,
+                        interpretation_type="planet",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping planet {planet_name} - interpretation already exists ({self.language})"
+                        )
+                        results["planets"][planet_name] = existing.content
+                        continue
+
+                # Generate new interpretation
                 interpretation = await self.generate_planet_interpretation(
                     planet=planet_name,
                     sign=sign,
@@ -952,17 +975,16 @@ class InterpretationServiceRAG:
                 )
                 results["planets"][planet_name] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="planet",
                     subject=planet_name,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
-                    language=self.language,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(f"Failed to generate RAG planet interpretation for {planet_name}: {e}")
 
@@ -978,6 +1000,21 @@ class InterpretationServiceRAG:
             house_key = f"House {house_number}"
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=house_key,
+                        interpretation_type="house",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping house {house_number} - interpretation already exists ({self.language})"
+                        )
+                        results["houses"][house_key] = existing.content
+                        continue
+
                 # Get ruler for the house sign (imported at module level)
                 ruler = get_sign_ruler(house_sign) or "Unknown"
 
@@ -997,17 +1034,16 @@ class InterpretationServiceRAG:
                     )
                 results["houses"][house_key] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="house",
                     subject=house_key,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
-                    language=self.language,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(f"Failed to generate RAG house interpretation for {house_key}: {e}")
 
@@ -1025,6 +1061,21 @@ class InterpretationServiceRAG:
             aspect_key = f"{planet1}-{aspect_name}-{planet2}"
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=aspect_key,
+                        interpretation_type="aspect",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping aspect {aspect_key} - interpretation already exists ({self.language})"
+                        )
+                        results["aspects"][aspect_key] = existing.content
+                        continue
+
                 # Get planet signs and dignities
                 planet1_data: dict[str, Any] = next(
                     (p for p in planets if p.get("name") == planet1), {}
@@ -1047,17 +1098,16 @@ class InterpretationServiceRAG:
                 )
                 results["aspects"][aspect_key] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="aspect",
                     subject=aspect_key,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
-                    language=self.language,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(f"Failed to generate RAG aspect interpretation for {aspect_key}: {e}")
 
@@ -1067,6 +1117,21 @@ class InterpretationServiceRAG:
                 continue
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=part_key,
+                        interpretation_type="arabic_part",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping arabic_part {part_key} - interpretation already exists ({self.language})"
+                        )
+                        results["arabic_parts"][part_key] = existing.content
+                        continue
+
                 interpretation = await self.generate_arabic_part_interpretation(
                     part_key=part_key,
                     sign=part_data.get("sign", ""),
@@ -1076,17 +1141,16 @@ class InterpretationServiceRAG:
                 )
                 results["arabic_parts"][part_key] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="arabic_part",
                     subject=part_key,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
-                    language=self.language,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(
                     f"Failed to generate RAG Arabic Part interpretation for {part_key}: {e}"

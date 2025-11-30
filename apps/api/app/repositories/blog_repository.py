@@ -171,7 +171,7 @@ class BlogRepository(BaseRepository[BlogPost]):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def increment_views(self, post_id: UUID) -> None:
+    async def increment_views(self, post_id: UUID | Any) -> None:
         """Increment the view count for a post."""
         stmt = select(BlogPost).where(BlogPost.id == post_id)
         result = await self.db.execute(stmt)

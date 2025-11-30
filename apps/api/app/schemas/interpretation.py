@@ -151,6 +151,10 @@ class ChartInterpretationsResponse(BaseModel):
         default="standard",
         description="Interpretation source: 'standard' or 'rag'",
     )
+    language: str = Field(
+        default="pt-BR",
+        description="Language code for interpretations (pt-BR or en-US)",
+    )
 
 
 class RAGInterpretationsResponse(BaseModel):

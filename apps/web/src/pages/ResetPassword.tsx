@@ -123,7 +123,11 @@ export function ResetPasswordPage() {
     });
 
     try {
-      const response = await passwordResetService.confirmReset(token, values.password);
+      const response = await passwordResetService.confirmReset(
+        token,
+        values.password,
+        values.confirmPassword
+      );
 
       if (response.success) {
         // Track successful password reset

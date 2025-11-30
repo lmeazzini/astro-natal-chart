@@ -2,7 +2,7 @@
  * Chart Detail Page - complete birth chart visualization
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
@@ -16,7 +16,7 @@ import {
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
-import { ChartWheel } from '../components/ChartWheel';
+import { ChartWheelAstro } from '../components/ChartWheelAstro';
 import { PlanetList } from '../components/PlanetList';
 import { HouseTable } from '../components/HouseTable';
 import { AspectGrid } from '../components/AspectGrid';
@@ -41,10 +41,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { BigThreeBadge } from '@/components/ui/big-three-badge';
-import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit, RefreshCw } from 'lucide-react';
+import { Trash2, ArrowLeft, Sparkles, FileDown, Loader2, Edit } from 'lucide-react';
 
 export function ChartDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { translateSign, translatePlanet } = useAstroTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -66,6 +66,9 @@ export function ChartDetailPage() {
 
   // Interpretations loading state
   const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
+
+  // Track the last language we loaded interpretations for (to avoid reload loops)
+  const lastLoadedLanguageRef = useRef<string | null>(null);
 
   // Email verification for premium features
   const {
@@ -90,6 +93,43 @@ export function ChartDetailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEmailVerified]);
+
+  // Reload interpretations when UI language changes (if language mismatch detected)
+  useEffect(() => {
+    const normalizedUiLang = i18n.language.split('-')[0];
+    const normalizedInterpLang = interpretations?.language?.split('-')[0];
+
+    console.log('[Language Change Effect] Triggered', {
+      isEmailVerified,
+      interpretationLanguage: interpretations?.language,
+      normalizedInterpLang,
+      uiLanguage: i18n.language,
+      normalizedUiLang,
+      lastLoadedLanguage: lastLoadedLanguageRef.current,
+      hasInterpretations: !!interpretations,
+    });
+
+    // Only reload if:
+    // 1. User is email verified (interpretations are available)
+    // 2. Interpretations already loaded
+    // 3. Current UI language differs from interpretation language
+    // 4. Haven't already loaded for this language (avoid reload loops)
+    if (
+      isEmailVerified &&
+      interpretations?.language &&
+      normalizedInterpLang &&
+      normalizedUiLang !== normalizedInterpLang &&
+      lastLoadedLanguageRef.current !== normalizedUiLang
+    ) {
+      // Language mismatch detected - reload interpretations in new language
+      console.log(
+        `[Auto-Reload] Language mismatch detected: UI is ${i18n.language}, interpretations are ${interpretations.language}. Reloading interpretations...`
+      );
+      lastLoadedLanguageRef.current = normalizedUiLang;
+      loadInterpretations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language]);
 
   // Polling effect for processing charts
   useEffect(() => {
@@ -177,7 +217,7 @@ export function ChartDetailPage() {
       });
 
       const startTime = Date.now();
-      const data = await interpretationsService.getByChartId(id, token);
+      const data = await interpretationsService.getByChartId(id, token, i18n.language);
       const generationTime = Date.now() - startTime;
 
       setInterpretations(data);
@@ -226,18 +266,6 @@ export function ChartDetailPage() {
     if (!open) {
       loadInterpretations();
     }
-  }
-
-  // Manual refresh for interpretations
-  async function handleRefreshInterpretations() {
-    if (!isEmailVerified) {
-      requireEmailVerification(
-        () => {},
-        t('chartDetail.interpretations', { defaultValue: 'AI Interpretations' })
-      );
-      return;
-    }
-    await loadInterpretations();
   }
 
   // Regenerate interpretations (forces new generation, used for language change)
@@ -830,13 +858,7 @@ export function ChartDetailPage() {
                   {/* Chart Wheel (PRIMEIRO) */}
                   <div>
                     <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
-                    <ChartWheel
-                      planets={chart.chart_data.planets}
-                      houses={chart.chart_data.houses}
-                      aspects={chart.chart_data.aspects}
-                      ascendant={chart.chart_data.ascendant}
-                      midheaven={chart.chart_data.midheaven}
-                    />
+                    <ChartWheelAstro chartData={chart.chart_data} width={600} height={600} />
                   </div>
 
                   {/* Temperament (SEGUNDO) */}
@@ -893,38 +915,16 @@ export function ChartDetailPage() {
             {chart.chart_data && (
               <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-h3 font-display flex items-center gap-2">
-                      {t('chartDetail.planetPositions', { defaultValue: 'Planetary Positions' })}
-                      <InfoTooltip
-                        content={t('chartDetail.planetPositionsTooltip', {
-                          defaultValue:
-                            'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.',
-                        })}
-                        side="right"
-                      />
-                    </CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRefreshInterpretations}
-                      disabled={isLoadingInterpretations}
-                      title={t('chartDetail.refreshInterpretations', {
-                        defaultValue: 'Refresh AI interpretations',
+                  <CardTitle className="text-h3 font-display flex items-center gap-2">
+                    {t('chartDetail.planetPositions', { defaultValue: 'Planetary Positions' })}
+                    <InfoTooltip
+                      content={t('chartDetail.planetPositionsTooltip', {
+                        defaultValue:
+                          'Exact planetary positions calculated with Swiss Ephemeris (precision < 1 arcsecond). Includes longitude, latitude, speed and retrograde state.',
                       })}
-                    >
-                      {isLoadingInterpretations ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-4 w-4" />
-                      )}
-                      <span className="ml-2 hidden sm:inline">
-                        {isLoadingInterpretations
-                          ? t('common.loading', { defaultValue: 'Loading...' })
-                          : t('chartDetail.refreshAI', { defaultValue: 'Refresh AI' })}
-                      </span>
-                    </Button>
-                  </div>
+                      side="right"
+                    />
+                  </CardTitle>
                   {interpretations && (
                     <CardDescription className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary" className="flex items-center gap-1.5">

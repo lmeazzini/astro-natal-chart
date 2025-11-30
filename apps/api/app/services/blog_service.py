@@ -77,8 +77,12 @@ class BlogService:
         """Get a published post by slug and increment views."""
         post = await self.repo.get_published_by_slug(slug)
         if post:
-            await self.repo.increment_views(post.id)  # type: ignore[arg-type]
-            return BlogPostRead.model_validate(post)
+            post_id = post.id  # type: ignore[assignment]
+            await self.repo.increment_views(post_id)
+            # Refetch post with relationships after increment_views commits
+            post = await self.repo.get_published_by_slug(slug)
+            if post:
+                return BlogPostRead.model_validate(post)
         return None
 
     async def get_post_by_slug_admin(self, slug: str) -> BlogPostRead | None:

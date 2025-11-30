@@ -33,7 +33,7 @@ from app.services.interpretation_service_rag import (
     InterpretationServiceRAG,
     PlanetData,
 )
-from app.services.personal_growth_service import PersonalGrowthService
+from app.services.personal_growth_service import GROWTH_PROMPT_VERSION, PersonalGrowthService
 
 router = APIRouter()
 
@@ -78,6 +78,7 @@ async def get_chart_interpretations(
     current_user: Annotated[User, Depends(require_verified_email)],
     db: Annotated[AsyncSession, Depends(get_db)],
     regenerate: str | None = None,
+    lang: str | None = None,
 ) -> RAGInterpretationsResponse:
     """
     Get all interpretations for a birth chart using RAG-enhanced AI.
@@ -86,6 +87,7 @@ async def get_chart_interpretations(
         chart_id: Chart UUID
         current_user: Current authenticated user
         db: Database session
+        lang: Optional language code (e.g., 'pt-BR', 'en-US'). If not provided, uses user's profile language.
 
     Returns:
         RAG-enhanced chart interpretations grouped by type (planets, houses, aspects, arabic_parts)
@@ -94,8 +96,10 @@ async def get_chart_interpretations(
         HTTPException: If chart not found or user unauthorized
     """
     try:
-        # Get user's preferred language
-        user_language = normalize_locale(current_user.locale) or "pt-BR"
+        # Get user's preferred language (use query param if provided, otherwise use profile language)
+        user_language = (
+            normalize_locale(lang) if lang else (normalize_locale(current_user.locale) or "pt-BR")
+        )
 
         # Verify user owns the chart
         chart = await chart_service.get_chart_by_id(
@@ -131,79 +135,168 @@ async def get_chart_interpretations(
             and getattr(i, "language", "pt-BR") == user_language
         ]
 
-        # Check if we should use existing or generate new interpretations
-        should_use_existing = rag_existing and not regenerate_types
+        # Determine which types should use existing data vs regenerate
+        # Note: Growth is handled separately below after transaction commit
+        use_existing_planets = "planets" not in regenerate_types
+        use_existing_houses = "houses" not in regenerate_types
+        use_existing_aspects = "aspects" not in regenerate_types
+        use_existing_arabic_parts = "arabic_parts" not in regenerate_types
 
-        if should_use_existing:
-            # Return existing interpretations from database
-            logger.info(
-                f"Returning {len(rag_existing)} existing RAG interpretations for chart {chart_id}"
-            )
-            planets_data: dict[str, InterpretationItem] = {}
-            houses_data: dict[str, InterpretationItem] = {}
-            aspects_data: dict[str, InterpretationItem] = {}
-            arabic_parts_data: dict[str, InterpretationItem] = {}
-            growth_data: dict[str, InterpretationItem] = {}
+        # Check if we have existing data for each type
+        existing_by_type: dict[str, list[ChartInterpretation]] = {
+            "planet": [],
+            "house": [],
+            "aspect": [],
+            "arabic_part": [],
+        }
+        for interp in rag_existing:
+            if interp.interpretation_type in existing_by_type:
+                existing_by_type[interp.interpretation_type].append(interp)
 
-            total_documents = 0
-            for interp in rag_existing:
-                # Load rag_sources from database
+        planets_data: dict[str, InterpretationItem] = {}
+        houses_data: dict[str, InterpretationItem] = {}
+        aspects_data: dict[str, InterpretationItem] = {}
+        arabic_parts_data: dict[str, InterpretationItem] = {}
+
+        total_documents = 0
+        cache_hits_db = 0
+        rag_generations = 0
+
+        # Handle planets
+        if use_existing_planets and existing_by_type["planet"]:
+            logger.info(f"Using existing {len(existing_by_type['planet'])} planet interpretations")
+            for interp in existing_by_type["planet"]:
                 rag_sources_data = interp.rag_sources or []
                 rag_sources_list = [RAGSourceInfo(**src) for src in rag_sources_data]
                 total_documents += len(rag_sources_list)
-
-                item = InterpretationItem(
+                planets_data[interp.subject] = InterpretationItem(
                     content=interp.content,
                     source="rag",
                     rag_sources=rag_sources_list,
                 )
-                if interp.interpretation_type == "planet":
-                    planets_data[interp.subject] = item
-                elif interp.interpretation_type == "house":
-                    # Convert legacy "House X" format to just "X" for frontend compatibility
-                    house_key = interp.subject
-                    if house_key.startswith("House "):
-                        house_key = house_key.replace("House ", "")
-                    houses_data[house_key] = item
-                elif interp.interpretation_type == "aspect":
-                    aspects_data[interp.subject] = item
-                elif interp.interpretation_type == "arabic_part":
-                    arabic_parts_data[interp.subject] = item
-                elif interp.interpretation_type == "growth":
-                    # Load growth interpretations (points, challenges, opportunities, purpose)
-                    growth_data[interp.subject] = item
-
-            # Build metadata
-            metadata = InterpretationMetadata(
-                total_items=len(rag_existing),
-                cache_hits_db=len(rag_existing),
-                cache_hits_cache=0,
-                rag_generations=0,
-                outdated_count=0,
-                documents_used=total_documents,
-                current_prompt_version=RAG_PROMPT_VERSION,
-                response_time_ms=0,
-            )
-
-            response = RAGInterpretationsResponse(
-                planets=planets_data,
-                houses=houses_data,
-                aspects=aspects_data,
-                arabic_parts=arabic_parts_data,
-                growth=growth_data,
-                metadata=metadata,
-                language=user_language,
-            )
+            cache_hits_db += len(existing_by_type["planet"])
         else:
-            # Generate new interpretations and save to DB
-            response = await _generate_rag_interpretations(
+            logger.info("Regenerating planet interpretations")
+            # Generate planets - will be handled by _generate_rag_interpretations
+
+        # Handle houses
+        if use_existing_houses and existing_by_type["house"]:
+            logger.info(f"Using existing {len(existing_by_type['house'])} house interpretations")
+            for interp in existing_by_type["house"]:
+                rag_sources_data = interp.rag_sources or []
+                rag_sources_list = [RAGSourceInfo(**src) for src in rag_sources_data]
+                total_documents += len(rag_sources_list)
+                # Convert legacy "House X" format to just "X" for frontend compatibility
+                house_key = interp.subject
+                if house_key.startswith("House "):
+                    house_key = house_key.replace("House ", "")
+                houses_data[house_key] = InterpretationItem(
+                    content=interp.content,
+                    source="rag",
+                    rag_sources=rag_sources_list,
+                )
+            cache_hits_db += len(existing_by_type["house"])
+        else:
+            logger.info("Regenerating house interpretations")
+            # Generate houses - will be handled by _generate_rag_interpretations
+
+        # Handle aspects
+        if use_existing_aspects and existing_by_type["aspect"]:
+            logger.info(f"Using existing {len(existing_by_type['aspect'])} aspect interpretations")
+            for interp in existing_by_type["aspect"]:
+                rag_sources_data = interp.rag_sources or []
+                rag_sources_list = [RAGSourceInfo(**src) for src in rag_sources_data]
+                total_documents += len(rag_sources_list)
+                aspects_data[interp.subject] = InterpretationItem(
+                    content=interp.content,
+                    source="rag",
+                    rag_sources=rag_sources_list,
+                )
+            cache_hits_db += len(existing_by_type["aspect"])
+        else:
+            logger.info("Regenerating aspect interpretations")
+            # Generate aspects - will be handled by _generate_rag_interpretations
+
+        # Handle Arabic parts
+        if use_existing_arabic_parts and existing_by_type["arabic_part"]:
+            logger.info(
+                f"Using existing {len(existing_by_type['arabic_part'])} Arabic part interpretations"
+            )
+            for interp in existing_by_type["arabic_part"]:
+                rag_sources_data = interp.rag_sources or []
+                rag_sources_list = [RAGSourceInfo(**src) for src in rag_sources_data]
+                total_documents += len(rag_sources_list)
+                arabic_parts_data[interp.subject] = InterpretationItem(
+                    content=interp.content,
+                    source="rag",
+                    rag_sources=rag_sources_list,
+                )
+            cache_hits_db += len(existing_by_type["arabic_part"])
+        else:
+            logger.info("Regenerating Arabic part interpretations")
+            # Generate Arabic parts - will be handled by _generate_rag_interpretations
+
+        # Check if we need to generate any types
+        need_generation = (
+            (not use_existing_planets or not existing_by_type["planet"])
+            or (not use_existing_houses or not existing_by_type["house"])
+            or (not use_existing_aspects or not existing_by_type["aspect"])
+            or (not use_existing_arabic_parts or not existing_by_type["arabic_part"])
+        )
+
+        if need_generation:
+            # Generate missing interpretations
+            logger.info("Generating missing interpretation types")
+            generated_response = await _generate_rag_interpretations(
                 chart, rag_service, db, save_to_db=True, language=user_language
             )
 
+            # Merge generated data with existing data
+            if not planets_data:
+                planets_data = generated_response.planets
+                rag_generations += len(planets_data)
+            if not houses_data:
+                houses_data = generated_response.houses
+                rag_generations += len(houses_data)
+            if not aspects_data:
+                aspects_data = generated_response.aspects
+                rag_generations += len(aspects_data)
+            if not arabic_parts_data:
+                arabic_parts_data = generated_response.arabic_parts
+                rag_generations += len(arabic_parts_data)
+
+            total_documents += generated_response.metadata.documents_used
+
             logger.info(
-                f"Generated RAG interpretations for chart {chart_id} "
-                f"(user: {current_user.email}, documents used: {response.metadata.documents_used})"
+                f"Generated {rag_generations} new interpretations for chart {chart_id} "
+                f"(user: {current_user.email})"
             )
+
+        # Build metadata
+        total_items = (
+            len(planets_data) + len(houses_data) + len(aspects_data) + len(arabic_parts_data)
+        )
+        metadata = InterpretationMetadata(
+            total_items=total_items,
+            cache_hits_db=cache_hits_db,
+            cache_hits_cache=0,
+            rag_generations=rag_generations,
+            outdated_count=0,
+            documents_used=total_documents,
+            current_prompt_version=RAG_PROMPT_VERSION,
+            response_time_ms=0,
+        )
+
+        # Build response (growth will be added later)
+        response = RAGInterpretationsResponse(
+            planets=planets_data,
+            houses=houses_data,
+            aspects=aspects_data,
+            arabic_parts=arabic_parts_data,
+            growth={},  # Will be populated below
+            metadata=metadata,
+            language=user_language,
+        )
 
         # Commit the main transaction before handling growth suggestions
         # This ensures no session conflicts when creating a new session for growth
@@ -211,13 +304,38 @@ async def get_chart_interpretations(
 
         # Handle growth suggestions AFTER main transaction is committed
         # This runs for both existing and new interpretations
-        if "growth" in regenerate_types:
-            logger.info(f"Generating growth suggestions for chart {chart_id}")
 
-            try:
-                # Create a new independent database session for growth generation
-                # Safe to do this now since main transaction is committed
-                async with AsyncSessionLocal() as growth_db:
+        # Use a single session for both checking and generating growth
+        # This prevents "session is provisioning" errors from concurrent session creation
+        async with AsyncSessionLocal() as growth_db:
+            if "growth" in regenerate_types:
+                # Growth regeneration explicitly requested
+                logger.info("Growth regeneration explicitly requested via regenerate parameter")
+                needs_generation = True
+            else:
+                # Check if growth exists in database
+                logger.info("Checking for existing growth interpretations in database")
+                growth_repo = InterpretationRepository(growth_db)
+                existing_growth_dict = await growth_repo.get_growth_interpretations(
+                    chart_id=chart_id, language=user_language
+                )
+
+                if existing_growth_dict:
+                    # All 4 components exist, use them
+                    logger.info("Found complete growth interpretations in database")
+                    response.growth = _get_existing_growth(existing_growth_dict)
+                    response.metadata.cache_hits_db += 4  # 4 components loaded from DB
+                    needs_generation = False
+                else:
+                    # Missing or incomplete, need to generate
+                    logger.info("Growth interpretations not found or incomplete, will generate")
+                    needs_generation = True
+
+            # Generate if needed (using same session)
+            if needs_generation:
+                logger.info("Generating growth suggestions via PersonalGrowthService")
+
+                try:
                     growth_service = PersonalGrowthService(language=user_language, db=growth_db)
                     growth_dict = await growth_service.generate_growth_suggestions(
                         chart_data=chart.chart_data,
@@ -251,13 +369,13 @@ async def get_chart_interpretations(
                         ),
                     }
                     response.growth = growth_items
-                    # Update metadata to reflect growth generation
-                    response.metadata.rag_generations += 1
+                    # Update metadata to reflect growth generation (4 components)
+                    response.metadata.rag_generations += 4
                     logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
-            except Exception as e:
-                logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
-                # Set growth to empty dict on error - don't let it bubble up to fail the whole request
-                response.growth = {}
+                except Exception as e:
+                    logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
+                    # Set growth to empty dict on error - don't let it bubble up to fail the whole request
+                    response.growth = {}
 
         return response
 
@@ -412,6 +530,54 @@ async def regenerate_chart_interpretations(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error regenerating interpretations",
         ) from e
+
+
+# ============================================================================
+# Growth Interpretation Helper Function
+# ============================================================================
+
+
+def _get_existing_growth(
+    existing_growth: dict[str, ChartInterpretation],
+) -> dict[str, InterpretationItem]:
+    """
+    Convert existing growth interpretations to response format.
+
+    This helper function converts growth interpretations from the database
+    (ChartInterpretation objects) into InterpretationItem objects for the API response.
+
+    Returns empty dict if any component is missing (already validated by repo).
+
+    Args:
+        existing_growth: Dict of growth interpretations keyed by subject
+                        (points, challenges, opportunities, purpose)
+
+    Returns:
+        Dict of InterpretationItem objects keyed by subject
+        Empty dict if conversion fails or input is empty
+    """
+    if not existing_growth:
+        return {}
+
+    growth_items = {}
+    try:
+        for subject, interp in existing_growth.items():
+            growth_items[subject] = InterpretationItem(
+                content=interp.content,  # Already JSON string
+                source="database",
+                rag_sources=[],
+                is_outdated=(interp.prompt_version != GROWTH_PROMPT_VERSION),
+                cached=False,
+                prompt_version=interp.prompt_version,
+                generated_at=interp.created_at.isoformat() if interp.created_at else None,
+            )
+
+        logger.info(f"Loaded existing growth with {len(growth_items)} components from database")
+        return growth_items
+
+    except Exception as e:
+        logger.error(f"Error converting existing growth: {e}")
+        return {}  # Treat conversion errors as missing data
 
 
 # ============================================================================

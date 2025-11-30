@@ -264,6 +264,7 @@ async def get_chart(
 @limiter.limit(RateLimits.CHART_UPDATE)
 async def update_chart(
     request: Request,
+    response: Response,
     chart_id: UUID,
     update_data: BirthChartUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -310,6 +311,7 @@ async def update_chart(
 @limiter.limit(RateLimits.CHART_DELETE)
 async def delete_chart(
     request: Request,
+    response: Response,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],

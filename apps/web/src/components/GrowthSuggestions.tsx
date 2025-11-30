@@ -14,7 +14,6 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -155,12 +154,6 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
     } finally {
       setLoading(false);
     }
-  };
-
-  const regenerateSuggestions = async () => {
-    // Regeneration now simply calls generateSuggestions
-    // The unified endpoint handles regeneration via ?regenerate=growth parameter
-    await generateSuggestions();
   };
 
   // Initial loading state while checking cache
@@ -469,18 +462,6 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
           </CardContent>
         </Card>
       )}
-
-      {/* Regenerate Button */}
-      <div className="flex justify-center">
-        <Button onClick={regenerateSuggestions} variant="outline" disabled={loading}>
-          {loading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          {t('growth.regenerate', { defaultValue: 'Regenerate Suggestions' })}
-        </Button>
-      </div>
 
       {/* Disclaimer */}
       <p className="text-xs text-center text-muted-foreground">

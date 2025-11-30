@@ -13,6 +13,7 @@ export interface PasswordResetRequestResponse {
 export interface PasswordResetConfirmRequest {
   token: string;
   new_password: string;
+  password_confirm: string;
 }
 
 class PasswordResetService {
@@ -28,10 +29,15 @@ class PasswordResetService {
   /**
    * Confirm password reset with token
    */
-  async confirmReset(token: string, newPassword: string): Promise<PasswordResetRequestResponse> {
+  async confirmReset(
+    token: string,
+    newPassword: string,
+    passwordConfirm: string
+  ): Promise<PasswordResetRequestResponse> {
     return apiClient.post<PasswordResetRequestResponse>('/api/v1/password-reset/confirm', {
       token,
       new_password: newPassword,
+      password_confirm: passwordConfirm,
     });
   }
 }

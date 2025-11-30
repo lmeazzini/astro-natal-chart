@@ -173,7 +173,7 @@ export function FeatureList() {
               })}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 max-h-96 overflow-y-auto">
             {features.implemented.map((feature) => (
               <div key={feature.number} className="flex items-start gap-3">
                 <span className="text-green-500 text-xl">✓</span>
@@ -219,7 +219,7 @@ export function FeatureList() {
               })}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 max-h-96 overflow-y-auto">
             {features.in_progress.map((feature) => (
               <div key={feature.number} className="flex items-start gap-3">
                 <span className="text-yellow-500 text-xl">⚙️</span>
@@ -262,7 +262,7 @@ export function FeatureList() {
               })}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 max-h-96 overflow-y-auto">
             {features.planned.map((feature) => (
               <div key={feature.number} className="flex items-start gap-3">
                 <span className="text-muted-foreground text-xl">○</span>

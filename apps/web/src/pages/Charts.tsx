@@ -240,7 +240,9 @@ export function ChartsPage() {
                     <div>
                       <CardTitle className="text-h4 font-display">{chart.person_name}</CardTitle>
                       {chart.gender && (
-                        <CardDescription className="text-sm mt-1">{chart.gender}</CardDescription>
+                        <CardDescription className="text-sm mt-1">
+                          {t(`charts.genders.${chart.gender}`, { defaultValue: chart.gender })}
+                        </CardDescription>
                       )}
                     </div>
                     <div className="flex items-center gap-1 -mr-2 -mt-1">

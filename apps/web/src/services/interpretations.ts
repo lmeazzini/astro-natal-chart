@@ -104,10 +104,18 @@ export type ChartInterpretations = UnifiedInterpretationsResponse;
 export const interpretationsService = {
   /**
    * Get all interpretations (planets, houses, aspects, arabic_parts, growth) in a single call
+   * @param chartId - Chart UUID
+   * @param token - Auth token
+   * @param language - Optional language code (e.g., 'pt-BR', 'en-US'). If not provided, uses user's profile language.
    */
-  async getByChartId(chartId: string, token: string): Promise<UnifiedInterpretationsResponse> {
+  async getByChartId(
+    chartId: string,
+    token: string,
+    language?: string
+  ): Promise<UnifiedInterpretationsResponse> {
+    const langParam = language ? `?lang=${language}` : '';
     return apiClient.get<UnifiedInterpretationsResponse>(
-      `/api/v1/charts/${chartId}/interpretations`,
+      `/api/v1/charts/${chartId}/interpretations${langParam}`,
       token
     );
   },

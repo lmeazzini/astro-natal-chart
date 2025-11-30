@@ -20,9 +20,10 @@
     "required": "Required",
     "show": "Show",
     "hide": "Hide",
-    "pageOf": "Page {{current}} of {{total}}",
+    "pageOf": "Page {{page}} of {{total}}",
     "myCharts": "My Charts",
-    "login": "Login"
+    "login": "Login",
+    "search": "Search"
   },
   "nav": {
     "home": "Home",
@@ -33,6 +34,35 @@
     "logout": "Logout",
     "login": "Login",
     "register": "Sign Up"
+  },
+  "publicCharts": {
+    "title": "Famous People's Birth Charts",
+    "subtitle": "Explore natal charts of historical personalities and evaluate our AI interpretations.",
+    "searchPlaceholder": "Search by name...",
+    "sortName": "A-Z",
+    "sortDate": "Date",
+    "sortViews": "Popular",
+    "allCategories": "All",
+    "resultsCount": "{{count}} charts found",
+    "noResults": "No charts found.",
+    "views": "views",
+    "ctaTitle": "Create Your Own Birth Chart",
+    "ctaTitleLoggedIn": "Create More Birth Charts",
+    "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
+    "ctaButton": "Get Started Free",
+    "ctaButtonLoggedIn": "Create New Chart",
+    "categories": {
+      "scientist": "Scientists",
+      "artist": "Artists",
+      "leader": "Leaders",
+      "writer": "Writers",
+      "athlete": "Athletes",
+      "actor": "Actors",
+      "musician": "Musicians",
+      "entrepreneur": "Entrepreneurs",
+      "historical": "Historical Figures",
+      "other": "Others"
+    }
   },
   "auth": {
     "login": {
@@ -150,7 +180,33 @@
     "deleteChart": "Delete chart",
     "confirmDelete": "Are you sure you want to delete this birth chart?",
     "deleteSuccess": "Chart deleted successfully",
-    "deleteError": "Error deleting chart"
+    "deleteError": "Error deleting chart",
+    "features": {
+      "implemented": "Implemented Features",
+      "implementedDesc": "Features already available on the platform",
+      "inProgress": "In Development",
+      "inProgressDesc": "Features under active development",
+      "planned": "Planned",
+      "plannedDesc": "Future features on the roadmap",
+      "done": "Done",
+      "inProgressBadge": "In Progress",
+      "plannedBadge": "Planned",
+      "lastUpdated": "Last updated",
+      "seeAll": "See all planned features on our",
+      "publicRoadmap": "public roadmap",
+      "loadError": "Could not load features"
+    }
+  },
+  "charts": {
+    "edit": "Edit chart",
+    "recalculate": "Recalculate chart and interpretations",
+    "delete": "Delete chart",
+    "recalculateError": "Error recalculating chart",
+    "genders": {
+      "Masculino": "Male",
+      "Feminino": "Female",
+      "Outro": "Other"
+    }
   },
   "dashboardPage": {
     "title": "Dashboard",
@@ -298,6 +354,7 @@
       "interpretations": "Interpretations",
       "growth": "Growth"
     },
+    "temperament": "Temperament Analysis",
     "birthInfo": "Birth Information",
     "person": "Person",
     "birthDateTime": "Date and Time",
@@ -731,7 +788,22 @@
       "dry": "Dry",
       "contributingFactors": "Contributing Factors",
       "interpretation": "Interpretation",
-      "note": "Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 factors of the natal chart: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase and Lord of the Nativity, following medieval astrology tradition."
+      "note": "Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 factors of the natal chart: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase and Lord of the Nativity, following medieval astrology tradition.",
+      "weightNote": "Planetary factors (Ascendant Ruler and Lord of Nativity) have their weights adjusted by essential dignity: dignified planets (domicile, exaltation) contribute more, while debilitated planets (detriment, fall) contribute less.",
+      "weightTooltip": "Weight based on planet dignity"
+    },
+    "lordOfNativity": {
+      "title": "Lord of Nativity",
+      "subtitle": "The dominant vital force of your natal chart",
+      "totalScore": "Total Score",
+      "status": "Status",
+      "position": "Position",
+      "house": "House",
+      "essentialDignities": "Essential Dignities",
+      "note": "The Lord of Nativity is the planet with the highest essential dignity in your natal chart. According to traditional astrology, it represents the dominant vital force that guides your life and indicates where you have the greatest potential for achievement and mastery.",
+      "dignified": "Dignified",
+      "peregrine": "Peregrine",
+      "debilitated": "Debilitated"
     },
     "sect": {
       "title": "Sect Analysis",
@@ -787,6 +859,12 @@
       "maleficsOutOfSectEffect": "are harder to integrate and can be more destructive",
       "howToUse": "How to use this?",
       "howToUseDesc": "Pay special attention to your out-of-sect malefics - these are areas that need more conscious work. Your in-sect benefics are natural resources you can leverage."
+    },
+    "solarPhase": {
+      "qualities": "Qualities",
+      "phaseSigns": "Phase Signs",
+      "interpretation": "Interpretation",
+      "note": "The solar phase at birth is based on the Sun's sign and reveals the fundamental temperament and primary qualities of your personality according to traditional astrology."
     }
   },
   "pages": {
@@ -815,7 +893,19 @@
       "ctaTitleLoggedIn": "Create More Natal Charts",
       "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
       "ctaButton": "Start Free",
-      "ctaButtonLoggedIn": "Create New Chart"
+      "ctaButtonLoggedIn": "Create New Chart",
+      "categories": {
+        "scientist": "Scientists",
+        "artist": "Artists",
+        "leader": "Leaders",
+        "writer": "Writers",
+        "athlete": "Athletes",
+        "actor": "Actors",
+        "musician": "Musicians",
+        "entrepreneur": "Entrepreneurs",
+        "historical": "Historical Figures",
+        "other": "Others"
+      }
     },
     "consent": {
       "title": "Consent and Privacy",

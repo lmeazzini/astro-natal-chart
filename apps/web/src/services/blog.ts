@@ -91,7 +91,7 @@ export async function getBlogPosts(params: GetPostsParams = {}): Promise<BlogPos
   if (params.tag) searchParams.set('tag', params.tag);
 
   const queryString = searchParams.toString();
-  const url = queryString ? `/blog/posts?${queryString}` : '/blog/posts';
+  const url = queryString ? `/api/v1/blog/posts?${queryString}` : '/api/v1/blog/posts';
 
   return apiClient.get<BlogPostListResponse>(url);
 }
@@ -100,19 +100,19 @@ export async function getBlogPosts(params: GetPostsParams = {}): Promise<BlogPos
  * Get a single blog post by slug.
  */
 export async function getBlogPost(slug: string): Promise<BlogPost> {
-  return apiClient.get<BlogPost>(`/blog/posts/${slug}`);
+  return apiClient.get<BlogPost>(`/api/v1/blog/posts/${slug}`);
 }
 
 /**
  * Get blog metadata (categories, tags, total posts).
  */
 export async function getBlogMetadata(): Promise<BlogMetadata> {
-  return apiClient.get<BlogMetadata>('/blog/metadata');
+  return apiClient.get<BlogMetadata>('/api/v1/blog/metadata');
 }
 
 /**
  * Get recent blog posts.
  */
 export async function getRecentPosts(limit: number = 5): Promise<BlogPostListItem[]> {
-  return apiClient.get<BlogPostListItem[]>(`/blog/recent?limit=${limit}`);
+  return apiClient.get<BlogPostListItem[]>(`/api/v1/blog/recent?limit=${limit}`);
 }

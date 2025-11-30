@@ -264,6 +264,7 @@ class PersonalGrowthService:
         chart_data: dict[str, Any],
         chart_id: UUID | None = None,
         focus_areas: list[str] | None = None,
+        force: bool = False,
     ) -> dict[str, Any]:
         """
         Generate personalized growth suggestions based on natal chart.
@@ -272,10 +273,40 @@ class PersonalGrowthService:
             chart_data: Complete birth chart data
             chart_id: Optional chart ID for dual persistence (cache + database)
             focus_areas: Optional focus areas (e.g., ['career', 'relationships'])
+            force: If True, regenerate even if interpretations exist.
+                   If False (default), skip generation if interpretations already exist.
 
         Returns:
             Dictionary with growth_points, challenges, opportunities, and purpose
         """
+        # Check if growth interpretations already exist (unless force=True)
+        if not force and chart_id and self.db:
+            from app.repositories.interpretation_repository import InterpretationRepository
+
+            repo = InterpretationRepository(self.db)
+            existing_growth = await repo.get_growth_interpretations(
+                chart_id=chart_id,
+                language=self.language,
+            )
+
+            if existing_growth:
+                # All 4 components exist, return them
+                logger.info(
+                    f"Using existing growth interpretations for chart {chart_id} ({self.language})"
+                )
+                return {
+                    "growth_points": json.loads(existing_growth["points"].content),
+                    "challenges": json.loads(existing_growth["challenges"].content),
+                    "opportunities": json.loads(existing_growth["opportunities"].content),
+                    "purpose": json.loads(existing_growth["purpose"].content),
+                    "metadata": {
+                        "language": self.language,
+                        "model": existing_growth["points"].openai_model,
+                        "cached": True,
+                        "from_database": True,
+                    },
+                }
+
         patterns = self.analyze_chart_patterns(chart_data)
         chart_summary = self._build_chart_summary(chart_data, patterns)
         focus_instruction = self._get_focus_areas_instruction(focus_areas)
@@ -740,11 +771,12 @@ IMPORTANT:
         - InterpretationCache: Shared across users with similar charts (cost reduction)
         - ChartInterpretation: Chart-specific for fast retrieval
 
+        Uses upsert pattern to avoid duplicate key violations.
+
         Args:
             chart_id: Chart UUID to associate interpretations with
             growth_data: Dictionary with growth_points, challenges, opportunities, purpose
         """
-        from app.models.interpretation import ChartInterpretation
         from app.repositories.interpretation_repository import InterpretationRepository
 
         if not self.db:
@@ -753,13 +785,7 @@ IMPORTANT:
 
         repo = InterpretationRepository(self.db)
 
-        # Delete old growth interpretations for this chart (if regenerating)
-        existing = await repo.get_by_chart_id(chart_id)
-        for interp in existing:
-            if interp.interpretation_type == "growth":
-                await repo.delete(interp)
-
-        # Save each component as separate row
+        # Save each component as separate row using upsert
         # interpretation_type = "growth" for all, subject varies by component
         components_map = {
             "points": growth_data["growth_points"],
@@ -769,7 +795,7 @@ IMPORTANT:
         }
 
         for subject, content_data in components_map.items():
-            interpretation = ChartInterpretation(
+            await repo.upsert_interpretation(
                 chart_id=chart_id,
                 interpretation_type="growth",
                 subject=subject,
@@ -777,8 +803,6 @@ IMPORTANT:
                 language=self.language,
                 openai_model=self.model,
                 prompt_version=GROWTH_PROMPT_VERSION,
-                rag_sources=None,
             )
-            await repo.create(interpretation)
 
         logger.info(f"Saved growth interpretations to database for chart {chart_id}")

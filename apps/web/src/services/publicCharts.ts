@@ -134,26 +134,17 @@ export async function getCategories(): Promise<CategoryCount[]> {
 }
 
 /**
- * Category labels for display
- */
-export const CATEGORY_LABELS: Record<string, string> = {
-  scientist: 'Cientistas',
-  artist: 'Artistas',
-  leader: 'Líderes',
-  writer: 'Escritores',
-  athlete: 'Atletas',
-  actor: 'Atores',
-  musician: 'Músicos',
-  entrepreneur: 'Empreendedores',
-  historical: 'Figuras Históricas',
-  other: 'Outros',
-};
-
-/**
  * Get translated category label
+ * @param category - Category key (e.g., 'scientist', 'artist')
+ * @param t - i18next translation function
  */
-export function getCategoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] || category;
+export function getCategoryLabel(
+  category: string,
+  t: (key: string, options?: { defaultValue?: string }) => string
+): string {
+  // Capitalize first letter as fallback
+  const fallback = category.charAt(0).toUpperCase() + category.slice(1);
+  return t(`publicCharts.categories.${category}`, { defaultValue: fallback });
 }
 
 /**

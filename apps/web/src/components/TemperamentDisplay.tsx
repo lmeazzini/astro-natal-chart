@@ -47,13 +47,8 @@ const temperamentColors: Record<string, string> = {
   phlegmatic: 'from-teal-500/10 to-green-500/10 border-teal-500/20',
 };
 
-// Quality labels in Portuguese
-const qualityLabels: Record<string, string> = {
-  hot: 'Quente',
-  cold: 'Frio',
-  wet: 'Úmido',
-  dry: 'Seco',
-};
+// Quality labels are now translated dynamically using i18next
+// See lines 177-180 where getQualityLabels() is defined
 
 // Quality colors
 const qualityColors: Record<string, string> = {
@@ -105,14 +100,14 @@ const dignityLabels: Record<string, { en: string; pt: string; color: string }> =
 
 interface QualityBarProps {
   quality: string;
+  label: string;
   value: number;
   maxValue: number;
 }
 
-function QualityBar({ quality, value, maxValue }: QualityBarProps) {
+function QualityBar({ quality, label, value, maxValue }: QualityBarProps) {
   const percentage = Math.min((value / maxValue) * 100, 100);
   const color = qualityColors[quality] || 'bg-gray-500';
-  const label = qualityLabels[quality] || quality;
   const icon = qualityIcons[quality] || '';
 
   // Format value: show decimal only if not a whole number
@@ -229,10 +224,30 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
             {t('components.temperament.qualityScores', { defaultValue: 'Pontuação de Qualidades' })}
           </p>
           <div className="space-y-3">
-            <QualityBar quality="hot" value={temperament.scores.hot} maxValue={maxQualityValue} />
-            <QualityBar quality="cold" value={temperament.scores.cold} maxValue={maxQualityValue} />
-            <QualityBar quality="wet" value={temperament.scores.wet} maxValue={maxQualityValue} />
-            <QualityBar quality="dry" value={temperament.scores.dry} maxValue={maxQualityValue} />
+            <QualityBar
+              quality="hot"
+              label={getQualityLabel('hot')}
+              value={temperament.scores.hot}
+              maxValue={maxQualityValue}
+            />
+            <QualityBar
+              quality="cold"
+              label={getQualityLabel('cold')}
+              value={temperament.scores.cold}
+              maxValue={maxQualityValue}
+            />
+            <QualityBar
+              quality="wet"
+              label={getQualityLabel('wet')}
+              value={temperament.scores.wet}
+              maxValue={maxQualityValue}
+            />
+            <QualityBar
+              quality="dry"
+              label={getQualityLabel('dry')}
+              value={temperament.scores.dry}
+              maxValue={maxQualityValue}
+            />
           </div>
         </div>
 

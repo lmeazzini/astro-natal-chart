@@ -20,7 +20,7 @@
     "required": "Obrigatório",
     "show": "Mostrar",
     "hide": "Ocultar",
-    "pageOf": "Página {{current}} de {{total}}",
+    "pageOf": "Página {{page}} de {{total}}",
     "myCharts": "Meus Mapas",
     "login": "Entrar"
   },
@@ -33,6 +33,35 @@
     "logout": "Sair",
     "login": "Entrar",
     "register": "Cadastrar"
+  },
+  "publicCharts": {
+    "title": "Mapas de Pessoas Famosas",
+    "subtitle": "Explore mapas natais de personalidades históricas e avalie nossas interpretações com IA.",
+    "searchPlaceholder": "Buscar por nome...",
+    "sortName": "A-Z",
+    "sortDate": "Data",
+    "sortViews": "Populares",
+    "allCategories": "Todos",
+    "resultsCount": "{{count}} mapas encontrados",
+    "noResults": "Nenhum mapa encontrado.",
+    "views": "visualizações",
+    "ctaTitle": "Crie Seu Próprio Mapa Natal",
+    "ctaTitleLoggedIn": "Crie Mais Mapas Natais",
+    "ctaDescription": "Descubra os segredos do seu mapa astrológico com análise profissional e interpretações IA.",
+    "ctaButton": "Começar Grátis",
+    "ctaButtonLoggedIn": "Criar Novo Mapa",
+    "categories": {
+      "scientist": "Cientistas",
+      "artist": "Artistas",
+      "leader": "Líderes",
+      "writer": "Escritores",
+      "athlete": "Atletas",
+      "actor": "Atores",
+      "musician": "Músicos",
+      "entrepreneur": "Empreendedores",
+      "historical": "Figuras Históricas",
+      "other": "Outros"
+    }
   },
   "auth": {
     "login": {
@@ -150,7 +179,33 @@
     "deleteChart": "Excluir mapa",
     "confirmDelete": "Tem certeza que deseja excluir este mapa natal?",
     "deleteSuccess": "Mapa excluído com sucesso",
-    "deleteError": "Erro ao excluir mapa"
+    "deleteError": "Erro ao excluir mapa",
+    "features": {
+      "implemented": "Funcionalidades Implementadas",
+      "implementedDesc": "Recursos já disponíveis na plataforma",
+      "inProgress": "Em Desenvolvimento",
+      "inProgressDesc": "Funcionalidades em construção ativa",
+      "planned": "Planejadas",
+      "plannedDesc": "Recursos futuros no roadmap",
+      "done": "Concluído",
+      "inProgressBadge": "Em Progresso",
+      "plannedBadge": "Planejado",
+      "lastUpdated": "Última atualização",
+      "seeAll": "Veja todas as funcionalidades planejadas no nosso",
+      "publicRoadmap": "roadmap público",
+      "loadError": "Não foi possível carregar as funcionalidades"
+    }
+  },
+  "charts": {
+    "edit": "Editar mapa",
+    "recalculate": "Recalcular mapa e interpretações",
+    "delete": "Excluir mapa",
+    "recalculateError": "Erro ao recalcular mapa",
+    "genders": {
+      "Masculino": "Masculino",
+      "Feminino": "Feminino",
+      "Outro": "Outro"
+    }
   },
   "dashboardPage": {
     "title": "Dashboard",
@@ -298,6 +353,7 @@
       "interpretations": "Interpretações",
       "growth": "Crescimento"
     },
+    "temperament": "Análise de Temperamento",
     "birthInfo": "Informações de Nascimento",
     "person": "Pessoa",
     "birthDateTime": "Data e Hora",
@@ -731,7 +787,22 @@
       "dry": "Seco",
       "contributingFactors": "Fatores Contribuintes",
       "interpretation": "Interpretação",
-      "note": "O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval."
+      "note": "O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.",
+      "weightNote": "Os fatores planetários (Regente do Ascendente e Senhor da Natividade) têm seus pesos ajustados pela dignidade essencial: planetas dignificados (domicílio, exaltação) contribuem mais, enquanto planetas debilitados (detrimento, queda) contribuem menos.",
+      "weightTooltip": "Peso baseado na dignidade do planeta"
+    },
+    "lordOfNativity": {
+      "title": "Senhor da Natividade",
+      "subtitle": "A força vital dominante do seu mapa natal",
+      "totalScore": "Pontuação Total",
+      "status": "Status",
+      "position": "Posição",
+      "house": "Casa",
+      "essentialDignities": "Dignidades Essenciais",
+      "note": "O Senhor da Natividade é o planeta com maior dignidade essencial no seu mapa natal. Segundo a astrologia tradicional, ele representa a força vital dominante que guia sua vida e indica onde você tem maior potencial de realização e maestria.",
+      "dignified": "Dignificado",
+      "peregrine": "Peregrino",
+      "debilitated": "Debilitado"
     },
     "sect": {
       "title": "Análise de Secto",
@@ -787,6 +858,12 @@
       "maleficsOutOfSectEffect": "são mais difíceis de integrar e podem ser mais destrutivos",
       "howToUse": "Como usar isso?",
       "howToUseDesc": "Preste atenção especial aos seus maléficos fora de secto - essas são áreas que precisam de trabalho mais consciente. Seus benéficos em secto são recursos naturais que você pode aproveitar."
+    },
+    "solarPhase": {
+      "qualities": "Qualidades",
+      "phaseSigns": "Signos da Fase",
+      "interpretation": "Interpretação",
+      "note": "A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional."
     }
   },
   "pages": {
@@ -815,7 +892,19 @@
       "ctaTitleLoggedIn": "Crie Mais Mapas Natais",
       "ctaDescription": "Descubra os segredos do seu mapa astrológico com análise profissional e interpretações IA.",
       "ctaButton": "Começar Grátis",
-      "ctaButtonLoggedIn": "Criar Novo Mapa"
+      "ctaButtonLoggedIn": "Criar Novo Mapa",
+      "categories": {
+        "scientist": "Cientistas",
+        "artist": "Artistas",
+        "leader": "Líderes",
+        "writer": "Escritores",
+        "athlete": "Atletas",
+        "actor": "Atores",
+        "musician": "Músicos",
+        "entrepreneur": "Empreendedores",
+        "historical": "Figuras Históricas",
+        "other": "Outros"
+      }
     },
     "consent": {
       "title": "Consentimento e Privacidade",

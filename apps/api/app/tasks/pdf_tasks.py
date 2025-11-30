@@ -158,7 +158,7 @@ async def _generate_pdf_async(chart_id: UUID) -> dict[str, str]:
 
             if not (has_planet_interps and has_house_interps and has_aspect_interps):
                 logger.info(f"Generating missing interpretations for chart {chart_id}")
-                rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True)
+                rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True)
                 interpretations = await rag_service.generate_all_rag_interpretations(
                     chart=chart,
                     chart_data=chart.chart_data,

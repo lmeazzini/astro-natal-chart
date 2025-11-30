@@ -60,7 +60,7 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
         from app.repositories.user_repository import UserRepository
 
         user_repo = UserRepository(db)
-        user = await user_repo.get_by_id(chart.user_id)
+        user = await user_repo.get_by_id(UUID(str(chart.user_id)))
         user_language = user.locale if user else "pt-BR"
 
         try:

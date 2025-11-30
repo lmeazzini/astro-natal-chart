@@ -95,40 +95,12 @@ export function ChartDetailPage() {
   }, [id, isEmailVerified]);
 
   // Reload interpretations when UI language changes (if language mismatch detected)
+  // Note: This effect intentionally does NOT auto-reload. Users can manually reload via the button.
+  // Auto-reload was causing infinite loops when interpretation language didn't match UI language.
   useEffect(() => {
+    // Just update the ref for tracking, don't auto-reload
     const normalizedUiLang = i18n.language.split('-')[0];
-    const normalizedInterpLang = interpretations?.language?.split('-')[0];
-
-    console.log('[Language Change Effect] Triggered', {
-      isEmailVerified,
-      interpretationLanguage: interpretations?.language,
-      normalizedInterpLang,
-      uiLanguage: i18n.language,
-      normalizedUiLang,
-      lastLoadedLanguage: lastLoadedLanguageRef.current,
-      hasInterpretations: !!interpretations,
-    });
-
-    // Only reload if:
-    // 1. User is email verified (interpretations are available)
-    // 2. Interpretations already loaded
-    // 3. Current UI language differs from interpretation language
-    // 4. Haven't already loaded for this language (avoid reload loops)
-    if (
-      isEmailVerified &&
-      interpretations?.language &&
-      normalizedInterpLang &&
-      normalizedUiLang !== normalizedInterpLang &&
-      lastLoadedLanguageRef.current !== normalizedUiLang
-    ) {
-      // Language mismatch detected - reload interpretations in new language
-      console.log(
-        `[Auto-Reload] Language mismatch detected: UI is ${i18n.language}, interpretations are ${interpretations.language}. Reloading interpretations...`
-      );
-      lastLoadedLanguageRef.current = normalizedUiLang;
-      loadInterpretations();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    lastLoadedLanguageRef.current = normalizedUiLang;
   }, [i18n.language]);
 
   // Polling effect for processing charts
@@ -180,7 +152,7 @@ export function ChartDetailPage() {
       // Track chart detail viewed
       amplitudeService.track('chart_detail_viewed', {
         chart_id: id,
-        has_interpretations: !!chartData.interpretations,
+        has_interpretations: false, // Interpretations loaded separately
         is_own_chart: true, // User's own chart (not public)
         house_system: chartData.house_system,
         source: 'chart_detail_page',
@@ -237,7 +209,7 @@ export function ChartDetailPage() {
 
         // Track interpretation failure
         amplitudeService.track('interpretation_generation_failed', {
-          chart_id: id,
+          chart_id: id || '',
           error_type: 'email_not_verified',
           source: 'chart_detail_page',
         });
@@ -246,7 +218,7 @@ export function ChartDetailPage() {
 
       // Track interpretation failure
       amplitudeService.track('interpretation_generation_failed', {
-        chart_id: id,
+        chart_id: id || '',
         error_type: err instanceof Error ? err.name : 'unknown_error',
         source: 'chart_detail_page',
       });
@@ -857,14 +829,20 @@ export function ChartDetailPage() {
 
                   {/* Chart Wheel (PRIMEIRO) */}
                   <div>
-                    <h3 className="text-h4 font-display mb-4">Roda do Mapa Natal</h3>
+                    <h3 className="text-h4 font-display mb-4">
+                      {t('chartDetail.sections.chartWheel', { defaultValue: 'Roda do Mapa Natal' })}
+                    </h3>
                     <ChartWheelAstro chartData={chart.chart_data} width={600} height={600} />
                   </div>
 
                   {/* Temperament (SEGUNDO) */}
                   {chart.chart_data.temperament && (
                     <div>
-                      <h3 className="text-h4 font-display mb-4">Cálculo Final do Temperamento</h3>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.sections.temperament', {
+                          defaultValue: 'Cálculo Final do Temperamento',
+                        })}
+                      </h3>
                       <TemperamentDisplay temperament={chart.chart_data.temperament} />
                     </div>
                   )}

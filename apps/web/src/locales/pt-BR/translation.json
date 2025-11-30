@@ -355,6 +355,10 @@
       "interpretations": "Interpretações",
       "growth": "Crescimento"
     },
+    "sections": {
+      "chartWheel": "Roda do Mapa Natal",
+      "temperament": "Cálculo Final do Temperamento"
+    },
     "temperament": "Análise de Temperamento",
     "birthInfo": "Informações de Nascimento",
     "person": "Pessoa",

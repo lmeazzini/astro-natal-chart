@@ -14,6 +14,7 @@ export interface LunarPhaseData {
   emoji: string;
   keywords: string;
   interpretation: string;
+  interpretation_pt?: string;
 }
 
 interface LunarPhaseProps {
@@ -80,7 +81,9 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
             {t('components.lunarPhase.interpretation', { defaultValue: 'Interpretação' })}
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            {lunarPhase.interpretation}
+            {isEn
+              ? lunarPhase.interpretation
+              : lunarPhase.interpretation_pt || lunarPhase.interpretation}
           </p>
         </div>
 

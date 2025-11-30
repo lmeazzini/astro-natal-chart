@@ -11,6 +11,7 @@ import { useAstroTranslation } from '@/hooks/useAstroTranslation';
 export interface DignityDetail {
   type: string;
   label: string;
+  label_en?: string;
   points: number;
   icon: string;
 }
@@ -47,8 +48,9 @@ const classificationColors: Record<string, string> = {
 };
 
 export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { translatePlanet, translateSign } = useAstroTranslation();
+  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
 
   const planetSymbol = planetSymbols[lordOfNativity.planet] || '★';
   const classificationColor =
@@ -140,7 +142,9 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
                   <span className="text-xl" role="img" aria-label={detail.label}>
                     {detail.icon}
                   </span>
-                  <span className="text-sm text-foreground">{detail.label}</span>
+                  <span className="text-sm text-foreground">
+                    {isEn ? detail.label_en || detail.label : detail.label}
+                  </span>
                 </div>
                 <Badge
                   variant="secondary"

@@ -31,13 +31,11 @@ def calculate_lunar_phase(
         - illumination_percentage: Approximate illumination (0-100)
         - emoji: Unicode emoji representing the phase
         - keywords: Key characteristics of the phase
-        - interpretation: Detailed interpretation in requested language
+        - interpretation: Detailed interpretation in english language
+        - interpretation_pt: Detailed interpretation in portuguese language
     """
     # Calculate angle (Moon - Sun), normalized to 0-360
     angle = (moon_longitude - sun_longitude) % 360
-
-    # Phase definitions with bilingual interpretations
-    is_en = language == "en-US"
 
     # Determine phase based on angle
     if 0 <= angle < 45:
@@ -51,8 +49,9 @@ def calculate_lunar_phase(
             "You possess a pioneering quality and the ability to start projects "
             "with natural enthusiasm. Your journey is about discovering your own path "
             "through direct experience."
-            if is_en
-            else "Nascido na Lua Nova, você é uma pessoa de novos começos e iniciativas. "
+        )
+        interpretation_pt = (
+            "Nascido na Lua Nova, você é uma pessoa de novos começos e iniciativas. "
             "Seu caminho é instintivo e subjetivo, guiado por impulsos internos. "
             "Você possui uma qualidade pioneira e a capacidade de iniciar projetos "
             "com entusiasmo natural. Sua jornada é sobre descobrir seu próprio caminho "
@@ -69,8 +68,9 @@ def calculate_lunar_phase(
             "Your natural energy is one of struggle and construction, always pushing boundaries. "
             "You learn through effort and resistance, developing strength "
             "by facing difficulties."
-            if is_en
-            else "Nascido na Lua Crescente, você é uma pessoa voltada para a expansão e o crescimento. "
+        )
+        interpretation_pt = (
+            "Nascido na Lua Crescente, você é uma pessoa voltada para a expansão e o crescimento. "
             "Enfrenta desafios com determinação e busca constantemente superar obstáculos. "
             "Sua energia natural é de luta e construção, sempre empurrando limites. "
             "Você aprende através do esforço e da resistência, desenvolvendo força "
@@ -87,8 +87,9 @@ def calculate_lunar_phase(
             "Your nature is constructive and oriented toward concrete results. "
             "You possess the ability to act under pressure and make difficult decisions "
             "when necessary, building lasting structures."
-            if is_en
-            else "Nascido no Quarto Crescente, você é uma pessoa de ação e decisão. "
+        )
+        interpretation_pt = (
+            "Nascido no Quarto Crescente, você é uma pessoa de ação e decisão. "
             "Frequentemente enfrenta crises que exigem escolhas claras e compromisso. "
             "Sua natureza é construtiva e orientada para resultados concretos. "
             "Você possui a capacidade de agir sob pressão e tomar decisões difíceis "
@@ -105,8 +106,9 @@ def calculate_lunar_phase(
             "Your energy is focused on preparation and perfecting details. "
             "You have the ability to see what needs adjustment before complete manifestation, "
             "acting as a careful craftsperson."
-            if is_en
-            else "Nascido na Lua Gibosa Crescente, você é uma pessoa analítica e perfeccionista. "
+        )
+        interpretation_pt = (
+            "Nascido na Lua Gibosa Crescente, você é uma pessoa analítica e perfeccionista. "
             "Busca constantemente refinar e melhorar tudo que toca. "
             "Sua energia está focada em preparação e aperfeiçoamento dos detalhes. "
             "Você tem a capacidade de ver o que precisa ser ajustado antes da manifestação "
@@ -123,8 +125,9 @@ def calculate_lunar_phase(
             "Your nature seeks balance between opposites and complete manifestation. "
             "You have the ability to see things clearly and objectively, "
             "often acting as a mediator or bringing light to situations."
-            if is_en
-            else "Nascido na Lua Cheia, você é uma pessoa de realização e objetividade. "
+        )
+        interpretation_pt = (
+            "Nascido na Lua Cheia, você é uma pessoa de realização e objetividade. "
             "Possui forte consciência do outro e dos relacionamentos. "
             "Sua natureza busca equilíbrio entre opostos e manifestação completa. "
             "Você tem a capacidade de ver as coisas claramente e de forma objetiva, "
@@ -141,8 +144,9 @@ def calculate_lunar_phase(
             "You possess a natural mentor quality, seeking to pass on your experiences. "
             "You find meaning in helping others understand and grow through "
             "what you have already experienced."
-            if is_en
-            else "Nascido na Lua Gibosa Minguante, você é uma pessoa voltada para compartilhar "
+        )
+        interpretation_pt = (
+            "Nascido na Lua Gibosa Minguante, você é uma pessoa voltada para compartilhar "
             "e distribuir conhecimento. Seu papel é ensinar e disseminar o que aprendeu. "
             "Possui uma qualidade de mentor natural, buscando passar adiante suas experiências. "
             "Você encontra significado em ajudar outros a compreender e crescer através "
@@ -159,8 +163,9 @@ def calculate_lunar_phase(
             "Your nature questions old structures and seeks new meanings. "
             "You have the ability to dismantle what no longer serves and prepare "
             "the ground for new ways of being."
-            if is_en
-            else "Nascido no Quarto Minguante, você é uma pessoa de transição e reorientação. "
+        )
+        interpretation_pt = (
+            "Nascido no Quarto Minguante, você é uma pessoa de transição e reorientação. "
             "Frequentemente enfrenta crises de consciência que levam a mudanças profundas. "
             "Sua natureza questiona estruturas antigas e busca novos significados. "
             "Você tem a capacidade de desmantelar o que não serve mais e preparar "
@@ -177,8 +182,9 @@ def calculate_lunar_phase(
             "Your energy is focused on letting go of the past and preparing new cycles. "
             "You have the ability to see beyond the present moment and sow intentions "
             "for what is to come, acting as a bridge between cycles."
-            if is_en
-            else "Nascido na Lua Minguante (Balsâmica), você é uma pessoa de liberação e encerramento. "
+        )
+        interpretation_pt = (
+            "Nascido na Lua Minguante (Balsâmica), você é uma pessoa de liberação e encerramento. "
             "Possui uma qualidade visionária e profética, conectada com o futuro. "
             "Sua energia está focada em soltar o passado e preparar novos ciclos. "
             "Você tem a capacidade de ver além do momento presente e semear intenções "
@@ -198,4 +204,5 @@ def calculate_lunar_phase(
         "emoji": emoji,
         "keywords": keywords,
         "interpretation": interpretation,
+        "interpretation_pt": interpretation_pt,
     }

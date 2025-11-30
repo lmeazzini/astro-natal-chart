@@ -356,6 +356,10 @@
       "interpretations": "Interpretations",
       "growth": "Growth"
     },
+    "sections": {
+      "chartWheel": "Birth Chart Wheel",
+      "temperament": "Temperament Calculation"
+    },
     "temperament": "Temperament Analysis",
     "birthInfo": "Birth Information",
     "person": "Person",

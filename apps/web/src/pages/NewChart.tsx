@@ -295,7 +295,7 @@ export function NewChartPage() {
         birth_datetime: isoDatetime,
       };
 
-      const _createdChart = await chartsService.create(chartData, token);
+      await chartsService.create(chartData, token);
 
       // Track successful chart creation
       amplitudeService.track('chart_created', {

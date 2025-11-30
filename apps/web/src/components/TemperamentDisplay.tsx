@@ -33,6 +33,7 @@ export interface TemperamentData {
   scores: TemperamentScores;
   factors: TemperamentFactor[];
   description: string;
+  description_pt?: string;
 }
 
 interface TemperamentDisplayProps {
@@ -177,6 +178,36 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
     return labels[quality] || quality;
   };
 
+  // Known planet and sign names for safe translation lookup
+  const validPlanets = [
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+    'North Node',
+    'South Node',
+  ];
+  const validSigns = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
+  ];
+
   // Translate factor value (planets, signs, phases, or composite strings)
   const translateFactorValue = (value: string): string => {
     // Handle composite strings like "Jupiter in Scorpio" or "Moon in Cancer"
@@ -184,23 +215,39 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
     if (inPattern.test(value)) {
       const parts = value.split(inPattern);
       if (parts.length === 2) {
-        const translatedPlanet = translatePlanet(parts[0].trim());
-        const translatedSign = translateSign(parts[1].trim());
+        const planet = parts[0].trim();
+        const sign = parts[1].trim();
+        // Only translate if they are valid planet/sign names
+        const translatedPlanet = validPlanets.includes(planet) ? translatePlanet(planet) : planet;
+        const translatedSign = validSigns.includes(sign) ? translateSign(sign) : sign;
         return `${translatedPlanet} em ${translatedSign}`;
       }
     }
 
-    // Try to translate as planet first
-    const translatedPlanet = translatePlanet(value);
-    if (translatedPlanet !== value) return translatedPlanet;
+    // Only try planet translation if it's a known planet
+    if (validPlanets.includes(value)) {
+      return translatePlanet(value);
+    }
 
-    // Try to translate as sign
-    const translatedSign = translateSign(value);
-    if (translatedSign !== value) return translatedSign;
+    // Only try sign translation if it's a known sign
+    if (validSigns.includes(value)) {
+      return translateSign(value);
+    }
 
-    // Try to translate as lunar phase
-    const translatedPhase = translateLunarPhase(value);
-    if (translatedPhase !== value) return translatedPhase;
+    // Only translate exact lunar phase names (not extended values like "New Moon → Waxing (30.2°)")
+    const validLunarPhases = [
+      'New Moon',
+      'Waxing Crescent',
+      'First Quarter',
+      'Waxing Gibbous',
+      'Full Moon',
+      'Waning Gibbous',
+      'Last Quarter',
+      'Waning Crescent',
+    ];
+    if (validLunarPhases.includes(value)) {
+      return translateLunarPhase(value);
+    }
 
     // Return original if no translation found
     return value;
@@ -333,7 +380,9 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
             {t('components.temperament.interpretation', { defaultValue: 'Interpretação' })}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">{temperament.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {isEn ? temperament.description : temperament.description_pt || temperament.description}
+          </p>
         </div>
 
         {/* Info Note */}

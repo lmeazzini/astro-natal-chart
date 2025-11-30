@@ -16,6 +16,7 @@ export interface SolarPhaseData {
   signs: string[];
   signs_pt: string[];
   description: string;
+  description_pt?: string;
 }
 
 interface SolarPhaseProps {
@@ -97,7 +98,9 @@ export function SolarPhase({ solarPhase }: SolarPhaseProps) {
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
             {t('components.solarPhase.interpretation', { defaultValue: 'Interpretação' })}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">{solarPhase.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {isEn ? solarPhase.description : solarPhase.description_pt || solarPhase.description}
+          </p>
         </div>
 
         {/* Info Note */}

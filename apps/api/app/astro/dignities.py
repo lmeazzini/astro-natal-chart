@@ -456,30 +456,60 @@ def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[
     dign = lord["dignities"]
 
     if dign.get("is_ruler"):
-        dignity_details.append({"type": "ruler", "label": "Domicílio", "points": 5, "icon": "👑"})
+        dignity_details.append(
+            {
+                "type": "ruler",
+                "label": "Domicílio",
+                "label_en": "Domicile",
+                "points": 5,
+                "icon": "👑",
+            }
+        )
     if dign.get("is_exalted"):
-        dignity_details.append({"type": "exalted", "label": "Exaltação", "points": 4, "icon": "🌟"})
+        dignity_details.append(
+            {
+                "type": "exalted",
+                "label": "Exaltação",
+                "label_en": "Exaltation",
+                "points": 4,
+                "icon": "🌟",
+            }
+        )
     if dign.get("is_detriment"):
         dignity_details.append(
-            {"type": "detriment", "label": "Detrimento", "points": -5, "icon": "⚠️"}
+            {
+                "type": "detriment",
+                "label": "Detrimento",
+                "label_en": "Detriment",
+                "points": -5,
+                "icon": "⚠️",
+            }
         )
     if dign.get("is_fall"):
-        dignity_details.append({"type": "fall", "label": "Queda", "points": -4, "icon": "⬇️"})
+        dignity_details.append(
+            {"type": "fall", "label": "Queda", "label_en": "Fall", "points": -4, "icon": "⬇️"}
+        )
     if dign.get("triplicity_ruler"):
         trip_type = dign["triplicity_ruler"]
-        trip_label = f"Triplicidade ({trip_type})"
+        trip_label_pt = f"Triplicidade ({trip_type})"
+        trip_label_en = f"Triplicity ({trip_type})"
         dignity_details.append(
             {
                 "type": "triplicity",
-                "label": trip_label,
+                "label": trip_label_pt,
+                "label_en": trip_label_en,
                 "points": 3,
                 "icon": "🔥" if trip_type == "day" else "🌙",
             }
         )
     if dign.get("term_ruler"):
-        dignity_details.append({"type": "term", "label": "Termo", "points": 2, "icon": "📊"})
+        dignity_details.append(
+            {"type": "term", "label": "Termo", "label_en": "Term", "points": 2, "icon": "📊"}
+        )
     if dign.get("face_ruler"):
-        dignity_details.append({"type": "face", "label": "Face", "points": 1, "icon": "👤"})
+        dignity_details.append(
+            {"type": "face", "label": "Face", "label_en": "Face", "points": 1, "icon": "👤"}
+        )
 
     return {
         "planet": lord["name"],

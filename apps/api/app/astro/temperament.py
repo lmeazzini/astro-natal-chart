@@ -108,7 +108,12 @@ TEMPERAMENTS = {
         "element": "Fire",
         "element_pt": "Fogo",
         "icon": "🔥",
-        "description": (
+        "description_en": (
+            "The Choleric temperament is characterized by energy, ambition, and assertiveness. "
+            "People with this temperament tend to be naturally leaders, dynamic, and oriented "
+            "toward action. They are impulsive, passionate, and have a strong desire to achieve their goals."
+        ),
+        "description_pt": (
             "O temperamento Colérico é caracterizado por energia, ambição e assertividade. "
             "Pessoas com este temperamento tendem a ser líderes naturais, dinâmicas e orientadas "
             "para a ação. São impulsivas, apaixonadas e têm forte vontade de realizar seus objetivos."
@@ -121,7 +126,12 @@ TEMPERAMENTS = {
         "element": "Air",
         "element_pt": "Ar",
         "icon": "🌬️",
-        "description": (
+        "description_en": (
+            "The Sanguine temperament is marked by optimism, sociability, and enthusiasm. "
+            "People with this temperament are communicative, adaptable, and enjoy variety. "
+            "They have an easy time relating, are cheerful, and maintain a positive outlook on life."
+        ),
+        "description_pt": (
             "O temperamento Sanguíneo é marcado por otimismo, sociabilidade e entusiasmo. "
             "Pessoas sanguíneas são comunicativas, adaptáveis e gostam de variedade. "
             "Têm facilidade para se relacionar, são alegres e mantêm uma perspectiva positiva da vida."
@@ -134,7 +144,12 @@ TEMPERAMENTS = {
         "element": "Earth",
         "element_pt": "Terra",
         "icon": "🌍",
-        "description": (
+        "description_en": (
+            "The Melancholic temperament is characterized by depth, reflection, and sensitivity. "
+            "People with this temperament are analytical, perfectionist, and introspective. "
+            "They value quality, have developed critical thinking, and seek genuine meaning."
+        ),
+        "description_pt": (
             "O temperamento Melancólico é caracterizado por profundidade, reflexão e sensibilidade. "
             "Pessoas melancólicas são analíticas, perfeccionistas e introspectivas. "
             "Valorizam a qualidade, têm pensamento crítico desenvolvido e buscam significado genuíno."
@@ -147,7 +162,12 @@ TEMPERAMENTS = {
         "element": "Water",
         "element_pt": "Água",
         "icon": "💧",
-        "description": (
+        "description_en": (
+            "The Phlegmatic temperament is characterized by calmness, receptivity, and diplomacy. "
+            "People with this temperament are patient, empathetic, and seek harmony. "
+            "They are adaptable, compassionate, and oriented toward collective well-being."
+        ),
+        "description_pt": (
             "O temperamento Fleumático é marcado por calma, receptividade e diplomacia. "
             "Pessoas fleumáticas são pacientes, empáticas e buscam harmonia. "
             "São adaptáveis, compassivas e orientadas para o bem-estar coletivo."
@@ -426,18 +446,18 @@ def calculate_temperament(
     scores[lunar_qualities[0]] += lunar_weight
     scores[lunar_qualities[1]] += lunar_weight
 
-    lunar_angle = (moon_longitude - sun_longitude) % 360
+    # Simplified phase names for display (without angle details)
     phase_names = {
-        1: f"New Moon → Waxing ({lunar_angle:.1f}°)",
-        2: f"Waxing → Full Moon ({lunar_angle:.1f}°)",
-        3: f"Full Moon → Waning ({lunar_angle:.1f}°)",
-        4: f"Waning → New Moon ({lunar_angle:.1f}°)",
+        1: "New Moon",
+        2: "First Quarter",
+        3: "Full Moon",
+        4: "Last Quarter",
     }
     phase_names_pt = {
-        1: f"Lua Nova → Crescente ({lunar_angle:.1f}°)",
-        2: f"Crescente → Lua Cheia ({lunar_angle:.1f}°)",
-        3: f"Lua Cheia → Minguante ({lunar_angle:.1f}°)",
-        4: f"Minguante → Lua Nova ({lunar_angle:.1f}°)",
+        1: "Lua Nova",
+        2: "Quarto Crescente",
+        3: "Lua Cheia",
+        4: "Quarto Minguante",
     }
 
     factors.append(
@@ -501,5 +521,6 @@ def calculate_temperament(
         "icon": temperament_data["icon"],
         "scores": scores,
         "factors": factors,
-        "description": temperament_data["description"],
+        "description": temperament_data["description_en"],
+        "description_pt": temperament_data["description_pt"],
     }

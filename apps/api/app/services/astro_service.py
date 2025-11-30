@@ -852,6 +852,7 @@ def calculate_birth_chart(
     latitude: float,
     longitude: float,
     house_system: str = "placidus",
+    language: str = "pt-BR",
 ) -> dict[str, Any]:
     """
     Calculate complete birth chart.
@@ -862,6 +863,7 @@ def calculate_birth_chart(
         latitude: Geographic latitude
         longitude: Geographic longitude
         house_system: House system to use
+        language: Language for interpretations ('pt-BR' or 'en-US')
 
     Returns:
         Complete chart data dictionary
@@ -893,10 +895,10 @@ def calculate_birth_chart(
     sect = calculate_sect(ascendant, sun_longitude)
 
     # Calculate lunar phase
-    lunar_phase = calculate_lunar_phase(sun_longitude, moon_longitude)
+    lunar_phase = calculate_lunar_phase(sun_longitude, moon_longitude, language)
 
     # Calculate solar phase
-    solar_phase = calculate_solar_phase(sun_sign)
+    solar_phase = calculate_solar_phase(sun_sign, language)
 
     # Add essential dignities to each planet
     planets_with_dignities = []

@@ -9,7 +9,7 @@ corresponding to the 4 traditional temperaments.
 from typing import Any
 
 
-def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
+def calculate_solar_phase(sun_sign: str, language: str = "pt-BR") -> dict[str, Any]:
     """
     Calculate the solar phase based on the Sun's zodiac sign.
 
@@ -21,6 +21,7 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
 
     Args:
         sun_sign: Name of the zodiac sign (e.g., "Aries", "Taurus")
+        language: Language for interpretation ('pt-BR' or 'en-US')
 
     Returns:
         Dictionary containing:
@@ -31,7 +32,7 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
         - qualities: Hot/Cold and Dry/Moist qualities
         - qualities_pt: Qualities in Portuguese
         - signs: List of signs in this phase
-        - description: Interpretation in Portuguese
+        - description: Interpretation in requested language
 
     Example:
         >>> calculate_solar_phase("Aries")
@@ -46,6 +47,9 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "description": "..."
         }
     """
+    # Determine language
+    is_en = language == "en-US"
+
     # Phase definitions
     phases = {
         # Phase 1: Signs 1-3 (Aries, Taurus, Gemini)
@@ -60,7 +64,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Aries", "Taurus", "Gemini"],
             "signs_pt": ["Áries", "Touro", "Gêmeos"],
             "description": (
-                "Nascido na 1ª Fase Solar (temperamento Sanguíneo), você é uma pessoa "
+                "Born in the 1st Solar Phase (Sanguine temperament), you are a person "
+                "naturally optimistic, sociable, and expansive. This hot and moist temperament "
+                "favors adaptability, communication, and the desire for varied experiences. "
+                "You tend to be versatile, curious, and oriented toward social connections, "
+                "always seeking new possibilities and maintaining a hopeful perspective on life."
+                if is_en
+                else "Nascido na 1ª Fase Solar (temperamento Sanguíneo), você é uma pessoa "
                 "naturalmente otimista, sociável e expansiva. Este temperamento quente e úmido "
                 "favorece a adaptabilidade, comunicação e o desejo de experiências variadas. "
                 "Você tende a ser versátil, curioso e orientado para conexões sociais, "
@@ -77,7 +87,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Aries", "Taurus", "Gemini"],
             "signs_pt": ["Áries", "Touro", "Gêmeos"],
             "description": (
-                "Nascido na 1ª Fase Solar (temperamento Sanguíneo), você é uma pessoa "
+                "Born in the 1st Solar Phase (Sanguine temperament), you are a person "
+                "naturally optimistic, sociable, and expansive. This hot and moist temperament "
+                "favors adaptability, communication, and the desire for varied experiences. "
+                "You tend to be versatile, curious, and oriented toward social connections, "
+                "always seeking new possibilities and maintaining a hopeful perspective on life."
+                if is_en
+                else "Nascido na 1ª Fase Solar (temperamento Sanguíneo), você é uma pessoa "
                 "naturalmente otimista, sociável e expansiva. Este temperamento quente e úmido "
                 "favorece a adaptabilidade, comunicação e o desejo de experiências variadas. "
                 "Você tende a ser versátil, curioso e orientado para conexões sociais, "
@@ -94,7 +110,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Aries", "Taurus", "Gemini"],
             "signs_pt": ["Áries", "Touro", "Gêmeos"],
             "description": (
-                "Nascido na 1ª Fase Solar (temperamento Sanguíneo), você é uma pessoa "
+                "Born in the 1st Solar Phase (Sanguine temperament), you are a person "
+                "naturally optimistic, sociable, and expansive. This hot and moist temperament "
+                "favors adaptability, communication, and the desire for varied experiences. "
+                "You tend to be versatile, curious, and oriented toward social connections, "
+                "always seeking new possibilities and maintaining a hopeful perspective on life."
+                if is_en
+                else "Nascido na 1ª Fase Solar (temperamento Sanguíneo), você é uma pessoa "
                 "naturalmente otimista, sociável e expansiva. Este temperamento quente e úmido "
                 "favorece a adaptabilidade, comunicação e o desejo de experiências variadas. "
                 "Você tende a ser versátil, curioso e orientado para conexões sociais, "
@@ -113,7 +135,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Cancer", "Leo", "Virgo"],
             "signs_pt": ["Câncer", "Leão", "Virgem"],
             "description": (
-                "Nascido na 2ª Fase Solar (temperamento Colérico), você é uma pessoa "
+                "Born in the 2nd Solar Phase (Choleric temperament), you are a person "
+                "naturally assertive, ambitious, and action-oriented. This hot and dry temperament "
+                "favors leadership, determination, and the desire to achieve and build. "
+                "You tend to be dynamic, focused, and results-oriented, "
+                "always seeking to manifest your will and leave your mark on the world."
+                if is_en
+                else "Nascido na 2ª Fase Solar (temperamento Colérico), você é uma pessoa "
                 "naturalmente assertiva, ambiciosa e orientada para ação. Este temperamento quente e seco "
                 "favorece a liderança, determinação e o desejo de realizar e construir. "
                 "Você tende a ser dinâmico, focado e orientado para resultados, "
@@ -130,7 +158,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Cancer", "Leo", "Virgo"],
             "signs_pt": ["Câncer", "Leão", "Virgem"],
             "description": (
-                "Nascido na 2ª Fase Solar (temperamento Colérico), você é uma pessoa "
+                "Born in the 2nd Solar Phase (Choleric temperament), you are a person "
+                "naturally assertive, ambitious, and action-oriented. This hot and dry temperament "
+                "favors leadership, determination, and the desire to achieve and build. "
+                "You tend to be dynamic, focused, and results-oriented, "
+                "always seeking to manifest your will and leave your mark on the world."
+                if is_en
+                else "Nascido na 2ª Fase Solar (temperamento Colérico), você é uma pessoa "
                 "naturalmente assertiva, ambiciosa e orientada para ação. Este temperamento quente e seco "
                 "favorece a liderança, determinação e o desejo de realizar e construir. "
                 "Você tende a ser dinâmico, focado e orientado para resultados, "
@@ -147,7 +181,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Cancer", "Leo", "Virgo"],
             "signs_pt": ["Câncer", "Leão", "Virgem"],
             "description": (
-                "Nascido na 2ª Fase Solar (temperamento Colérico), você é uma pessoa "
+                "Born in the 2nd Solar Phase (Choleric temperament), you are a person "
+                "naturally assertive, ambitious, and action-oriented. This hot and dry temperament "
+                "favors leadership, determination, and the desire to achieve and build. "
+                "You tend to be dynamic, focused, and results-oriented, "
+                "always seeking to manifest your will and leave your mark on the world."
+                if is_en
+                else "Nascido na 2ª Fase Solar (temperamento Colérico), você é uma pessoa "
                 "naturalmente assertiva, ambiciosa e orientada para ação. Este temperamento quente e seco "
                 "favorece a liderança, determinação e o desejo de realizar e construir. "
                 "Você tende a ser dinâmico, focado e orientado para resultados, "
@@ -166,7 +206,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Libra", "Scorpio", "Sagittarius"],
             "signs_pt": ["Libra", "Escorpião", "Sagitário"],
             "description": (
-                "Nascido na 3ª Fase Solar (temperamento Melancólico), você é uma pessoa "
+                "Born in the 3rd Solar Phase (Melancholic temperament), you are a person "
+                "naturally reflective, analytical, and oriented toward depth. This cold and dry temperament "
+                "favors introspection, critical thinking, and the desire to understand profound truths. "
+                "You tend to be careful, meticulous, and quality-oriented, "
+                "always seeking perfection and genuine meaning in everything you do."
+                if is_en
+                else "Nascido na 3ª Fase Solar (temperamento Melancólico), você é uma pessoa "
                 "naturalmente reflexiva, analítica e orientada para profundidade. Este temperamento frio e seco "
                 "favorece a introspecção, o pensamento crítico e o desejo de compreender verdades profundas. "
                 "Você tende a ser cuidadoso, meticuloso e orientado para qualidade, "
@@ -183,7 +229,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Libra", "Scorpio", "Sagittarius"],
             "signs_pt": ["Libra", "Escorpião", "Sagitário"],
             "description": (
-                "Nascido na 3ª Fase Solar (temperamento Melancólico), você é uma pessoa "
+                "Born in the 3rd Solar Phase (Melancholic temperament), you are a person "
+                "naturally reflective, analytical, and oriented toward depth. This cold and dry temperament "
+                "favors introspection, critical thinking, and the desire to understand profound truths. "
+                "You tend to be careful, meticulous, and quality-oriented, "
+                "always seeking perfection and genuine meaning in everything you do."
+                if is_en
+                else "Nascido na 3ª Fase Solar (temperamento Melancólico), você é uma pessoa "
                 "naturalmente reflexiva, analítica e orientada para profundidade. Este temperamento frio e seco "
                 "favorece a introspecção, o pensamento crítico e o desejo de compreender verdades profundas. "
                 "Você tende a ser cuidadoso, meticuloso e orientado para qualidade, "
@@ -200,7 +252,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Libra", "Scorpio", "Sagittarius"],
             "signs_pt": ["Libra", "Escorpião", "Sagitário"],
             "description": (
-                "Nascido na 3ª Fase Solar (temperamento Melancólico), você é uma pessoa "
+                "Born in the 3rd Solar Phase (Melancholic temperament), you are a person "
+                "naturally reflective, analytical, and oriented toward depth. This cold and dry temperament "
+                "favors introspection, critical thinking, and the desire to understand profound truths. "
+                "You tend to be careful, meticulous, and quality-oriented, "
+                "always seeking perfection and genuine meaning in everything you do."
+                if is_en
+                else "Nascido na 3ª Fase Solar (temperamento Melancólico), você é uma pessoa "
                 "naturalmente reflexiva, analítica e orientada para profundidade. Este temperamento frio e seco "
                 "favorece a introspecção, o pensamento crítico e o desejo de compreender verdades profundas. "
                 "Você tende a ser cuidadoso, meticuloso e orientado para qualidade, "
@@ -219,7 +277,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Capricorn", "Aquarius", "Pisces"],
             "signs_pt": ["Capricórnio", "Aquário", "Peixes"],
             "description": (
-                "Nascido na 4ª Fase Solar (temperamento Fleumático), você é uma pessoa "
+                "Born in the 4th Solar Phase (Phlegmatic temperament), you are a person "
+                "naturally calm, receptive, and oriented toward harmony. This cold and moist temperament "
+                "favors patience, empathy, and the desire for peace and stability. "
+                "You tend to be compassionate, adaptable, and oriented toward collective well-being, "
+                "always seeking balance and avoiding unnecessary conflicts."
+                if is_en
+                else "Nascido na 4ª Fase Solar (temperamento Fleumático), você é uma pessoa "
                 "naturalmente calma, receptiva e orientada para harmonia. Este temperamento frio e úmido "
                 "favorece a paciência, empatia e o desejo de paz e estabilidade. "
                 "Você tende a ser compassivo, adaptável e orientado para o bem-estar coletivo, "
@@ -236,7 +300,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Capricorn", "Aquarius", "Pisces"],
             "signs_pt": ["Capricórnio", "Aquário", "Peixes"],
             "description": (
-                "Nascido na 4ª Fase Solar (temperamento Fleumático), você é uma pessoa "
+                "Born in the 4th Solar Phase (Phlegmatic temperament), you are a person "
+                "naturally calm, receptive, and oriented toward harmony. This cold and moist temperament "
+                "favors patience, empathy, and the desire for peace and stability. "
+                "You tend to be compassionate, adaptable, and oriented toward collective well-being, "
+                "always seeking balance and avoiding unnecessary conflicts."
+                if is_en
+                else "Nascido na 4ª Fase Solar (temperamento Fleumático), você é uma pessoa "
                 "naturalmente calma, receptiva e orientada para harmonia. Este temperamento frio e úmido "
                 "favorece a paciência, empatia e o desejo de paz e estabilidade. "
                 "Você tende a ser compassivo, adaptável e orientado para o bem-estar coletivo, "
@@ -253,7 +323,13 @@ def calculate_solar_phase(sun_sign: str) -> dict[str, Any]:
             "signs": ["Capricorn", "Aquarius", "Pisces"],
             "signs_pt": ["Capricórnio", "Aquário", "Peixes"],
             "description": (
-                "Nascido na 4ª Fase Solar (temperamento Fleumático), você é uma pessoa "
+                "Born in the 4th Solar Phase (Phlegmatic temperament), you are a person "
+                "naturally calm, receptive, and oriented toward harmony. This cold and moist temperament "
+                "favors patience, empathy, and the desire for peace and stability. "
+                "You tend to be compassionate, adaptable, and oriented toward collective well-being, "
+                "always seeking balance and avoiding unnecessary conflicts."
+                if is_en
+                else "Nascido na 4ª Fase Solar (temperamento Fleumático), você é uma pessoa "
                 "naturalmente calma, receptiva e orientada para harmonia. Este temperamento frio e úmido "
                 "favorece a paciência, empatia e o desejo de paz e estabilidade. "
                 "Você tende a ser compassivo, adaptável e orientado para o bem-estar coletivo, "

@@ -56,6 +56,13 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             logger.error(f"Chart {chart_id} not found")
             return {"status": "failed", "message": "Chart not found"}
 
+        # Fetch user to get language preference
+        from app.repositories.user_repository import UserRepository
+
+        user_repo = UserRepository(db)
+        user = await user_repo.get_by_id(chart.user_id)
+        user_language = user.locale if user else "pt-BR"
+
         try:
             # Update task_id and initial progress
             chart.task_id = task_id
@@ -74,6 +81,7 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
                 latitude=float(chart.latitude),
                 longitude=float(chart.longitude),
                 house_system=chart.house_system,
+                language=user_language,
             )
 
             # Step 2: Save calculated data

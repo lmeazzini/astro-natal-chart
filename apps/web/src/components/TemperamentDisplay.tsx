@@ -177,8 +177,19 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
     return labels[quality] || quality;
   };
 
-  // Translate factor value (planets, signs, phases)
+  // Translate factor value (planets, signs, phases, or composite strings)
   const translateFactorValue = (value: string): string => {
+    // Handle composite strings like "Jupiter in Scorpio" or "Moon in Cancer"
+    const inPattern = / in /i;
+    if (inPattern.test(value)) {
+      const parts = value.split(inPattern);
+      if (parts.length === 2) {
+        const translatedPlanet = translatePlanet(parts[0].trim());
+        const translatedSign = translateSign(parts[1].trim());
+        return `${translatedPlanet} em ${translatedSign}`;
+      }
+    }
+
     // Try to translate as planet first
     const translatedPlanet = translatePlanet(value);
     if (translatedPlanet !== value) return translatedPlanet;
@@ -289,11 +300,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {isEn
-                        ? factor.value
-                        : factor.value_pt
-                          ? translateFactorValue(factor.value_pt)
-                          : translateFactorValue(factor.value)}
+                      {isEn ? factor.value : translateFactorValue(factor.value)}
                     </p>
                     {dignityInfo && (
                       <span

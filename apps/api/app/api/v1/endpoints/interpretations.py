@@ -673,12 +673,18 @@ async def _generate_rag_interpretations(
     chart_data = chart.chart_data
     assert chart_data is not None, "chart_data must not be None"
 
-    planets = chart_data.get("planets", [])
-    houses = chart_data.get("houses", [])
-    arabic_parts = chart_data.get("arabic_parts", {})
+    # Extract language-specific chart data (chart_data has language-first format)
+    lang_chart_data = chart_data.get(language, {})
+    if not lang_chart_data:
+        # Fallback to pt-BR if requested language doesn't exist
+        lang_chart_data = chart_data.get("pt-BR", {})
+
+    planets = lang_chart_data.get("planets", [])
+    houses = lang_chart_data.get("houses", [])
+    arabic_parts = lang_chart_data.get("arabic_parts", {})
 
     # Get chart sect for interpretations
-    sect = chart_data.get("sect", "diurnal")
+    sect = lang_chart_data.get("sect", "diurnal")
 
     # Process planets
     for planet in planets:

@@ -84,7 +84,11 @@ class TestUnifiedInterpretationsEndpoint:
         test_user_factory,
         db_session: AsyncSession,
     ):
-        """Test that users can't access other users' charts."""
+        """Test that users can't access other users' charts.
+
+        Note: Returns 404 (not 403) to avoid revealing existence of other users' charts.
+        This is a security best practice.
+        """
         # Create a chart for test_user
         chart = await test_chart_factory(user=test_user, status="completed")
 
@@ -105,7 +109,8 @@ class TestUnifiedInterpretationsEndpoint:
             headers={"Authorization": f"Bearer {token}"},
         )
 
-        assert response.status_code == 403
+        # Returns 404 to not reveal existence of other users' charts (security best practice)
+        assert response.status_code == 404
 
     async def test_get_unified_interpretations_success(
         self,

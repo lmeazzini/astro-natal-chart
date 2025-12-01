@@ -217,17 +217,17 @@ class TestRAGInterpretationsEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        # Check response structure
-        assert data["source"] == "rag"
+        # Check response structure (RAGInterpretationsResponse)
         assert "planets" in data
         assert "houses" in data
         assert "aspects" in data
         assert "arabic_parts" in data
-        assert "documents_used" in data
+        assert "metadata" in data
+        assert "documents_used" in data["metadata"]
 
         # Check cached planet interpretation
         assert "Sun" in data["planets"]
-        assert data["planets"]["Sun"]["source"] == "rag"
+        assert data["planets"]["Sun"]["source"] == "database"  # Loaded from database
         assert "Cached interpretation" in data["planets"]["Sun"]["content"]
         assert len(data["planets"]["Sun"]["rag_sources"]) > 0
 
@@ -248,7 +248,8 @@ class TestRAGInterpretationsEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert data["source"] == "rag"
+        # Check RAGInterpretationsResponse structure
+        assert "metadata" in data
         assert "planets" in data
 
     @pytest.mark.asyncio
@@ -391,9 +392,10 @@ class TestRAGInterpretationsEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert data["source"] == "rag"
+        # Check RAGInterpretationsResponse structure
+        assert "metadata" in data
         assert "planets" in data
-        assert "documents_used" in data
+        assert "documents_used" in data["metadata"]
 
     @pytest.mark.asyncio
     async def test_regenerate_interpretations_unauthorized(

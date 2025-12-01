@@ -313,8 +313,8 @@ async def unverified_admin_auth_headers(test_unverified_admin_user: User) -> dic
 
 @pytest.fixture
 def test_chart_data() -> dict:
-    """Sample chart calculation result for testing."""
-    return {
+    """Sample chart calculation result for testing (language-first format)."""
+    base_data = {
         "planets": [
             {
                 "name": "Sun",
@@ -357,6 +357,11 @@ def test_chart_data() -> dict:
             "ic": 54.567,
             "descendant": 303.456,
         },
+    }
+    # Return language-first format
+    return {
+        "en-US": base_data,
+        "pt-BR": base_data,
     }
 
 

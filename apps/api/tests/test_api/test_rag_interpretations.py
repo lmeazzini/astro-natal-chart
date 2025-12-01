@@ -16,8 +16,8 @@ from app.services.interpretation_service_rag import RAG_PROMPT_VERSION
 
 @pytest.fixture
 def test_chart_data() -> dict:
-    """Sample chart calculation result for testing."""
-    return {
+    """Sample chart calculation result for testing (language-first format)."""
+    base_data = {
         "planets": [
             {
                 "name": "Sun",
@@ -67,6 +67,11 @@ def test_chart_data() -> dict:
         "ascendant": 123.456,
         "mc": 234.567,
         "sect": "diurnal",
+    }
+    # Return language-first format
+    return {
+        "en-US": base_data,
+        "pt-BR": base_data,
     }
 
 

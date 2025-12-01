@@ -3,6 +3,7 @@ Chart interpretation endpoints for AI-generated astrological interpretations.
 """
 
 import json
+from datetime import UTC, datetime
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -171,8 +172,12 @@ async def get_chart_interpretations(
                 total_documents += len(rag_sources_list)
                 planets_data[interp.subject] = InterpretationItem(
                     content=interp.content,
-                    source="rag",
+                    source="database",
                     rag_sources=rag_sources_list,
+                    is_outdated=(interp.prompt_version != RAG_PROMPT_VERSION),
+                    cached=False,
+                    prompt_version=interp.prompt_version,
+                    generated_at=interp.created_at.isoformat() if interp.created_at else None,
                 )
             cache_hits_db += len(existing_by_type["planet"])
         else:
@@ -192,8 +197,12 @@ async def get_chart_interpretations(
                     house_key = house_key.replace("House ", "")
                 houses_data[house_key] = InterpretationItem(
                     content=interp.content,
-                    source="rag",
+                    source="database",
                     rag_sources=rag_sources_list,
+                    is_outdated=(interp.prompt_version != RAG_PROMPT_VERSION),
+                    cached=False,
+                    prompt_version=interp.prompt_version,
+                    generated_at=interp.created_at.isoformat() if interp.created_at else None,
                 )
             cache_hits_db += len(existing_by_type["house"])
         else:
@@ -209,8 +218,12 @@ async def get_chart_interpretations(
                 total_documents += len(rag_sources_list)
                 aspects_data[interp.subject] = InterpretationItem(
                     content=interp.content,
-                    source="rag",
+                    source="database",
                     rag_sources=rag_sources_list,
+                    is_outdated=(interp.prompt_version != RAG_PROMPT_VERSION),
+                    cached=False,
+                    prompt_version=interp.prompt_version,
+                    generated_at=interp.created_at.isoformat() if interp.created_at else None,
                 )
             cache_hits_db += len(existing_by_type["aspect"])
         else:
@@ -228,8 +241,12 @@ async def get_chart_interpretations(
                 total_documents += len(rag_sources_list)
                 arabic_parts_data[interp.subject] = InterpretationItem(
                     content=interp.content,
-                    source="rag",
+                    source="database",
                     rag_sources=rag_sources_list,
+                    is_outdated=(interp.prompt_version != RAG_PROMPT_VERSION),
+                    cached=False,
+                    prompt_version=interp.prompt_version,
+                    generated_at=interp.created_at.isoformat() if interp.created_at else None,
                 )
             cache_hits_db += len(existing_by_type["arabic_part"])
         else:
@@ -351,21 +368,37 @@ async def get_chart_interpretations(
                             content=json.dumps(growth_dict["growth_points"], ensure_ascii=False),
                             source="rag",
                             rag_sources=[],
+                            is_outdated=False,
+                            cached=False,
+                            prompt_version=GROWTH_PROMPT_VERSION,
+                            generated_at=datetime.now(UTC).isoformat(),
                         ),
                         "challenges": InterpretationItem(
                             content=json.dumps(growth_dict["challenges"], ensure_ascii=False),
                             source="rag",
                             rag_sources=[],
+                            is_outdated=False,
+                            cached=False,
+                            prompt_version=GROWTH_PROMPT_VERSION,
+                            generated_at=datetime.now(UTC).isoformat(),
                         ),
                         "opportunities": InterpretationItem(
                             content=json.dumps(growth_dict["opportunities"], ensure_ascii=False),
                             source="rag",
                             rag_sources=[],
+                            is_outdated=False,
+                            cached=False,
+                            prompt_version=GROWTH_PROMPT_VERSION,
+                            generated_at=datetime.now(UTC).isoformat(),
                         ),
                         "purpose": InterpretationItem(
                             content=json.dumps(growth_dict["purpose"], ensure_ascii=False),
                             source="rag",
                             rag_sources=[],
+                            is_outdated=False,
+                            cached=False,
+                            prompt_version=GROWTH_PROMPT_VERSION,
+                            generated_at=datetime.now(UTC).isoformat(),
                         ),
                     }
                     response.growth = growth_items
@@ -674,6 +707,10 @@ async def _generate_rag_interpretations(
             content=interpretation,
             source="rag",
             rag_sources=rag_sources,
+            is_outdated=False,
+            cached=False,
+            prompt_version=RAG_PROMPT_VERSION,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
         # Save planet interpretation to database
@@ -738,6 +775,10 @@ async def _generate_rag_interpretations(
             content=house_interpretation,
             source="rag",
             rag_sources=rag_sources,
+            is_outdated=False,
+            cached=False,
+            prompt_version=RAG_PROMPT_VERSION,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
         # Save house interpretation to database
@@ -808,6 +849,10 @@ async def _generate_rag_interpretations(
             content=interpretation,
             source="rag",
             rag_sources=rag_sources,
+            is_outdated=False,
+            cached=False,
+            prompt_version=RAG_PROMPT_VERSION,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
         # Save aspect interpretation to database
@@ -858,6 +903,10 @@ async def _generate_rag_interpretations(
             content=interpretation,
             source="rag",
             rag_sources=rag_sources,
+            is_outdated=False,
+            cached=False,
+            prompt_version=RAG_PROMPT_VERSION,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
         # Save Arabic Part interpretation to database

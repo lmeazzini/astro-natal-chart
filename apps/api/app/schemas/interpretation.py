@@ -127,8 +127,12 @@ class InterpretationItem(BaseModel):
     """Single interpretation with metadata."""
 
     content: str = Field(..., description="Interpretation text")
-    source: str = Field(default="standard", description="'standard' or 'rag'")
+    source: str = Field(default="standard", description="'standard', 'rag', 'database', or 'cache'")
     rag_sources: list[RAGSourceInfo] = Field(default_factory=list)
+    is_outdated: bool = Field(default=False, description="Whether prompt version is outdated")
+    cached: bool = Field(default=False, description="Whether from cache")
+    prompt_version: str | None = Field(default=None, description="Prompt version used")
+    generated_at: str | None = Field(default=None, description="ISO timestamp of generation")
 
 
 class ChartInterpretationsResponse(BaseModel):

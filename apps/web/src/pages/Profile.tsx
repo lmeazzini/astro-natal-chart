@@ -64,12 +64,8 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// User type options
-const USER_TYPES = [
-  { value: 'professional', label: '🔮 Astrólogo Profissional' },
-  { value: 'student', label: '📚 Estudante de Astrologia' },
-  { value: 'curious', label: '✨ Curioso' },
-];
+// User type options - values only, labels from translation
+const USER_TYPE_VALUES = ['professional', 'student', 'curious'] as const;
 
 // Type definitions (outside component to maintain type consistency)
 type ProfileFormValues = {
@@ -579,9 +575,9 @@ export function ProfilePage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {USER_TYPES.map((type) => (
-                                <SelectItem key={type.value} value={type.value}>
-                                  {type.label}
+                              {USER_TYPE_VALUES.map((typeValue) => (
+                                <SelectItem key={typeValue} value={typeValue}>
+                                  {t(`profile.userTypes.${typeValue}`)}
                                 </SelectItem>
                               ))}
                             </SelectContent>

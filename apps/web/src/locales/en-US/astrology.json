@@ -17,7 +17,9 @@
     "Neptune": "Neptune",
     "Pluto": "Pluto",
     "NorthNode": "North Node",
+    "North Node": "North Node",
     "SouthNode": "South Node",
+    "South Node": "South Node",
     "Chiron": "Chiron"
   },
   "signs": {
@@ -84,13 +86,32 @@
     "dignity": "Dignity",
     "dignities": "Dignities",
     "domicile": "Domicile",
+    "ruler": "Domicile",
+    "exalted": "Exaltation",
     "exaltation": "Exaltation",
     "triplicity": "Triplicity",
     "term": "Term",
     "face": "Face",
     "detriment": "Detriment",
     "fall": "Fall",
-    "peregrine": "Peregrine"
+    "peregrine": "Peregrine",
+    "classification": {
+      "very_strong": "Very Strong",
+      "strong": "Strong",
+      "moderate": "Moderate",
+      "weak": "Weak",
+      "very_weak": "Very Weak"
+    },
+    "explanation": {
+      "no_info": "No dignity information available.",
+      "ruler": "{{planet}} is in domicile in {{sign}}, manifesting its natural qualities with full strength.",
+      "exalted": "{{planet}} is exalted in {{sign}}, manifesting its best qualities harmoniously.",
+      "fall": "{{planet}} is in fall in {{sign}}, its qualities are debilitated and may manifest in a challenging way.",
+      "detriment": "{{planet}} is in detriment in {{sign}}, struggling to express its natural qualities.",
+      "minor": "{{planet}} has minor dignities in {{sign}}, having some strength despite not being in domicile or exaltation.",
+      "peregrine": "{{planet}} is peregrine in {{sign}}, without significant essential dignities.",
+      "debilitated": "{{planet}} is debilitated in {{sign}}."
+    }
   },
   "sect": {
     "sect": "Sect",

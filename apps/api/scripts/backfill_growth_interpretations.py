@@ -66,7 +66,7 @@ async def count_charts_needing_growth(db: AsyncSession) -> dict[str, int]:
     result = await db.execute(stmt)
     all_charts = result.scalars().all()
 
-    needs_growth = {lang: 0 for lang in SUPPORTED_LANGUAGES}
+    needs_growth = dict.fromkeys(SUPPORTED_LANGUAGES, 0)
 
     for chart in all_charts:
         # Get existing growth interpretations for this chart
@@ -196,7 +196,7 @@ async def backfill_chart_growth(
     Returns:
         Dict with counts per language
     """
-    results = {lang: 0 for lang in languages_to_generate}
+    results = dict.fromkeys(languages_to_generate, 0)
 
     if dry_run:
         logger.info(
@@ -348,7 +348,7 @@ async def main(
 
         # Process each chart
         logger.info("")
-        total_generated = {lang: 0 for lang in SUPPORTED_LANGUAGES}
+        total_generated = dict.fromkeys(SUPPORTED_LANGUAGES, 0)
         processed_count = 0
         failed_count = 0
 

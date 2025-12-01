@@ -2,17 +2,20 @@
 Birth chart endpoints for creating and managing natal charts.
 """
 
-from typing import Annotated
+import re
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.context import get_locale
 from app.core.dependencies import get_current_user, get_db
 from app.core.i18n import translate as _
 from app.core.i18n.messages import ChartMessages
 from app.core.rate_limit import RateLimits, limiter
+from app.models.chart import BirthChart
 from app.models.user import User
 from app.repositories.chart_repository import ChartRepository
 from app.schemas.chart import (
@@ -28,8 +31,289 @@ from app.services import chart_service
 from app.services.s3_service import s3_service
 from app.tasks.astro_tasks import generate_birth_chart_task
 from app.tasks.pdf_tasks import generate_chart_pdf_task
+from app.translations import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, get_translation
+from app.utils.chart_data_accessor import extract_language_data
 
 router = APIRouter()
+
+
+def _extract_chart_data_for_response(chart_data: dict[str, Any] | None) -> dict[str, Any] | None:
+    """
+    Extract language-specific chart data for API response.
+
+    Converts language-first format {"en-US": {...}, "pt-BR": {...}}
+    to flat format {...} based on request locale.
+
+    Args:
+        chart_data: Chart data in language-first or legacy flat format
+
+    Returns:
+        Language-specific chart data, or None if chart_data is None
+    """
+    if not chart_data:
+        return None
+
+    # Get current request locale (from LocaleMiddleware)
+    locale = get_locale() or DEFAULT_LANGUAGE
+
+    # Extract language-specific data using backward-compatible accessor
+    return extract_language_data(chart_data, locale)
+
+
+def _translate_phases_for_language(data: dict[str, Any], lang: str) -> dict[str, Any]:
+    """
+    Re-translate lunar_phase and solar_phase for the specified language.
+
+    For legacy charts stored with single-language phase data, this function
+    uses the phase_key to fetch the correct translations for the requested language.
+
+    Args:
+        data: Chart data dict containing lunar_phase and/or solar_phase
+        lang: Target language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data with translated phases
+    """
+    if not data:
+        return data
+
+    # Translate lunar_phase if present
+    if "lunar_phase" in data and isinstance(data["lunar_phase"], dict):
+        lunar = data["lunar_phase"]
+        phase_key = lunar.get("phase_key")
+        if phase_key:
+            lunar["phase_name"] = get_translation(f"lunar_phases.{phase_key}.name", lang)
+            lunar["keywords"] = get_translation(f"lunar_phases.{phase_key}.keywords", lang)
+            lunar["interpretation"] = get_translation(
+                f"lunar_phases.{phase_key}.interpretation", lang
+            )
+
+    # Translate solar_phase if present
+    if "solar_phase" in data and isinstance(data["solar_phase"], dict):
+        solar = data["solar_phase"]
+        phase_key = solar.get("phase_key")
+        if phase_key and phase_key != "unknown":
+            solar["phase_name"] = get_translation(f"solar_phases.{phase_key}.name", lang)
+            solar["temperament"] = get_translation(f"solar_phases.{phase_key}.temperament", lang)
+            solar["qualities"] = get_translation(f"solar_phases.{phase_key}.qualities", lang)
+            solar["description"] = get_translation(f"solar_phases.{phase_key}.description", lang)
+            signs_data = get_translation(f"solar_phases.{phase_key}.signs", lang)
+            if isinstance(signs_data, list):
+                solar["signs"] = signs_data
+
+    return data
+
+
+def _translate_temperament_for_language(data: dict[str, Any], lang: str) -> dict[str, Any]:
+    """
+    Re-translate temperament data for the specified language.
+
+    For legacy charts stored with single-language temperament data, this function
+    uses the dominant_key to fetch the correct translations for the requested language.
+
+    Args:
+        data: Chart data dict containing temperament
+        lang: Target language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data with translated temperament
+    """
+    if not data or "temperament" not in data:
+        return data
+
+    temp = data.get("temperament")
+    if not isinstance(temp, dict):
+        return data
+
+    # Get the temperament key (e.g., "melancholic", "choleric")
+    temp_key = temp.get("dominant_key") or temp.get("temperament_key")
+    if temp_key:
+        temp_key_lower = temp_key.lower()
+        # Translate dominant temperament name
+        temp["dominant"] = get_translation(f"temperaments.{temp_key_lower}.name", lang)
+        # Translate description
+        temp["description"] = get_translation(f"temperaments.{temp_key_lower}.description", lang)
+
+    # Translate factors if present
+    factors = temp.get("factors")
+    if isinstance(factors, list):
+        for factor in factors:
+            if isinstance(factor, dict):
+                # Translate factor name
+                factor_key = factor.get("factor_key")
+                if factor_key:
+                    factor["factor"] = get_translation(f"factors.{factor_key}", lang)
+
+                # Translate qualities
+                qualities = factor.get("qualities")
+                if isinstance(qualities, list):
+                    translated_qualities = []
+                    for q in qualities:
+                        q_lower = q.lower() if isinstance(q, str) else q
+                        translated = get_translation(f"qualities.{q_lower}", lang)
+                        translated_qualities.append(
+                            translated if translated != f"qualities.{q_lower}" else q
+                        )
+                    factor["qualities"] = translated_qualities
+
+                # Translate value (planet in sign format)
+                value = factor.get("value", "")
+                if isinstance(value, str) and " em " in value.lower():
+                    # Portuguese "em" -> translate to English "in" pattern
+                    # e.g., "Saturno em Escorpião" -> "Saturn in Scorpio"
+                    parts = value.split(" em ", 1)
+                    if len(parts) == 2:
+                        planet_pt = parts[0].strip()
+                        sign_pt = parts[1].strip()
+                        # Try to translate planet and sign
+                        planet_translated = get_translation(f"planets.{planet_pt}", lang)
+                        sign_translated = get_translation(f"signs.{sign_pt}", lang)
+                        if planet_translated != f"planets.{planet_pt}":
+                            planet_pt = planet_translated
+                        if sign_translated != f"signs.{sign_pt}":
+                            sign_pt = sign_translated
+                        factor["value"] = (
+                            f"{planet_pt} in {sign_pt}"
+                            if lang.startswith("en")
+                            else f"{planet_pt} em {sign_pt}"
+                        )
+                elif isinstance(value, str):
+                    # Try to translate standalone signs
+                    sign_translated = get_translation(f"signs.{value}", lang)
+                    if sign_translated != f"signs.{value}":
+                        factor["value"] = sign_translated
+                    # Try to translate solar phase value
+                    # e.g., "3ª Fase (Melancólico)" -> "3rd Phase (Melancholic)"
+                    if "Fase" in value or "Phase" in value:
+                        # Extract phase number
+                        match = re.search(r"(\d+)", value)
+                        if match:
+                            phase_num = match.group(1)
+                            factor["value"] = get_translation(
+                                f"temperament_solar_phases.{phase_num}", lang
+                            )
+
+    return data
+
+
+def _translate_lord_of_nativity_for_language(data: dict[str, Any], lang: str) -> dict[str, Any]:
+    """
+    Re-translate lord of nativity data for the specified language.
+
+    For legacy charts stored with single-language lord of nativity data, this function
+    uses the planet_key and sign_key to fetch the correct translations.
+
+    Args:
+        data: Chart data dict containing lord_of_nativity
+        lang: Target language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data with translated lord of nativity
+    """
+    if not data or "lord_of_nativity" not in data:
+        return data
+
+    lon = data.get("lord_of_nativity")
+    if not isinstance(lon, dict):
+        return data
+
+    # Translate planet name
+    planet_key = lon.get("planet_key")
+    if planet_key:
+        lon["planet"] = get_translation(f"planets.{planet_key}", lang)
+
+    # Translate sign name
+    sign_key = lon.get("sign_key")
+    if sign_key:
+        lon["sign"] = get_translation(f"signs.{sign_key}", lang)
+
+    # Translate dignity details labels
+    dignity_details = lon.get("dignity_details")
+    if isinstance(dignity_details, list):
+        for detail in dignity_details:
+            if isinstance(detail, dict):
+                # Get the dignity type (e.g., "domicile", "exaltation")
+                dignity_type = detail.get("type", "").lower()
+                if dignity_type:
+                    detail["label"] = get_translation(f"dignities.{dignity_type}", lang)
+                    # Also set label_en for backward compatibility
+                    if lang.startswith("en"):
+                        detail["label_en"] = detail["label"]
+
+    return data
+
+
+def _normalize_temperament_fields(data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Normalize temperament field names from old format to new format.
+
+    Old format: temperament_name, temperament_key
+    New format: dominant, dominant_key
+
+    This ensures backward compatibility with existing chart data.
+    """
+    if "temperament" not in data or not isinstance(data["temperament"], dict):
+        return data
+
+    temp = data["temperament"]
+
+    # Map old field names to new ones
+    if "temperament_name" in temp and "dominant" not in temp:
+        temp["dominant"] = temp["temperament_name"]
+    if "temperament_key" in temp and "dominant_key" not in temp:
+        temp["dominant_key"] = temp["temperament_key"]
+
+    return data
+
+
+def extract_chart_data_for_language(chart: BirthChart, lang: str) -> dict[str, Any] | None:
+    """
+    Extract chart_data for the specified language.
+
+    Handles both new format (language-keyed: {"en-US": {...}, "pt-BR": {...}})
+    and legacy format (single language dict with direct keys like "planets", "houses").
+
+    Args:
+        chart: BirthChart model instance
+        lang: Language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data dict for the specified language, or None if not available
+    """
+    if not chart.chart_data:
+        return None
+
+    chart_data: dict[str, Any] = chart.chart_data
+    result: dict[str, Any] | None = None
+
+    # Check if this is the new language-keyed format
+    if lang in chart_data:
+        result = chart_data[lang]
+    else:
+        # Check if any supported language key exists (indicates new format)
+        has_language_keys = any(
+            supported_lang in chart_data for supported_lang in SUPPORTED_LANGUAGES
+        )
+
+        if has_language_keys:
+            # New format but requested language not found - fallback to default
+            result = chart_data.get(DEFAULT_LANGUAGE, None)
+        else:
+            # Legacy format - return as-is (no language separation)
+            result = chart_data
+
+    # Normalize field names for backward compatibility
+    if result:
+        result = _normalize_temperament_fields(result)
+        # Re-translate phases for the requested language
+        # This ensures legacy charts display phases in the correct language
+        result = _translate_phases_for_language(result, lang)
+        # Translate temperament data
+        result = _translate_temperament_for_language(result, lang)
+        # Translate lord of nativity data
+        result = _translate_lord_of_nativity_for_language(result, lang)
+
+    return result
 
 
 @router.post(
@@ -145,6 +429,10 @@ async def list_charts(
         user_id=UUID(str(current_user.id)),
     )
 
+    # Extract language-specific chart data for each chart
+    for chart in charts:
+        chart.chart_data = _extract_chart_data_for_response(chart.chart_data)
+
     return BirthChartList(
         charts=charts,
         total=total,
@@ -212,7 +500,7 @@ async def get_chart_status(
     "/{chart_id}",
     response_model=BirthChartRead,
     summary="Get birth chart",
-    description="Get a specific birth chart by ID. Admins can access any chart.",
+    description="Get a specific birth chart by ID. Admins can access any chart. Use `lang` query param to select language.",
 )
 @limiter.limit(RateLimits.CHART_READ)
 async def get_chart(
@@ -221,19 +509,26 @@ async def get_chart(
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    lang: str = Query(
+        DEFAULT_LANGUAGE,
+        description="Language for chart data (en-US or pt-BR)",
+        regex="^(en-US|pt-BR)$",
+    ),
 ) -> BirthChartRead:
     """
     Get a birth chart by ID.
 
     Admins can access any chart in the system.
+    Use the `lang` query parameter to select the language for translated content.
 
     Args:
         chart_id: Birth chart UUID
         current_user: Current authenticated user
         db: Database session
+        lang: Language code for translated content (default: en-US)
 
     Returns:
-        Birth chart data
+        Birth chart data in the specified language
     """
     try:
         chart = await chart_service.get_chart_by_id(
@@ -242,7 +537,41 @@ async def get_chart(
             user_id=UUID(str(current_user.id)),
             is_admin=current_user.is_admin,
         )
-        return chart  # type: ignore[return-value]
+
+        # Extract chart_data for the requested language
+        chart_data = extract_chart_data_for_language(chart, lang)
+
+        # Build response with language-specific chart_data
+        return BirthChartRead(
+            id=chart.id,
+            user_id=chart.user_id,
+            person_name=chart.person_name,
+            gender=chart.gender,
+            birth_datetime=chart.birth_datetime,
+            birth_timezone=chart.birth_timezone,
+            latitude=float(chart.latitude),
+            longitude=float(chart.longitude),
+            city=chart.city,
+            country=chart.country,
+            notes=chart.notes,
+            tags=chart.tags,
+            house_system=chart.house_system,
+            zodiac_type=chart.zodiac_type,
+            node_type=chart.node_type,
+            status=chart.status,
+            progress=chart.progress,
+            error_message=chart.error_message,
+            chart_data=chart_data,
+            pdf_url=chart.pdf_url,
+            pdf_generated_at=chart.pdf_generated_at,
+            pdf_generating=chart.pdf_generating,
+            pdf_task_id=chart.pdf_task_id,
+            visibility=chart.visibility,
+            share_uuid=chart.share_uuid,
+            created_at=chart.created_at,
+            updated_at=chart.updated_at,
+            deleted_at=chart.deleted_at,
+        )
     except chart_service.ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

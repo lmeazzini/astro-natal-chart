@@ -218,9 +218,13 @@ export const chartsService = {
 
   /**
    * Get a specific birth chart
+   * @param chartId - The chart ID
+   * @param token - Authentication token
+   * @param language - Optional language code (e.g., "en-US", "pt-BR") to get localized chart data
    */
-  async getById(chartId: string, token: string): Promise<BirthChart> {
-    return apiClient.get<BirthChart>(`/api/v1/charts/${chartId}`, token);
+  async getById(chartId: string, token: string, language?: string): Promise<BirthChart> {
+    const langParam = language ? `?lang=${language}` : '';
+    return apiClient.get<BirthChart>(`/api/v1/charts/${chartId}${langParam}`, token);
   },
 
   /**

@@ -25,11 +25,18 @@ class PublicChartCreate(BaseModel):
     country: str | None = Field(None, max_length=100)
     house_system: str = Field(default="placidus", max_length=50)
     photo_url: str | None = None
+    # Legacy single-language fields (backward compat)
     short_bio: str | None = None
     highlights: list[str] | None = None
     meta_title: str | None = Field(None, max_length=255)
     meta_description: str | None = None
     meta_keywords: list[str] | None = None
+    # i18n multilingual fields: {lang_code: content}
+    short_bio_i18n: dict[str, str] | None = None
+    highlights_i18n: dict[str, list[str]] | None = None
+    meta_title_i18n: dict[str, str] | None = None
+    meta_description_i18n: dict[str, str] | None = None
+    meta_keywords_i18n: dict[str, list[str]] | None = None
     is_published: bool = Field(default=False)
     featured: bool = Field(default=False)
 
@@ -54,17 +61,27 @@ class PublicChartUpdate(BaseModel):
     country: str | None = Field(None, max_length=100)
     house_system: str | None = Field(None, max_length=50)
     photo_url: str | None = None
+    # Legacy single-language fields (backward compat)
     short_bio: str | None = None
     highlights: list[str] | None = None
     meta_title: str | None = Field(None, max_length=255)
     meta_description: str | None = None
     meta_keywords: list[str] | None = None
+    # i18n multilingual fields: {lang_code: content}
+    short_bio_i18n: dict[str, str] | None = None
+    highlights_i18n: dict[str, list[str]] | None = None
+    meta_title_i18n: dict[str, str] | None = None
+    meta_description_i18n: dict[str, str] | None = None
+    meta_keywords_i18n: dict[str, list[str]] | None = None
     is_published: bool | None = None
     featured: bool | None = None
 
 
 class PublicChartPreview(BaseModel):
-    """Schema for public chart preview in listings."""
+    """Schema for public chart preview in listings.
+
+    The short_bio field returns the language-resolved value based on ?lang= param.
+    """
 
     id: UUID
     slug: str
@@ -75,7 +92,7 @@ class PublicChartPreview(BaseModel):
     city: str | None
     country: str | None
     photo_url: str | None
-    short_bio: str | None
+    short_bio: str | None  # Language-resolved value
     view_count: int
     featured: bool
     created_at: datetime
@@ -84,7 +101,11 @@ class PublicChartPreview(BaseModel):
 
 
 class PublicChartDetail(BaseModel):
-    """Schema for full public chart response."""
+    """Schema for full public chart response.
+
+    Text fields (short_bio, highlights, meta_*) return language-resolved values
+    based on the ?lang= query parameter.
+    """
 
     id: UUID
     slug: str
@@ -99,6 +120,7 @@ class PublicChartDetail(BaseModel):
     chart_data: dict[str, Any] | None
     house_system: str
     photo_url: str | None
+    # Language-resolved text fields
     short_bio: str | None
     highlights: list[str] | None
     meta_title: str | None

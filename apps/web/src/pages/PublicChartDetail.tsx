@@ -92,14 +92,14 @@ export function PublicChartDetailPage() {
     setError('');
 
     try {
-      const data = await getPublicChart(slug);
+      const data = await getPublicChart(slug, i18n.language);
       setChart(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load chart');
     } finally {
       setIsLoading(false);
     }
-  }, [slug]);
+  }, [slug, i18n.language]);
 
   const loadInterpretations = useCallback(async () => {
     if (!slug) return;

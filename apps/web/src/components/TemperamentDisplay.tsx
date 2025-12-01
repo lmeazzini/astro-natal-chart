@@ -1,11 +1,13 @@
 /**
  * Temperament Display component - shows dominant temperament based on 5 traditional factors
+ *
+ * The API returns already-localized data based on the `lang` query parameter,
+ * so no frontend language switching is needed - just display the values directly.
  */
 
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAstroTranslation } from '@/hooks/useAstroTranslation';
 
 export interface TemperamentScores {
   hot: number;
@@ -16,9 +18,7 @@ export interface TemperamentScores {
 
 export interface TemperamentFactor {
   factor: string;
-  factor_pt: string;
   value: string;
-  value_pt?: string;
   qualities: string[];
   weight?: number; // Dignity-based weight (0.5-2.0)
   dignity?: string | null; // Dignity name for display
@@ -26,30 +26,26 @@ export interface TemperamentFactor {
 
 export interface TemperamentData {
   dominant: string;
-  dominant_pt: string;
+  dominant_key: string; // English key for internal lookup (e.g., "choleric")
   element: string;
-  element_pt: string;
+  element_key: string; // English key for internal lookup (e.g., "fire")
   icon: string;
   scores: TemperamentScores;
   factors: TemperamentFactor[];
   description: string;
-  description_pt?: string;
 }
 
 interface TemperamentDisplayProps {
   temperament: TemperamentData;
 }
 
-// Temperament colors
+// Temperament colors (uses English keys for internal lookup)
 const temperamentColors: Record<string, string> = {
   choleric: 'from-red-500/10 to-orange-500/10 border-red-500/20',
   sanguine: 'from-blue-500/10 to-cyan-500/10 border-blue-500/20',
   melancholic: 'from-purple-500/10 to-gray-500/10 border-purple-500/20',
   phlegmatic: 'from-teal-500/10 to-green-500/10 border-teal-500/20',
 };
-
-// Quality labels are now translated dynamically using i18next
-// See lines 177-180 where getQualityLabels() is defined
 
 // Quality colors
 const qualityColors: Record<string, string> = {
@@ -67,36 +63,16 @@ const qualityIcons: Record<string, string> = {
   dry: '🌵',
 };
 
-// Dignity labels for display
-const dignityLabels: Record<string, { en: string; pt: string; color: string }> = {
-  domicile: {
-    en: 'Domicile',
-    pt: 'Domicílio',
-    color: 'bg-green-500/20 text-green-700 dark:text-green-400',
-  },
-  exaltation: {
-    en: 'Exaltation',
-    pt: 'Exaltação',
-    color: 'bg-blue-500/20 text-blue-700 dark:text-blue-400',
-  },
-  triplicity: {
-    en: 'Triplicity',
-    pt: 'Triplicidade',
-    color: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-400',
-  },
-  term: { en: 'Term', pt: 'Termo', color: 'bg-purple-500/20 text-purple-700 dark:text-purple-400' },
-  face: { en: 'Face', pt: 'Face', color: 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400' },
-  peregrine: {
-    en: 'Peregrine',
-    pt: 'Peregrino',
-    color: 'bg-gray-500/20 text-gray-700 dark:text-gray-400',
-  },
-  detriment: {
-    en: 'Detriment',
-    pt: 'Detrimento',
-    color: 'bg-orange-500/20 text-orange-700 dark:text-orange-400',
-  },
-  fall: { en: 'Fall', pt: 'Queda', color: 'bg-red-500/20 text-red-700 dark:text-red-400' },
+// Dignity colors for display (labels are now provided by the API)
+const dignityColors: Record<string, string> = {
+  domicile: 'bg-green-500/20 text-green-700 dark:text-green-400',
+  exaltation: 'bg-blue-500/20 text-blue-700 dark:text-blue-400',
+  triplicity: 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-400',
+  term: 'bg-purple-500/20 text-purple-700 dark:text-purple-400',
+  face: 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400',
+  peregrine: 'bg-gray-500/20 text-gray-700 dark:text-gray-400',
+  detriment: 'bg-orange-500/20 text-orange-700 dark:text-orange-400',
+  fall: 'bg-red-500/20 text-red-700 dark:text-red-400',
 };
 
 interface QualityBarProps {
@@ -137,12 +113,12 @@ function QualityBar({ quality, label, value, maxValue }: QualityBarProps) {
 }
 
 export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
-  const { t, i18n } = useTranslation();
-  const { translatePlanet, translateSign, translateLunarPhase } = useAstroTranslation();
-  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
+  const { t } = useTranslation();
 
+  // Use dominant_key for color lookup (always English), fall back to dominant for legacy
+  const dominantKey = temperament.dominant_key || temperament.dominant;
   const colorClass =
-    temperamentColors[temperament.dominant] || 'from-gray-500/10 to-gray-500/10 border-gray-500/20';
+    temperamentColors[dominantKey] || 'from-gray-500/10 to-gray-500/10 border-gray-500/20';
 
   // Calculate dynamic max value based on actual scores
   // With weights, max theoretical is 14 (3 fixed factors @ 1.0 + 2 weighted @ 2.0 each = 7 per quality axis)
@@ -154,122 +130,40 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
     temperament.scores.dry;
   const maxQualityValue = Math.max(totalScores / 2, 10); // At least 10 for backward compatibility
 
-  // Get dignity label
-  const getDignityLabel = (
-    dignity: string | null | undefined
-  ): { label: string; color: string } | null => {
+  // Get dignity color class
+  const getDignityColor = (dignity: string | null | undefined): string | null => {
     if (!dignity) return null;
-    const dignityInfo = dignityLabels[dignity];
-    if (!dignityInfo) return null;
-    return {
-      label: isEn ? dignityInfo.en : dignityInfo.pt,
-      color: dignityInfo.color,
-    };
+    return dignityColors[dignity] || null;
   };
 
-  // Translated quality labels
+  // Quality labels - API now provides translated labels via factor data
   const getQualityLabel = (quality: string) => {
     const labels: Record<string, string> = {
-      hot: t('components.temperament.hot', { defaultValue: 'Quente' }),
-      cold: t('components.temperament.cold', { defaultValue: 'Frio' }),
-      wet: t('components.temperament.wet', { defaultValue: 'Úmido' }),
-      dry: t('components.temperament.dry', { defaultValue: 'Seco' }),
+      hot: t('components.temperament.hot', { defaultValue: 'Hot' }),
+      cold: t('components.temperament.cold', { defaultValue: 'Cold' }),
+      wet: t('components.temperament.wet', { defaultValue: 'Wet' }),
+      dry: t('components.temperament.dry', { defaultValue: 'Dry' }),
     };
     return labels[quality] || quality;
-  };
-
-  // Known planet and sign names for safe translation lookup
-  const validPlanets = [
-    'Sun',
-    'Moon',
-    'Mercury',
-    'Venus',
-    'Mars',
-    'Jupiter',
-    'Saturn',
-    'Uranus',
-    'Neptune',
-    'Pluto',
-    'North Node',
-    'South Node',
-  ];
-  const validSigns = [
-    'Aries',
-    'Taurus',
-    'Gemini',
-    'Cancer',
-    'Leo',
-    'Virgo',
-    'Libra',
-    'Scorpio',
-    'Sagittarius',
-    'Capricorn',
-    'Aquarius',
-    'Pisces',
-  ];
-
-  // Translate factor value (planets, signs, phases, or composite strings)
-  const translateFactorValue = (value: string): string => {
-    // Handle composite strings like "Jupiter in Scorpio" or "Moon in Cancer"
-    const inPattern = / in /i;
-    if (inPattern.test(value)) {
-      const parts = value.split(inPattern);
-      if (parts.length === 2) {
-        const planet = parts[0].trim();
-        const sign = parts[1].trim();
-        // Only translate if they are valid planet/sign names
-        const translatedPlanet = validPlanets.includes(planet) ? translatePlanet(planet) : planet;
-        const translatedSign = validSigns.includes(sign) ? translateSign(sign) : sign;
-        return `${translatedPlanet} em ${translatedSign}`;
-      }
-    }
-
-    // Only try planet translation if it's a known planet
-    if (validPlanets.includes(value)) {
-      return translatePlanet(value);
-    }
-
-    // Only try sign translation if it's a known sign
-    if (validSigns.includes(value)) {
-      return translateSign(value);
-    }
-
-    // Only translate exact lunar phase names (not extended values like "New Moon → Waxing (30.2°)")
-    const validLunarPhases = [
-      'New Moon',
-      'Waxing Crescent',
-      'First Quarter',
-      'Waxing Gibbous',
-      'Full Moon',
-      'Waning Gibbous',
-      'Last Quarter',
-      'Waning Crescent',
-    ];
-    if (validLunarPhases.includes(value)) {
-      return translateLunarPhase(value);
-    }
-
-    // Return original if no translation found
-    return value;
   };
 
   return (
     <Card className={`bg-gradient-to-br ${colorClass}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
-          <span className="text-4xl" role="img" aria-label={temperament.dominant_pt}>
+          <span className="text-4xl" role="img" aria-label={temperament.dominant}>
             {temperament.icon}
           </span>
           <div className="flex-1">
             <div className="text-lg font-semibold text-foreground">
-              {t('components.temperament.title', { defaultValue: 'Temperamento' })}:{' '}
-              {isEn ? temperament.dominant : temperament.dominant_pt}
+              {t('components.temperament.title', { defaultValue: 'Temperament' })}:{' '}
+              {temperament.dominant}
             </div>
             <div className="text-xs text-muted-foreground font-normal mt-1">
-              {t('components.temperament.element', { defaultValue: 'Elemento' })}{' '}
-              {isEn ? temperament.element : temperament.element_pt} •{' '}
+              {t('components.temperament.element', { defaultValue: 'Element' })}{' '}
+              {temperament.element} •{' '}
               {t('components.temperament.basedOn', {
-                defaultValue: 'Baseado em 5 fatores tradicionais',
+                defaultValue: 'Based on 5 traditional factors',
               })}
             </div>
           </div>
@@ -279,7 +173,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Quality Scores */}
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-            {t('components.temperament.qualityScores', { defaultValue: 'Pontuação de Qualidades' })}
+            {t('components.temperament.qualityScores', { defaultValue: 'Quality Scores' })}
           </p>
           <div className="space-y-3">
             <QualityBar
@@ -313,12 +207,12 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
             {t('components.temperament.contributingFactors', {
-              defaultValue: 'Fatores Contribuintes',
+              defaultValue: 'Contributing Factors',
             })}
           </p>
           <div className="space-y-2">
             {temperament.factors.map((factor, index) => {
-              const dignityInfo = getDignityLabel(factor.dignity);
+              const dignityColor = getDignityColor(factor.dignity);
               const hasWeight = factor.weight !== undefined && factor.weight !== 1.0;
 
               return (
@@ -328,9 +222,7 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
                 >
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-foreground">
-                        {isEn ? factor.factor : factor.factor_pt}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{factor.factor}</p>
                       {hasWeight && (
                         <span
                           className={`text-xs font-mono px-1.5 py-0.5 rounded ${
@@ -339,21 +231,19 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
                               : 'bg-red-500/20 text-red-700 dark:text-red-400'
                           }`}
                           title={t('components.temperament.weightTooltip', {
-                            defaultValue: 'Peso baseado na dignidade do planeta',
+                            defaultValue: 'Weight based on planetary dignity',
                           })}
                         >
                           ×{factor.weight?.toFixed(2)}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {isEn ? factor.value : translateFactorValue(factor.value)}
-                    </p>
-                    {dignityInfo && (
+                    <p className="text-xs text-muted-foreground">{factor.value}</p>
+                    {factor.dignity && dignityColor && (
                       <span
-                        className={`inline-block text-xs px-2 py-0.5 rounded-full ${dignityInfo.color}`}
+                        className={`inline-block text-xs px-2 py-0.5 rounded-full ${dignityColor}`}
                       >
-                        {dignityInfo.label}
+                        {factor.dignity}
                       </span>
                     )}
                   </div>
@@ -378,11 +268,9 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
         {/* Description */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
-            {t('components.temperament.interpretation', { defaultValue: 'Interpretação' })}
+            {t('components.temperament.interpretation', { defaultValue: 'Interpretation' })}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {isEn ? temperament.description : temperament.description_pt || temperament.description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{temperament.description}</p>
         </div>
 
         {/* Info Note */}
@@ -391,14 +279,14 @@ export function TemperamentDisplay({ temperament }: TemperamentDisplayProps) {
             ⚖️{' '}
             {t('components.temperament.note', {
               defaultValue:
-                'O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.',
+                'Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 natal chart factors: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase, and Lord of the Nativity, following medieval astrological tradition.',
             })}
           </p>
           <p className="text-xs text-muted-foreground">
             📊{' '}
             {t('components.temperament.weightNote', {
               defaultValue:
-                'Os fatores planetários (Regente do Ascendente e Senhor da Natividade) têm seus pesos ajustados pela dignidade essencial: planetas dignificados (domicílio, exaltação) contribuem mais, enquanto planetas debilitados (detrimento, queda) contribuem menos.',
+                'Planetary factors (Ascendant Ruler and Lord of the Nativity) have their weights adjusted by essential dignity: dignified planets (domicile, exaltation) contribute more, while debilitated planets (detriment, fall) contribute less.',
             })}
           </p>
         </div>

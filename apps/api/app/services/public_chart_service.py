@@ -89,11 +89,18 @@ class PublicChartService:
             chart_data=chart_data,
             house_system=data.house_system,
             photo_url=data.photo_url,
+            # Legacy single-language fields
             short_bio=data.short_bio,
             highlights=data.highlights,
             meta_title=data.meta_title,
             meta_description=data.meta_description,
             meta_keywords=data.meta_keywords,
+            # i18n multilingual fields
+            short_bio_i18n=data.short_bio_i18n,
+            highlights_i18n=data.highlights_i18n,
+            meta_title_i18n=data.meta_title_i18n,
+            meta_description_i18n=data.meta_description_i18n,
+            meta_keywords_i18n=data.meta_keywords_i18n,
             is_published=data.is_published,
             featured=data.featured,
         )

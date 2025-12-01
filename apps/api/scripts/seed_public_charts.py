@@ -51,6 +51,23 @@ PERSONALITIES = [
         "short_description": "Physicist, Theory of Relativity",
         "meta_description": "Albert Einstein's natal chart - Theoretical physicist who developed the theory of relativity",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg",
+        # i18n multilingual fields
+        "short_bio_i18n": {
+            "pt-BR": "Físico teórico alemão que desenvolveu a teoria da relatividade, um dos dois pilares da física moderna",
+            "en-US": "German theoretical physicist who developed the theory of relativity, one of the two pillars of modern physics",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Albert Einstein - Mapa Astral",
+            "en-US": "Albert Einstein - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Albert Einstein - Físico teórico que desenvolveu a teoria da relatividade",
+            "en-US": "Albert Einstein's natal chart - Theoretical physicist who developed the theory of relativity",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["cientista", "histórico", "física", "relatividade"],
+            "en-US": ["scientist", "historical", "physics", "relativity"],
+        },
     },
     {
         "name": "Steve Jobs",
@@ -64,6 +81,22 @@ PERSONALITIES = [
         "short_description": "Co-founder of Apple Inc.",
         "meta_description": "Steve Jobs' natal chart - Visionary entrepreneur and co-founder of Apple",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Cofundador da Apple Inc. e Pixar. Visionário que revolucionou a computação pessoal, a música digital e os smartphones",
+            "en-US": "Co-founder of Apple Inc. and Pixar. Visionary who revolutionized personal computing, digital music and smartphones",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Steve Jobs - Mapa Astral",
+            "en-US": "Steve Jobs - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Steve Jobs - Empreendedor visionário e cofundador da Apple",
+            "en-US": "Steve Jobs' natal chart - Visionary entrepreneur and co-founder of Apple",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["empreendedor", "histórico", "tecnologia", "apple"],
+            "en-US": ["entrepreneur", "historical", "technology", "apple"],
+        },
     },
     # Artists and Musicians
     {
@@ -78,6 +111,22 @@ PERSONALITIES = [
         "short_description": "Painter, Sculptor, Co-founder of Cubism",
         "meta_description": "Pablo Picasso's natal chart - Revolutionary artist and co-founder of Cubism",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/9/98/Pablo_picasso_1.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Pintor, escultor e cofundador do Cubismo. Um dos artistas mais influentes do século XX",
+            "en-US": "Painter, sculptor and co-founder of Cubism. One of the most influential artists of the 20th century",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Pablo Picasso - Mapa Astral",
+            "en-US": "Pablo Picasso - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Pablo Picasso - Artista revolucionário e cofundador do Cubismo",
+            "en-US": "Pablo Picasso's natal chart - Revolutionary artist and co-founder of Cubism",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["artista", "histórico", "cubismo", "pintor"],
+            "en-US": ["artist", "historical", "cubism", "painter"],
+        },
     },
     {
         "name": "Elvis Presley",
@@ -91,6 +140,22 @@ PERSONALITIES = [
         "short_description": "King of Rock and Roll",
         "meta_description": "Elvis Presley's natal chart - Legendary musician known as the King of Rock and Roll",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "O Rei do Rock and Roll. Cantor e ator americano, um dos ícones culturais mais significativos do século XX",
+            "en-US": "The King of Rock and Roll. American singer and actor, one of the most significant cultural icons of the 20th century",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Elvis Presley - Mapa Astral",
+            "en-US": "Elvis Presley - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Elvis Presley - Músico lendário conhecido como o Rei do Rock and Roll",
+            "en-US": "Elvis Presley's natal chart - Legendary musician known as the King of Rock and Roll",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["músico", "histórico", "rock", "cantor"],
+            "en-US": ["musician", "historical", "rock", "singer"],
+        },
     },
     # Political and Historical Leaders
     {
@@ -105,6 +170,22 @@ PERSONALITIES = [
         "short_description": "Leader of Indian Independence Movement",
         "meta_description": "Mahatma Gandhi's natal chart - Peaceful revolutionary and leader of Indian independence",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Líder do Movimento de Independência da Índia. Advogado e ativista que liderou a resistência não-violenta contra o domínio britânico",
+            "en-US": "Leader of Indian Independence Movement. Lawyer and activist who led non-violent resistance against British rule",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Mahatma Gandhi - Mapa Astral",
+            "en-US": "Mahatma Gandhi - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Mahatma Gandhi - Revolucionário pacífico e líder da independência indiana",
+            "en-US": "Mahatma Gandhi's natal chart - Peaceful revolutionary and leader of Indian independence",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "histórico", "paz", "independência"],
+            "en-US": ["leader", "historical", "peace", "independence"],
+        },
     },
     {
         "name": "Winston Churchill",
@@ -117,7 +198,23 @@ PERSONALITIES = [
         "categories": ["leader", "historical"],
         "short_description": "British Prime Minister during WWII",
         "meta_description": "Winston Churchill's natal chart - British statesman and wartime leader",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Sir_Winston_Churchill_-_19086236948.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Sir_Winston_Churchill_-_19086236948.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Primeiro-Ministro britânico durante a Segunda Guerra Mundial. Estadista, oficial do exército e escritor vencedor do Nobel",
+            "en-US": "British Prime Minister during World War II. Statesman, army officer and Nobel Prize-winning writer",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Winston Churchill - Mapa Astral",
+            "en-US": "Winston Churchill - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Winston Churchill - Estadista britânico e líder de guerra",
+            "en-US": "Winston Churchill's natal chart - British statesman and wartime leader",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "histórico", "político", "guerra"],
+            "en-US": ["leader", "historical", "politician", "war"],
+        },
     },
     {
         "name": "John F. Kennedy",
@@ -131,6 +228,22 @@ PERSONALITIES = [
         "short_description": "35th President of the United States",
         "meta_description": "John F. Kennedy's natal chart - 35th US President and charismatic leader",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/c/c3/John_F._Kennedy%2C_White_House_color_photo_portrait.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "35º Presidente dos Estados Unidos. Líder carismático da era da Guerra Fria e defensor dos direitos civis",
+            "en-US": "35th President of the United States. Charismatic leader of the Cold War era and civil rights advocate",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "John F. Kennedy - Mapa Astral",
+            "en-US": "John F. Kennedy - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de John F. Kennedy - 35º Presidente dos EUA e líder carismático",
+            "en-US": "John F. Kennedy's natal chart - 35th US President and charismatic leader",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "histórico", "presidente", "político"],
+            "en-US": ["leader", "historical", "president", "politician"],
+        },
     },
     {
         "name": "Nelson Mandela",
@@ -144,6 +257,22 @@ PERSONALITIES = [
         "short_description": "Anti-apartheid Revolutionary and President",
         "meta_description": "Nelson Mandela's natal chart - Anti-apartheid revolutionary and South African president",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/Nelson_Mandela_1994.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Revolucionário anti-apartheid e Presidente da África do Sul. Passou 27 anos preso e tornou-se símbolo global de resistência",
+            "en-US": "Anti-apartheid revolutionary and South African President. Spent 27 years in prison and became a global symbol of resistance",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Nelson Mandela - Mapa Astral",
+            "en-US": "Nelson Mandela - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Nelson Mandela - Revolucionário anti-apartheid e presidente sul-africano",
+            "en-US": "Nelson Mandela's natal chart - Anti-apartheid revolutionary and South African president",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "histórico", "liberdade", "paz"],
+            "en-US": ["leader", "historical", "freedom", "peace"],
+        },
     },
     # Icons and Cultural Figures
     {
@@ -157,7 +286,23 @@ PERSONALITIES = [
         "categories": ["historical", "leader"],
         "short_description": "Princess of Wales",
         "meta_description": "Princess Diana's natal chart - Beloved Princess of Wales and humanitarian",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Diana%2C_Princess_of_Wales_1997_%282%29.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/PRINCESS_DIANA_flag_%285112486207%29.jpg/640px-PRINCESS_DIANA_flag_%285112486207%29.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Princesa de Gales. Conhecida como a 'Princesa do Povo', foi uma humanitária dedicada e ícone de moda",
+            "en-US": "Princess of Wales. Known as the 'People's Princess', she was a dedicated humanitarian and fashion icon",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Princesa Diana - Mapa Astral",
+            "en-US": "Princess Diana - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal da Princesa Diana - Amada Princesa de Gales e humanitária",
+            "en-US": "Princess Diana's natal chart - Beloved Princess of Wales and humanitarian",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["histórico", "líder", "realeza", "humanitária"],
+            "en-US": ["historical", "leader", "royalty", "humanitarian"],
+        },
     },
     {
         "name": "Marilyn Monroe",
@@ -170,7 +315,23 @@ PERSONALITIES = [
         "categories": ["actor", "historical"],
         "short_description": "Actress and Cultural Icon",
         "meta_description": "Marilyn Monroe's natal chart - Legendary actress and cultural icon",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Marilyn_Monroe%2C_Korea%2C_1954_cropped.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Marilyn_Monroe_in_How_to_Marry_a_Millionaire.jpg/640px-Marilyn_Monroe_in_How_to_Marry_a_Millionaire.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Atriz e ícone cultural. Símbolo de beleza e glamour de Hollywood, uma das atrizes mais famosas da história",
+            "en-US": "Actress and cultural icon. Symbol of Hollywood beauty and glamour, one of the most famous actresses in history",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Marilyn Monroe - Mapa Astral",
+            "en-US": "Marilyn Monroe - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Marilyn Monroe - Lendária atriz e ícone cultural",
+            "en-US": "Marilyn Monroe's natal chart - Legendary actress and cultural icon",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["atriz", "histórico", "hollywood", "ícone"],
+            "en-US": ["actress", "historical", "hollywood", "icon"],
+        },
     },
     # Additional Scientists
     {
@@ -185,6 +346,22 @@ PERSONALITIES = [
         "short_description": "Física e química polonesa-francesa, primeira mulher a ganhar um Prêmio Nobel e única pessoa a ganhar em duas ciências diferentes",
         "meta_description": "Marie Curie's natal chart - Physicist and chemist, first woman to win a Nobel Prize",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Marie_Curie_c._1920s.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Física e química polonesa-francesa. Primeira mulher a ganhar um Prêmio Nobel e única pessoa a ganhar em duas ciências diferentes",
+            "en-US": "Polish-French physicist and chemist. First woman to win a Nobel Prize and only person to win in two different sciences",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Marie Curie - Mapa Astral",
+            "en-US": "Marie Curie - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Marie Curie - Física e química, primeira mulher a ganhar um Prêmio Nobel",
+            "en-US": "Marie Curie's natal chart - Physicist and chemist, first woman to win a Nobel Prize",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["cientista", "histórico", "física", "química", "nobel"],
+            "en-US": ["scientist", "historical", "physics", "chemistry", "nobel"],
+        },
     },
     {
         "name": "Nikola Tesla",
@@ -198,6 +375,22 @@ PERSONALITIES = [
         "short_description": "Inventor e engenheiro sérvio-americano, pioneiro da eletricidade moderna",
         "meta_description": "Nikola Tesla's natal chart - Inventor and electrical engineer, pioneer of modern electricity",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/d/d4/N.Tesla.JPG",
+        "short_bio_i18n": {
+            "pt-BR": "Inventor e engenheiro sérvio-americano. Pioneiro da eletricidade moderna, conhecido pelo sistema de corrente alternada",
+            "en-US": "Serbian-American inventor and engineer. Pioneer of modern electricity, known for the alternating current system",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Nikola Tesla - Mapa Astral",
+            "en-US": "Nikola Tesla - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Nikola Tesla - Inventor e engenheiro elétrico, pioneiro da eletricidade moderna",
+            "en-US": "Nikola Tesla's natal chart - Inventor and electrical engineer, pioneer of modern electricity",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["cientista", "histórico", "inventor", "eletricidade"],
+            "en-US": ["scientist", "historical", "inventor", "electricity"],
+        },
     },
     # Additional Artists
     {
@@ -212,6 +405,22 @@ PERSONALITIES = [
         "short_description": "Polímata italiano do Renascimento. Pintor, escultor, arquiteto, músico, matemático, engenheiro e inventor",
         "meta_description": "Leonardo da Vinci's natal chart - Renaissance polymath, painter of Mona Lisa",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Leonardo_self.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Polímata italiano do Renascimento. Pintor, escultor, arquiteto, músico, matemático, engenheiro e inventor",
+            "en-US": "Italian Renaissance polymath. Painter, sculptor, architect, musician, mathematician, engineer and inventor",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Leonardo da Vinci - Mapa Astral",
+            "en-US": "Leonardo da Vinci - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Leonardo da Vinci - Polímata do Renascimento, pintor da Mona Lisa",
+            "en-US": "Leonardo da Vinci's natal chart - Renaissance polymath, painter of Mona Lisa",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["artista", "histórico", "renascimento", "inventor"],
+            "en-US": ["artist", "historical", "renaissance", "inventor"],
+        },
     },
     {
         "name": "Frida Kahlo",
@@ -225,6 +434,22 @@ PERSONALITIES = [
         "short_description": "Pintora mexicana conhecida por seus autorretratos intensos e arte surrealista",
         "meta_description": "Frida Kahlo's natal chart - Mexican painter known for intense self-portraits",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Pintora mexicana conhecida por seus autorretratos intensos e arte surrealista. Ícone feminista e cultural",
+            "en-US": "Mexican painter known for intense self-portraits and surrealist art. Feminist and cultural icon",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Frida Kahlo - Mapa Astral",
+            "en-US": "Frida Kahlo - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Frida Kahlo - Pintora mexicana conhecida por autorretratos intensos",
+            "en-US": "Frida Kahlo's natal chart - Mexican painter known for intense self-portraits",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["artista", "histórico", "pintura", "surrealismo"],
+            "en-US": ["artist", "historical", "painting", "surrealism"],
+        },
     },
     {
         "name": "Vincent van Gogh",
@@ -238,6 +463,22 @@ PERSONALITIES = [
         "short_description": "Pintor pós-impressionista holandês. Criou cerca de 2.100 obras em uma década",
         "meta_description": "Vincent van Gogh's natal chart - Post-impressionist painter, creator of Starry Night",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Pintor pós-impressionista holandês. Criou cerca de 2.100 obras em uma década, incluindo A Noite Estrelada",
+            "en-US": "Dutch post-impressionist painter. Created around 2,100 works in a decade, including The Starry Night",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Vincent van Gogh - Mapa Astral",
+            "en-US": "Vincent van Gogh - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Vincent van Gogh - Pintor pós-impressionista, criador de A Noite Estrelada",
+            "en-US": "Vincent van Gogh's natal chart - Post-impressionist painter, creator of Starry Night",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["artista", "histórico", "pintura", "pós-impressionismo"],
+            "en-US": ["artist", "historical", "painting", "post-impressionism"],
+        },
     },
     # Athletes
     {
@@ -252,6 +493,22 @@ PERSONALITIES = [
         "short_description": "Considerado o maior jogador de futebol de todos os tempos. Tricampeão mundial",
         "meta_description": "Pelé's natal chart - Greatest football player of all time, three-time World Cup champion",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Considerado o maior jogador de futebol de todos os tempos. Tricampeão mundial com a Seleção Brasileira",
+            "en-US": "Considered the greatest football player of all time. Three-time World Cup champion with Brazil",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Pelé - Mapa Astral",
+            "en-US": "Pelé - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Pelé - O maior jogador de futebol de todos os tempos, tricampeão mundial",
+            "en-US": "Pelé's natal chart - Greatest football player of all time, three-time World Cup champion",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["atleta", "histórico", "futebol", "brasil"],
+            "en-US": ["athlete", "historical", "football", "brazil"],
+        },
     },
     {
         "name": "Ayrton Senna",
@@ -264,7 +521,23 @@ PERSONALITIES = [
         "categories": ["athlete", "historical"],
         "short_description": "Tricampeão mundial de Fórmula 1, considerado um dos maiores pilotos da história",
         "meta_description": "Ayrton Senna's natal chart - Three-time Formula 1 World Champion",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Ayrton_Senna_8_%28cropped%29.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Ayrton_Senna_8_%28cropped%29.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Tricampeão mundial de Fórmula 1, considerado um dos maiores pilotos da história do automobilismo",
+            "en-US": "Three-time Formula 1 World Champion, considered one of the greatest drivers in motorsport history",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Ayrton Senna - Mapa Astral",
+            "en-US": "Ayrton Senna - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Ayrton Senna - Tricampeão mundial de Fórmula 1",
+            "en-US": "Ayrton Senna's natal chart - Three-time Formula 1 World Champion",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["atleta", "histórico", "fórmula 1", "automobilismo"],
+            "en-US": ["athlete", "historical", "formula 1", "motorsport"],
+        },
     },
     # Writers
     {
@@ -279,6 +552,22 @@ PERSONALITIES = [
         "short_description": "Dramaturgo e poeta inglês, considerado o maior escritor da língua inglesa",
         "meta_description": "William Shakespeare's natal chart - Greatest writer in English language, author of Hamlet",
         "photo_url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Shakespeare.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Dramaturgo e poeta inglês, considerado o maior escritor da língua inglesa. Autor de Hamlet e Romeu e Julieta",
+            "en-US": "English playwright and poet, considered the greatest writer in the English language. Author of Hamlet and Romeo and Juliet",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "William Shakespeare - Mapa Astral",
+            "en-US": "William Shakespeare - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de William Shakespeare - O maior escritor da língua inglesa, autor de Hamlet",
+            "en-US": "William Shakespeare's natal chart - Greatest writer in English language, author of Hamlet",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["escritor", "histórico", "dramaturgo", "poeta"],
+            "en-US": ["writer", "historical", "playwright", "poet"],
+        },
     },
     {
         "name": "Machado de Assis",
@@ -291,7 +580,23 @@ PERSONALITIES = [
         "categories": ["writer", "historical"],
         "short_description": "Considerado o maior escritor brasileiro. Fundador da Academia Brasileira de Letras",
         "meta_description": "Machado de Assis' natal chart - Greatest Brazilian writer, founder of Brazilian Academy of Letters",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Machado_de_Assis_1904.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Machado_de_Assis_aos_57_anos.jpg/640px-Machado_de_Assis_aos_57_anos.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Considerado o maior escritor brasileiro. Fundador e primeiro presidente da Academia Brasileira de Letras",
+            "en-US": "Considered the greatest Brazilian writer. Founder and first president of the Brazilian Academy of Letters",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Machado de Assis - Mapa Astral",
+            "en-US": "Machado de Assis - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Machado de Assis - O maior escritor brasileiro, fundador da Academia Brasileira de Letras",
+            "en-US": "Machado de Assis' natal chart - Greatest Brazilian writer, founder of Brazilian Academy of Letters",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["escritor", "histórico", "literatura", "brasil"],
+            "en-US": ["writer", "historical", "literature", "brazil"],
+        },
     },
     # Catholic Church Figures
     {
@@ -305,7 +610,23 @@ PERSONALITIES = [
         "categories": ["leader", "historical", "other"],
         "short_description": "Pope (1978-2005), Saint",
         "meta_description": "Pope John Paul II's natal chart - Beloved Pope and Saint of the Catholic Church",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/3/37/Pope_John_Paul_II_%281979%29.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/9/99/John_Paul_II_Medal_of_Freedom_2004.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Papa João Paulo II (1978-2005), Santo. Um dos papas mais influentes da história, líder na queda do comunismo",
+            "en-US": "Pope John Paul II (1978-2005), Saint. One of the most influential popes in history, leader in the fall of communism",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Papa João Paulo II - Mapa Astral",
+            "en-US": "Pope John Paul II - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal do Papa João Paulo II - Amado Papa e Santo da Igreja Católica",
+            "en-US": "Pope John Paul II's natal chart - Beloved Pope and Saint of the Catholic Church",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "histórico", "papa", "santo"],
+            "en-US": ["leader", "historical", "pope", "saint"],
+        },
     },
     {
         "name": "Pope Francis",
@@ -318,7 +639,23 @@ PERSONALITIES = [
         "categories": ["leader", "other"],
         "short_description": "Current Pope (2013-present)",
         "meta_description": "Pope Francis' natal chart - Current Pope known for humility and social justice",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Pope_Francis_Korea_Haemi_Castle_19_%28cropped%29.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Franciscus_in_2015.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Papa Francisco, atual líder da Igreja Católica (2013-presente). Primeiro papa latino-americano, conhecido por sua humildade",
+            "en-US": "Pope Francis, current leader of the Catholic Church (2013-present). First Latin American pope, known for his humility",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Papa Francisco - Mapa Astral",
+            "en-US": "Pope Francis - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal do Papa Francisco - Atual Papa conhecido pela humildade e justiça social",
+            "en-US": "Pope Francis' natal chart - Current Pope known for humility and social justice",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "papa", "igreja", "argentina"],
+            "en-US": ["leader", "pope", "church", "argentina"],
+        },
     },
     {
         "name": "Mother Teresa",
@@ -331,7 +668,23 @@ PERSONALITIES = [
         "categories": ["leader", "historical", "other"],
         "short_description": "Missionary, Nobel Peace Prize, Saint",
         "meta_description": "Mother Teresa's natal chart - Nobel Peace Prize winner and Saint, devoted to serving the poor",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Mother_Teresa_1.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Mother_Teresa_1.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Missionária, Prêmio Nobel da Paz (1979), Santa. Fundadora das Missionárias da Caridade, dedicada aos mais pobres",
+            "en-US": "Missionary, Nobel Peace Prize (1979), Saint. Founder of the Missionaries of Charity, devoted to the poorest",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Madre Teresa - Mapa Astral",
+            "en-US": "Mother Teresa - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de Madre Teresa - Ganhadora do Prêmio Nobel da Paz e Santa, dedicada a servir os pobres",
+            "en-US": "Mother Teresa's natal chart - Nobel Peace Prize winner and Saint, devoted to serving the poor",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["líder", "histórico", "missionária", "santa", "nobel"],
+            "en-US": ["leader", "historical", "missionary", "saint", "nobel"],
+        },
     },
     {
         "name": "Saint Francis of Assisi",
@@ -344,7 +697,23 @@ PERSONALITIES = [
         "categories": ["historical", "other"],
         "short_description": "Founder of Franciscan Order, Patron Saint of Animals",
         "meta_description": "Saint Francis of Assisi's natal chart - Founder of Franciscan Order and lover of nature",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Francesco_d%27Assisi_%28Giovanni_Cimabue%29.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Saint_Francis_of_Assisi_by_Jusepe_de_Ribera.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Fundador da Ordem Franciscana, Padroeiro dos Animais e da Ecologia. Um dos santos mais venerados do cristianismo",
+            "en-US": "Founder of the Franciscan Order, Patron Saint of Animals and Ecology. One of the most venerated saints in Christianity",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "São Francisco de Assis - Mapa Astral",
+            "en-US": "Saint Francis of Assisi - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de São Francisco de Assis - Fundador da Ordem Franciscana e amante da natureza",
+            "en-US": "Saint Francis of Assisi's natal chart - Founder of Franciscan Order and lover of nature",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["histórico", "santo", "franciscano", "natureza"],
+            "en-US": ["historical", "saint", "franciscan", "nature"],
+        },
     },
     {
         "name": "Saint Thomas Aquinas",
@@ -357,7 +726,23 @@ PERSONALITIES = [
         "categories": ["historical", "other"],
         "short_description": "Dominican Friar, Philosopher, Theologian",
         "meta_description": "Saint Thomas Aquinas' natal chart - Dominican philosopher and Doctor of the Church",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/f/f0/St-thomas-aquinas.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/e/e3/St-thomas-aquinas.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Frade dominicano, filósofo e teólogo. Doutor da Igreja, um dos maiores pensadores do cristianismo",
+            "en-US": "Dominican friar, philosopher and theologian. Doctor of the Church, one of the greatest thinkers in Christianity",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "São Tomás de Aquino - Mapa Astral",
+            "en-US": "Saint Thomas Aquinas - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal de São Tomás de Aquino - Filósofo dominicano e Doutor da Igreja",
+            "en-US": "Saint Thomas Aquinas' natal chart - Dominican philosopher and Doctor of the Church",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["histórico", "santo", "filósofo", "teólogo"],
+            "en-US": ["historical", "saint", "philosopher", "theologian"],
+        },
     },
     {
         "name": "Saint Padre Pio",
@@ -370,7 +755,23 @@ PERSONALITIES = [
         "categories": ["historical", "other"],
         "short_description": "Capuchin Friar, Mystic, Saint with Stigmata",
         "meta_description": "Saint Padre Pio's natal chart - Mystic friar known for stigmata and healing",
-        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/0/05/Padre_Pio_of_Pietrelcina.jpg",
+        "photo_url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Padre_Pio.jpg",
+        "short_bio_i18n": {
+            "pt-BR": "Frade capuchinho, místico e santo com estigmas. Conhecido por seus dons de cura e bilocação",
+            "en-US": "Capuchin friar, mystic and saint with stigmata. Known for his gifts of healing and bilocation",
+        },
+        "meta_title_i18n": {
+            "pt-BR": "Padre Pio - Mapa Astral",
+            "en-US": "Saint Padre Pio - Birth Chart",
+        },
+        "meta_description_i18n": {
+            "pt-BR": "Mapa natal do Padre Pio - Frade místico conhecido por estigmas e cura",
+            "en-US": "Saint Padre Pio's natal chart - Mystic friar known for stigmata and healing",
+        },
+        "meta_keywords_i18n": {
+            "pt-BR": ["histórico", "santo", "místico", "estigmas"],
+            "en-US": ["historical", "saint", "mystic", "stigmata"],
+        },
     },
 ]
 
@@ -396,16 +797,34 @@ async def clear_public_charts(db: AsyncSession) -> None:
 
 
 def generate_chart_data(personality: dict[str, Any]) -> dict[str, Any]:
-    """Generate astrological chart data for a personality."""
-    chart_data = calculate_birth_chart(
+    """Generate astrological chart data for a personality in both languages.
+
+    Returns a dict with language keys: {"en-US": {...}, "pt-BR": {...}}
+    This allows the API to return the correct language based on the request.
+    """
+    # Generate chart data for both languages
+    chart_data_en = calculate_birth_chart(
         birth_datetime=personality["birth_datetime"],
         timezone=personality["birth_timezone"],
         latitude=personality["latitude"],
         longitude=personality["longitude"],
         house_system="placidus",
+        language="en-US",
     )
 
-    return chart_data
+    chart_data_pt = calculate_birth_chart(
+        birth_datetime=personality["birth_datetime"],
+        timezone=personality["birth_timezone"],
+        latitude=personality["latitude"],
+        longitude=personality["longitude"],
+        house_system="placidus",
+        language="pt-BR",
+    )
+
+    return {
+        "en-US": chart_data_en,
+        "pt-BR": chart_data_pt,
+    }
 
 
 async def seed_personality(db: AsyncSession, personality: dict[str, Any]) -> None:
@@ -414,10 +833,11 @@ async def seed_personality(db: AsyncSession, personality: dict[str, Any]) -> Non
     logger.info(f"Processing: {personality['name']}")
     logger.info(f"{'='*60}")
 
-    # Generate chart data
-    logger.info("Calculating astrological chart...")
+    # Generate chart data (bilingual)
+    logger.info("Calculating astrological chart (en-US and pt-BR)...")
     chart_data = generate_chart_data(personality)
-    logger.success(f"✓ Chart calculated with {len(chart_data.get('planets', []))} planets")
+    en_planets = len(chart_data.get("en-US", {}).get("planets", []))
+    logger.success(f"✓ Chart calculated with {en_planets} planets in both languages")
 
     # Parse location into city and country
     location = personality["location_name"]
@@ -429,7 +849,7 @@ async def seed_personality(db: AsyncSession, personality: dict[str, Any]) -> Non
         city = location
         country = None
 
-    # Create public chart
+    # Create public chart using only i18n fields
     chart = PublicChart(
         id=uuid4(),
         full_name=personality["name"],
@@ -446,10 +866,12 @@ async def seed_personality(db: AsyncSession, personality: dict[str, Any]) -> Non
         if personality["categories"]
         else None,  # Use first category
         photo_url=personality.get("photo_url"),
-        short_bio=personality["short_description"],
-        meta_title=f"{personality['name']} - Natal Chart",
-        meta_description=personality["meta_description"],
-        meta_keywords=personality["categories"],  # Use categories as keywords
+        # i18n multilingual fields only (no legacy single-language fields)
+        short_bio_i18n=personality.get("short_bio_i18n"),
+        highlights_i18n=personality.get("highlights_i18n"),
+        meta_title_i18n=personality.get("meta_title_i18n"),
+        meta_description_i18n=personality.get("meta_description_i18n"),
+        meta_keywords_i18n=personality.get("meta_keywords_i18n"),
         view_count=0,
         is_published=True,  # Publish immediately
         featured=False,

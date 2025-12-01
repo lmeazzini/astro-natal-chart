@@ -31,8 +31,184 @@ from app.schemas.public_chart import (
 )
 from app.services.interpretation_service_rag import ARABIC_PARTS, InterpretationServiceRAG
 from app.services.public_chart_service import PublicChartService
+from app.translations import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, get_translation
 
 router = APIRouter(prefix="/public-charts", tags=["public-charts"])
+
+
+def extract_i18n_field(
+    i18n_data: dict[str, Any] | None,
+    legacy_data: str | list[str] | None,
+    lang: str,
+) -> str | list[str] | None:
+    """
+    Extract field value for the specified language with fallback to legacy data.
+
+    Priority: i18n_data[lang] -> i18n_data[DEFAULT_LANGUAGE] -> legacy_data
+
+    Args:
+        i18n_data: Language-keyed JSONB data (e.g., {"en-US": "text", "pt-BR": "texto"})
+        legacy_data: Legacy single-language data (fallback)
+        lang: Language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Value for the specified language, or None if not available
+    """
+    if i18n_data:
+        if lang in i18n_data:
+            value = i18n_data[lang]
+            # Ensure return type matches function signature
+            if isinstance(value, str):
+                return value
+            if isinstance(value, list):
+                return value
+            if value is None:
+                return None
+        # Fallback to default language if requested not found
+        if DEFAULT_LANGUAGE in i18n_data:
+            value = i18n_data[DEFAULT_LANGUAGE]
+            if isinstance(value, str):
+                return value
+            if isinstance(value, list):
+                return value
+            if value is None:
+                return None
+    # Fallback to legacy data
+    return legacy_data
+
+
+def extract_chart_data_for_language(chart: PublicChart, lang: str) -> dict[str, Any] | None:
+    """
+    Extract chart_data for the specified language from a model instance.
+
+    Handles both new format (language-keyed: {"en-US": {...}, "pt-BR": {...}})
+    and legacy format (single language dict with direct keys like "planets", "houses").
+
+    Args:
+        chart: PublicChart model instance
+        lang: Language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data dict for the specified language, or None if not available
+    """
+    if not chart.chart_data:
+        return None
+
+    return extract_chart_data_for_language_dict(chart.chart_data, lang)
+
+
+def _translate_phases_for_language(data: dict[str, Any], lang: str) -> dict[str, Any]:
+    """
+    Re-translate lunar_phase and solar_phase for the specified language.
+
+    For legacy charts stored with single-language phase data, this function
+    uses the phase_key to fetch the correct translations for the requested language.
+
+    Args:
+        data: Chart data dict containing lunar_phase and/or solar_phase
+        lang: Target language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data with translated phases
+    """
+    if not data:
+        return data
+
+    # Translate lunar_phase if present
+    if "lunar_phase" in data and isinstance(data["lunar_phase"], dict):
+        lunar = data["lunar_phase"]
+        phase_key = lunar.get("phase_key")
+        if phase_key:
+            lunar["phase_name"] = get_translation(f"lunar_phases.{phase_key}.name", lang)
+            lunar["keywords"] = get_translation(f"lunar_phases.{phase_key}.keywords", lang)
+            lunar["interpretation"] = get_translation(
+                f"lunar_phases.{phase_key}.interpretation", lang
+            )
+
+    # Translate solar_phase if present
+    if "solar_phase" in data and isinstance(data["solar_phase"], dict):
+        solar = data["solar_phase"]
+        phase_key = solar.get("phase_key")
+        if phase_key and phase_key != "unknown":
+            solar["phase_name"] = get_translation(f"solar_phases.{phase_key}.name", lang)
+            solar["temperament"] = get_translation(f"solar_phases.{phase_key}.temperament", lang)
+            solar["qualities"] = get_translation(f"solar_phases.{phase_key}.qualities", lang)
+            solar["description"] = get_translation(f"solar_phases.{phase_key}.description", lang)
+            signs_data = get_translation(f"solar_phases.{phase_key}.signs", lang)
+            if isinstance(signs_data, list):
+                solar["signs"] = signs_data
+
+    return data
+
+
+def _normalize_temperament_fields(data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Normalize temperament field names from old format to new format.
+
+    Old format: temperament_name, temperament_key
+    New format: dominant, dominant_key
+
+    This ensures backward compatibility with existing chart data.
+    """
+    if "temperament" not in data or not isinstance(data["temperament"], dict):
+        return data
+
+    temp = data["temperament"]
+
+    # Map old field names to new ones
+    if "temperament_name" in temp and "dominant" not in temp:
+        temp["dominant"] = temp["temperament_name"]
+    if "temperament_key" in temp and "dominant_key" not in temp:
+        temp["dominant_key"] = temp["temperament_key"]
+
+    return data
+
+
+def extract_chart_data_for_language_dict(
+    chart_data: dict[str, Any], lang: str
+) -> dict[str, Any] | None:
+    """
+    Extract chart_data for the specified language from a dict.
+
+    Handles both new format (language-keyed: {"en-US": {...}, "pt-BR": {...}})
+    and legacy format (single language dict with direct keys like "planets", "houses").
+
+    Args:
+        chart_data: Chart data dictionary
+        lang: Language code (e.g., "en-US", "pt-BR")
+
+    Returns:
+        Chart data dict for the specified language, or None if not available
+    """
+    if not chart_data:
+        return None
+
+    result: dict[str, Any] | None = None
+
+    # Check if this is the new language-keyed format
+    if lang in chart_data:
+        result = chart_data[lang]
+    else:
+        # Check if any supported language key exists (indicates new format)
+        has_language_keys = any(
+            supported_lang in chart_data for supported_lang in SUPPORTED_LANGUAGES
+        )
+
+        if has_language_keys:
+            # New format but requested language not found - fallback to default
+            result = chart_data.get(DEFAULT_LANGUAGE, None)
+        else:
+            # Legacy format - return as-is (no language separation)
+            result = chart_data
+
+    # Normalize field names for backward compatibility
+    if result:
+        result = _normalize_temperament_fields(result)
+        # Re-translate phases for the requested language
+        # This ensures legacy charts display phases in the correct language
+        result = _translate_phases_for_language(result, lang)
+
+    return result
 
 
 # ============================================================================
@@ -126,7 +302,7 @@ async def get_categories(
     "/{slug}",
     response_model=PublicChartDetail,
     summary="Get public chart by slug",
-    description="Get full details of a public chart including chart data. No authentication required.",
+    description="Get full details of a public chart including chart data. Use `lang` query param to select language.",
 )
 @limiter.limit(RateLimits.CHART_READ)
 async def get_public_chart(
@@ -134,17 +310,26 @@ async def get_public_chart(
     response: Response,
     slug: str,
     db: Annotated[AsyncSession, Depends(get_db)],
+    lang: Annotated[
+        str,
+        Query(
+            description="Language for chart data (en-US or pt-BR)",
+            regex="^(en-US|pt-BR)$",
+        ),
+    ] = DEFAULT_LANGUAGE,
 ) -> PublicChartDetail:
     """
     Get a public chart by its slug.
 
     - **slug**: URL-friendly identifier (e.g., 'albert-einstein')
+    - **lang**: Language for chart data translations (default: en-US)
 
     Returns full chart details including calculated chart data and interpretations.
     Increments view count on each access.
     """
     service = PublicChartService(db)
-    chart = await service.get_chart_detail(slug)
+    # Use get_chart_by_slug to get raw SQLAlchemy model (has i18n fields)
+    chart = await service.get_chart_by_slug(slug, increment_views=True)
 
     if not chart:
         raise HTTPException(
@@ -152,7 +337,50 @@ async def get_public_chart(
             detail=f"Public chart '{slug}' not found",
         )
 
-    return chart
+    # Extract language-specific data for both chart_data and text fields
+    lang_chart_data = (
+        extract_chart_data_for_language_dict(chart.chart_data, lang) if chart.chart_data else None
+    )
+
+    # Extract i18n text fields with fallback to legacy fields
+    short_bio_resolved = extract_i18n_field(chart.short_bio_i18n, chart.short_bio, lang)
+    highlights_resolved = extract_i18n_field(chart.highlights_i18n, chart.highlights, lang)
+    meta_title_resolved = extract_i18n_field(chart.meta_title_i18n, chart.meta_title, lang)
+    meta_description_resolved = extract_i18n_field(
+        chart.meta_description_i18n, chart.meta_description, lang
+    )
+    meta_keywords_resolved = extract_i18n_field(chart.meta_keywords_i18n, chart.meta_keywords, lang)
+
+    # Return PublicChartDetail with language-resolved data
+    return PublicChartDetail(
+        id=chart.id,
+        slug=chart.slug,
+        full_name=chart.full_name,
+        category=chart.category,
+        birth_datetime=chart.birth_datetime,
+        birth_timezone=chart.birth_timezone,
+        latitude=float(chart.latitude),
+        longitude=float(chart.longitude),
+        city=chart.city,
+        country=chart.country,
+        chart_data=lang_chart_data,
+        house_system=chart.house_system,
+        photo_url=chart.photo_url,
+        short_bio=short_bio_resolved if isinstance(short_bio_resolved, str) else None,
+        highlights=(highlights_resolved if isinstance(highlights_resolved, list) else None),
+        meta_title=(meta_title_resolved if isinstance(meta_title_resolved, str) else None),
+        meta_description=(
+            meta_description_resolved if isinstance(meta_description_resolved, str) else None
+        ),
+        meta_keywords=(
+            meta_keywords_resolved if isinstance(meta_keywords_resolved, list) else None
+        ),
+        is_published=chart.is_published,
+        featured=chart.featured,
+        view_count=chart.view_count,
+        created_at=chart.created_at,
+        updated_at=chart.updated_at,
+    )
 
 
 @router.get(

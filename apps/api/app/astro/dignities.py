@@ -12,6 +12,8 @@ Hellenistic and Medieval astrology, including:
 
 from typing import Any
 
+from app.translations import DEFAULT_LANGUAGE, get_translation
+
 # Zodiac signs in order
 SIGNS = [
     "Aries",
@@ -204,6 +206,32 @@ FACES = {
     "Pisces": [(0, 10, "Saturn"), (10, 20, "Jupiter"), (20, 30, "Mars")],
 }
 
+# Dignity type to emoji icon mapping
+DIGNITY_ICONS = {
+    "ruler": "👑",
+    "exalted": "⭐",
+    "triplicity_day": "☀️",
+    "triplicity_night": "🌙",
+    "triplicity_participant": "✨",
+    "term": "📜",
+    "face": "🎭",
+    "detriment": "⚠️",
+    "fall": "⬇️",
+}
+
+# Points for each dignity type
+DIGNITY_POINTS = {
+    "ruler": 5,
+    "exalted": 4,
+    "triplicity_day": 3,
+    "triplicity_night": 3,
+    "triplicity_participant": 3,
+    "term": 2,
+    "face": 1,
+    "detriment": -5,
+    "fall": -4,
+}
+
 
 def get_planet_in_term(sign: str, degree: float) -> str | None:
     """
@@ -392,7 +420,10 @@ def get_sign_ruler(sign: str) -> str | None:
     return RULERSHIPS.get(sign)
 
 
-def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[str, Any] | None:
+def find_lord_of_nativity(
+    planets_with_dignities: list[dict[str, Any]],
+    language: str = DEFAULT_LANGUAGE,
+) -> dict[str, Any] | None:
     """
     Find the Lord of Nativity - the planet with the highest essential dignity score.
 
@@ -401,12 +432,15 @@ def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[
 
     Args:
         planets_with_dignities: List of planet dictionaries with dignity data
+        language: Language for translations ('en-US' or 'pt-BR')
 
     Returns:
         Dictionary containing:
-        - planet: Name of the planet
+        - planet: Name of the planet (localized)
+        - planet_key: Internal planet key (e.g., "Sun", "Moon")
         - score: Total dignity score
-        - sign: Zodiac sign where planet is located
+        - sign: Zodiac sign where planet is located (localized)
+        - sign_key: Internal sign key
         - house: House number
         - dignities: Breakdown of dignity components
         Or None if no planets have dignities
@@ -455,66 +489,72 @@ def find_lord_of_nativity(planets_with_dignities: list[dict[str, Any]]) -> dict[
     dignity_details = []
     dign = lord["dignities"]
 
-    if dign.get("is_ruler"):
-        dignity_details.append(
-            {
-                "type": "ruler",
-                "label": "Domicílio",
-                "label_en": "Domicile",
-                "points": 5,
-                "icon": "👑",
-            }
-        )
-    if dign.get("is_exalted"):
-        dignity_details.append(
-            {
-                "type": "exalted",
-                "label": "Exaltação",
-                "label_en": "Exaltation",
-                "points": 4,
-                "icon": "🌟",
-            }
-        )
-    if dign.get("is_detriment"):
-        dignity_details.append(
-            {
-                "type": "detriment",
-                "label": "Detrimento",
-                "label_en": "Detriment",
-                "points": -5,
-                "icon": "⚠️",
-            }
-        )
-    if dign.get("is_fall"):
-        dignity_details.append(
-            {"type": "fall", "label": "Queda", "label_en": "Fall", "points": -4, "icon": "⬇️"}
-        )
+    # Map dignity types to their translation keys and icons
+    dignity_type_map = [
+        ("is_ruler", "ruler", "domicile", 5, DIGNITY_ICONS["ruler"]),
+        ("is_exalted", "exalted", "exaltation", 4, DIGNITY_ICONS["exalted"]),
+        ("is_detriment", "detriment", "detriment", -5, DIGNITY_ICONS["detriment"]),
+        ("is_fall", "fall", "fall", -4, DIGNITY_ICONS["fall"]),
+    ]
+
+    for check_key, dignity_key, trans_key, points, icon in dignity_type_map:
+        if dign.get(check_key):
+            dignity_details.append(
+                {
+                    "type": dignity_key,
+                    "label": get_translation(f"dignities.{trans_key}", language),
+                    "points": points,
+                    "icon": icon,
+                }
+            )
+
     if dign.get("triplicity_ruler"):
         trip_type = dign["triplicity_ruler"]
-        trip_label_pt = f"Triplicidade ({trip_type})"
-        trip_label_en = f"Triplicity ({trip_type})"
+        trip_key = (
+            f"triplicity_{trip_type}" if trip_type != "participant" else "triplicity_participant"
+        )
+        icon = DIGNITY_ICONS.get(trip_key, "star")
         dignity_details.append(
             {
                 "type": "triplicity",
-                "label": trip_label_pt,
-                "label_en": trip_label_en,
+                "label": get_translation(f"dignities.{trip_key}", language),
                 "points": 3,
-                "icon": "🔥" if trip_type == "day" else "🌙",
+                "icon": icon,
             }
         )
+
     if dign.get("term_ruler"):
         dignity_details.append(
-            {"type": "term", "label": "Termo", "label_en": "Term", "points": 2, "icon": "📊"}
-        )
-    if dign.get("face_ruler"):
-        dignity_details.append(
-            {"type": "face", "label": "Face", "label_en": "Face", "points": 1, "icon": "👤"}
+            {
+                "type": "term",
+                "label": get_translation("dignities.term", language),
+                "points": 2,
+                "icon": DIGNITY_ICONS["term"],
+            }
         )
 
+    if dign.get("face_ruler"):
+        dignity_details.append(
+            {
+                "type": "face",
+                "label": get_translation("dignities.face", language),
+                "points": 1,
+                "icon": DIGNITY_ICONS["face"],
+            }
+        )
+
+    # Get localized planet and sign names
+    planet_key = lord["name"]
+    sign_key = lord["sign"]
+    planet_name = get_translation(f"planets.{planet_key}", language)
+    sign_name = get_translation(f"signs.{sign_key}", language)
+
     return {
-        "planet": lord["name"],
+        "planet": planet_name,
+        "planet_key": planet_key,
         "score": dign["score"],
-        "sign": lord["sign"],
+        "sign": sign_name,
+        "sign_key": sign_key,
         "house": lord.get("house", 0),
         "classification": dign.get("classification", "peregrine"),
         "dignity_details": dignity_details,

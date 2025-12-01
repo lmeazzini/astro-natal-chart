@@ -279,6 +279,11 @@ class PersonalGrowthService:
         Returns:
             Dictionary with growth_points, challenges, opportunities, and purpose
         """
+        # Extract language-specific data (supports both legacy flat and language-first format)
+        from app.utils.chart_data_accessor import extract_language_data
+
+        lang_data = extract_language_data(chart_data, self.language)
+
         # Check if growth interpretations already exist (unless force=True)
         if not force and chart_id and self.db:
             from app.repositories.interpretation_repository import InterpretationRepository
@@ -307,8 +312,8 @@ class PersonalGrowthService:
                     },
                 }
 
-        patterns = self.analyze_chart_patterns(chart_data)
-        chart_summary = self._build_chart_summary(chart_data, patterns)
+        patterns = self.analyze_chart_patterns(lang_data)
+        chart_summary = self._build_chart_summary(lang_data, patterns)
         focus_instruction = self._get_focus_areas_instruction(focus_areas)
 
         suggestions: dict[str, Any] = {}

@@ -94,16 +94,28 @@ export function ChartDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEmailVerified]);
 
-  // Reload interpretations when UI language changes (if language mismatch detected)
-  // Note: This effect intentionally does NOT auto-reload. Users can manually reload via the button.
-  // Auto-reload was causing infinite loops when interpretation language didn't match UI language.
+  // Reload chart data and interpretations when UI language changes
+  // Chart data is stored with language keys, so we need to re-fetch to get the correct language slice
+  // Interpretations are stored with language column, so the API returns the correct language version
   useEffect(() => {
-    // Just update the ref for tracking, don't auto-reload
     const normalizedUiLang = i18n.language.split('-')[0];
+
+    // Only reload if we have already loaded once (avoid double-load on mount)
+    if (lastLoadedLanguageRef.current && lastLoadedLanguageRef.current !== normalizedUiLang) {
+      // Reload chart data with new language
+      loadChart();
+      // Reload interpretations with new language (if verified)
+      if (isEmailVerified) {
+        loadInterpretations();
+      }
+    }
+
     lastLoadedLanguageRef.current = normalizedUiLang;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i18n.language]);
 
   // Polling effect for processing charts
+  // Note: i18n.language is intentionally not in deps to avoid restarting the poll on language change
   useEffect(() => {
     if (!chart || chart.status !== 'processing') {
       return; // Only poll if chart is processing
@@ -117,8 +129,8 @@ export function ChartDetailPage() {
         const status = await chartsService.getStatus(id, token);
 
         if (status.status === 'completed' || status.status === 'failed') {
-          // Reload full chart data when done
-          const chartData = await chartsService.getById(id, token);
+          // Reload full chart data when done (with current language)
+          const chartData = await chartsService.getById(id, token, i18n.language);
           setChart(chartData);
           clearInterval(pollInterval);
         } else {
@@ -131,6 +143,7 @@ export function ChartDetailPage() {
     }, 2000); // Poll every 2 seconds
 
     return () => clearInterval(pollInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, id]);
 
   async function loadChart() {
@@ -146,7 +159,7 @@ export function ChartDetailPage() {
         return;
       }
 
-      const chartData = await chartsService.getById(id, token);
+      const chartData = await chartsService.getById(id, token, i18n.language);
       setChart(chartData);
 
       // Track chart detail viewed

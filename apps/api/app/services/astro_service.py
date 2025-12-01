@@ -914,7 +914,7 @@ def calculate_birth_chart(
     aspects = calculate_aspects(planets)
 
     # Find Lord of Nativity (planet with highest essential dignity score)
-    lord_of_nativity = find_lord_of_nativity(planets_with_dignities)
+    lord_of_nativity = find_lord_of_nativity(planets_with_dignities, language)
 
     # Calculate Temperament based on 5 traditional factors
     # Get ascendant sign
@@ -936,7 +936,7 @@ def calculate_birth_chart(
     )
 
     # Get lord of nativity, its sign, and dignities
-    lord_of_nativity_name = lord_of_nativity["planet"] if lord_of_nativity else "Sun"
+    lord_of_nativity_name = lord_of_nativity["planet_key"] if lord_of_nativity else "Sun"
     lord_of_nativity_data = next(
         (p for p in planets_with_dignities if p.get("name") == lord_of_nativity_name), None
     )
@@ -960,6 +960,7 @@ def calculate_birth_chart(
         lord_of_nativity_sign=lord_of_nativity_sign,
         ascendant_ruler_dignities=ascendant_ruler_dignities,
         lord_of_nativity_dignities=lord_of_nativity_dignities,
+        language=language,
     )
 
     # Calculate Arabic Parts (Lots)

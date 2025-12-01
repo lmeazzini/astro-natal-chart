@@ -3,7 +3,7 @@ Astrological chart generation Celery tasks for async processing.
 """
 
 import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from loguru import logger
@@ -56,13 +56,6 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             logger.error(f"Chart {chart_id} not found")
             return {"status": "failed", "message": "Chart not found"}
 
-        # Fetch user to get language preference
-        from app.repositories.user_repository import UserRepository
-
-        user_repo = UserRepository(db)
-        user = await user_repo.get_by_id(UUID(str(chart.user_id)))
-        user_language = user.locale if user else "pt-BR"
-
         try:
             # Update task_id and initial progress
             chart.task_id = task_id
@@ -70,25 +63,34 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             await db.commit()
             logger.info(f"Starting chart generation for {chart_id}")
 
-            # Step 1: Calculate astrological data (fast ~100-200ms)
+            # Step 1: Calculate astrological data in BOTH languages (fast ~200-400ms)
+            # This ensures users can switch languages without waiting for recalculation
             chart.progress = 20
             await db.commit()
             logger.info(f"Calculating planetary positions for {chart_id}")
 
-            calculated_data = calculate_birth_chart(
-                birth_datetime=chart.birth_datetime,
-                timezone=chart.birth_timezone,
-                latitude=float(chart.latitude),
-                longitude=float(chart.longitude),
-                house_system=chart.house_system,
-                language=user_language,
-            )
+            # Generate chart data for both supported languages
+            from app.translations import SUPPORTED_LANGUAGES
 
-            # Step 2: Save calculated data
-            chart.chart_data = calculated_data
+            chart_data_by_lang: dict[str, Any] = {}
+            for language in SUPPORTED_LANGUAGES:
+                logger.info(f"Calculating {language} chart data for {chart_id}")
+                chart_data_by_lang[language] = calculate_birth_chart(
+                    birth_datetime=chart.birth_datetime,
+                    timezone=chart.birth_timezone,
+                    latitude=float(chart.latitude),
+                    longitude=float(chart.longitude),
+                    house_system=chart.house_system,
+                    language=language,
+                )
+
+            # Step 2: Save language-keyed chart data
+            chart.chart_data = chart_data_by_lang
             chart.progress = 30
             await db.commit()
-            logger.info(f"Chart calculations completed for {chart_id}")
+            logger.info(
+                f"Chart calculations completed for {chart_id} in {len(SUPPORTED_LANGUAGES)} languages"
+            )
 
             # Step 3: Generate AI interpretations (slow ~20-30 seconds)
             # This will progress from 40% to 90% incrementally
@@ -103,9 +105,10 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
                 rag_service = InterpretationServiceRAG(
                     db, use_cache=True, use_rag=True, language=language
                 )
+                # Pass language-keyed chart_data - service will extract language-specific data
                 await rag_service.generate_all_rag_interpretations(
                     chart=chart,
-                    chart_data=calculated_data,
+                    chart_data=chart_data_by_lang,
                 )
 
             # Step 3.5: Generate growth interpretations in BOTH languages
@@ -115,8 +118,9 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
             for language in ["pt-BR", "en-US"]:
                 logger.info(f"Generating {language} growth interpretations for {chart_id}")
                 growth_service = PersonalGrowthService(language=language, db=db)
+                # Pass language-keyed chart_data - service will extract language-specific data
                 await growth_service.generate_growth_suggestions(
-                    chart_data=calculated_data,
+                    chart_data=chart_data_by_lang,
                     chart_id=UUID(chart_id),
                 )
 

@@ -277,7 +277,7 @@ class TestRAGCacheTypes:
         # Set cache
         cache_entry = await cache_service.set(
             interpretation_type="house_rag",
-            subject="House 1",
+            subject="1",
             parameters=params,
             content=content,
             model="gpt-4o-mini",
@@ -286,7 +286,7 @@ class TestRAGCacheTypes:
 
         assert cache_entry is not None
         assert cache_entry.interpretation_type == "house_rag"
-        assert cache_entry.subject == "House 1"
+        assert cache_entry.subject == "1"
 
         # Get from cache
         cached_content = await cache_service.get(
@@ -458,7 +458,7 @@ class TestRAGCacheTypes:
         # Add entries for each RAG type
         await cache_service.set(
             interpretation_type="house_rag",
-            subject="House 1",
+            subject="1",
             parameters={"house": 1},
             content="House interpretation",
             model="gpt-4o-mini",
@@ -494,7 +494,7 @@ class TestRAGCacheTypes:
 
         # Add entries for each RAG type with same version
         for interp_type, subject in [
-            ("house_rag", "House 1"),
+            ("house_rag", "1"),
             ("aspect_rag", "Sun-Moon"),
             ("arabic_part_rag", "fortune"),
         ]:

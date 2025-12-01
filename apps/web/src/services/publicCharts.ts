@@ -93,9 +93,18 @@ export async function listPublicCharts(
 
 /**
  * Get a public chart by slug
+ * @param slug - The chart's URL slug
+ * @param lang - Optional language code (e.g., 'pt-BR' or 'en-US')
  */
-export async function getPublicChart(slug: string): Promise<PublicChartDetail> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/public-charts/${slug}`);
+export async function getPublicChart(slug: string, lang?: string): Promise<PublicChartDetail> {
+  const searchParams = new URLSearchParams();
+  if (lang) {
+    searchParams.set('lang', lang);
+  }
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/api/v1/public-charts/${slug}${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     if (response.status === 404) {

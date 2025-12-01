@@ -67,7 +67,7 @@ async def count_charts_needing_backfill(db: AsyncSession) -> dict[str, int]:
     result = await db.execute(stmt)
     all_charts = result.scalars().all()
 
-    needs_backfill = {lang: 0 for lang in SUPPORTED_LANGUAGES}
+    needs_backfill = dict.fromkeys(SUPPORTED_LANGUAGES, 0)
 
     for chart in all_charts:
         # Get existing interpretations for this chart
@@ -168,7 +168,7 @@ async def backfill_chart_interpretations(
     Returns:
         Dict with counts of interpretations generated per language
     """
-    results = {lang: 0 for lang in languages_to_generate}
+    results = dict.fromkeys(languages_to_generate, 0)
 
     if dry_run:
         logger.info(
@@ -278,7 +278,7 @@ async def main(
 
         # Step 3: Process each chart
         logger.info("")
-        total_generated = {lang: 0 for lang in SUPPORTED_LANGUAGES}
+        total_generated = dict.fromkeys(SUPPORTED_LANGUAGES, 0)
         processed_count = 0
         failed_count = 0
 

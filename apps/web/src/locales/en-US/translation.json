@@ -83,7 +83,8 @@
       "facebook": "Facebook",
       "success": "Login successful!",
       "error": "Login error. Check your credentials.",
-      "invalidCredentials": "Invalid email or password"
+      "invalidCredentials": "Invalid email or password",
+      "termsAgreement": "By logging in, you agree to our Terms of Service and Privacy Policy"
     },
     "register": {
       "title": "Create Account",
@@ -105,7 +106,13 @@
       "error": "Error creating account",
       "emailInUse": "This email is already in use",
       "passwordMismatch": "Passwords don't match",
-      "passwordMinLength": "Password must be at least 8 characters"
+      "passwordMinLength": "Password must be at least 8 characters",
+      "features": {
+        "unlimited": "Unlimited birth charts",
+        "free": "Free forever"
+      },
+      "passwordSpecialNumber": "At least one number or special character",
+      "passwordCase": "Upper and lowercase letters"
     },
     "forgotPassword": {
       "title": "Recover Password",
@@ -424,6 +431,10 @@
       "notFound": "Birth chart not found"
     },
     "rag": {
+      "badge": "Enhanced with RAG",
+      "description": "Interpretations based on classical traditional astrology texts.",
+      "tooltipShort": "Interpretations grounded in classical astrology books",
+      "tooltipLong": "RAG (Retrieval-Augmented Generation) combines artificial intelligence with a knowledge base of classical astrology books, resulting in more accurate interpretations grounded in astrological tradition.",
       "sources": "Sources",
       "sourcesDesc": "Documents used for this interpretation",
       "noSources": "No documentary sources",
@@ -440,6 +451,11 @@
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your personal information",
+    "userTypes": {
+      "professional": "🔮 Professional Astrologer",
+      "student": "📚 Astrology Student",
+      "curious": "✨ Curious"
+    },
     "personalInfo": "Personal Information",
     "name": "Name",
     "namePlaceholder": "Your full name",

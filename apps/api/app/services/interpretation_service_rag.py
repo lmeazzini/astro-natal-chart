@@ -619,7 +619,7 @@ class InterpretationServiceRAG:
             if interpretation_text and self.cache_service:
                 await self.cache_service.set(
                     interpretation_type="house_rag",
-                    subject=f"House {house}",
+                    subject=str(house),
                     parameters=cache_params,
                     content=interpretation_text,
                     model=settings.OPENAI_MODEL,
@@ -931,11 +931,15 @@ class InterpretationServiceRAG:
             "arabic_parts": {},
         }
 
-        planets = chart_data.get("planets", [])
-        houses = chart_data.get("houses", [])
-        aspects = chart_data.get("aspects", [])
-        arabic_parts = chart_data.get("arabic_parts", {})
-        sect = chart_data.get("sect", "diurnal")
+        # Extract language-specific data (supports both legacy flat and language-first format)
+        from app.utils.chart_data_accessor import extract_language_data
+
+        lang_data = extract_language_data(chart_data, self.language)
+        planets = lang_data.get("planets", [])
+        houses = lang_data.get("houses", [])
+        aspects = lang_data.get("aspects", [])
+        arabic_parts = lang_data.get("arabic_parts", {})
+        sect = lang_data.get("sect", "diurnal")
 
         # Generate planet interpretations
         for planet in planets:
@@ -997,7 +1001,7 @@ class InterpretationServiceRAG:
             if not house_number or not house_sign:
                 continue
 
-            house_key = f"House {house_number}"
+            house_key = str(house_number)
 
             try:
                 # Check if interpretation already exists (unless force=True)

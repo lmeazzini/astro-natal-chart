@@ -40,8 +40,38 @@ from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.models.public_chart import PublicChart
 from app.models.public_chart_interpretation import PublicChartInterpretation
+from app.repositories.public_interpretation_repository import PublicInterpretationRepository
 from app.services.interpretation_service_rag import InterpretationServiceRAG
 from app.services.personal_growth_service import PersonalGrowthService
+
+
+def get_chart_data_for_language(chart: PublicChart, language: str) -> dict[str, Any] | None:
+    """
+    Extract chart data for a specific language.
+
+    Public charts store data keyed by language: {"en-US": {...}, "pt-BR": {...}}
+    This function extracts the correct data for the requested language.
+    """
+    if not chart.chart_data:
+        return None
+
+    # Check if data is already in the expected format (direct planets/houses/etc)
+    if "planets" in chart.chart_data:
+        return chart.chart_data
+
+    # Data is keyed by language
+    if language in chart.chart_data:
+        return chart.chart_data[language]
+
+    # Fallback: try en-US or pt-BR
+    for fallback_lang in ["en-US", "pt-BR"]:
+        if fallback_lang in chart.chart_data:
+            logger.warning(
+                f"Language {language} not found for chart {chart.slug}, using {fallback_lang}"
+            )
+            return chart.chart_data[fallback_lang]
+
+    return None
 
 
 async def clear_chart_interpretations(db: AsyncSession, chart_id: UUID) -> int:
@@ -64,9 +94,10 @@ async def generate_planet_interpretations(
     chart: PublicChart,
     rag_service: InterpretationServiceRAG,
     language: str,
+    repo: PublicInterpretationRepository,
 ) -> int:
     """Generate interpretations for all planets."""
-    chart_data = chart.chart_data
+    chart_data = get_chart_data_for_language(chart, language)
     if not chart_data:
         return 0
 
@@ -93,17 +124,16 @@ async def generate_planet_interpretations(
             retrograde=retrograde,
         )
 
-        # Save to database
-        interp_record = PublicChartInterpretation(
+        # Use upsert to handle updates
+        await repo.upsert_interpretation(
             chart_id=chart.id,
             interpretation_type="planet",
             subject=planet_name,
             content=interpretation,
+            language=language,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
-            language=language,
         )
-        db.add(interp_record)
         count += 1
 
     await db.commit()
@@ -115,9 +145,10 @@ async def generate_house_interpretations(
     chart: PublicChart,
     rag_service: InterpretationServiceRAG,
     language: str,
+    repo: PublicInterpretationRepository,
 ) -> int:
     """Generate interpretations for all houses."""
-    chart_data = chart.chart_data
+    chart_data = get_chart_data_for_language(chart, language)
     if not chart_data:
         return 0
 
@@ -152,17 +183,16 @@ async def generate_house_interpretations(
             sect=sect,
         )
 
-        # Save to database
-        interp_record = PublicChartInterpretation(
+        # Use upsert to handle updates
+        await repo.upsert_interpretation(
             chart_id=chart.id,
             interpretation_type="house",
             subject=str(house_number),
             content=interpretation,
+            language=language,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
-            language=language,
         )
-        db.add(interp_record)
         count += 1
 
     await db.commit()
@@ -174,9 +204,10 @@ async def generate_aspect_interpretations(
     chart: PublicChart,
     rag_service: InterpretationServiceRAG,
     language: str,
+    repo: PublicInterpretationRepository,
 ) -> int:
     """Generate interpretations for aspects."""
-    chart_data = chart.chart_data
+    chart_data = get_chart_data_for_language(chart, language)
     if not chart_data:
         return 0
 
@@ -223,17 +254,16 @@ async def generate_aspect_interpretations(
 
         aspect_key = f"{planet1}-{aspect_name}-{planet2}"
 
-        # Save to database
-        interp_record = PublicChartInterpretation(
+        # Use upsert to handle updates
+        await repo.upsert_interpretation(
             chart_id=chart.id,
             interpretation_type="aspect",
             subject=aspect_key,
             content=interpretation,
+            language=language,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
-            language=language,
         )
-        db.add(interp_record)
         count += 1
 
     await db.commit()
@@ -245,9 +275,10 @@ async def generate_arabic_parts_interpretations(
     chart: PublicChart,
     rag_service: InterpretationServiceRAG,
     language: str,
+    repo: PublicInterpretationRepository,
 ) -> int:
     """Generate interpretations for Arabic Parts."""
-    chart_data = chart.chart_data
+    chart_data = get_chart_data_for_language(chart, language)
     if not chart_data:
         return 0
 
@@ -277,17 +308,16 @@ async def generate_arabic_parts_interpretations(
             sect=sect,
         )
 
-        # Save to database
-        interp_record = PublicChartInterpretation(
+        # Use upsert to handle updates
+        await repo.upsert_interpretation(
             chart_id=chart.id,
             interpretation_type="arabic_part",
             subject=part_key,
             content=interpretation,
+            language=language,
             openai_model="gpt-4o-mini-rag",
             prompt_version="rag-v1",
-            language=language,
         )
-        db.add(interp_record)
         count += 1
 
     await db.commit()
@@ -298,9 +328,12 @@ async def generate_growth_interpretation(
     db: AsyncSession,
     chart: PublicChart,
     language: str,
+    repo: PublicInterpretationRepository,
 ) -> int:
     """Generate growth suggestions interpretation."""
-    chart_data = chart.chart_data
+    import json
+
+    chart_data = get_chart_data_for_language(chart, language)
     if not chart_data:
         return 0
 
@@ -308,59 +341,36 @@ async def generate_growth_interpretation(
 
     try:
         # Generate growth suggestions
-        growth_response = await growth_service.generate_growth_suggestions(
+        growth_data = await growth_service.generate_growth_suggestions(
             chart_data=chart_data,
-            focus_areas=None,
+            chart_id=None,  # Don't auto-save
         )
 
-        # Combine all growth suggestions into a single text
-        sections = []
+        # Map growth_data keys to database subject names
+        components_map = {
+            "points": growth_data.get("growth_points"),
+            "challenges": growth_data.get("challenges"),
+            "opportunities": growth_data.get("opportunities"),
+            "purpose": growth_data.get("purpose"),
+        }
 
-        if growth_response.get("growth_points"):
-            sections.append("## Pontos de Crescimento\n")
-            for point in growth_response["growth_points"]:
-                sections.append(f"### {point['title']}\n{point['description']}\n")
-                if point.get("action_steps"):
-                    sections.append("**Passos de Ação:**\n")
-                    for step in point["action_steps"]:
-                        sections.append(f"- {step}\n")
+        count = 0
+        # Save each component separately
+        for subject, content_data in components_map.items():
+            if content_data:
+                await repo.upsert_interpretation(
+                    chart_id=chart.id,
+                    interpretation_type="growth",
+                    subject=subject,
+                    content=json.dumps(content_data, ensure_ascii=False),
+                    language=language,
+                    openai_model="gpt-4o-mini",
+                    prompt_version="1.0.0",
+                )
+                count += 1
 
-        if growth_response.get("challenges"):
-            sections.append("\n## Desafios\n")
-            for challenge in growth_response["challenges"]:
-                sections.append(f"### {challenge['title']}\n{challenge['description']}\n")
-                if challenge.get("strategies"):
-                    sections.append("**Estratégias:**\n")
-                    for strategy in challenge["strategies"]:
-                        sections.append(f"- {strategy}\n")
-
-        if growth_response.get("opportunities"):
-            sections.append("\n## Oportunidades\n")
-            for opportunity in growth_response["opportunities"]:
-                sections.append(f"### {opportunity['title']}\n{opportunity['description']}\n")
-                if opportunity.get("how_to_leverage"):
-                    sections.append("**Como Aproveitar:**\n")
-                    for leverage in opportunity["how_to_leverage"]:
-                        sections.append(f"- {leverage}\n")
-
-        if growth_response.get("purpose"):
-            sections.append(f"\n## Propósito de Vida\n{growth_response['purpose']}\n")
-
-        growth_text = "\n".join(sections)
-
-        # Save to database
-        interp_record = PublicChartInterpretation(
-            chart_id=chart.id,
-            interpretation_type="growth",
-            subject="personal_development",
-            content=growth_text,
-            openai_model="gpt-4o-mini-rag",
-            prompt_version="rag-v1",
-            language=language,
-        )
-        db.add(interp_record)
         await db.commit()
-        return 1
+        return count
 
     except Exception as e:
         logger.error(f"Failed to generate growth interpretation: {e}")
@@ -384,35 +394,39 @@ async def generate_chart_interpretations(
         deleted = await clear_chart_interpretations(db, chart.id)
         logger.info(f"Deleted {deleted} existing interpretations")
 
-    # Initialize RAG service
-    rag_service = InterpretationServiceRAG(db, use_cache=False, use_rag=True, language=language)
+    # Initialize repository and RAG service with cache enabled
+    repo = PublicInterpretationRepository(db)
+    rag_service = InterpretationServiceRAG(db, use_cache=True, use_rag=True, language=language)
 
     # Generate all interpretation types
     counts = {}
 
     logger.info("Generating planet interpretations...")
-    counts["planets"] = await generate_planet_interpretations(db, chart, rag_service, language)
+    counts["planets"] = await generate_planet_interpretations(
+        db, chart, rag_service, language, repo
+    )
     logger.success(f"✓ Generated {counts['planets']} planet interpretations")
 
     logger.info("Generating house interpretations...")
-    counts["houses"] = await generate_house_interpretations(db, chart, rag_service, language)
+    counts["houses"] = await generate_house_interpretations(db, chart, rag_service, language, repo)
     logger.success(f"✓ Generated {counts['houses']} house interpretations")
 
     logger.info("Generating aspect interpretations...")
-    counts["aspects"] = await generate_aspect_interpretations(db, chart, rag_service, language)
+    counts["aspects"] = await generate_aspect_interpretations(
+        db, chart, rag_service, language, repo
+    )
     logger.success(f"✓ Generated {counts['aspects']} aspect interpretations")
 
     logger.info("Generating Arabic Parts interpretations...")
     counts["arabic_parts"] = await generate_arabic_parts_interpretations(
-        db, chart, rag_service, language
+        db, chart, rag_service, language, repo
     )
     logger.success(f"✓ Generated {counts['arabic_parts']} Arabic Parts interpretations")
 
-    # Skip growth for now - requires additional OpenAI credits and is optional
-    # logger.info("Generating growth suggestions...")
-    # counts["growth"] = await generate_growth_interpretation(db, chart, language)
-    # logger.success(f"✓ Generated {counts['growth']} growth interpretation")
-    counts["growth"] = 0
+    # Generate growth interpretations
+    logger.info("Generating growth suggestions...")
+    counts["growth"] = await generate_growth_interpretation(db, chart, language, repo)
+    logger.success(f"✓ Generated {counts['growth']} growth interpretations")
 
     total = sum(counts.values())
     logger.info(f"\nTotal interpretations generated: {total}")
@@ -497,22 +511,46 @@ async def main(
             fail_count = 0
 
             for i, chart in enumerate(charts, 1):
-                logger.info(f"\n[{i}/{len(charts)}] Processing {chart.full_name}...")
-
-                for language in languages:
+                # Create fresh session for each chart to avoid transaction issues
+                async with AsyncSessionLocal() as chart_db:
                     try:
-                        counts = await generate_chart_interpretations(db, chart, language, clear)
+                        logger.info(f"\n[{i}/{len(charts)}] Processing {chart.full_name}...")
 
-                        # Aggregate counts
-                        for key, value in counts.items():
-                            total_counts[key] = total_counts.get(key, 0) + value
+                        # Reload chart in new session
+                        chart_stmt = select(PublicChart).where(PublicChart.id == chart.id)
+                        chart_result = await chart_db.execute(chart_stmt)
+                        fresh_chart = chart_result.scalar_one_or_none()
 
-                        success_count += 1
+                        if not fresh_chart:
+                            logger.warning(f"Chart {chart.id} not found, skipping...")
+                            fail_count += len(languages)
+                            continue
 
-                    except Exception as e:
-                        logger.error(f"Failed to generate {language} interpretations: {e}")
-                        fail_count += 1
-                        continue
+                        # Only clear once before processing all languages
+                        # (not inside the loop, which would delete previous language's data)
+                        should_clear = clear
+                        for language in languages:
+                            try:
+                                counts = await generate_chart_interpretations(
+                                    chart_db, fresh_chart, language, should_clear
+                                )
+                                should_clear = False  # Only clear on first iteration
+
+                                # Aggregate counts
+                                for key, value in counts.items():
+                                    total_counts[key] = total_counts.get(key, 0) + value
+
+                                success_count += 1
+
+                            except Exception as e:
+                                logger.error(f"Failed to generate {language} interpretations: {e}")
+                                await chart_db.rollback()
+                                fail_count += 1
+                                continue
+
+                    except Exception as exc:
+                        logger.error(f"Failed to process chart {chart.id}: {exc}")
+                        fail_count += len(languages)
 
             # Final summary
             logger.info(f"\n{'='*60}")

@@ -23,6 +23,7 @@
     "pageOf": "Página {{page}} de {{total}}",
     "myCharts": "Meus Mapas",
     "login": "Entrar",
+    "search": "Buscar",
     "refresh": "Atualizar",
     "retry": "Tentar novamente"
   },
@@ -82,7 +83,8 @@
       "facebook": "Facebook",
       "success": "Login realizado com sucesso!",
       "error": "Erro ao fazer login. Verifique suas credenciais.",
-      "invalidCredentials": "E-mail ou senha inválidos"
+      "invalidCredentials": "E-mail ou senha inválidos",
+      "termsAgreement": "Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade"
     },
     "register": {
       "title": "Criar Conta",
@@ -104,7 +106,13 @@
       "error": "Erro ao criar conta",
       "emailInUse": "Este e-mail já está em uso",
       "passwordMismatch": "As senhas não coincidem",
-      "passwordMinLength": "A senha deve ter no mínimo 8 caracteres"
+      "passwordMinLength": "A senha deve ter no mínimo 8 caracteres",
+      "features": {
+        "unlimited": "Mapas astrais ilimitados",
+        "free": "Grátis para sempre"
+      },
+      "passwordSpecialNumber": "Pelo menos um número ou caractere especial",
+      "passwordCase": "Letras maiúsculas e minúsculas"
     },
     "forgotPassword": {
       "title": "Recuperar Senha",
@@ -439,6 +447,11 @@
   "profile": {
     "title": "Meu Perfil",
     "subtitle": "Gerencie suas informações pessoais",
+    "userTypes": {
+      "professional": "🔮 Astrólogo Profissional",
+      "student": "📚 Estudante de Astrologia",
+      "curious": "✨ Curioso"
+    },
     "personalInfo": "Informações Pessoais",
     "name": "Nome",
     "namePlaceholder": "Seu nome completo",

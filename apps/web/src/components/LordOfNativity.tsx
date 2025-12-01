@@ -18,8 +18,10 @@ export interface DignityDetail {
 
 export interface LordOfNativityData {
   planet: string;
+  planet_key: string;
   score: number;
   sign: string;
+  sign_key: string;
   house: number;
   classification: string;
   dignity_details: DignityDetail[];
@@ -52,7 +54,7 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
   const { translatePlanet, translateSign } = useAstroTranslation();
   const isEn = i18n.language === 'en-US' || i18n.language === 'en';
 
-  const planetSymbol = planetSymbols[lordOfNativity.planet] || '★';
+  const planetSymbol = planetSymbols[lordOfNativity.planet_key] || '★';
   const classificationColor =
     classificationColors[lordOfNativity.classification] ||
     'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20';
@@ -78,11 +80,11 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
           </span>
           <div className="flex-1">
             <div className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <span className="text-2xl" title={translatePlanet(lordOfNativity.planet)}>
+              <span className="text-2xl" title={translatePlanet(lordOfNativity.planet_key)}>
                 {planetSymbol}
               </span>
               {t('components.lordOfNativity.title', { defaultValue: 'Senhor da Natividade' })}:{' '}
-              {translatePlanet(lordOfNativity.planet)}
+              {translatePlanet(lordOfNativity.planet_key)}
             </div>
             <div className="text-xs text-muted-foreground font-normal mt-1">
               {t('components.lordOfNativity.subtitle', {
@@ -120,7 +122,7 @@ export function LordOfNativity({ lordOfNativity }: LordOfNativityProps) {
             {t('components.lordOfNativity.position', { defaultValue: 'Posição' })}
           </p>
           <p className="text-sm font-semibold text-foreground">
-            {getSignSymbol(lordOfNativity.sign)} {translateSign(lordOfNativity.sign)} •{' '}
+            {getSignSymbol(lordOfNativity.sign_key)} {translateSign(lordOfNativity.sign_key)} •{' '}
             {t('components.lordOfNativity.house', { defaultValue: 'Casa' })} {lordOfNativity.house}
           </p>
         </div>

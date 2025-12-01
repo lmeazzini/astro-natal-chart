@@ -46,7 +46,7 @@ class TestUnifiedInterpretationsEndpoint:
         # Get auth token
         response = await client.post(
             "/api/v1/auth/login",
-            json={"email": test_user.email, "password": "testpass123"},
+            json={"email": test_user.email, "password": "Test123!@#"},
         )
         assert response.status_code == 200
         token = response.json()["access_token"]
@@ -95,7 +95,7 @@ class TestUnifiedInterpretationsEndpoint:
         # Get auth token for other user
         response = await client.post(
             "/api/v1/auth/login",
-            json={"email": other_user.email, "password": "testpass123"},
+            json={"email": other_user.email, "password": "Test123!@#"},
         )
         token = response.json()["access_token"]
 

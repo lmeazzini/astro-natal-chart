@@ -178,6 +178,9 @@ async def get_chart_interpretations(
                     cached=False,
                     prompt_version=interp.prompt_version,
                     generated_at=interp.created_at.isoformat() if interp.created_at else None,
+                    interpretation_type=interp.interpretation_type,
+                    subject=interp.subject,
+                    openai_model=interp.openai_model,
                 )
             cache_hits_db += len(existing_by_type["planet"])
         else:
@@ -203,6 +206,9 @@ async def get_chart_interpretations(
                     cached=False,
                     prompt_version=interp.prompt_version,
                     generated_at=interp.created_at.isoformat() if interp.created_at else None,
+                    interpretation_type=interp.interpretation_type,
+                    subject=interp.subject,
+                    openai_model=interp.openai_model,
                 )
             cache_hits_db += len(existing_by_type["house"])
         else:
@@ -224,6 +230,9 @@ async def get_chart_interpretations(
                     cached=False,
                     prompt_version=interp.prompt_version,
                     generated_at=interp.created_at.isoformat() if interp.created_at else None,
+                    interpretation_type=interp.interpretation_type,
+                    subject=interp.subject,
+                    openai_model=interp.openai_model,
                 )
             cache_hits_db += len(existing_by_type["aspect"])
         else:
@@ -247,6 +256,9 @@ async def get_chart_interpretations(
                     cached=False,
                     prompt_version=interp.prompt_version,
                     generated_at=interp.created_at.isoformat() if interp.created_at else None,
+                    interpretation_type=interp.interpretation_type,
+                    subject=interp.subject,
+                    openai_model=interp.openai_model,
                 )
             cache_hits_db += len(existing_by_type["arabic_part"])
         else:

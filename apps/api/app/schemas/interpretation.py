@@ -133,6 +133,13 @@ class InterpretationItem(BaseModel):
     cached: bool = Field(default=False, description="Whether from cache")
     prompt_version: str | None = Field(default=None, description="Prompt version used")
     generated_at: str | None = Field(default=None, description="ISO timestamp of generation")
+    interpretation_type: str | None = Field(
+        default=None, description="Type: 'planet', 'house', 'aspect', or 'arabic_part'"
+    )
+    subject: str | None = Field(
+        default=None, description="Subject of interpretation (e.g., 'Sun', '1', 'Sun-Trine-Moon')"
+    )
+    openai_model: str | None = Field(default=None, description="OpenAI model used for generation")
 
 
 class ChartInterpretationsResponse(BaseModel):

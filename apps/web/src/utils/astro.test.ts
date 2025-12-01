@@ -49,13 +49,13 @@ describe('Astrological Symbols', () => {
 
 describe('formatDMS', () => {
   it('should format degrees, minutes, seconds correctly', () => {
-    expect(formatDMS(15, 30, 45)).toBe("15°30'45\"");
-    expect(formatDMS(0, 0, 0)).toBe("0°00'00\"");
-    expect(formatDMS(29, 59, 59)).toBe("29°59'59\"");
+    expect(formatDMS(15, 30, 45)).toBe('15°30\'45"');
+    expect(formatDMS(0, 0, 0)).toBe('0°00\'00"');
+    expect(formatDMS(29, 59, 59)).toBe('29°59\'59"');
   });
 
   it('should pad single-digit minutes and seconds', () => {
-    expect(formatDMS(10, 5, 8)).toBe("10°05'08\"");
+    expect(formatDMS(10, 5, 8)).toBe('10°05\'08"');
   });
 });
 

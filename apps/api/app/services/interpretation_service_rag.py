@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.astro.dignities import get_sign_ruler
 from app.core.config import settings
 from app.models.chart import BirthChart
-from app.models.interpretation import ChartInterpretation
 from app.services.interpretation_cache_service import InterpretationCacheService
 from app.services.rag import hybrid_search_service
 
@@ -94,13 +93,56 @@ ARABIC_PARTS: dict[str, dict[str, str]] = {
         "name": "Part of Necessity",
         "name_pt": "Lote da Necessidade",
     },
+    # Extended Arabic Parts (Issue #110 - Phase 2)
+    "marriage": {
+        "name": "Part of Marriage",
+        "name_pt": "Lote do Casamento",
+    },
+    "victory": {
+        "name": "Part of Victory",
+        "name_pt": "Lote da Vitória",
+    },
+    "father": {
+        "name": "Part of Father",
+        "name_pt": "Lote do Pai",
+    },
+    "mother": {
+        "name": "Part of Mother",
+        "name_pt": "Lote da Mãe",
+    },
+    "children": {
+        "name": "Part of Children",
+        "name_pt": "Lote dos Filhos",
+    },
+    "exaltation": {
+        "name": "Part of Exaltation",
+        "name_pt": "Lote da Exaltação",
+    },
+    "illness": {
+        "name": "Part of Illness",
+        "name_pt": "Lote da Doença",
+    },
+    "courage": {
+        "name": "Part of Courage",
+        "name_pt": "Lote da Coragem",
+    },
+    "reputation": {
+        "name": "Part of Reputation",
+        "name_pt": "Lote da Reputação",
+    },
 }
 
 
 class InterpretationServiceRAG:
     """Interpretation service with RAG support for enhanced astrological interpretations."""
 
-    def __init__(self, db: AsyncSession, use_cache: bool = True, use_rag: bool = True):
+    def __init__(
+        self,
+        db: AsyncSession,
+        use_cache: bool = True,
+        use_rag: bool = True,
+        language: str = "pt-BR",
+    ):
         """
         Initialize RAG interpretation service.
 
@@ -108,10 +150,12 @@ class InterpretationServiceRAG:
             db: Database session
             use_cache: Whether to use interpretation cache
             use_rag: Whether to use RAG for context retrieval
+            language: Language for interpretations ('pt-BR' or 'en-US')
         """
         self.db = db
         self.use_cache = use_cache
         self.use_rag = use_rag
+        self.language = language
         self.rag_context_limit = 3  # Number of relevant documents to retrieve
 
         # Initialize OpenAI client
@@ -119,6 +163,11 @@ class InterpretationServiceRAG:
 
         # Initialize cache service
         self.cache_service = InterpretationCacheService(db) if use_cache else None
+
+        # Initialize interpretation repository for upsert operations
+        from app.repositories.interpretation_repository import InterpretationRepository
+
+        self.repo = InterpretationRepository(db)
 
         # Cache statistics
         self._cache_hits = 0
@@ -143,10 +192,41 @@ class InterpretationServiceRAG:
                 "planet_prompts": {"base": "Interprete {planet} em {sign} na casa {house}."},
                 "house_prompts": {"base": "Interprete a casa {house} em {sign}."},
                 "aspect_prompts": {"base": "Interprete {aspect} entre {planet1} e {planet2}."},
-                "arabic_part_prompts": {"base": "Interprete {part_name} em {sign} na casa {house}."},
+                "arabic_part_prompts": {
+                    "base": "Interprete {part_name} em {sign} na casa {house}."
+                },
             }
 
-    def _validate_dignities(self, planet: str, sign: str, dignities: dict[str, Any]) -> dict[str, Any]:
+    def _get_language_instruction(self) -> str:
+        """
+        Get language instruction to append to system prompt.
+
+        Returns:
+            Language instruction string for non-Portuguese languages,
+            empty string for Portuguese (default prompt language).
+        """
+        if self.language.startswith("en"):
+            return (
+                "\n\nIMPORTANT: You MUST respond in English (en-US). "
+                "Translate all astrological terms to English and produce natural, fluent English output. "
+                "Do NOT respond in Portuguese."
+            )
+        # Portuguese is the default prompt language, no instruction needed
+        return ""
+
+    def _get_system_prompt(self) -> str:
+        """
+        Get the system prompt with language instruction appended.
+
+        Returns:
+            System prompt with optional language instruction.
+        """
+        system_prompt: str = self.prompts["system_prompt"]
+        return system_prompt + self._get_language_instruction()
+
+    def _validate_dignities(
+        self, planet: str, sign: str, dignities: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Validate and ensure dignities are properly formatted.
 
@@ -355,10 +435,13 @@ class InterpretationServiceRAG:
                 parameters=cache_params,
                 model=settings.OPENAI_MODEL,
                 prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
             )
             if cached:
                 self._cache_hits += 1
-                logger.info(f"Using cached RAG interpretation for {planet} in {sign}")
+                logger.info(
+                    f"Using cached RAG interpretation for {planet} in {sign} ({self.language})"
+                )
                 return cached
 
         self._cache_misses += 1
@@ -403,7 +486,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -422,19 +505,22 @@ class InterpretationServiceRAG:
                     content=interpretation_text,
                     model=settings.OPENAI_MODEL,
                     prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
                 )
 
             # Log success
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for {planet} in {sign} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG interpretation for {planet} in {sign}: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for {planet} in {sign}."
             return f"Interpretação não disponível para {planet} em {sign}."
 
     async def generate_house_interpretation(
@@ -458,6 +544,33 @@ class InterpretationServiceRAG:
         Returns:
             Generated interpretation text
         """
+        # Build cache parameters
+        cache_params = {
+            "house": house,
+            "sign": sign,
+            "ruler": ruler,
+            "ruler_dignities": ruler_dignities,
+            "sect": sect,
+        }
+
+        # Try cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="house_rag",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
+            )
+            if cached:
+                self._cache_hits += 1
+                logger.info(
+                    f"Using cached RAG interpretation for house {house} in {sign} ({self.language})"
+                )
+                return cached
+
+        self._cache_misses += 1
+
         # Build search query
         search_query = f"house {house} in {sign} ruled by {ruler}"
 
@@ -492,7 +605,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -502,16 +615,30 @@ class InterpretationServiceRAG:
             interpretation = response.choices[0].message.content
             interpretation_text = interpretation.strip() if interpretation else ""
 
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="house_rag",
+                    subject=str(house),
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
+                )
+
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for house {house} in {sign} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG house interpretation: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for house {house} in {sign}."
             return f"Interpretação não disponível para casa {house} em {sign}."
 
     async def generate_aspect_interpretation(
@@ -545,6 +672,37 @@ class InterpretationServiceRAG:
         Returns:
             Generated interpretation text
         """
+        # Build cache parameters (orb excluded to maximize cache hits)
+        cache_params = {
+            "planet1": planet1,
+            "planet2": planet2,
+            "aspect": aspect,
+            "sign1": sign1,
+            "sign2": sign2,
+            "applying": applying,
+            "sect": sect,
+            "dignities1": dignities1,
+            "dignities2": dignities2,
+        }
+
+        # Try cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="aspect_rag",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
+            )
+            if cached:
+                self._cache_hits += 1
+                logger.info(
+                    f"Using cached RAG interpretation for {planet1} {aspect} {planet2} ({self.language})"
+                )
+                return cached
+
+        self._cache_misses += 1
+
         # Build search query
         search_query = f"{planet1} {aspect} {planet2} in {sign1} and {sign2}"
 
@@ -585,7 +743,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -593,10 +751,32 @@ class InterpretationServiceRAG:
             )
 
             interpretation = response.choices[0].message.content
-            return interpretation.strip() if interpretation else ""
+            interpretation_text = interpretation.strip() if interpretation else ""
+
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="aspect_rag",
+                    subject=f"{planet1}-{aspect}-{planet2}",
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
+                )
+
+            if interpretation_text:
+                logger.info(
+                    f"Successfully generated RAG-enhanced interpretation for {planet1} {aspect} {planet2} "
+                    f"({self.language}, used {len(documents)} context documents)"
+                )
+
+            return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG aspect interpretation: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for {aspect} between {planet1} and {planet2}."
             return f"Interpretação não disponível para {aspect} entre {planet1} e {planet2}."
 
     async def generate_arabic_part_interpretation(
@@ -626,6 +806,32 @@ class InterpretationServiceRAG:
         part_info = ARABIC_PARTS[part_key]
         part_name = part_info["name"]
         part_name_pt = part_info["name_pt"]
+
+        # Build cache parameters
+        cache_params = {
+            "part_key": part_key,
+            "sign": sign,
+            "house": house,
+            "sect": sect,
+        }
+
+        # Try cache first
+        if self.cache_service:
+            cached = await self.cache_service.get(
+                interpretation_type="arabic_part_rag",
+                parameters=cache_params,
+                model=settings.OPENAI_MODEL,
+                prompt_version=self.prompts.get("version", "1.0"),
+                language=self.language,
+            )
+            if cached:
+                self._cache_hits += 1
+                logger.info(
+                    f"Using cached RAG interpretation for {part_name} in {sign} ({self.language})"
+                )
+                return cached
+
+        self._cache_misses += 1
 
         # Build search query for RAG
         search_query = f"{part_name} {part_name_pt} in {sign} house {house}"
@@ -664,7 +870,7 @@ class InterpretationServiceRAG:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": self.prompts["system_prompt"]},
+                    {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": enhanced_prompt},
                 ],
                 max_tokens=settings.OPENAI_MAX_TOKENS,
@@ -674,22 +880,37 @@ class InterpretationServiceRAG:
             interpretation = response.choices[0].message.content
             interpretation_text = interpretation.strip() if interpretation else ""
 
+            # Store in cache
+            if interpretation_text and self.cache_service:
+                await self.cache_service.set(
+                    interpretation_type="arabic_part_rag",
+                    subject=part_key,
+                    parameters=cache_params,
+                    content=interpretation_text,
+                    model=settings.OPENAI_MODEL,
+                    prompt_version=self.prompts.get("version", "1.0"),
+                    language=self.language,
+                )
+
             if interpretation_text:
                 logger.info(
                     f"Successfully generated RAG-enhanced interpretation for {part_name} in {sign} "
-                    f"(used {len(documents)} context documents)"
+                    f"({self.language}, used {len(documents)} context documents)"
                 )
 
             return interpretation_text
 
         except Exception as e:
             logger.error(f"Error generating RAG interpretation for {part_name}: {e}")
+            if self.language.startswith("en"):
+                return f"Interpretation not available for {part_name} in {sign}."
             return f"Interpretação não disponível para {part_name_pt} em {sign}."
 
     async def generate_all_rag_interpretations(
         self,
         chart: BirthChart,
         chart_data: dict[str, Any],
+        force: bool = False,
     ) -> dict[str, dict[str, str]]:
         """
         Generate all RAG-enhanced interpretations for a chart and save to database.
@@ -697,6 +918,8 @@ class InterpretationServiceRAG:
         Args:
             chart: BirthChart model instance
             chart_data: Calculated chart data
+            force: If True, regenerate interpretations even if they exist.
+                   If False (default), skip generation if interpretation already exists.
 
         Returns:
             Dictionary with all interpretations grouped by type
@@ -708,11 +931,15 @@ class InterpretationServiceRAG:
             "arabic_parts": {},
         }
 
-        planets = chart_data.get("planets", [])
-        houses = chart_data.get("houses", [])
-        aspects = chart_data.get("aspects", [])
-        arabic_parts = chart_data.get("arabic_parts", {})
-        sect = chart_data.get("sect", "diurnal")
+        # Extract language-specific data (supports both legacy flat and language-first format)
+        from app.utils.chart_data_accessor import extract_language_data
+
+        lang_data = extract_language_data(chart_data, self.language)
+        planets = lang_data.get("planets", [])
+        houses = lang_data.get("houses", [])
+        aspects = lang_data.get("aspects", [])
+        arabic_parts = lang_data.get("arabic_parts", {})
+        sect = lang_data.get("sect", "diurnal")
 
         # Generate planet interpretations
         for planet in planets:
@@ -726,6 +953,22 @@ class InterpretationServiceRAG:
             dignities = planet.get("dignities", {})
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=planet_name,
+                        interpretation_type="planet",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping planet {planet_name} - interpretation already exists ({self.language})"
+                        )
+                        results["planets"][planet_name] = existing.content
+                        continue
+
+                # Generate new interpretation
                 interpretation = await self.generate_planet_interpretation(
                     planet=planet_name,
                     sign=sign,
@@ -736,16 +979,16 @@ class InterpretationServiceRAG:
                 )
                 results["planets"][planet_name] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="planet",
                     subject=planet_name,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(f"Failed to generate RAG planet interpretation for {planet_name}: {e}")
 
@@ -758,9 +1001,24 @@ class InterpretationServiceRAG:
             if not house_number or not house_sign:
                 continue
 
-            house_key = f"House {house_number}"
+            house_key = str(house_number)
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=house_key,
+                        interpretation_type="house",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping house {house_number} - interpretation already exists ({self.language})"
+                        )
+                        results["houses"][house_key] = existing.content
+                        continue
+
                 # Get ruler for the house sign (imported at module level)
                 ruler = get_sign_ruler(house_sign) or "Unknown"
 
@@ -780,16 +1038,16 @@ class InterpretationServiceRAG:
                     )
                 results["houses"][house_key] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="house",
                     subject=house_key,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(f"Failed to generate RAG house interpretation for {house_key}: {e}")
 
@@ -807,9 +1065,28 @@ class InterpretationServiceRAG:
             aspect_key = f"{planet1}-{aspect_name}-{planet2}"
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=aspect_key,
+                        interpretation_type="aspect",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping aspect {aspect_key} - interpretation already exists ({self.language})"
+                        )
+                        results["aspects"][aspect_key] = existing.content
+                        continue
+
                 # Get planet signs and dignities
-                planet1_data: dict[str, Any] = next((p for p in planets if p.get("name") == planet1), {})
-                planet2_data: dict[str, Any] = next((p for p in planets if p.get("name") == planet2), {})
+                planet1_data: dict[str, Any] = next(
+                    (p for p in planets if p.get("name") == planet1), {}
+                )
+                planet2_data: dict[str, Any] = next(
+                    (p for p in planets if p.get("name") == planet2), {}
+                )
 
                 interpretation = await self.generate_aspect_interpretation(
                     planet1=planet1,
@@ -825,16 +1102,16 @@ class InterpretationServiceRAG:
                 )
                 results["aspects"][aspect_key] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="aspect",
                     subject=aspect_key,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
                 )
-                self.db.add(interp_record)
             except Exception as e:
                 logger.error(f"Failed to generate RAG aspect interpretation for {aspect_key}: {e}")
 
@@ -844,6 +1121,21 @@ class InterpretationServiceRAG:
                 continue
 
             try:
+                # Check if interpretation already exists (unless force=True)
+                if not force:
+                    existing = await self.repo.get_by_chart_and_subject(
+                        chart_id=chart.id,  # type: ignore[arg-type]
+                        subject=part_key,
+                        interpretation_type="arabic_part",
+                        language=self.language,
+                    )
+                    if existing:
+                        logger.debug(
+                            f"Skipping arabic_part {part_key} - interpretation already exists ({self.language})"
+                        )
+                        results["arabic_parts"][part_key] = existing.content
+                        continue
+
                 interpretation = await self.generate_arabic_part_interpretation(
                     part_key=part_key,
                     sign=part_data.get("sign", ""),
@@ -853,18 +1145,20 @@ class InterpretationServiceRAG:
                 )
                 results["arabic_parts"][part_key] = interpretation
 
-                # Save to database
-                interp_record = ChartInterpretation(
+                # Save to database using upsert (for force=True case)
+                await self.repo.upsert_interpretation(
                     chart_id=chart.id,
                     interpretation_type="arabic_part",
                     subject=part_key,
                     content=interpretation,
+                    language=self.language,
                     openai_model=RAG_MODEL_ID,
                     prompt_version=RAG_PROMPT_VERSION,
                 )
-                self.db.add(interp_record)
             except Exception as e:
-                logger.error(f"Failed to generate RAG Arabic Part interpretation for {part_key}: {e}")
+                logger.error(
+                    f"Failed to generate RAG Arabic Part interpretation for {part_key}: {e}"
+                )
 
         # Commit all interpretations
         await self.db.commit()

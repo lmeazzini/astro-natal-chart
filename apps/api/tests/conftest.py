@@ -71,7 +71,7 @@ async def setup_test_database():
 
 
 @pytest.fixture
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
+async def db_session() -> AsyncGenerator[AsyncSession, None]:  # type: ignore[misc]  # noqa: UP043
     """
     Create a clean database session for each test.
 
@@ -102,7 +102,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 # Test Redis URL (use DB 1 instead of DB 0 for test isolation)
-TEST_REDIS_URL = str(settings.REDIS_URL).rsplit('/', 1)[0] + '/1'
+TEST_REDIS_URL = str(settings.REDIS_URL).rsplit("/", 1)[0] + "/1"
 
 
 @pytest.fixture(autouse=True)
@@ -129,7 +129,7 @@ async def reset_rate_limits():
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:  # type: ignore[misc]  # noqa: UP043
     """
     Create an async HTTP client for testing.
 
@@ -196,6 +196,7 @@ async def test_user_factory(db_session: AsyncSession):
         user2 = await test_user_factory(email="user2@example.com", is_superuser=True)
         admin = await test_user_factory(email="admin@realastrology.ai", role="admin")
     """
+
     async def _create_user(
         email: str = "test@example.com",
         password: str = "Test123!@#",
@@ -203,7 +204,7 @@ async def test_user_factory(db_session: AsyncSession):
         email_verified: bool = True,
         is_active: bool = True,
         is_superuser: bool = False,
-        role: str = UserRole.GERAL.value,
+        role: str = UserRole.FREE.value,
         **kwargs,
     ) -> User:
         user = User(
@@ -312,8 +313,8 @@ async def unverified_admin_auth_headers(test_unverified_admin_user: User) -> dic
 
 @pytest.fixture
 def test_chart_data() -> dict:
-    """Sample chart calculation result for testing."""
-    return {
+    """Sample chart calculation result for testing (language-first format)."""
+    base_data = {
         "planets": [
             {
                 "name": "Sun",
@@ -357,6 +358,11 @@ def test_chart_data() -> dict:
             "descendant": 303.456,
         },
     }
+    # Return language-first format
+    return {
+        "en-US": base_data,
+        "pt-BR": base_data,
+    }
 
 
 @pytest.fixture
@@ -371,6 +377,7 @@ async def test_chart_factory(db_session: AsyncSession, test_chart_data: dict):
             birth_datetime=datetime(1990, 1, 1, 12, 0),
         )
     """
+
     async def _create_chart(
         user: User,
         person_name: str = "Test Person",

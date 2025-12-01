@@ -132,6 +132,76 @@ async def get_current_superuser(
     return current_user
 
 
+async def require_verified_email(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Require verified email for endpoint access.
+
+    This dependency ensures that only users with verified emails can access
+    premium features like AI interpretations and PDF exports. This helps:
+    - Control costs (OpenAI API charges per token)
+    - Prevent abuse from fake accounts
+    - Validate user identity
+
+    Args:
+        current_user: Current user from get_current_user dependency
+
+    Returns:
+        User object
+
+    Raises:
+        HTTPException 403: If user's email is not verified
+    """
+    # Admins bypass email verification requirement
+    if current_user.is_admin:
+        return current_user
+
+    if not current_user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "email_not_verified",
+                "message": _(AuthMessages.EMAIL_NOT_VERIFIED),
+                "user_email": current_user.email,
+            },
+        )
+    return current_user
+
+
+async def require_premium(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """
+    Require premium or admin role for endpoint access.
+
+    This dependency ensures that only premium subscribers or admins can access
+    premium features like horary astrology, advanced interpretations, etc.
+
+    Hierarchy: FREE < PREMIUM < ADMIN
+    - PREMIUM users can access premium features
+    - ADMIN users can access all features (including premium)
+
+    Args:
+        current_user: Current user from get_current_user dependency
+
+    Returns:
+        User object
+
+    Raises:
+        HTTPException 403: If user does not have premium or admin role
+    """
+    if not current_user.is_premium:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "premium_required",
+                "message": _(AuthMessages.PREMIUM_REQUIRED),
+            },
+        )
+    return current_user
+
+
 async def require_admin(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:

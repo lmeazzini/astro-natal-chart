@@ -8,15 +8,24 @@ import { authService, User } from '../services/auth';
 import { getToken, setToken, setRefreshToken, clearTokens, authEvents } from '../services/api';
 import { useLocaleSync } from '../hooks/useLocaleSync';
 import { useTokenMonitor } from '../hooks/useTokenMonitor';
+import { amplitudeService } from '../services/amplitude';
 
 interface AuthContextData {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, fullName: string, password: string, passwordConfirm: string, acceptTerms?: boolean) => Promise<void>;
+  register: (
+    email: string,
+    fullName: string,
+    password: string,
+    passwordConfirm: string,
+    acceptTerms?: boolean
+  ) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
+  /** Refresh user data from API (e.g., after email verification in another tab) */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -38,6 +47,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (token) {
       authService.logout(token).catch(console.error);
     }
+
+    // Track logout event
+    amplitudeService.reset();
 
     clearTokens();
     setUser(null);
@@ -89,6 +101,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const userData = await authService.getCurrentUser(tokens.access_token);
       setUser(userData);
+
+      // Track login event
+      amplitudeService.identify(userData.id, {
+        email: userData.email,
+        full_name: userData.full_name,
+        email_verified: userData.email_verified,
+      });
+      amplitudeService.track('user_logged_in', {
+        method: 'email_password',
+      });
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -111,11 +133,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
         accept_terms: acceptTerms,
       });
 
+      // Track registration event (before auto-login)
+      amplitudeService.track('user_registered', {
+        method: 'email_password',
+        accept_terms: acceptTerms ?? false,
+      });
+
       // Auto-login after registration
       await login(email, password);
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Refresh user data from API.
+   * Useful when user verifies email in another tab/window.
+   */
+  async function refreshUser() {
+    try {
+      const token = getToken();
+      if (token) {
+        const userData = await authService.getCurrentUser(token);
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
     }
   }
 
@@ -129,6 +173,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         register,
         logout,
         setUser,
+        refreshUser,
       }}
     >
       {children}

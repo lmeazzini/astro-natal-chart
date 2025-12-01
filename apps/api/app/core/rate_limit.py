@@ -5,7 +5,6 @@ This module provides rate limiting functionality for FastAPI endpoints
 using Redis as the storage backend.
 """
 
-
 from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -28,8 +27,8 @@ def get_identifier_from_request(request: Request) -> str:
         Identifier string (user_id or IP address)
     """
     # Try to get user from request state (set by get_current_user dependency)
-    if hasattr(request.state, 'user') and request.state.user:
-        user_id = getattr(request.state.user, 'id', None)
+    if hasattr(request.state, "user") and request.state.user:
+        user_id = getattr(request.state.user, "id", None)
         if user_id:
             return f"user:{user_id}"
 
@@ -91,3 +90,6 @@ class RateLimits:
     # Cache management endpoints (by user_id - admin only)
     CACHE_STATS = "60/minute"  # 60 stats requests per minute
     CACHE_CLEAR = "10/hour"  # 10 clear operations per hour (destructive)
+
+    # Personal growth suggestions (by user_id - expensive AI operations)
+    GROWTH_SUGGESTIONS = "10/hour"  # 10 growth suggestions per hour

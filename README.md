@@ -23,7 +23,7 @@
 ## Stack Tecnológica
 
 ### Backend
-- **Python 3.11+** com FastAPI
+- **Python 3.13+** com FastAPI
 - **PostgreSQL 16** (JSONB para dados flexíveis)
 - **PySwisseph** para cálculos astrológicos
 - **Celery + Redis** para processamento assíncrono
@@ -323,6 +323,86 @@ O sistema pode armazenar os PDFs gerados de mapas natais no AWS S3 para persist�
 **Desabilitar S3:**
 Deixe as variáveis `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` vazias. PDFs serão salvos em `/media/pdfs/` (local).
 
+### Configuração do Amplitude Analytics (Product Analytics)
+
+O sistema integra com Amplitude para rastreamento de eventos e análise de produto (opcional).
+
+1. **Criar conta Amplitude**: Acesse [analytics.amplitude.com](https://analytics.amplitude.com) e crie uma conta gratuita
+
+2. **Obter API Key**:
+   - Acesse o dashboard do Amplitude
+   - Vá em Settings → Projects → Seu Projeto
+   - Copie a **API Key** (chave pública para JavaScript/frontend)
+
+3. **Adicionar ao .env** (backend):
+   ```bash
+   AMPLITUDE_API_KEY=your-amplitude-api-key-here
+   AMPLITUDE_ENABLED=true
+   ```
+
+4. **Adicionar ao .env** (frontend):
+   ```bash
+   VITE_AMPLITUDE_API_KEY=your-amplitude-api-key-here
+   VITE_AMPLITUDE_ENABLED=true
+   ```
+
+**Como funciona:**
+- Tracking automático de eventos padrão (sessions, page views)
+- Eventos customizados podem ser adicionados no código
+- Backend: `amplitude_service.track()` em `app/services/amplitude_service.py`
+- Frontend: `amplitudeService.track()` em `src/services/amplitude.ts`
+
+**Usando o Amplitude no Código:**
+
+Backend (Python):
+```python
+from app.services.amplitude_service import amplitude_service
+
+# Rastrear evento
+amplitude_service.track(
+    event_type="chart_created",
+    user_id=str(user.id),
+    event_properties={"chart_type": "natal", "house_system": "placidus"}
+)
+
+# Identificar usuário
+amplitude_service.identify(
+    user_id=str(user.id),
+    user_properties={"plan": "premium", "locale": "pt-BR"}
+)
+
+# Forçar envio de eventos (útil em testes)
+amplitude_service.flush()
+```
+
+Frontend (TypeScript):
+```typescript
+import { amplitudeService } from '@/services/amplitude';
+
+# Rastrear evento
+amplitudeService.track('button_clicked', {
+  button_name: 'generate_pdf',
+  chart_id: chartId
+});
+
+# Identificar usuário (após login)
+amplitudeService.identify(userId, {
+  email: user.email,
+  subscription: 'premium'
+});
+
+# Limpar identidade (após logout)
+amplitudeService.reset();
+```
+
+**Custo:**
+- Free tier: 10M eventos/mês
+- Usuários ilimitados
+- Retenção de dados: 1 ano
+
+**Desabilitar Amplitude:**
+Configure `AMPLITUDE_ENABLED=false` (backend) e `VITE_AMPLITUDE_ENABLED=false` (frontend).
+
 ### Restrição de Domínio de Email
 
 O sistema permite restringir o cadastro de novos usuários apenas a domínios de email específicos. Esta funcionalidade é útil para controlar o acesso à aplicação.
@@ -527,6 +607,40 @@ gh pr create --base dev
 - **Frontend**: ESLint, Prettier, TypeScript strict mode
 - **Commits**: Conventional Commits (feat:, fix:, docs:, etc.)
 - **PRs**: Sempre para `dev`, nunca direto para `main`
+
+### Pre-commit Hooks
+
+O projeto utiliza **pre-commit** para garantir qualidade do código antes de cada commit. Os hooks verificam automaticamente:
+
+- **Trailing whitespace** e **end of file** fixers
+- **YAML e JSON** syntax check
+- **Large files** detection (> 1MB)
+- **Merge conflicts** detection
+- **Private keys** detection
+- **Ruff** linting e formatting (backend Python)
+- **ESLint** e **Prettier** (frontend TypeScript/React)
+- **Conventional Commits** validation
+
+**Instalação:**
+
+```bash
+# Instalar pre-commit (via UV no backend)
+cd apps/api
+uv sync
+
+# Instalar os hooks no repositório
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# Rodar em todos os arquivos (primeira vez ou verificação manual)
+uv run pre-commit run --all-files
+```
+
+**Uso:**
+- Hooks rodam automaticamente em cada `git commit`
+- Se algum hook falhar, o commit é abortado
+- Corrija os problemas e tente commitar novamente
+- Para bypass temporário (não recomendado): `git commit --no-verify`
 
 ## Segurança
 

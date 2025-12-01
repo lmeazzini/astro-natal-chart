@@ -19,11 +19,7 @@ interface ChartWheelAstroProps {
   height?: number;
 }
 
-export function ChartWheelAstro({
-  chartData,
-  width = 600,
-  height = 600,
-}: ChartWheelAstroProps) {
+export function ChartWheelAstro({ chartData, width = 600, height = 600 }: ChartWheelAstroProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<AstroChart | null>(null);
   const isRenderingRef = useRef<boolean>(false);
@@ -66,8 +62,13 @@ export function ChartWheelAstro({
       console.log('[ChartWheelAstro] Points of interest:', pointsOfInterest);
 
       // Access the Chart class correctly based on the library export
-      type AstroChartModule = typeof AstroChartLib & { Chart?: typeof AstroChart; default?: { Chart?: typeof AstroChart } };
-      const AstroChartClass = (AstroChartLib as AstroChartModule).Chart || (AstroChartLib as AstroChartModule).default?.Chart;
+      type AstroChartModule = typeof AstroChartLib & {
+        Chart?: typeof AstroChart;
+        default?: { Chart?: typeof AstroChart };
+      };
+      const AstroChartClass =
+        (AstroChartLib as AstroChartModule).Chart ||
+        (AstroChartLib as AstroChartModule).default?.Chart;
 
       if (!AstroChartClass) {
         throw new Error('AstroChart library not loaded correctly');
@@ -77,7 +78,10 @@ export function ChartWheelAstro({
 
       // Calculate dynamic shift to position Ascendant at 9 o'clock (left)
       const dynamicShift = calculateDynamicShift(chartData);
-      console.log('[ChartWheelAstro] Ascendant longitude:', chartData.chart_info?.ascendant || chartData.houses[0]?.cusp);
+      console.log(
+        '[ChartWheelAstro] Ascendant longitude:',
+        chartData.chart_info?.ascendant || chartData.houses[0]?.cusp
+      );
       console.log('[ChartWheelAstro] Calculated dynamic shift:', dynamicShift);
 
       // Create chart instance with custom settings

@@ -60,6 +60,13 @@ class PublicChartInterpretation(Base):
         nullable=False,
         comment="Prompt version for tracking changes",
     )
+    language: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="pt-BR",
+        index=True,
+        comment="Language code (pt-BR or en-US)",
+    )
     rag_sources: Mapped[list | None] = mapped_column(
         JSONB,
         nullable=True,

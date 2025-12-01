@@ -19,7 +19,13 @@
     "optional": "Optional",
     "required": "Required",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "pageOf": "Page {{page}} of {{total}}",
+    "myCharts": "My Charts",
+    "login": "Login",
+    "search": "Search",
+    "refresh": "Refresh",
+    "retry": "Try again"
   },
   "nav": {
     "home": "Home",
@@ -30,6 +36,35 @@
     "logout": "Logout",
     "login": "Login",
     "register": "Sign Up"
+  },
+  "publicCharts": {
+    "title": "Famous People's Birth Charts",
+    "subtitle": "Explore natal charts of historical personalities and evaluate our AI interpretations.",
+    "searchPlaceholder": "Search by name...",
+    "sortName": "A-Z",
+    "sortDate": "Date",
+    "sortViews": "Popular",
+    "allCategories": "All",
+    "resultsCount": "{{count}} charts found",
+    "noResults": "No charts found.",
+    "views": "views",
+    "ctaTitle": "Create Your Own Birth Chart",
+    "ctaTitleLoggedIn": "Create More Birth Charts",
+    "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
+    "ctaButton": "Get Started Free",
+    "ctaButtonLoggedIn": "Create New Chart",
+    "categories": {
+      "scientist": "Scientists",
+      "artist": "Artists",
+      "leader": "Leaders",
+      "writer": "Writers",
+      "athlete": "Athletes",
+      "actor": "Actors",
+      "musician": "Musicians",
+      "entrepreneur": "Entrepreneurs",
+      "historical": "Historical Figures",
+      "other": "Others"
+    }
   },
   "auth": {
     "login": {
@@ -48,7 +83,8 @@
       "facebook": "Facebook",
       "success": "Login successful!",
       "error": "Login error. Check your credentials.",
-      "invalidCredentials": "Invalid email or password"
+      "invalidCredentials": "Invalid email or password",
+      "termsAgreement": "By logging in, you agree to our Terms of Service and Privacy Policy"
     },
     "register": {
       "title": "Create Account",
@@ -70,7 +106,13 @@
       "error": "Error creating account",
       "emailInUse": "This email is already in use",
       "passwordMismatch": "Passwords don't match",
-      "passwordMinLength": "Password must be at least 8 characters"
+      "passwordMinLength": "Password must be at least 8 characters",
+      "features": {
+        "unlimited": "Unlimited birth charts",
+        "free": "Free forever"
+      },
+      "passwordSpecialNumber": "At least one number or special character",
+      "passwordCase": "Upper and lowercase letters"
     },
     "forgotPassword": {
       "title": "Recover Password",
@@ -147,7 +189,33 @@
     "deleteChart": "Delete chart",
     "confirmDelete": "Are you sure you want to delete this birth chart?",
     "deleteSuccess": "Chart deleted successfully",
-    "deleteError": "Error deleting chart"
+    "deleteError": "Error deleting chart",
+    "features": {
+      "implemented": "Implemented Features",
+      "implementedDesc": "Features already available on the platform",
+      "inProgress": "In Development",
+      "inProgressDesc": "Features under active development",
+      "planned": "Planned",
+      "plannedDesc": "Future features on the roadmap",
+      "done": "Done",
+      "inProgressBadge": "In Progress",
+      "plannedBadge": "Planned",
+      "lastUpdated": "Last updated",
+      "seeAll": "See all planned features on our",
+      "publicRoadmap": "public roadmap",
+      "loadError": "Could not load features"
+    }
+  },
+  "charts": {
+    "edit": "Edit chart",
+    "recalculate": "Recalculate chart and interpretations",
+    "delete": "Delete chart",
+    "recalculateError": "Error recalculating chart",
+    "genders": {
+      "Masculino": "Male",
+      "Feminino": "Female",
+      "Outro": "Other"
+    }
   },
   "dashboardPage": {
     "title": "Dashboard",
@@ -292,8 +360,14 @@
       "houses": "Houses",
       "aspects": "Aspects",
       "arabicParts": "Arabic Parts",
-      "interpretations": "Interpretations"
+      "interpretations": "Interpretations",
+      "growth": "Growth"
     },
+    "sections": {
+      "chartWheel": "Birth Chart Wheel",
+      "temperament": "Temperament Calculation"
+    },
+    "temperament": "Temperament Analysis",
     "birthInfo": "Birth Information",
     "person": "Person",
     "birthDateTime": "Date and Time",
@@ -357,6 +431,10 @@
       "notFound": "Birth chart not found"
     },
     "rag": {
+      "badge": "Enhanced with RAG",
+      "description": "Interpretations based on classical traditional astrology texts.",
+      "tooltipShort": "Interpretations grounded in classical astrology books",
+      "tooltipLong": "RAG (Retrieval-Augmented Generation) combines artificial intelligence with a knowledge base of classical astrology books, resulting in more accurate interpretations grounded in astrological tradition.",
       "sources": "Sources",
       "sourcesDesc": "Documents used for this interpretation",
       "noSources": "No documentary sources",
@@ -364,11 +442,20 @@
       "page": "Page"
     },
     "lunarPhase": "Lunar Phase",
-    "solarPhase": "Solar Phase"
+    "solarPhase": "Solar Phase",
+    "interpretations": "AI Interpretations",
+    "refreshInterpretations": "Refresh AI interpretations",
+    "refreshAI": "Refresh AI",
+    "verifyForInterpretations": "Verify your email to unlock AI interpretations"
   },
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your personal information",
+    "userTypes": {
+      "professional": "🔮 Professional Astrologer",
+      "student": "📚 Astrology Student",
+      "curious": "✨ Curious"
+    },
     "personalInfo": "Personal Information",
     "name": "Name",
     "namePlaceholder": "Your full name",
@@ -579,6 +666,33 @@
       "aboutInterpretations": "About interpretations",
       "interpretationsDesc": "AI-generated based on traditional astrology principles. Interpretations consider the nature of the aspect and planets involved."
     },
+    "chartTooltip": {
+      "position": "Position",
+      "house": "House",
+      "speed": "Speed",
+      "dignities": "Dignities",
+      "score": "Score",
+      "ascendant": "Ascendant",
+      "midheaven": "Midheaven",
+      "houseN": "House {{n}}",
+      "cusp": "Cusp",
+      "longitude": "Longitude",
+      "angle": "Angle",
+      "orb": "Orb",
+      "applying": "Applying",
+      "harmonic": "Harmonic",
+      "tense": "Tense",
+      "neutral": "Neutral"
+    },
+    "chartWheel": {
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetZoom": "Reset zoom",
+      "dragToPan": "Drag to pan",
+      "chartRegion": "Interactive birth chart",
+      "zoomControls": "Zoom controls",
+      "chartDescription": "Circular birth chart showing planets, houses and aspects. Click elements to select, use mouse wheel to zoom."
+    },
     "arabicParts": {
       "fortune": "Part of Fortune",
       "fortuneDesc": "Body, health, material wealth",
@@ -592,12 +706,40 @@
       "necessity": "Part of Necessity",
       "necessityDesc": "Restrictions, karma, fate",
       "necessityTooltip": "Represents inevitable restrictions, karma and life lessons. Indicates areas where we face necessary difficulties for our development.",
+      "marriage": "Part of Marriage",
+      "marriageDesc": "Relationships, partnerships, marriage",
+      "marriageTooltip": "Indicates the nature of committed partnerships, marriage potential and the type of partner one attracts. Calculated from Venus and Saturn.",
+      "victory": "Part of Victory",
+      "victoryDesc": "Success, achievement, triumph",
+      "victoryTooltip": "Shows areas of triumph and where one can achieve success. Associated with Jupiter and the native's capacity for victory.",
+      "father": "Part of Father",
+      "fatherDesc": "Paternal figure, authority",
+      "fatherTooltip": "Reveals the relationship with the father figure and paternal inheritance. Traditionally calculated using Sun and Saturn.",
+      "mother": "Part of Mother",
+      "motherDesc": "Maternal figure, nurturing",
+      "motherTooltip": "Reveals the relationship with the mother figure and maternal inheritance. Traditionally calculated using Moon and Venus.",
+      "children": "Part of Children",
+      "childrenDesc": "Offspring, creativity, fertility",
+      "childrenTooltip": "Indicates fertility, relationship with children, and creative expression. Associated with the 5th house and Jupiter.",
+      "exaltation": "Part of Exaltation",
+      "exaltationDesc": "Honor, recognition, elevation",
+      "exaltationTooltip": "Shows where one receives honor and recognition. Uses fixed formula (does not reverse by sect) based on Sun's exaltation degree (19° Aries).",
+      "illness": "Part of Illness",
+      "illnessDesc": "Health, vulnerabilities",
+      "illnessTooltip": "Indicates health vulnerabilities and areas requiring attention. Associated with the 6th house and calculated from Mars and Saturn.",
+      "courage": "Part of Courage",
+      "courageDesc": "Bravery, boldness, initiative",
+      "courageTooltip": "Reveals the native's capacity for bravery and bold action. Associated with Mars and the Part of Fortune.",
+      "reputation": "Part of Reputation",
+      "reputationDesc": "Fame, public image",
+      "reputationTooltip": "Shows how one is perceived publicly and potential for fame. Calculated from the Part of Fortune and Spirit.",
       "position": "Position",
       "house": "House",
       "houseNumber": "House {{num}}",
       "part": "Part",
       "symbol": "Symbol",
-      "sign": "Sign"
+      "sign": "Sign",
+      "interpretation": "Interpretation"
     },
     "cookies": {
       "title": "This site uses cookies",
@@ -631,6 +773,25 @@
       "resendFailed": "Failed to resend email",
       "genericError": "Error resending email. Try again later."
     },
+    "emailVerificationModal": {
+      "title": "Email verification required",
+      "message": "This feature requires email verification. Please verify your email to continue.",
+      "messageWithFeature": "To access {{feature}}, you need to verify your email first.",
+      "instructions": "Check your inbox for the verification email and click the link to verify your account.",
+      "checkSpam": "If you don't see it, check your spam folder.",
+      "resendButton": "Resend verification email",
+      "checkStatus": "I already verified",
+      "checking": "Checking...",
+      "statusChecked": "Status updated. If you verified your email, the page will refresh."
+    },
+    "emailVerificationBanner": {
+      "premiumHint": "Unlock AI interpretations and PDF export"
+    },
+    "interpretationLanguage": {
+      "mismatchMessage": "These interpretations are in {{interpretationLanguage}}. Would you like to regenerate them in {{currentLanguage}}?",
+      "regenerateButton": "Regenerate in {{language}}",
+      "regenerating": "Regenerating..."
+    },
     "lunarPhase": {
       "sunMoonAngle": "Sun-Moon Angle",
       "illumination": "Illumination",
@@ -649,7 +810,22 @@
       "dry": "Dry",
       "contributingFactors": "Contributing Factors",
       "interpretation": "Interpretation",
-      "note": "Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 factors of the natal chart: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase and Lord of the Nativity, following medieval astrology tradition."
+      "note": "Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 factors of the natal chart: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase and Lord of the Nativity, following medieval astrology tradition.",
+      "weightNote": "Planetary factors (Ascendant Ruler and Lord of Nativity) have their weights adjusted by essential dignity: dignified planets (domicile, exaltation) contribute more, while debilitated planets (detriment, fall) contribute less.",
+      "weightTooltip": "Weight based on planet dignity"
+    },
+    "lordOfNativity": {
+      "title": "Lord of Nativity",
+      "subtitle": "The dominant vital force of your natal chart",
+      "totalScore": "Total Score",
+      "status": "Status",
+      "position": "Position",
+      "house": "House",
+      "essentialDignities": "Essential Dignities",
+      "note": "The Lord of Nativity is the planet with the highest essential dignity in your natal chart. According to traditional astrology, it represents the dominant vital force that guides your life and indicates where you have the greatest potential for achievement and mastery.",
+      "dignified": "Dignified",
+      "peregrine": "Peregrine",
+      "debilitated": "Debilitated"
     },
     "sect": {
       "title": "Sect Analysis",
@@ -705,205 +881,15 @@
       "maleficsOutOfSectEffect": "are harder to integrate and can be more destructive",
       "howToUse": "How to use this?",
       "howToUseDesc": "Pay special attention to your out-of-sect malefics - these are areas that need more conscious work. Your in-sect benefics are natural resources you can leverage."
+    },
+    "solarPhase": {
+      "qualities": "Qualities",
+      "phaseSigns": "Phase Signs",
+      "interpretation": "Interpretation",
+      "note": "The solar phase at birth is based on the Sun's sign and reveals the fundamental temperament and primary qualities of your personality according to traditional astrology."
     }
   },
   "pages": {
-    "landing": {
-      "homeLabel": "Home",
-      "login": "Login",
-      "createAccount": "Sign Up",
-      "heroTitle": "Unveil the Mysteries of Your Birth Chart with Astronomical Precision",
-      "heroSubtitle1": "Precise calculations with",
-      "heroSubtitle2": "professional HD visualizations and personalized interpretations with",
-      "ai": "Artificial Intelligence",
-      "createFreeAccount": "Create My Free Account",
-      "viewExampleChart": "View Example Chart",
-      "whyAstro": {
-        "title": "Why Astro?",
-        "subtitle": "Our platform combines the best of Traditional Astrology with cutting-edge astronomical precision, offering reliable calculations and authentic interpretations.",
-        "traditional": {
-          "title": "Traditional Astrology",
-          "description": "We use classical techniques from Hellenistic and Medieval Astrology:",
-          "dignities": "Essential Dignities",
-          "dignitiesDesc": "Domicile, Exaltation, Triplicity",
-          "sect": "Sect Analysis",
-          "sectDesc": "Diurnal and nocturnal planets",
-          "temperament": "Temperament",
-          "temperamentDesc": "Analysis of 4 elements and qualities",
-          "lordOfNativity": "Lord of the Nativity",
-          "lordOfNativityDesc": "Identification of the ruling planet",
-          "differentialLabel": "Differential",
-          "differential": "Unlike modern psychological astrology, we focus on predictive and objective techniques validated by centuries of practice."
-        },
-        "precision": {
-          "title": "Swiss Ephemeris Precision",
-          "description": "We use Swiss Ephemeris with NASA's JPL DE431 ephemeris:",
-          "arcsecond": "< 1 arcsecond error",
-          "arcsecondDesc": "Professional astronomical precision",
-          "nasa": "NASA/JPL Validation",
-          "nasaDesc": "Same ephemeris used in space missions",
-          "coverage": "13,000 years coverage",
-          "coverageDesc": "Reliable historical and future calculations",
-          "relativistic": "Relativistic adjustments",
-          "relativisticDesc": "Includes General Relativity corrections",
-          "whyMatters": "Why does it matter?",
-          "whyMattersDesc": "Differences of minutes in birth time can alter houses and aspects. Our precision ensures reliable calculations even for approximate times."
-        },
-        "openSource": {
-          "title": "Open Source & Transparency",
-          "description": "Open source project with transparent and verifiable methodology:",
-          "auditable": "Auditable code",
-          "auditableDesc": "Anyone can verify our calculations",
-          "documented": "Documented methodology",
-          "documentedDesc": "We explain every technique used",
-          "noBlackbox": "No \"black boxes\"",
-          "noBlackboxDesc": "Clear and scientific algorithms",
-          "community": "Active community",
-          "communityDesc": "Contributions from astrologers and developers",
-          "commitment": "Our commitment",
-          "commitmentDesc": "No secret algorithms or \"magic formulas\". Everything is based on classical texts and verifiable astronomical calculations."
-        },
-        "learnMore": "Learn More About Our Methodology"
-      },
-      "howItWorks": {
-        "title": "How It Works",
-        "subtitle": "In a few minutes you'll have your complete birth chart with professional analysis",
-        "step1": {
-          "title": "Quick Registration",
-          "description": "Create your account for free in less than 1 minute. Just email and password, no complications."
-        },
-        "step2": {
-          "title": "Birth Data",
-          "description": "Enter date, time and place of birth. Our system finds the coordinates automatically."
-        },
-        "step3": {
-          "title": "Precise Calculation",
-          "description": "In seconds, we calculate planetary positions, houses and aspects with astronomical precision."
-        },
-        "step4": {
-          "title": "Visualize and Interpret",
-          "description": "Access your complete birth chart with professional graphics and detailed interpretations."
-        }
-      },
-      "differentials": {
-        "title": "Why Choose Real Astrology?",
-        "subtitle": "The perfect combination of millenary tradition and cutting-edge technology",
-        "precision": {
-          "title": "Astronomical Precision",
-          "description": "We use Swiss Ephemeris JPL DE431 with less than 0.001° error. The same library used by astronomers and space agencies."
-        },
-        "visualization": {
-          "title": "Professional Visualization",
-          "description": "High definition birth charts with all elements: planets, houses, aspects, degrees and traditional symbols."
-        },
-        "ai": {
-          "title": "AI Interpretations",
-          "description": "Personalized analyses generated by Artificial Intelligence trained on classical traditional astrology texts."
-        },
-        "multiplatform": {
-          "title": "Multi-Platform",
-          "description": "Access from any device - desktop, tablet or smartphone. Adaptive interface optimized for all screens."
-        },
-        "security": {
-          "title": "100% Secure",
-          "description": "End-to-end encryption, LGPD/GDPR compliance. Your personal data protected with SSL/TLS technology."
-        },
-        "unlimited": {
-          "title": "Unlimited Charts",
-          "description": "Create as many birth charts as you want, completely free. No limits, no hidden fees, no catches."
-        },
-        "pdf": {
-          "title": "PDF Export",
-          "description": "Professional high-quality PDF reports generated with LaTeX. Perfect for printing and sharing."
-        },
-        "darkMode": {
-          "title": "Dark Mode",
-          "description": "Adaptive interface with automatic dark mode. Perfect for night use, respecting your system preferences."
-        }
-      },
-      "authority": {
-        "title": "Based on Science and Tradition",
-        "subtitle": "We combine millenary methods with the most advanced technology available",
-        "traditional": {
-          "title": "Traditional & Hellenistic Astrology",
-          "description": "We follow traditional methods with over 2,000 years of history, based on teachings from classical masters.",
-          "elementsTitle": "Considered Elements:",
-          "houseSystems": "House systems (Placidus, Koch, Whole Sign)",
-          "dignities": "Essential and accidental dignities",
-          "aspects": "Classical aspects and traditional orbs",
-          "nodes": "Lunar nodes and Arabic parts",
-          "authorityLabel": "Authority",
-          "authorityDesc": "Based on works by Ptolemy (Tetrabiblos), Vettius Valens (Anthology) and Abu Ma'shar (Liber Introductorius)"
-        },
-        "precision": {
-          "title": "Astronomical Precision",
-          "description": "We use Swiss Ephemeris, the same library used by professional astronomers and space agencies worldwide.",
-          "specsTitle": "Technical Specifications:",
-          "jpl": "JPL DE431 Ephemeris (NASA/JPL)",
-          "accuracy": "Precision greater than 0.001° (1 arcsecond)",
-          "validated": "Scientifically validated calculations",
-          "coverage": "13,000 years temporal coverage"
-        },
-        "ai": {
-          "title": "Artificial Intelligence",
-          "description": "Personalized interpretations generated by state-of-the-art AI, extensively trained on classical astrology texts.",
-          "techTitle": "Technology:",
-          "gpt": "GPT-4 with specialized prompts",
-          "knowledge": "Knowledge base of Hellenistic texts",
-          "context": "Medieval and traditional astrology context",
-          "analysis": "Analysis of dignities and dispositions",
-          "importantLabel": "Important",
-          "importantDesc": "AI complements but does not replace analysis by a professional astrologer. Use as a starting point for your study."
-        }
-      },
-      "security": {
-        "title": "Your Privacy is Our Priority",
-        "subtitle": "Total protection of your data with compliance to international privacy laws",
-        "auditLog": "Complete Audit Log",
-        "encryption": "All your data is protected with end-to-end SSL/TLS encryption during transmission and storage. We use the highest industry security standards.",
-        "auditLogs": "We maintain complete audit logs to ensure total transparency about access and use of your personal data, as required by LGPD and GDPR.",
-        "control": "You have total control over your data: access, correction, deletion and portability guaranteed by law. Your birth data is never shared with third parties.",
-        "privacyPolicy": "Privacy Policy",
-        "termsOfUse": "Terms of Use"
-      },
-      "faq": {
-        "title": "Frequently Asked Questions",
-        "subtitle": "Get your questions answered about Real Astrology",
-        "q1": "What is a birth chart?",
-        "a1": "A birth chart (or natal chart) is a graphical representation of the positions of planets, signs and astrological houses at the exact moment of your birth. It reveals potentials, personal characteristics and life trends based on traditional astrology.",
-        "q2": "Do I need to know the exact time of my birth?",
-        "a2": "Yes, the exact time is fundamental for precise calculations, especially to determine the Ascendant and house positions. A difference of just 4 minutes can alter the Ascendant. If you don't know it, check your birth certificate or hospital records.",
-        "q3": "How do you calculate the birth chart?",
-        "a3": "We use Swiss Ephemeris with NASA's JPL DE431 ephemeris, ensuring astronomical precision greater than 0.001°. Our algorithms calculate planetary positions, astrological houses (multiple systems), aspects between planets and sensitive points like lunar nodes and Arabic parts.",
-        "q4": "Is my data safe?",
-        "a4": "Yes! We use end-to-end SSL/TLS encryption, secure storage and are 100% compliant with LGPD and GDPR. Your data is never shared with third parties. You have total control: you can access, correct or delete your data at any time.",
-        "q5": "Can I create birth charts for other people?",
-        "a5": "Yes! You can create as many birth charts as you want - for friends, family, clients (if you're a professional astrologer), historical figures, etc. There's no limit on charts created. Just enter the correct birth data.",
-        "q6": "Is the service really free?",
-        "a6": "Yes, completely free! You can create unlimited birth charts, view professional graphics, access AI interpretations and export PDFs without paying anything. No hidden fees, trial periods or limitations. It's free forever.",
-        "q7": "Do AI interpretations replace a professional astrologer?",
-        "a7": "No. AI-generated interpretations are an excellent starting point for studying your chart, but they don't replace the in-depth analysis of a qualified professional astrologer. Use our AI as a learning and self-knowledge tool, but consider consulting a specialist for complex analyses or specific questions.",
-        "q8": "How does Dark Mode work?",
-        "a8": "Dark Mode can be activated manually through the theme button in the interface, or configured to automatically follow your operating system preferences. Ideal for night use, it reduces eye strain and saves battery on devices with OLED screens."
-      },
-      "cta": {
-        "title": "Ready to Discover Your Destiny?",
-        "subtitle": "Sign up for free in less than 1 minute and start exploring the mysteries of your birth chart with astronomical precision",
-        "button": "Start Now - It's Free",
-        "benefits": "✓ No credit card    ✓ Unlimited charts    ✓ Free forever"
-      },
-      "footer": {
-        "description": "Birth chart system with astronomical precision and traditional astrology.",
-        "legal": "Legal",
-        "terms": "Terms of Use",
-        "privacy": "Privacy Policy",
-        "cookies": "Cookie Policy",
-        "access": "Access",
-        "login": "Login",
-        "register": "Sign Up",
-        "copyright": "All rights reserved."
-      }
-    },
     "oauthCallback": {
       "tokensNotFound": "OAuth authentication failed. Tokens not found.",
       "userFetchFailed": "Failed to fetch user data",
@@ -929,7 +915,19 @@
       "ctaTitleLoggedIn": "Create More Natal Charts",
       "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
       "ctaButton": "Start Free",
-      "ctaButtonLoggedIn": "Create New Chart"
+      "ctaButtonLoggedIn": "Create New Chart",
+      "categories": {
+        "scientist": "Scientists",
+        "artist": "Artists",
+        "leader": "Leaders",
+        "writer": "Writers",
+        "athlete": "Athletes",
+        "actor": "Actors",
+        "musician": "Musicians",
+        "entrepreneur": "Entrepreneurs",
+        "historical": "Historical Figures",
+        "other": "Others"
+      }
     },
     "consent": {
       "title": "Consent and Privacy",
@@ -1360,5 +1358,290 @@
       "createAccount": "Create Free Account",
       "seeExample": "See Chart Example"
     }
+  },
+  "premium": {
+    "upgradeToPremium": "Upgrade to Premium",
+    "featureLockedTitle": "{{feature}} is a Premium Feature",
+    "featureLockedDescription": "This feature is exclusive to Premium subscribers. Upgrade your plan to unlock {{feature}} and other advanced features.",
+    "genericDescription": "Get access to advanced astrology features like horary, profections, firdaria, and more!",
+    "upgrade": "Upgrade",
+    "viewPlans": "View Plans",
+    "features": {
+      "horary": "Horary Astrology",
+      "profections": "Profections",
+      "firdaria": "Firdaria",
+      "solarReturn": "Solar Return"
+    }
+  },
+  "pricing": {
+    "badge": "Plans & Pricing",
+    "title": "Choose the right plan for you",
+    "subtitle": "Unlock the full potential of traditional astrology with our Premium plans.",
+    "yourPlan": "Your current plan:",
+    "currentPlan": "Current Plan",
+    "downgrade": "Downgrade",
+    "getStartedFree": "Get Started Free",
+    "subscribe": "Subscribe to Premium",
+    "recommended": "Recommended",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "To start your astrological journey",
+        "price": "$0",
+        "period": "/month"
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "For serious astrologers seeking depth",
+        "price": "$9.90",
+        "period": "/month"
+      }
+    },
+    "features": {
+      "natalCharts": "Unlimited natal charts",
+      "basicInterpretations": "Basic interpretations",
+      "advancedInterpretations": "Advanced AI interpretations",
+      "chartVisualization": "SVG chart visualization",
+      "horary": "Horary Astrology",
+      "profections": "Profections",
+      "firdaria": "Firdaria",
+      "solarReturn": "Solar Return",
+      "prioritySupport": "Priority support"
+    },
+    "comingSoon": {
+      "title": "Coming Soon!",
+      "description": "The subscription system is under development. In the meantime, enjoy the free features and stay tuned for updates!"
+    }
+  },
+  "landing": {
+    "homeLabel": "Home",
+    "login": "Login",
+    "signup": "Sign Up",
+    "hero": {
+      "socialProof": "Over 1,000 charts created",
+      "traditional": "Traditional Astrology",
+      "title": "Discover Who You Really Are",
+      "subtitle": "Real Astrology uses ancient traditional astrology techniques to create a precise birth chart and deep interpretations about your personality, talents, and life path.",
+      "cta": "Create My Free Chart",
+      "viewExample": "View Example Charts",
+      "noCreditCard": "No credit card required",
+      "dataSecure": "Your data is secure (GDPR)",
+      "twoMinutes": "Takes 2 minutes"
+    },
+    "pain": {
+      "title": "Have You Ever Felt Like This?",
+      "purpose": "\"I don't know what my life purpose is\"",
+      "talents": "\"I feel like I have talents I can't express\"",
+      "decisions": "\"I make decisions and then regret them\"",
+      "patterns": "\"I don't understand why I repeat the same patterns\"",
+      "horoscopes": "\"Generic horoscopes never make sense to me\"",
+      "selfknowledge": "\"I want to know myself better, but don't know how\"",
+      "transition": "You're not alone. Most people go through their entire lives without really knowing themselves. But it doesn't have to be that way."
+    },
+    "solution": {
+      "badge": "The Solution",
+      "title": "Real Astrology: Deep Self-Knowledge Through Traditional Astrology",
+      "description1": "Unlike generic horoscopes based only on your sun sign, Real Astrology creates your complete birth chart using the same techniques astrologers have used for over 2,000 years.",
+      "description2": "Your chart is as unique as your fingerprint — calculated for the exact moment and place of your birth."
+    },
+    "benefits": {
+      "title": "What You'll Discover",
+      "essence": {
+        "title": "Your Essence",
+        "description": "Understand your deep personality, beyond the sun sign. Discover why you are the way you are."
+      },
+      "talents": {
+        "title": "Your Hidden Talents",
+        "description": "Identify natural abilities you might not even know you have — and how to develop them."
+      },
+      "relationships": {
+        "title": "Your Relationship Patterns",
+        "description": "Understand how you love, what you seek in partners, and how to improve your connections."
+      },
+      "purpose": {
+        "title": "Your Purpose",
+        "description": "Find clues about your calling and the path that brings the most fulfillment to your life."
+      },
+      "challenges": {
+        "title": "Your Challenges",
+        "description": "Know your growth areas and transform obstacles into opportunities."
+      },
+      "moment": {
+        "title": "Your Current Moment",
+        "description": "Understand current planetary influences and how they're impacting your life right now."
+      }
+    },
+    "traditional": {
+      "title": "Why \"Real\" Astrology?",
+      "intro": "The astrology you see in magazines and popular apps is a simplified version created in the 20th century.",
+      "description": "Real Astrology revives traditional astrology — the same techniques used by ancient civilizations, refined through centuries of observation.",
+      "dignities": {
+        "title": "Essential Dignities",
+        "description": "The real strength of each planet in your chart"
+      },
+      "sect": {
+        "title": "Sect (Day/Night)",
+        "description": "Is your chart a day or night chart? This changes everything"
+      },
+      "arabicParts": {
+        "title": "Arabic Parts",
+        "description": "Sensitive points that reveal specific areas of life"
+      },
+      "temperament": {
+        "title": "Temperament",
+        "description": "Your balance of the 4 elements according to tradition"
+      },
+      "conclusion": "It's not guesswork. It's astronomy + tradition + deep interpretation."
+    },
+    "testimonials": {
+      "title": "What Our Users Say",
+      "t1": {
+        "quote": "\"I always thought I was 'just' an overly sensitive Cancer. When I saw my complete chart, I understood that I have Moon in Scorpio and Mars in the 1st House. It finally made sense why I'm so intense!\"",
+        "name": "Marina, 28",
+        "location": "São Paulo"
+      },
+      "t2": {
+        "quote": "\"I made my chart on several sites, but had never seen Sect and Dignities analysis. Real Astrology showed me that Saturn in my chart is much more positive than I thought. It changed my perspective.\"",
+        "name": "Carlos, 35",
+        "location": "Belo Horizonte"
+      },
+      "t3": {
+        "quote": "\"The AI interpretations are incredible. It's like someone who has known me for years wrote about me. I recommend it to anyone who wants to truly know themselves.\"",
+        "name": "Juliana, 42",
+        "location": "Porto Alegre"
+      }
+    },
+    "howItWorks": {
+      "title": "Creating Your Chart Is Simple",
+      "step1": {
+        "title": "Sign Up Free",
+        "description": "Takes less than 1 minute"
+      },
+      "step2": {
+        "title": "Enter Your Data",
+        "description": "Date, time, and place of birth"
+      },
+      "step3": {
+        "title": "Get Your Chart",
+        "description": "Professional visualization + interpretations"
+      },
+      "step4": {
+        "title": "Explore and Discover",
+        "description": "Navigate and discover every aspect of yourself"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Do I need to know my exact birth time?",
+        "answer": "The time is important for calculating the Ascendant and Houses. If you don't know it, you can check your birth certificate or use an approximate time (the chart will be less precise in those areas)."
+      },
+      "q2": {
+        "question": "What's the difference from other birth chart sites?",
+        "answer": "Real Astrology uses traditional astrology with techniques like Essential Dignities, Sect, and Arabic Parts — which most modern sites ignore. Additionally, our interpretations are generated by AI trained on classical astrology texts."
+      },
+      "q3": {
+        "question": "Is it really free?",
+        "answer": "Yes! The complete chart and basic interpretations are free. Premium features (like PDF reports and advanced analyses) may have additional cost in the future, but the essentials will always be free."
+      },
+      "q4": {
+        "question": "Is my data secure?",
+        "answer": "Absolutely. We follow GDPR and never share your data with third parties. You can delete your account at any time and all your data will be removed."
+      },
+      "q5": {
+        "question": "Do AI interpretations replace an astrologer?",
+        "answer": "Interpretations are an excellent starting point for self-knowledge, but they don't replace analysis by a professional astrologer for specific or complex questions. Use as a tool for study and reflection."
+      }
+    },
+    "finalCta": {
+      "title": "Ready to Truly Know Yourself?",
+      "subtitle": "Your birth chart is waiting. It's free, takes 2 minutes, and can change the way you see yourself forever.",
+      "button": "Create My Chart Now — It's Free",
+      "benefit1": "No credit card required",
+      "benefit2": "Your data is secure (GDPR)",
+      "benefit3": "Cancel anytime"
+    },
+    "footer": {
+      "tagline": "Traditional Astrology For the Modern World",
+      "legal": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy",
+      "access": "Access",
+      "login": "Login",
+      "register": "Sign Up",
+      "dashboard": "My Charts",
+      "madeWith": "Made with ♄ and ♃ in Brazil."
+    }
+  },
+  "growth": {
+    "title": "Personal Development Suggestions",
+    "description": "Discover growth paths based on your natal chart",
+    "intro": "Our AI analyzes your birth chart to identify growth opportunities, challenges to overcome, natural talents, and life purpose insights.",
+    "generate": "Generate Suggestions",
+    "regenerate": "Regenerate Suggestions",
+    "generating": "Analyzing your chart and generating personalized suggestions...",
+    "generatingTime": "This may take 15-30 seconds",
+    "disclaimer": "These suggestions are based on astrological analysis and should not replace professional advice.",
+    "errors": {
+      "notAuthenticated": "Please log in to generate suggestions",
+      "emailRequired": "Please verify your email to access this feature",
+      "chartNotFound": "Chart not found",
+      "generateFailed": "Failed to generate suggestions",
+      "networkError": "Network error. Please try again."
+    },
+    "growthPoints": {
+      "title": "Growth Points",
+      "description": "Areas for personal development and actionable steps",
+      "actions": "Practical Actions:",
+      "mindset": "Mindset Shift:"
+    },
+    "challenges": {
+      "title": "Challenges to Overcome",
+      "description": "Obstacles and strategies to overcome them",
+      "manifestation": "How it manifests:",
+      "strategy": "Strategy:",
+      "practices": "Practices:"
+    },
+    "opportunities": {
+      "title": "Talents & Opportunities",
+      "description": "Natural gifts and how to leverage them",
+      "leverage": "How to leverage:"
+    },
+    "purpose": {
+      "title": "Life Purpose & Direction",
+      "description": "Soul direction and vocation insights",
+      "soulDirection": "Soul Direction",
+      "vocation": "Vocation",
+      "contribution": "Contribution",
+      "integration": "Integration",
+      "nextSteps": "Next Steps"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Articles about astrology, natal charts, and self-knowledge",
+    "description": "Explore our articles about traditional astrology, natal chart interpretation, and personal development.",
+    "noPosts": "No articles found",
+    "filteringBy": "Filtering by",
+    "clearFilter": "Clear filter",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "popularTags": "Popular Tags",
+    "readTime": "read",
+    "views": "views",
+    "share": "Share",
+    "sharing": "Sharing...",
+    "copied": "Link copied!",
+    "backToBlog": "Back to Blog",
+    "recentPosts": "Recent Posts",
+    "postNotFound": "Article not found",
+    "postNotFoundDescription": "The article you're looking for doesn't exist or has been removed.",
+    "ctaTitle": "Create Your Chart",
+    "ctaDescription": "Discover your natal chart with detailed interpretations.",
+    "ctaButton": "Get Started"
+  },
+  "footer": {
+    "rights": "All rights reserved."
   }
 }

@@ -22,21 +22,30 @@ Dignity-based weighting (Issue #161):
 
 from typing import Any
 
+from app.translations import DEFAULT_LANGUAGE, get_translation
+
+
+def format_planet_in_sign(planet: str, sign: str, language: str) -> str:
+    """Format 'Planet in Sign' with proper localization."""
+    template: str = get_translation("common.planet_in_sign", language)
+    return template.format(planet=planet, sign=sign)
+
+
 # Dignity weight scale based on traditional essential dignities
 # Range: 0.5 (minimum) to 2.0 (maximum)
 DIGNITY_WEIGHTS = {
-    "domicile": 2.0,      # Planet in its own sign (rulership)
-    "ruler": 2.0,         # Alias for domicile
-    "exalted": 1.75,      # Planet in exaltation sign
-    "triplicity": 1.5,    # Planet as triplicity ruler (day/night/participant)
+    "domicile": 2.0,  # Planet in its own sign (rulership)
+    "ruler": 2.0,  # Alias for domicile
+    "exalted": 1.75,  # Planet in exaltation sign
+    "triplicity": 1.5,  # Planet as triplicity ruler (day/night/participant)
     "triplicity_day": 1.5,
     "triplicity_night": 1.5,
     "triplicity_participant": 1.5,
-    "term": 1.25,         # Planet in own term (bound)
-    "face": 1.1,          # Planet in own face (decan)
-    "peregrine": 1.0,     # No dignity (default)
-    "detriment": 0.75,    # Planet in sign opposite to rulership
-    "fall": 0.5,          # Planet in sign opposite to exaltation
+    "term": 1.25,  # Planet in own term (bound)
+    "face": 1.1,  # Planet in own face (decan)
+    "peregrine": 1.0,  # No dignity (default)
+    "detriment": 0.75,  # Planet in sign opposite to rulership
+    "fall": 0.5,  # Planet in sign opposite to exaltation
 }
 
 # Elemental qualities for each zodiac sign
@@ -93,66 +102,21 @@ SOLAR_PHASE_QUALITIES = {
 
 # Lunar phase qualities (4 divisions of lunar cycle)
 LUNAR_PHASE_QUALITIES = {
-    1: ("hot", "wet"),   # New → Waxing (0° - 90°)
-    2: ("hot", "dry"),   # Waxing → Full (90° - 180°)
-    3: ("cold", "dry"),  # Full → Waning (180° - 270°)
-    4: ("cold", "wet"),  # Waning → New (270° - 360°)
+    1: ("hot", "wet"),  # New -> Waxing (0 - 90)
+    2: ("hot", "dry"),  # Waxing -> Full (90 - 180)
+    3: ("cold", "dry"),  # Full -> Waning (180 - 270)
+    4: ("cold", "wet"),  # Waning -> New (270 - 360)
 }
 
-# Temperament names and descriptions
-TEMPERAMENTS = {
-    "choleric": {
-        "name": "Choleric",
-        "name_pt": "Colérico",
-        "qualities": ("hot", "dry"),
-        "element": "Fire",
-        "element_pt": "Fogo",
-        "icon": "🔥",
-        "description": (
-            "O temperamento Colérico é caracterizado por energia, ambição e assertividade. "
-            "Pessoas com este temperamento tendem a ser líderes naturais, dinâmicas e orientadas "
-            "para a ação. São impulsivas, apaixonadas e têm forte vontade de realizar seus objetivos."
-        ),
-    },
-    "sanguine": {
-        "name": "Sanguine",
-        "name_pt": "Sanguíneo",
-        "qualities": ("hot", "wet"),
-        "element": "Air",
-        "element_pt": "Ar",
-        "icon": "🌬️",
-        "description": (
-            "O temperamento Sanguíneo é marcado por otimismo, sociabilidade e entusiasmo. "
-            "Pessoas sanguíneas são comunicativas, adaptáveis e gostam de variedade. "
-            "Têm facilidade para se relacionar, são alegres e mantêm uma perspectiva positiva da vida."
-        ),
-    },
-    "melancholic": {
-        "name": "Melancholic",
-        "name_pt": "Melancólico",
-        "qualities": ("cold", "dry"),
-        "element": "Earth",
-        "element_pt": "Terra",
-        "icon": "🌍",
-        "description": (
-            "O temperamento Melancólico é caracterizado por profundidade, reflexão e sensibilidade. "
-            "Pessoas melancólicas são analíticas, perfeccionistas e introspectivas. "
-            "Valorizam a qualidade, têm pensamento crítico desenvolvido e buscam significado genuíno."
-        ),
-    },
-    "phlegmatic": {
-        "name": "Phlegmatic",
-        "name_pt": "Fleumático",
-        "qualities": ("cold", "wet"),
-        "element": "Water",
-        "element_pt": "Água",
-        "icon": "💧",
-        "description": (
-            "O temperamento Fleumático é marcado por calma, receptividade e diplomacia. "
-            "Pessoas fleumáticas são pacientes, empáticas e buscam harmonia. "
-            "São adaptáveis, compassivas e orientadas para o bem-estar coletivo."
-        ),
-    },
+# Temperament keys
+TEMPERAMENT_KEYS = ["choleric", "sanguine", "melancholic", "phlegmatic"]
+
+# Temperament icons
+TEMPERAMENT_ICONS = {
+    "choleric": "\U0001f525",  # fire emoji
+    "sanguine": "\U0001f32c\ufe0f",  # wind emoji
+    "melancholic": "\U0001f30d",  # earth emoji
+    "phlegmatic": "\U0001f4a7",  # water drop emoji
 }
 
 
@@ -260,10 +224,10 @@ def get_lunar_temperament_phase(sun_longitude: float, moon_longitude: float) -> 
 
     This is different from the 8-phase lunar cycle. For temperament,
     we divide the lunar cycle into 4 equal parts:
-    1. New → Waxing (0° - 90°): Hot + Moist
-    2. Waxing → Full (90° - 180°): Hot + Dry
-    3. Full → Waning (180° - 270°): Cold + Dry
-    4. Waning → New (270° - 360°): Cold + Moist
+    1. New -> Waxing (0 - 90): Hot + Moist
+    2. Waxing -> Full (90 - 180): Hot + Dry
+    3. Full -> Waning (180 - 270): Cold + Dry
+    4. Waning -> New (270 - 360): Cold + Moist
 
     Args:
         sun_longitude: Sun's ecliptic longitude
@@ -296,6 +260,7 @@ def calculate_temperament(
     lord_of_nativity_sign: str,
     ascendant_ruler_dignities: list[str] | None = None,
     lord_of_nativity_dignities: list[str] | None = None,
+    language: str = DEFAULT_LANGUAGE,
 ) -> dict[str, Any]:
     """
     Calculate the dominant temperament based on 5 traditional factors.
@@ -324,21 +289,30 @@ def calculate_temperament(
         lord_of_nativity_sign: Sign where Lord of Nativity is located
         ascendant_ruler_dignities: List of dignities for ascendant ruler (optional)
         lord_of_nativity_dignities: List of dignities for lord of nativity (optional)
+        language: Language for translations ('en-US' or 'pt-BR')
 
     Returns:
         Dictionary with temperament data:
         {
-            "dominant": "sanguine",
-            "dominant_pt": "Sanguíneo",
+            "temperament_key": "sanguine",
+            "temperament_name": "Sanguine",
+            "element": "Air",
+            "icon": "...",
             "scores": {"hot": 3.5, "cold": 2.0, "wet": 3.5, "dry": 2.0},
-            "factors": [...],  # Now includes weight and dignity fields
+            "factors": [...],  # Includes weight and dignity fields
             "description": "...",
-            ...
         }
     """
     # Initialize quality scores (now using floats for weighted calculations)
     scores: dict[str, float] = {"hot": 0.0, "cold": 0.0, "wet": 0.0, "dry": 0.0}
     factors = []
+
+    # Get translation helper for factor names
+    def get_factor_name(key: str) -> str:
+        return str(get_translation(f"factors.{key}", language))
+
+    def get_quality_name(key: str) -> str:
+        return str(get_translation(f"qualities.{key}", language))
 
     # Factor 1: Ascendant sign (no weighting - it's a sign, not a planet)
     asc_qualities = SIGN_QUALITIES[ascendant_sign]
@@ -347,10 +321,10 @@ def calculate_temperament(
     scores[asc_qualities[1]] += weight
     factors.append(
         {
-            "factor": "Ascendant",
-            "factor_pt": "Ascendente",
-            "value": ascendant_sign,
-            "qualities": list(asc_qualities),
+            "factor_key": "ascendant",
+            "factor": get_factor_name("ascendant"),
+            "value": get_translation(f"signs.{ascendant_sign}", language),
+            "qualities": [get_quality_name(q) for q in asc_qualities],
             "weight": weight,
             "dignity": None,
         }
@@ -367,15 +341,20 @@ def calculate_temperament(
 
     scores[ruler_qualities[0]] += ruler_weight
     scores[ruler_qualities[1]] += ruler_weight
+
+    ruler_planet_name = get_translation(f"planets.{ascendant_ruler_name}", language)
+    ruler_sign_name = get_translation(f"signs.{ascendant_ruler_sign}", language)
+
     factors.append(
         {
-            "factor": "Ascendant Ruler",
-            "factor_pt": "Regente do Ascendente",
-            "value": f"{ascendant_ruler_name} in {ascendant_ruler_sign}",
-            "value_pt": f"{ascendant_ruler_name} em {ascendant_ruler_sign}",
-            "qualities": list(ruler_qualities),
+            "factor_key": "ascendant_ruler",
+            "factor": get_factor_name("ascendant_ruler"),
+            "value": format_planet_in_sign(ruler_planet_name, ruler_sign_name, language),
+            "qualities": [get_quality_name(q) for q in ruler_qualities],
             "weight": ruler_weight,
-            "dignity": ruler_dignity,
+            "dignity": get_translation(f"dignities.{ruler_dignity}", language)
+            if ruler_dignity
+            else None,
         }
     )
 
@@ -387,28 +366,27 @@ def calculate_temperament(
     scores[solar_qualities[1]] += solar_weight
 
     # Determine which phase the Sun is in
-    phase_groups = {
-        1: (["Aries", "Taurus", "Gemini"], "1ª Fase (Sanguíneo)", "1st Phase (Sanguine)"),
-        2: (["Cancer", "Leo", "Virgo"], "2ª Fase (Colérico)", "2nd Phase (Choleric)"),
-        3: (["Libra", "Scorpio", "Sagittarius"], "3ª Fase (Melancólico)", "3rd Phase (Melancholic)"),
-        4: (["Capricorn", "Aquarius", "Pisces"], "4ª Fase (Fleumático)", "4th Phase (Phlegmatic)"),
+    phase_signs = {
+        1: ["Aries", "Taurus", "Gemini"],
+        2: ["Cancer", "Leo", "Virgo"],
+        3: ["Libra", "Scorpio", "Sagittarius"],
+        4: ["Capricorn", "Aquarius", "Pisces"],
     }
 
-    solar_phase_name_pt = ""
-    solar_phase_name_en = ""
-    for _phase_num, (signs, name_pt, name_en) in phase_groups.items():
+    solar_phase_num = 1
+    for num, signs in phase_signs.items():
         if sun_sign in signs:
-            solar_phase_name_pt = name_pt
-            solar_phase_name_en = name_en
+            solar_phase_num = num
             break
+
+    solar_phase_name = get_translation(f"temperament_solar_phases.{solar_phase_num}", language)
 
     factors.append(
         {
-            "factor": "Solar Phase",
-            "factor_pt": "Fase Solar",
-            "value": f"{sun_sign} - {solar_phase_name_en}",
-            "value_pt": f"{sun_sign} - {solar_phase_name_pt}",
-            "qualities": list(solar_qualities),
+            "factor_key": "solar_phase",
+            "factor": get_factor_name("solar_phase"),
+            "value": solar_phase_name,
+            "qualities": [get_quality_name(q) for q in solar_qualities],
             "weight": solar_weight,
             "dignity": None,
         }
@@ -422,27 +400,14 @@ def calculate_temperament(
     scores[lunar_qualities[0]] += lunar_weight
     scores[lunar_qualities[1]] += lunar_weight
 
-    lunar_angle = (moon_longitude - sun_longitude) % 360
-    phase_names = {
-        1: f"New Moon → Waxing ({lunar_angle:.1f}°)",
-        2: f"Waxing → Full Moon ({lunar_angle:.1f}°)",
-        3: f"Full Moon → Waning ({lunar_angle:.1f}°)",
-        4: f"Waning → New Moon ({lunar_angle:.1f}°)",
-    }
-    phase_names_pt = {
-        1: f"Lua Nova → Crescente ({lunar_angle:.1f}°)",
-        2: f"Crescente → Lua Cheia ({lunar_angle:.1f}°)",
-        3: f"Lua Cheia → Minguante ({lunar_angle:.1f}°)",
-        4: f"Minguante → Lua Nova ({lunar_angle:.1f}°)",
-    }
+    lunar_phase_name = get_translation(f"lunar_temperament_phases.{lunar_phase}", language)
 
     factors.append(
         {
-            "factor": "Lunar Phase",
-            "factor_pt": "Fase Lunar",
-            "value": phase_names[lunar_phase],
-            "value_pt": phase_names_pt[lunar_phase],
-            "qualities": list(lunar_qualities),
+            "factor_key": "lunar_phase",
+            "factor": get_factor_name("lunar_phase"),
+            "value": lunar_phase_name,
+            "qualities": [get_quality_name(q) for q in lunar_qualities],
             "weight": lunar_weight,
             "dignity": None,
         }
@@ -459,15 +424,20 @@ def calculate_temperament(
 
     scores[lord_qualities[0]] += lord_weight
     scores[lord_qualities[1]] += lord_weight
+
+    lord_planet_name = get_translation(f"planets.{lord_of_nativity_name}", language)
+    lord_sign_name = get_translation(f"signs.{lord_of_nativity_sign}", language)
+
     factors.append(
         {
-            "factor": "Lord of Nativity",
-            "factor_pt": "Senhor da Natividade",
-            "value": f"{lord_of_nativity_name} in {lord_of_nativity_sign}",
-            "value_pt": f"{lord_of_nativity_name} em {lord_of_nativity_sign}",
-            "qualities": list(lord_qualities),
+            "factor_key": "lord_of_nativity",
+            "factor": get_factor_name("lord_of_nativity"),
+            "value": format_planet_in_sign(lord_planet_name, lord_sign_name, language),
+            "qualities": [get_quality_name(q) for q in lord_qualities],
             "weight": lord_weight,
-            "dignity": lord_dignity,
+            "dignity": get_translation(f"dignities.{lord_dignity}", language)
+            if lord_dignity
+            else None,
         }
     )
 
@@ -487,15 +457,19 @@ def calculate_temperament(
     else:  # cold and wet
         temperament_key = "phlegmatic"
 
-    temperament_data = TEMPERAMENTS[temperament_key]
+    # Get localized temperament data
+    temperament_name = get_translation(f"temperaments.{temperament_key}.name", language)
+    element = get_translation(f"temperaments.{temperament_key}.element", language)
+    description = get_translation(f"temperaments.{temperament_key}.description", language)
+    icon = TEMPERAMENT_ICONS[temperament_key]
 
     return {
-        "dominant": temperament_key,
-        "dominant_pt": temperament_data["name_pt"],
-        "element": temperament_data["element"],
-        "element_pt": temperament_data["element_pt"],
-        "icon": temperament_data["icon"],
+        "dominant_key": temperament_key,
+        "dominant": temperament_name,
+        "element_key": temperament_key,  # Element key matches temperament key
+        "element": element,
+        "icon": icon,
         "scores": scores,
         "factors": factors,
-        "description": temperament_data["description"],
+        "description": description,
     }

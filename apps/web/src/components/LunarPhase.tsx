@@ -1,5 +1,8 @@
 /**
  * Lunar Phase component - displays Moon phase at birth
+ *
+ * The API returns already-localized data based on the `lang` query parameter,
+ * so no frontend language switching is needed - just display the values directly.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -7,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export interface LunarPhaseData {
+  phase_key: string;
   phase_name: string;
-  phase_name_pt: string;
   angle: number;
   illumination_percentage: number;
   emoji: string;
@@ -21,23 +24,17 @@ interface LunarPhaseProps {
 }
 
 export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
+  const { t } = useTranslation();
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
-          <span className="text-4xl" role="img" aria-label={lunarPhase.phase_name_pt}>
+          <span className="text-4xl" role="img" aria-label={lunarPhase.phase_name}>
             {lunarPhase.emoji}
           </span>
           <div>
-            <div className="text-lg font-semibold text-foreground">
-              {isEn ? lunarPhase.phase_name : lunarPhase.phase_name_pt}
-            </div>
-            <div className="text-xs text-muted-foreground font-normal">
-              {isEn ? lunarPhase.phase_name_pt : lunarPhase.phase_name}
-            </div>
+            <div className="text-lg font-semibold text-foreground">{lunarPhase.phase_name}</div>
           </div>
         </CardTitle>
       </CardHeader>
@@ -46,15 +43,13 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              {t('components.lunarPhase.sunMoonAngle', { defaultValue: 'Ângulo Sol-Lua' })}
+              {t('components.lunarPhase.sunMoonAngle', { defaultValue: 'Sun-Moon Angle' })}
             </p>
-            <p className="text-sm font-semibold text-foreground">
-              {lunarPhase.angle.toFixed(1)}°
-            </p>
+            <p className="text-sm font-semibold text-foreground">{lunarPhase.angle.toFixed(1)}°</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              {t('components.lunarPhase.illumination', { defaultValue: 'Iluminação' })}
+              {t('components.lunarPhase.illumination', { defaultValue: 'Illumination' })}
             </p>
             <p className="text-sm font-semibold text-foreground">
               {lunarPhase.illumination_percentage.toFixed(1)}%
@@ -65,7 +60,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Keywords */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('components.lunarPhase.characteristics', { defaultValue: 'Características' })}
+            {t('components.lunarPhase.characteristics', { defaultValue: 'Characteristics' })}
           </p>
           <div className="flex flex-wrap gap-2">
             {lunarPhase.keywords.split(',').map((keyword, index) => (
@@ -79,7 +74,7 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Interpretation */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('components.lunarPhase.interpretation', { defaultValue: 'Interpretação' })}
+            {t('components.lunarPhase.interpretation', { defaultValue: 'Interpretation' })}
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {lunarPhase.interpretation}
@@ -89,7 +84,11 @@ export function LunarPhase({ lunarPhase }: LunarPhaseProps) {
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            💡 {t('components.lunarPhase.note', { defaultValue: 'A fase lunar no nascimento revela padrões sobre temperamento, ciclo de vida e como você processa experiências emocionais.' })}
+            💡{' '}
+            {t('components.lunarPhase.note', {
+              defaultValue:
+                'The lunar phase at birth reveals patterns about temperament, life cycle, and how you process emotional experiences.',
+            })}
           </p>
         </div>
       </CardContent>

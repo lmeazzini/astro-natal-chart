@@ -19,7 +19,13 @@
     "optional": "Opcional",
     "required": "Obrigatório",
     "show": "Mostrar",
-    "hide": "Ocultar"
+    "hide": "Ocultar",
+    "pageOf": "Página {{page}} de {{total}}",
+    "myCharts": "Meus Mapas",
+    "login": "Entrar",
+    "search": "Buscar",
+    "refresh": "Atualizar",
+    "retry": "Tentar novamente"
   },
   "nav": {
     "home": "Início",
@@ -30,6 +36,35 @@
     "logout": "Sair",
     "login": "Entrar",
     "register": "Cadastrar"
+  },
+  "publicCharts": {
+    "title": "Mapas de Pessoas Famosas",
+    "subtitle": "Explore mapas natais de personalidades históricas e avalie nossas interpretações com IA.",
+    "searchPlaceholder": "Buscar por nome...",
+    "sortName": "A-Z",
+    "sortDate": "Data",
+    "sortViews": "Populares",
+    "allCategories": "Todos",
+    "resultsCount": "{{count}} mapas encontrados",
+    "noResults": "Nenhum mapa encontrado.",
+    "views": "visualizações",
+    "ctaTitle": "Crie Seu Próprio Mapa Natal",
+    "ctaTitleLoggedIn": "Crie Mais Mapas Natais",
+    "ctaDescription": "Descubra os segredos do seu mapa astrológico com análise profissional e interpretações IA.",
+    "ctaButton": "Começar Grátis",
+    "ctaButtonLoggedIn": "Criar Novo Mapa",
+    "categories": {
+      "scientist": "Cientistas",
+      "artist": "Artistas",
+      "leader": "Líderes",
+      "writer": "Escritores",
+      "athlete": "Atletas",
+      "actor": "Atores",
+      "musician": "Músicos",
+      "entrepreneur": "Empreendedores",
+      "historical": "Figuras Históricas",
+      "other": "Outros"
+    }
   },
   "auth": {
     "login": {
@@ -48,7 +83,8 @@
       "facebook": "Facebook",
       "success": "Login realizado com sucesso!",
       "error": "Erro ao fazer login. Verifique suas credenciais.",
-      "invalidCredentials": "E-mail ou senha inválidos"
+      "invalidCredentials": "E-mail ou senha inválidos",
+      "termsAgreement": "Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade"
     },
     "register": {
       "title": "Criar Conta",
@@ -70,7 +106,13 @@
       "error": "Erro ao criar conta",
       "emailInUse": "Este e-mail já está em uso",
       "passwordMismatch": "As senhas não coincidem",
-      "passwordMinLength": "A senha deve ter no mínimo 8 caracteres"
+      "passwordMinLength": "A senha deve ter no mínimo 8 caracteres",
+      "features": {
+        "unlimited": "Mapas astrais ilimitados",
+        "free": "Grátis para sempre"
+      },
+      "passwordSpecialNumber": "Pelo menos um número ou caractere especial",
+      "passwordCase": "Letras maiúsculas e minúsculas"
     },
     "forgotPassword": {
       "title": "Recuperar Senha",
@@ -147,7 +189,33 @@
     "deleteChart": "Excluir mapa",
     "confirmDelete": "Tem certeza que deseja excluir este mapa natal?",
     "deleteSuccess": "Mapa excluído com sucesso",
-    "deleteError": "Erro ao excluir mapa"
+    "deleteError": "Erro ao excluir mapa",
+    "features": {
+      "implemented": "Funcionalidades Implementadas",
+      "implementedDesc": "Recursos já disponíveis na plataforma",
+      "inProgress": "Em Desenvolvimento",
+      "inProgressDesc": "Funcionalidades em construção ativa",
+      "planned": "Planejadas",
+      "plannedDesc": "Recursos futuros no roadmap",
+      "done": "Concluído",
+      "inProgressBadge": "Em Progresso",
+      "plannedBadge": "Planejado",
+      "lastUpdated": "Última atualização",
+      "seeAll": "Veja todas as funcionalidades planejadas no nosso",
+      "publicRoadmap": "roadmap público",
+      "loadError": "Não foi possível carregar as funcionalidades"
+    }
+  },
+  "charts": {
+    "edit": "Editar mapa",
+    "recalculate": "Recalcular mapa e interpretações",
+    "delete": "Excluir mapa",
+    "recalculateError": "Erro ao recalcular mapa",
+    "genders": {
+      "Masculino": "Masculino",
+      "Feminino": "Feminino",
+      "Outro": "Outro"
+    }
   },
   "dashboardPage": {
     "title": "Dashboard",
@@ -292,8 +360,14 @@
       "houses": "Casas",
       "aspects": "Aspectos",
       "arabicParts": "Partes Árabes",
-      "interpretations": "Interpretações"
+      "interpretations": "Interpretações",
+      "growth": "Crescimento"
     },
+    "sections": {
+      "chartWheel": "Roda do Mapa Natal",
+      "temperament": "Cálculo Final do Temperamento"
+    },
+    "temperament": "Análise de Temperamento",
     "birthInfo": "Informações de Nascimento",
     "person": "Pessoa",
     "birthDateTime": "Data e Hora",
@@ -364,11 +438,20 @@
       "page": "Página"
     },
     "lunarPhase": "Fase Lunar",
-    "solarPhase": "Fase Solar"
+    "solarPhase": "Fase Solar",
+    "interpretations": "Interpretações com IA",
+    "refreshInterpretations": "Atualizar interpretações com IA",
+    "refreshAI": "Atualizar IA",
+    "verifyForInterpretations": "Verifique seu email para desbloquear interpretações com IA"
   },
   "profile": {
     "title": "Meu Perfil",
     "subtitle": "Gerencie suas informações pessoais",
+    "userTypes": {
+      "professional": "🔮 Astrólogo Profissional",
+      "student": "📚 Estudante de Astrologia",
+      "curious": "✨ Curioso"
+    },
     "personalInfo": "Informações Pessoais",
     "name": "Nome",
     "namePlaceholder": "Seu nome completo",
@@ -579,6 +662,33 @@
       "aboutInterpretations": "Sobre as interpretações",
       "interpretationsDesc": "Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram a natureza do aspecto e os planetas envolvidos."
     },
+    "chartTooltip": {
+      "position": "Posição",
+      "house": "Casa",
+      "speed": "Velocidade",
+      "dignities": "Dignidades",
+      "score": "Score",
+      "ascendant": "Ascendente",
+      "midheaven": "Meio do Céu",
+      "houseN": "Casa {{n}}",
+      "cusp": "Cúspide",
+      "longitude": "Longitude",
+      "angle": "Ângulo",
+      "orb": "Orbe",
+      "applying": "Aplicando",
+      "harmonic": "Harmônico",
+      "tense": "Tenso",
+      "neutral": "Neutro"
+    },
+    "chartWheel": {
+      "zoomIn": "Ampliar",
+      "zoomOut": "Reduzir",
+      "resetZoom": "Resetar zoom",
+      "dragToPan": "Arraste para mover",
+      "chartRegion": "Mapa astral interativo",
+      "zoomControls": "Controles de zoom",
+      "chartDescription": "Mapa astral circular mostrando planetas, casas e aspectos. Clique em elementos para selecionar, use roda do mouse para zoom."
+    },
     "arabicParts": {
       "fortune": "Lote da Fortuna",
       "fortuneDesc": "Corpo, saúde, riqueza material",
@@ -592,12 +702,40 @@
       "necessity": "Lote da Necessidade",
       "necessityDesc": "Restrições, karma, destino",
       "necessityTooltip": "Representa as restrições inevitáveis, o karma e as lições de vida. Indica áreas onde enfrentamos dificuldades necessárias para nosso desenvolvimento.",
+      "marriage": "Lote do Casamento",
+      "marriageDesc": "Relacionamentos, parcerias, casamento",
+      "marriageTooltip": "Indica a natureza das parcerias comprometidas, potencial de casamento e o tipo de parceiro que atraímos. Calculado a partir de Vênus e Saturno.",
+      "victory": "Lote da Vitória",
+      "victoryDesc": "Sucesso, conquista, triunfo",
+      "victoryTooltip": "Mostra áreas de triunfo e onde podemos alcançar sucesso. Associado a Júpiter e à capacidade do nativo para a vitória.",
+      "father": "Lote do Pai",
+      "fatherDesc": "Figura paterna, autoridade",
+      "fatherTooltip": "Revela a relação com a figura paterna e herança paternal. Tradicionalmente calculado usando Sol e Saturno.",
+      "mother": "Lote da Mãe",
+      "motherDesc": "Figura materna, nutrição",
+      "motherTooltip": "Revela a relação com a figura materna e herança maternal. Tradicionalmente calculado usando Lua e Vênus.",
+      "children": "Lote dos Filhos",
+      "childrenDesc": "Filhos, criatividade, fertilidade",
+      "childrenTooltip": "Indica fertilidade, relação com filhos e expressão criativa. Associado à casa 5 e Júpiter.",
+      "exaltation": "Lote da Exaltação",
+      "exaltationDesc": "Honra, reconhecimento, elevação",
+      "exaltationTooltip": "Mostra onde recebemos honra e reconhecimento. Usa fórmula fixa (não inverte por seita) baseada no grau de exaltação do Sol (19° Áries).",
+      "illness": "Lote da Doença",
+      "illnessDesc": "Saúde, vulnerabilidades",
+      "illnessTooltip": "Indica vulnerabilidades de saúde e áreas que requerem atenção. Associado à casa 6 e calculado com Marte e Saturno.",
+      "courage": "Lote da Coragem",
+      "courageDesc": "Bravura, ousadia, iniciativa",
+      "courageTooltip": "Revela a capacidade do nativo para bravura e ação ousada. Associado a Marte e ao Lote da Fortuna.",
+      "reputation": "Lote da Reputação",
+      "reputationDesc": "Fama, imagem pública",
+      "reputationTooltip": "Mostra como somos percebidos publicamente e potencial para fama. Calculado a partir do Lote da Fortuna e do Espírito.",
       "position": "Posição",
       "house": "Casa",
       "houseNumber": "Casa {{num}}",
       "part": "Parte",
       "symbol": "Símbolo",
-      "sign": "Signo"
+      "sign": "Signo",
+      "interpretation": "Interpretação"
     },
     "cookies": {
       "title": "Este site usa cookies",
@@ -631,6 +769,25 @@
       "resendFailed": "Falha ao reenviar email",
       "genericError": "Erro ao reenviar email. Tente novamente mais tarde."
     },
+    "emailVerificationModal": {
+      "title": "Verificação de email necessária",
+      "message": "Este recurso requer verificação de email. Por favor, verifique seu email para continuar.",
+      "messageWithFeature": "Para acessar {{feature}}, você precisa verificar seu email primeiro.",
+      "instructions": "Verifique sua caixa de entrada e clique no link de verificação para confirmar sua conta.",
+      "checkSpam": "Se não encontrar, verifique sua pasta de spam.",
+      "resendButton": "Reenviar email de verificação",
+      "checkStatus": "Já verifiquei",
+      "checking": "Verificando...",
+      "statusChecked": "Status atualizado. Se você verificou seu email, a página será atualizada."
+    },
+    "emailVerificationBanner": {
+      "premiumHint": "Desbloqueie interpretações com IA e exportação em PDF"
+    },
+    "interpretationLanguage": {
+      "mismatchMessage": "Estas interpretações estão em {{interpretationLanguage}}. Gostaria de regenerá-las em {{currentLanguage}}?",
+      "regenerateButton": "Regenerar em {{language}}",
+      "regenerating": "Regenerando..."
+    },
     "lunarPhase": {
       "sunMoonAngle": "Ângulo Sol-Lua",
       "illumination": "Iluminação",
@@ -649,7 +806,22 @@
       "dry": "Seco",
       "contributingFactors": "Fatores Contribuintes",
       "interpretation": "Interpretação",
-      "note": "O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval."
+      "note": "O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.",
+      "weightNote": "Os fatores planetários (Regente do Ascendente e Senhor da Natividade) têm seus pesos ajustados pela dignidade essencial: planetas dignificados (domicílio, exaltação) contribuem mais, enquanto planetas debilitados (detrimento, queda) contribuem menos.",
+      "weightTooltip": "Peso baseado na dignidade do planeta"
+    },
+    "lordOfNativity": {
+      "title": "Senhor da Natividade",
+      "subtitle": "A força vital dominante do seu mapa natal",
+      "totalScore": "Pontuação Total",
+      "status": "Status",
+      "position": "Posição",
+      "house": "Casa",
+      "essentialDignities": "Dignidades Essenciais",
+      "note": "O Senhor da Natividade é o planeta com maior dignidade essencial no seu mapa natal. Segundo a astrologia tradicional, ele representa a força vital dominante que guia sua vida e indica onde você tem maior potencial de realização e maestria.",
+      "dignified": "Dignificado",
+      "peregrine": "Peregrino",
+      "debilitated": "Debilitado"
     },
     "sect": {
       "title": "Análise de Secto",
@@ -705,205 +877,15 @@
       "maleficsOutOfSectEffect": "são mais difíceis de integrar e podem ser mais destrutivos",
       "howToUse": "Como usar isso?",
       "howToUseDesc": "Preste atenção especial aos seus maléficos fora de secto - essas são áreas que precisam de trabalho mais consciente. Seus benéficos em secto são recursos naturais que você pode aproveitar."
+    },
+    "solarPhase": {
+      "qualities": "Qualidades",
+      "phaseSigns": "Signos da Fase",
+      "interpretation": "Interpretação",
+      "note": "A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional."
     }
   },
   "pages": {
-    "landing": {
-      "homeLabel": "Página Inicial",
-      "login": "Entrar",
-      "createAccount": "Criar Conta",
-      "heroTitle": "Desvende os Mistérios do Seu Mapa Natal com Precisão Astronômica",
-      "heroSubtitle1": "Cálculos precisos com",
-      "heroSubtitle2": "visualizações profissionais em HD e interpretações personalizadas com",
-      "ai": "Inteligência Artificial",
-      "createFreeAccount": "Criar Minha Conta Grátis",
-      "viewExampleChart": "Ver Exemplo de Mapa",
-      "whyAstro": {
-        "title": "Por que Astro?",
-        "subtitle": "Nossa plataforma combina o melhor da Astrologia Tradicional com precisão astronômica de ponta, oferecendo cálculos confiáveis e interpretações autênticas.",
-        "traditional": {
-          "title": "Astrologia Tradicional",
-          "description": "Utilizamos técnicas clássicas da Astrologia Helenística e Medieval:",
-          "dignities": "Dignidades Essenciais",
-          "dignitiesDesc": "Domicílio, Exaltação, Triplicidade",
-          "sect": "Análise de Seita",
-          "sectDesc": "Planetas diurnos e noturnos",
-          "temperament": "Temperamento",
-          "temperamentDesc": "Análise dos 4 elementos e qualidades",
-          "lordOfNativity": "Senhor da Natividade",
-          "lordOfNativityDesc": "Identificação do planeta regente",
-          "differentialLabel": "Diferencial",
-          "differential": "Ao contrário da astrologia moderna psicológica, focamos em técnicas preditivas e objetivas validadas por séculos de prática."
-        },
-        "precision": {
-          "title": "Precisão Swiss Ephemeris",
-          "description": "Utilizamos o Swiss Ephemeris com efemérides JPL DE431 da NASA:",
-          "arcsecond": "< 1 arcsecond de erro",
-          "arcsecondDesc": "Precisão astronômica profissional",
-          "nasa": "Validação NASA/JPL",
-          "nasaDesc": "Mesmas efemérides de missões espaciais",
-          "coverage": "Cobertura de 13.000 anos",
-          "coverageDesc": "Cálculos históricos e futuros confiáveis",
-          "relativistic": "Ajustes relativísticos",
-          "relativisticDesc": "Inclui correções de Relatividade Geral",
-          "whyMatters": "Por que importa?",
-          "whyMattersDesc": "Diferenças de minutos na hora de nascimento podem alterar casas e aspectos. Nossa precisão garante cálculos confiáveis mesmo para horários aproximados."
-        },
-        "openSource": {
-          "title": "Código Aberto & Transparência",
-          "description": "Projeto open source com metodologia transparente e verificável:",
-          "auditable": "Código auditável",
-          "auditableDesc": "Qualquer um pode verificar nossos cálculos",
-          "documented": "Metodologia documentada",
-          "documentedDesc": "Explicamos cada técnica utilizada",
-          "noBlackbox": "Sem \"caixas-pretas\"",
-          "noBlackboxDesc": "Algoritmos claros e científicos",
-          "community": "Comunidade ativa",
-          "communityDesc": "Contribuições de astrólogos e desenvolvedores",
-          "commitment": "Nosso compromisso",
-          "commitmentDesc": "Nenhum algoritmo secreto ou \"fórmula mágica\". Tudo é baseado em textos clássicos e cálculos astronômicos verificáveis."
-        },
-        "learnMore": "Saiba Mais Sobre Nossa Metodologia"
-      },
-      "howItWorks": {
-        "title": "Como Funciona",
-        "subtitle": "Em poucos minutos você terá seu mapa natal completo com análise profissional",
-        "step1": {
-          "title": "Cadastro Rápido",
-          "description": "Crie sua conta gratuitamente em menos de 1 minuto. Apenas email e senha, sem complicações."
-        },
-        "step2": {
-          "title": "Dados de Nascimento",
-          "description": "Informe data, hora e local de nascimento. Nosso sistema encontra as coordenadas automaticamente."
-        },
-        "step3": {
-          "title": "Cálculo Preciso",
-          "description": "Em segundos, calculamos posições planetárias, casas e aspectos com precisão astronômica."
-        },
-        "step4": {
-          "title": "Visualize e Interprete",
-          "description": "Acesse seu mapa natal completo com gráficos profissionais e interpretações detalhadas."
-        }
-      },
-      "differentials": {
-        "title": "Por Que Escolher o Real Astrology?",
-        "subtitle": "A combinação perfeita entre tradição milenar e tecnologia de ponta",
-        "precision": {
-          "title": "Precisão Astronômica",
-          "description": "Utilizamos Swiss Ephemeris JPL DE431 com precisão inferior a 0.001° de erro. A mesma biblioteca usada por astronomos e agências espaciais."
-        },
-        "visualization": {
-          "title": "Visualização Profissional",
-          "description": "Mapas natais em alta definição com todos os elementos: planetas, casas, aspectos, graus e símbolos tradicionais."
-        },
-        "ai": {
-          "title": "Interpretações com IA",
-          "description": "Análises personalizadas geradas por Inteligência Artificial treinada em textos clássicos de astrologia tradicional."
-        },
-        "multiplatform": {
-          "title": "Multi-Plataforma",
-          "description": "Acesse de qualquer dispositivo - desktop, tablet ou smartphone. Interface adaptável e otimizada para todas as telas."
-        },
-        "security": {
-          "title": "100% Seguro",
-          "description": "Criptografia de ponta a ponta, conformidade com LGPD/GDPR. Seus dados pessoais protegidos com tecnologia SSL/TLS."
-        },
-        "unlimited": {
-          "title": "Mapas Ilimitados",
-          "description": "Crie quantos mapas natais quiser, completamente grátis. Sem limites, sem taxas ocultas, sem pegadinhas."
-        },
-        "pdf": {
-          "title": "Exportação PDF",
-          "description": "Relatórios profissionais em PDF de alta qualidade gerados com LaTeX. Perfeitos para impressão e compartilhamento."
-        },
-        "darkMode": {
-          "title": "Dark Mode",
-          "description": "Interface adaptável com modo escuro automático. Perfeito para uso noturno, respeitando suas preferências de sistema."
-        }
-      },
-      "authority": {
-        "title": "Baseado em Ciência e Tradição",
-        "subtitle": "Combinamos métodos milenares com a tecnologia mais avançada disponível",
-        "traditional": {
-          "title": "Astrologia Tradicional & Helênica",
-          "description": "Seguimos métodos tradicionais com mais de 2.000 anos de história, baseados nos ensinamentos dos mestres clássicos.",
-          "elementsTitle": "Elementos Considerados:",
-          "houseSystems": "Sistemas de casas (Placidus, Koch, Whole Sign)",
-          "dignities": "Dignidades essenciais e acidentais",
-          "aspects": "Aspectos clássicos e orbes tradicionais",
-          "nodes": "Nodos lunares e partes arábicas",
-          "authorityLabel": "Autoridade",
-          "authorityDesc": "Baseado nas obras de Ptolomeu (Tetrabiblos), Vettius Valens (Antologia) e Abu Ma'shar (Liber Introductorius)"
-        },
-        "precision": {
-          "title": "Precisão Astronômica",
-          "description": "Utilizamos o Swiss Ephemeris, a mesma biblioteca usada por astrônomos profissionais e agências espaciais em todo o mundo.",
-          "specsTitle": "Especificações Técnicas:",
-          "jpl": "Efemérides JPL DE431 (NASA/JPL)",
-          "accuracy": "Precisão superior a 0.001° (1 arcsecond)",
-          "validated": "Cálculos validados cientificamente",
-          "coverage": "Cobertura temporal de 13.000 anos"
-        },
-        "ai": {
-          "title": "Inteligência Artificial",
-          "description": "Interpretações personalizadas geradas por IA de última geração, treinada extensivamente em textos clássicos de astrologia.",
-          "techTitle": "Tecnologia:",
-          "gpt": "GPT-4 com prompts especializados",
-          "knowledge": "Base de conhecimento de textos helênicos",
-          "context": "Contexto de astrologia medieval e tradicional",
-          "analysis": "Análise de dignidades e disposições",
-          "importantLabel": "Importante",
-          "importantDesc": "A IA complementa, mas não substitui, a análise de um astrólogo profissional. Use como ponto de partida para seu estudo."
-        }
-      },
-      "security": {
-        "title": "Sua Privacidade é Nossa Prioridade",
-        "subtitle": "Proteção total dos seus dados com conformidade às leis internacionais de privacidade",
-        "auditLog": "Auditoria Completa",
-        "encryption": "Todos os seus dados são protegidos com criptografia SSL/TLS de ponta a ponta durante transmissão e armazenamento. Utilizamos os mais altos padrões de segurança da indústria.",
-        "auditLogs": "Mantemos logs completos de auditoria para garantir transparência total sobre o acesso e uso dos seus dados pessoais, conforme exigido pela LGPD e GDPR.",
-        "control": "Você tem controle total sobre seus dados: acesso, correção, exclusão e portabilidade garantidos por lei. Seus dados de nascimento nunca são compartilhados com terceiros.",
-        "privacyPolicy": "Política de Privacidade",
-        "termsOfUse": "Termos de Uso"
-      },
-      "faq": {
-        "title": "Perguntas Frequentes",
-        "subtitle": "Tire suas dúvidas sobre o Real Astrology",
-        "q1": "O que é um mapa natal?",
-        "a1": "Um mapa natal (ou carta astral) é uma representação gráfica das posições dos planetas, signos e casas astrológicas no momento exato do seu nascimento. Ele revela potenciais, características pessoais e tendências de vida baseadas na astrologia tradicional.",
-        "q2": "Preciso saber a hora exata do meu nascimento?",
-        "a2": "Sim, a hora exata é fundamental para cálculos precisos, especialmente para determinar o Ascendente e as posições das casas astrológicas. Uma diferença de apenas 4 minutos pode alterar o Ascendente. Se não souber, consulte sua certidão de nascimento ou registro hospitalar.",
-        "q3": "Como vocês calculam o mapa natal?",
-        "a3": "Utilizamos o Swiss Ephemeris com efemérides JPL DE431 da NASA, garantindo precisão astronômica superior a 0.001°. Nossos algoritmos calculam posições planetárias, casas astrológicas (múltiplos sistemas), aspectos entre planetas e pontos sensíveis como nodos lunares e partes arábicas.",
-        "q4": "Meus dados estão seguros?",
-        "a4": "Sim! Utilizamos criptografia SSL/TLS de ponta a ponta, armazenamento seguro e somos 100% conformes com LGPD e GDPR. Seus dados nunca são compartilhados com terceiros. Você tem controle total: pode acessar, corrigir ou excluir seus dados a qualquer momento.",
-        "q5": "Posso criar mapas natais para outras pessoas?",
-        "a5": "Sim! Você pode criar quantos mapas natais quiser - de amigos, familiares, clientes (se for astrólogo profissional), figuras históricas, etc. Não há limite de mapas criados. Apenas informe os dados de nascimento corretos.",
-        "q6": "O serviço é realmente gratuito?",
-        "a6": "Sim, completamente gratuito! Você pode criar mapas natais ilimitados, visualizar gráficos profissionais, acessar interpretações com IA e exportar PDFs sem pagar nada. Não há taxas ocultas, períodos de teste ou limitações. É grátis para sempre.",
-        "q7": "As interpretações com IA substituem um astrólogo profissional?",
-        "a7": "Não. As interpretações geradas por IA são um excelente ponto de partida para estudar seu mapa, mas não substituem a análise aprofundada de um astrólogo profissional qualificado. Use nossa IA como ferramenta de aprendizado e autoconhecimento, mas considere consultar um especialista para análises complexas ou questões específicas.",
-        "q8": "Como funciona o Dark Mode?",
-        "a8": "O Dark Mode pode ser ativado manualmente através do botão de tema na interface, ou configurado para seguir automaticamente as preferências do seu sistema operacional. Ideal para uso noturno, reduz fadiga ocular e economiza bateria em dispositivos com telas OLED."
-      },
-      "cta": {
-        "title": "Pronto para Descobrir Seu Destino?",
-        "subtitle": "Cadastre-se gratuitamente em menos de 1 minuto e comece a explorar os mistérios do seu mapa natal com precisão astronômica",
-        "button": "Começar Agora - É Grátis",
-        "benefits": "✓ Sem cartão de crédito    ✓ Sem limite de mapas    ✓ Grátis para sempre"
-      },
-      "footer": {
-        "description": "Sistema de mapas natais com precisão astronômica e astrologia tradicional.",
-        "legal": "Legal",
-        "terms": "Termos de Uso",
-        "privacy": "Política de Privacidade",
-        "cookies": "Política de Cookies",
-        "access": "Acesso",
-        "login": "Entrar",
-        "register": "Criar Conta",
-        "copyright": "Todos os direitos reservados."
-      }
-    },
     "oauthCallback": {
       "tokensNotFound": "Falha na autenticação OAuth. Tokens não encontrados.",
       "userFetchFailed": "Falha ao buscar dados do usuário",
@@ -929,7 +911,19 @@
       "ctaTitleLoggedIn": "Crie Mais Mapas Natais",
       "ctaDescription": "Descubra os segredos do seu mapa astrológico com análise profissional e interpretações IA.",
       "ctaButton": "Começar Grátis",
-      "ctaButtonLoggedIn": "Criar Novo Mapa"
+      "ctaButtonLoggedIn": "Criar Novo Mapa",
+      "categories": {
+        "scientist": "Cientistas",
+        "artist": "Artistas",
+        "leader": "Líderes",
+        "writer": "Escritores",
+        "athlete": "Atletas",
+        "actor": "Atores",
+        "musician": "Músicos",
+        "entrepreneur": "Empreendedores",
+        "historical": "Figuras Históricas",
+        "other": "Outros"
+      }
     },
     "consent": {
       "title": "Consentimento e Privacidade",
@@ -1383,5 +1377,290 @@
     "spirit": "Lote do Espírito",
     "eros": "Lote de Eros",
     "necessity": "Lote da Necessidade"
+  },
+  "premium": {
+    "upgradeToPremium": "Atualize para Premium",
+    "featureLockedTitle": "{{feature}} é um Recurso Premium",
+    "featureLockedDescription": "Este recurso é exclusivo para assinantes Premium. Atualize seu plano para desbloquear {{feature}} e outras funcionalidades avançadas.",
+    "genericDescription": "Tenha acesso a recursos avançados de astrologia como horária, profecções, firdária e muito mais!",
+    "upgrade": "Atualizar",
+    "viewPlans": "Ver Planos",
+    "features": {
+      "horary": "Astrologia Horária",
+      "profections": "Profecções",
+      "firdaria": "Firdária",
+      "solarReturn": "Revolução Solar"
+    }
+  },
+  "pricing": {
+    "badge": "Planos e Preços",
+    "title": "Escolha o plano ideal para você",
+    "subtitle": "Desbloqueie todo o potencial da astrologia tradicional com nossos planos Premium.",
+    "yourPlan": "Seu plano atual:",
+    "currentPlan": "Plano Atual",
+    "downgrade": "Fazer Downgrade",
+    "getStartedFree": "Começar Grátis",
+    "subscribe": "Assinar Premium",
+    "recommended": "Recomendado",
+    "plans": {
+      "free": {
+        "name": "Gratuito",
+        "description": "Para começar sua jornada astrológica",
+        "price": "R$ 0",
+        "period": "/mês"
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "Para astrólogos sérios que buscam profundidade",
+        "price": "R$ 29,90",
+        "period": "/mês"
+      }
+    },
+    "features": {
+      "natalCharts": "Mapas natais ilimitados",
+      "basicInterpretations": "Interpretações básicas",
+      "advancedInterpretations": "Interpretações avançadas com IA",
+      "chartVisualization": "Visualização de mapa SVG",
+      "horary": "Astrologia Horária",
+      "profections": "Profecções",
+      "firdaria": "Firdária",
+      "solarReturn": "Revolução Solar",
+      "prioritySupport": "Suporte prioritário"
+    },
+    "comingSoon": {
+      "title": "Em breve!",
+      "description": "O sistema de assinaturas está em desenvolvimento. Enquanto isso, aproveite as funcionalidades gratuitas e fique atento para novidades!"
+    }
+  },
+  "landing": {
+    "homeLabel": "Página Inicial",
+    "login": "Entrar",
+    "signup": "Criar Conta",
+    "hero": {
+      "socialProof": "Mais de 1.000 mapas criados",
+      "traditional": "Astrologia Tradicional",
+      "title": "Descubra Quem Você Realmente É",
+      "subtitle": "O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.",
+      "cta": "Criar Meu Mapa Grátis",
+      "viewExample": "Ver Exemplos de Mapas",
+      "noCreditCard": "Sem cartão de crédito",
+      "dataSecure": "Seus dados seguros (LGPD)",
+      "twoMinutes": "Leva 2 minutos"
+    },
+    "pain": {
+      "title": "Você Já Se Sentiu Assim?",
+      "purpose": "\"Não sei qual é meu propósito de vida\"",
+      "talents": "\"Sinto que tenho talentos que não consigo expressar\"",
+      "decisions": "\"Tomo decisões e depois me arrependo\"",
+      "patterns": "\"Não entendo por que repito os mesmos padrões\"",
+      "horoscopes": "\"Horóscopos genéricos nunca fazem sentido pra mim\"",
+      "selfknowledge": "\"Quero me conhecer melhor, mas não sei como\"",
+      "transition": "Você não está sozinho. A maioria das pessoas passa a vida inteira sem realmente se conhecer. Mas não precisa ser assim."
+    },
+    "solution": {
+      "badge": "A Solução",
+      "title": "Real Astrology: Autoconhecimento Profundo Através da Astrologia Tradicional",
+      "description1": "Diferente de horóscopos genéricos baseados apenas no signo solar, o Real Astrology cria seu mapa natal completo usando as mesmas técnicas que astrólogos usam há mais de 2.000 anos.",
+      "description2": "Seu mapa é único como sua impressão digital — calculado para o momento e local exatos do seu nascimento."
+    },
+    "benefits": {
+      "title": "O Que Você Vai Descobrir",
+      "essence": {
+        "title": "Sua Essência",
+        "description": "Entenda sua personalidade profunda, além do signo solar. Descubra por que você é do jeito que é."
+      },
+      "talents": {
+        "title": "Seus Talentos Ocultos",
+        "description": "Identifique habilidades naturais que você talvez nem saiba que tem — e como desenvolvê-las."
+      },
+      "relationships": {
+        "title": "Seus Padrões em Relacionamentos",
+        "description": "Compreenda como você ama, o que busca em parceiros e como melhorar suas conexões."
+      },
+      "purpose": {
+        "title": "Seu Propósito",
+        "description": "Encontre pistas sobre sua vocação e o caminho que traz mais realização para sua vida."
+      },
+      "challenges": {
+        "title": "Seus Desafios",
+        "description": "Conheça seus pontos de crescimento e transforme obstáculos em oportunidades."
+      },
+      "moment": {
+        "title": "Seu Momento Atual",
+        "description": "Entenda as influências planetárias atuais e como elas estão impactando sua vida agora."
+      }
+    },
+    "traditional": {
+      "title": "Por Que \"Real\" Astrology?",
+      "intro": "A astrologia que você vê em revistas e apps populares é uma versão simplificada criada no século XX.",
+      "description": "O Real Astrology resgata a astrologia tradicional — as mesmas técnicas usadas por civilizações antigas, refinadas por séculos de observação.",
+      "dignities": {
+        "title": "Dignidades Essenciais",
+        "description": "A força real de cada planeta no seu mapa"
+      },
+      "sect": {
+        "title": "Sect (Diurno/Noturno)",
+        "description": "Seu mapa é de dia ou de noite? Isso muda tudo"
+      },
+      "arabicParts": {
+        "title": "Partes Árabes",
+        "description": "Pontos sensíveis que revelam áreas específicas da vida"
+      },
+      "temperament": {
+        "title": "Temperamento",
+        "description": "Seu equilíbrio dos 4 elementos segundo a tradição"
+      },
+      "conclusion": "Não é achismo. É astronomia + tradição + interpretação profunda."
+    },
+    "testimonials": {
+      "title": "O Que Nossos Usuários Dizem",
+      "t1": {
+        "quote": "\"Eu sempre achei que era 'só' uma canceriana sensível demais. Quando vi meu mapa completo, entendi que tenho Lua em Escorpião e Marte na Casa 1. Finalmente fez sentido por que sou tão intensa!\"",
+        "name": "Marina, 28 anos",
+        "location": "São Paulo"
+      },
+      "t2": {
+        "quote": "\"Fiz meu mapa em vários sites, mas nunca tinha visto análise de Sect e Dignidades. O Real Astrology me mostrou que Saturno no meu mapa é muito mais positivo do que eu pensava. Mudou minha perspectiva.\"",
+        "name": "Carlos, 35 anos",
+        "location": "Belo Horizonte"
+      },
+      "t3": {
+        "quote": "\"As interpretações com IA são incríveis. Parece que alguém que me conhece há anos escreveu sobre mim. Recomendo para quem quer se conhecer de verdade.\"",
+        "name": "Juliana, 42 anos",
+        "location": "Porto Alegre"
+      }
+    },
+    "howItWorks": {
+      "title": "Criar Seu Mapa É Simples",
+      "step1": {
+        "title": "Cadastre-se Grátis",
+        "description": "Leva menos de 1 minuto"
+      },
+      "step2": {
+        "title": "Insira Seus Dados",
+        "description": "Data, hora e local de nascimento"
+      },
+      "step3": {
+        "title": "Receba Seu Mapa",
+        "description": "Visualização profissional + interpretações"
+      },
+      "step4": {
+        "title": "Explore e Descubra",
+        "description": "Navegue e descubra cada aspecto de si mesmo"
+      }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "q1": {
+        "question": "Precisa saber a hora exata de nascimento?",
+        "answer": "A hora é importante para calcular o Ascendente e as Casas. Se não souber, você pode consultar sua certidão de nascimento ou usar uma hora aproximada (o mapa será menos preciso nessas áreas)."
+      },
+      "q2": {
+        "question": "Qual a diferença para outros sites de mapa astral?",
+        "answer": "O Real Astrology usa astrologia tradicional com técnicas como Dignidades Essenciais, Sect e Partes Árabes — que a maioria dos sites modernos ignora. Além disso, nossas interpretações são geradas por IA treinada em textos clássicos de astrologia."
+      },
+      "q3": {
+        "question": "É realmente grátis?",
+        "answer": "Sim! O mapa completo e interpretações básicas são gratuitos. Funcionalidades premium (como relatórios em PDF e análises avançadas) podem ter custo adicional no futuro, mas o essencial será sempre grátis."
+      },
+      "q4": {
+        "question": "Meus dados estão seguros?",
+        "answer": "Absolutamente. Seguimos a LGPD e nunca compartilhamos seus dados com terceiros. Você pode excluir sua conta a qualquer momento e todos os seus dados serão removidos."
+      },
+      "q5": {
+        "question": "As interpretações com IA substituem um astrólogo?",
+        "answer": "As interpretações são um excelente ponto de partida para autoconhecimento, mas não substituem a análise de um astrólogo profissional para questões específicas ou complexas. Use como ferramenta de estudo e reflexão."
+      }
+    },
+    "finalCta": {
+      "title": "Pronto Para Se Conhecer de Verdade?",
+      "subtitle": "Seu mapa natal está esperando. É gratuito, leva 2 minutos e pode mudar a forma como você se vê para sempre.",
+      "button": "Criar Meu Mapa Agora — É Grátis",
+      "benefit1": "Sem cartão de crédito",
+      "benefit2": "Seus dados seguros (LGPD)",
+      "benefit3": "Cancele quando quiser"
+    },
+    "footer": {
+      "tagline": "Astrologia Tradicional Para o Mundo Moderno",
+      "legal": "Legal",
+      "terms": "Termos de Uso",
+      "privacy": "Política de Privacidade",
+      "cookies": "Política de Cookies",
+      "access": "Acesso",
+      "login": "Entrar",
+      "register": "Criar Conta",
+      "dashboard": "Meus Mapas",
+      "madeWith": "Feito com ♄ e ♃ no Brasil."
+    }
+  },
+  "growth": {
+    "title": "Sugestões de Desenvolvimento Pessoal",
+    "description": "Descubra caminhos de crescimento baseados no seu mapa natal",
+    "intro": "Nossa IA analisa seu mapa natal para identificar oportunidades de crescimento, desafios a superar, talentos naturais e insights sobre propósito de vida.",
+    "generate": "Gerar Sugestões",
+    "regenerate": "Regenerar Sugestões",
+    "generating": "Analisando seu mapa e gerando sugestões personalizadas...",
+    "generatingTime": "Isso pode levar 15-30 segundos",
+    "disclaimer": "Estas sugestões são baseadas em análise astrológica e não substituem aconselhamento profissional.",
+    "errors": {
+      "notAuthenticated": "Faça login para gerar sugestões",
+      "emailRequired": "Verifique seu email para acessar esta funcionalidade",
+      "chartNotFound": "Mapa não encontrado",
+      "generateFailed": "Falha ao gerar sugestões",
+      "networkError": "Erro de rede. Tente novamente."
+    },
+    "growthPoints": {
+      "title": "Pontos de Crescimento",
+      "description": "Áreas para desenvolvimento pessoal e passos acionáveis",
+      "actions": "Ações Práticas:",
+      "mindset": "Mudança de Mentalidade:"
+    },
+    "challenges": {
+      "title": "Desafios a Superar",
+      "description": "Obstáculos e estratégias para superá-los",
+      "manifestation": "Como se manifesta:",
+      "strategy": "Estratégia:",
+      "practices": "Práticas:"
+    },
+    "opportunities": {
+      "title": "Talentos e Oportunidades",
+      "description": "Dons naturais e como aproveitá-los",
+      "leverage": "Como alavancar:"
+    },
+    "purpose": {
+      "title": "Propósito e Direção de Vida",
+      "description": "Direção da alma e insights sobre vocação",
+      "soulDirection": "Direção da Alma",
+      "vocation": "Vocação",
+      "contribution": "Contribuição",
+      "integration": "Integração",
+      "nextSteps": "Próximos Passos"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Artigos sobre astrologia, mapas astrais e autoconhecimento",
+    "description": "Explore nossos artigos sobre astrologia tradicional, interpretação de mapas astrais e desenvolvimento pessoal.",
+    "noPosts": "Nenhum artigo encontrado",
+    "filteringBy": "Filtrando por",
+    "clearFilter": "Limpar filtro",
+    "categories": "Categorias",
+    "allCategories": "Todas as Categorias",
+    "popularTags": "Tags Populares",
+    "readTime": "de leitura",
+    "views": "visualizações",
+    "share": "Compartilhar",
+    "sharing": "Compartilhando...",
+    "copied": "Link copiado!",
+    "backToBlog": "Voltar ao Blog",
+    "recentPosts": "Posts Recentes",
+    "postNotFound": "Artigo não encontrado",
+    "postNotFoundDescription": "O artigo que você está procurando não existe ou foi removido.",
+    "ctaTitle": "Crie Seu Mapa",
+    "ctaDescription": "Descubra seu mapa astral com interpretações detalhadas.",
+    "ctaButton": "Começar Agora"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados."
   }
 }

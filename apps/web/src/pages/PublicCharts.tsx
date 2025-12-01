@@ -114,10 +114,7 @@ export function PublicChartsPage() {
       {/* Navigation */}
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
@@ -215,7 +212,7 @@ export function PublicChartsPage() {
                 size="sm"
                 onClick={() => handleCategoryClick(cat.category)}
               >
-                {getCategoryLabel(cat.category)} ({cat.count})
+                {getCategoryLabel(cat.category, t)} ({cat.count})
               </Button>
             ))}
           </div>
@@ -286,8 +283,7 @@ export function PublicChartsPage() {
           <h2 className="text-2xl font-bold text-foreground mb-4">
             {user
               ? t('publicCharts.ctaTitleLoggedIn', 'Crie Mais Mapas Natais')
-              : t('publicCharts.ctaTitle', 'Crie Seu Próprio Mapa Natal')
-            }
+              : t('publicCharts.ctaTitle', 'Crie Seu Próprio Mapa Natal')}
           </h2>
           <p className="text-muted-foreground mb-6">
             {t(
@@ -296,15 +292,89 @@ export function PublicChartsPage() {
             )}
           </p>
           <Button size="lg" asChild>
-            <Link to={user ? "/charts/new" : "/register"}>
+            <Link to={user ? '/charts/new' : '/register'}>
               {user
                 ? t('publicCharts.ctaButtonLoggedIn', 'Criar Novo Mapa')
-                : t('publicCharts.ctaButton', 'Começar Grátis')
-              }
+                : t('publicCharts.ctaButton', 'Começar Grátis')}
             </Link>
           </Button>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <img src="/logo.png" alt="Real Astrology" className="h-6 w-6" />
+                <span className="font-bold text-foreground">Real Astrology</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('landing.footer.tagline', {
+                  defaultValue: 'Astrologia Tradicional Para o Mundo Moderno',
+                })}
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">
+                {t('landing.footer.legal', { defaultValue: 'Legal' })}
+              </h4>
+              <div className="space-y-2">
+                <Link
+                  to="/terms"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('landing.footer.terms', { defaultValue: 'Termos de Uso' })}
+                </Link>
+                <Link
+                  to="/privacy"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('landing.footer.privacy', { defaultValue: 'Política de Privacidade' })}
+                </Link>
+                <Link
+                  to="/cookies"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('landing.footer.cookies', { defaultValue: 'Política de Cookies' })}
+                </Link>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">
+                {t('landing.footer.access', { defaultValue: 'Acesso' })}
+              </h4>
+              <div className="space-y-2">
+                <Link
+                  to="/login"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('landing.footer.login', { defaultValue: 'Entrar' })}
+                </Link>
+                <Link
+                  to="/register"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('landing.footer.register', { defaultValue: 'Criar Conta' })}
+                </Link>
+                <Link
+                  to="/dashboard"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('landing.footer.dashboard', { defaultValue: 'Dashboard' })}
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-border text-center">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Real Astrology.{' '}
+              {t('landing.footer.madeWith', { defaultValue: 'Feito com ♄ e ♃ no Brasil.' })}
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -331,7 +401,7 @@ function PublicChartCard({ chart }: { chart: PublicChartPreview }) {
           <h3 className="text-lg font-semibold text-foreground mb-1">{chart.full_name}</h3>
           {chart.category && (
             <Badge variant="secondary" className="mb-2">
-              {getCategoryLabel(chart.category)}
+              {getCategoryLabel(chart.category, t)}
             </Badge>
           )}
           <p className="text-sm text-muted-foreground">

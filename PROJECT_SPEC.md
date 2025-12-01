@@ -933,7 +933,7 @@ Sistema web completo para geração, armazenamento e análise de mapas natais as
 ### 4.1 Backend
 
 #### Linguagem e Framework
-- **Python 3.11+**: Moderna, forte ecossistema científico
+- **Python 3.13+**: Moderna, forte ecossistema científico
 - **FastAPI 0.108+**:
   - Alta performance (baseado em Starlette + Pydantic)
   - Validação automática de dados (Pydantic)

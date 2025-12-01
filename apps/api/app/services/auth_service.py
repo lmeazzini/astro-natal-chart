@@ -34,7 +34,7 @@ def determine_user_role(email: str) -> UserRole:
 
     Rules:
     - Emails ending with @realastrology.ai → ADMIN
-    - All other emails → GERAL
+    - All other emails → FREE
 
     Args:
         email: User email address
@@ -44,7 +44,7 @@ def determine_user_role(email: str) -> UserRole:
     """
     if email.lower().endswith(ADMIN_EMAIL_DOMAIN):
         return UserRole.ADMIN
-    return UserRole.GERAL
+    return UserRole.FREE
 
 
 class AuthenticationError(Exception):
@@ -128,7 +128,7 @@ async def register_user(
         # Log but don't fail registration
         logger.error(
             f"Exception sending verification email to {created_user.email}: {e}",
-            extra={"user_id": str(created_user.id)}
+            extra={"user_id": str(created_user.id)},
         )
 
     # If user accepted terms, create consent record
@@ -362,7 +362,7 @@ async def create_or_update_oauth_user(
     if user.is_admin:
         logger.info(
             "Admin user created via OAuth",
-            extra={"user_id": str(user.id), "email": email, "provider": provider}
+            extra={"user_id": str(user.id), "email": email, "provider": provider},
         )
 
     # Create OAuth account
@@ -463,7 +463,7 @@ async def verify_email(db: AsyncSession, token: str) -> User:
         # Log error but don't fail verification if email fails
         logger.error(
             f"Failed to send welcome email after verification: {e}",
-            extra={"user_id": str(user.id), "email": user.email}
+            extra={"user_id": str(user.id), "email": user.email},
         )
 
     return user

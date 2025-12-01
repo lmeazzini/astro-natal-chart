@@ -1,18 +1,13 @@
-import { Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface InfoTooltipProps {
   content: string | React.ReactNode;
-  side?: "top" | "right" | "bottom" | "left";
+  side?: 'top' | 'right' | 'bottom' | 'left';
   className?: string;
 }
 
-export function InfoTooltip({ content, side = "top", className }: InfoTooltipProps) {
+export function InfoTooltip({ content, side = 'top', className }: InfoTooltipProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>

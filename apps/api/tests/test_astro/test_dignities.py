@@ -2,7 +2,6 @@
 Tests for essential dignities calculation module.
 """
 
-
 from app.astro.dignities import (
     calculate_essential_dignities,
     get_planet_in_face,

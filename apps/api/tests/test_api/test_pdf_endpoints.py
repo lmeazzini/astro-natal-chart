@@ -25,7 +25,7 @@ class TestGeneratePDFEndpoint:
     ):
         """Test successful PDF generation trigger."""
         # Create a test chart with status='completed' (required by endpoint)
-        chart = await test_chart_factory(user=test_user, status='completed')
+        chart = await test_chart_factory(user=test_user, status="completed")
 
         # Mock Celery task
         with patch("app.api.v1.endpoints.charts.generate_chart_pdf_task") as mock_task:
@@ -67,14 +67,14 @@ class TestGeneratePDFEndpoint:
         test_chart_factory,
     ):
         """Test PDF generation without authentication."""
-        chart = await test_chart_factory(user=test_user, status='completed')
+        chart = await test_chart_factory(user=test_user, status="completed")
 
         response = await client.post(
             f"/api/v1/charts/{chart.id}/generate-pdf",
         )
 
         # get_current_user raises HTTPException with 403 when no auth
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     async def test_generate_pdf_wrong_user(
         self,
@@ -87,7 +87,7 @@ class TestGeneratePDFEndpoint:
         """Test PDF generation for another user's chart."""
         # Create another user and their chart
         other_user = await test_user_factory(email="other@example.com")
-        other_chart = await test_chart_factory(user=other_user, status='completed')
+        other_chart = await test_chart_factory(user=other_user, status="completed")
 
         # Try to generate PDF as test_user
         response = await client.post(
@@ -107,7 +107,7 @@ class TestGeneratePDFEndpoint:
     ):
         """Test PDF generation with chart that has no calculated data."""
         # Create chart without chart_data
-        chart = await test_chart_factory(user=test_user, chart_data=None, status='processing')
+        chart = await test_chart_factory(user=test_user, chart_data=None, status="processing")
 
         response = await client.post(
             f"/api/v1/charts/{chart.id}/generate-pdf",
@@ -128,7 +128,7 @@ class TestGeneratePDFEndpoint:
     ):
         """Test that concurrent PDF generation is blocked."""
         # Create a test chart with status='completed'
-        chart = await test_chart_factory(user=test_user, status='completed')
+        chart = await test_chart_factory(user=test_user, status="completed")
 
         # Simulate an ongoing PDF generation
         chart.pdf_generating = True
@@ -158,7 +158,7 @@ class TestGeneratePDFEndpoint:
         from datetime import UTC, datetime
 
         # Create a test chart with completed PDF
-        chart = await test_chart_factory(user=test_user, status='completed')
+        chart = await test_chart_factory(user=test_user, status="completed")
         chart.pdf_url = "s3://bucket/old-pdf.pdf"
         chart.pdf_generated_at = datetime.now(UTC)
         chart.pdf_generating = False  # Previous generation completed
@@ -285,7 +285,7 @@ class TestPDFStatusEndpoint:
         )
 
         # get_current_user raises HTTPException with 403 when no auth
-        assert response.status_code == 403
+        assert response.status_code == 401
 
 
 @pytest.mark.asyncio
@@ -380,7 +380,9 @@ class TestDownloadPDFEndpoint:
         with patch("app.api.v1.endpoints.charts.Path") as mock_path_class:
             mock_file = MagicMock()
             mock_file.exists.return_value = False
-            mock_path_class.return_value.__truediv__.return_value.__truediv__.return_value = mock_file
+            mock_path_class.return_value.__truediv__.return_value.__truediv__.return_value = (
+                mock_file
+            )
 
             response = await client.get(
                 f"/api/v1/charts/{chart.id}/download-pdf",
@@ -404,4 +406,4 @@ class TestDownloadPDFEndpoint:
         )
 
         # get_current_user raises HTTPException with 403 when no auth
-        assert response.status_code == 403
+        assert response.status_code == 401

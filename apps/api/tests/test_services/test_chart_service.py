@@ -66,9 +66,7 @@ class TestNeedsRecalculation:
         chart.zodiac_type = "tropical"
         chart.node_type = "true"
 
-        update_data = BirthChartUpdate(
-            birth_datetime=datetime(1990, 5, 15, 12, 0)
-        )
+        update_data = BirthChartUpdate(birth_datetime=datetime(1990, 5, 15, 12, 0))
 
         result = _needs_recalculation(update_data, chart)
         assert result is True
@@ -168,7 +166,7 @@ class TestNeedsRecalculation:
 
         update_data = BirthChartUpdate(
             person_name="New Name",  # No recalc
-            latitude=-22.9068  # Recalc needed
+            latitude=-22.9068,  # Recalc needed
         )
 
         result = _needs_recalculation(update_data, chart)
@@ -180,7 +178,7 @@ class TestUpdateBirthChart:
 
     @pytest.mark.asyncio
     async def test_update_without_recalculation(self):
-        """Update without birth data changes should not recalculate."""
+        """Update without birth data changes should not trigger Celery task."""
         chart_id = uuid4()
         user_id = uuid4()
 
@@ -204,21 +202,21 @@ class TestUpdateBirthChart:
             mock_repo_instance.update.return_value = mock_chart
             MockRepo.return_value = mock_repo_instance
 
-            with patch("app.services.chart_service.calculate_birth_chart") as mock_calc:
-                with patch("app.services.chart_service.AuditRepository") as MockAudit:
-                    mock_audit_instance = AsyncMock()
-                    MockAudit.return_value = mock_audit_instance
+            with patch("app.services.chart_service.AuditRepository") as MockAudit:
+                mock_audit_instance = AsyncMock()
+                MockAudit.return_value = mock_audit_instance
 
+                with patch("app.services.chart_service.generate_birth_chart_task") as mock_task:
                     mock_db = AsyncMock()
                     result = await update_birth_chart(mock_db, chart_id, user_id, update_data)
 
-                    # Should not call calculate_birth_chart
-                    mock_calc.assert_not_called()
+                    # Should NOT dispatch Celery task (no recalc needed)
+                    mock_task.delay.assert_not_called()
                     assert result.person_name == "New Name"
 
     @pytest.mark.asyncio
     async def test_update_with_recalculation(self):
-        """Update with birth data changes should recalculate."""
+        """Update with birth data changes should trigger Celery task for recalculation."""
         chart_id = uuid4()
         user_id = uuid4()
 
@@ -233,12 +231,10 @@ class TestUpdateBirthChart:
         mock_chart.house_system = "placidus"
         mock_chart.zodiac_type = "tropical"
         mock_chart.node_type = "true"
-        mock_chart.chart_data = {}
+        mock_chart.chart_data = {"planets": [], "houses": []}  # Has existing data
 
         new_latitude = -22.9068
         update_data = BirthChartUpdate(latitude=new_latitude)
-
-        mock_calculated_data = {"planets": [], "houses": [], "aspects": []}
 
         with patch("app.services.chart_service.ChartRepository") as MockRepo:
             mock_repo_instance = AsyncMock()
@@ -246,24 +242,29 @@ class TestUpdateBirthChart:
             mock_repo_instance.update.return_value = mock_chart
             MockRepo.return_value = mock_repo_instance
 
-            with patch("app.services.chart_service.calculate_birth_chart") as mock_calc:
-                mock_calc.return_value = mock_calculated_data
+            with patch("app.services.chart_service.InterpretationRepository") as MockInterpRepo:
+                mock_interp_repo = AsyncMock()
+                mock_interp_repo.delete_by_chart_id.return_value = 5  # Mock deleted count
+                MockInterpRepo.return_value = mock_interp_repo
 
-                with patch("app.services.chart_service.InterpretationServiceRAG") as MockInterp:
-                    mock_interp_instance = AsyncMock()
-                    MockInterp.return_value = mock_interp_instance
+                with patch("app.services.chart_service.AuditRepository") as MockAudit:
+                    mock_audit_instance = AsyncMock()
+                    MockAudit.return_value = mock_audit_instance
 
-                    with patch("app.services.chart_service.AuditRepository") as MockAudit:
-                        mock_audit_instance = AsyncMock()
-                        MockAudit.return_value = mock_audit_instance
-
+                    with patch("app.services.chart_service.generate_birth_chart_task") as mock_task:
                         mock_db = AsyncMock()
                         result = await update_birth_chart(mock_db, chart_id, user_id, update_data)
 
-                        # Should call calculate_birth_chart
-                        mock_calc.assert_called_once()
-                        # Chart data should be updated
-                        assert mock_chart.chart_data == mock_calculated_data
+                        # Should dispatch Celery task for recalculation
+                        mock_task.delay.assert_called_once_with(str(chart_id))
+                        # Chart data should be cleared (will be regenerated by Celery task)
+                        assert mock_chart.chart_data is None
+                        # Status should be set to processing
+                        assert mock_chart.status == "processing"
+                        # Progress should be reset
+                        assert mock_chart.progress == 0
+                        # Interpretations should be deleted
+                        mock_interp_repo.delete_by_chart_id.assert_called_once_with(chart_id)
                         # Result should be the updated chart
                         assert result == mock_chart
 

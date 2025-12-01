@@ -2,7 +2,7 @@
 Astrological calculation service using Swiss Ephemeris (PySwisseph).
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -600,6 +600,35 @@ def calculate_arabic_parts(
 
     parts = {}
 
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # Arabic Parts (Lots) - Traditional Hellenistic Astrology
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # All parts use the formula: ASC + Planet1 - Planet2 (modulo 360)
+    # Most reverse by sect (day/night), except Part of Exaltation (fixed formula)
+    #
+    # CORE PARTS (Phase 1):
+    #   1. Fortune:   Day: ASC + Moon - Sun      | Night: ASC + Sun - Moon
+    #   2. Spirit:    Day: ASC + Sun - Moon      | Night: ASC + Moon - Sun
+    #   3. Eros:      Day: ASC + Venus - Spirit  | Night: ASC + Spirit - Venus
+    #   4. Necessity: Day: ASC + Fortune - Mercury | Night: ASC + Mercury - Fortune
+    #
+    # EXTENDED PARTS (Phase 2 - Issue #110):
+    #   5. Marriage:   Day: ASC + Venus - Saturn  | Night: ASC + Saturn - Venus
+    #   6. Victory:    Day: ASC + Jupiter - Fortune | Night: ASC + Fortune - Jupiter
+    #   7. Father:     Day: ASC + Sun - Saturn    | Night: ASC + Saturn - Sun
+    #   8. Mother:     Day: ASC + Moon - Venus    | Night: ASC + Venus - Moon
+    #   9. Children:   Day: ASC + Jupiter - Moon  | Night: ASC + Moon - Jupiter
+    #  10. Exaltation: ASC + 19° (Sun's exaltation) - Sun  [FIXED - no reversal]
+    #  11. Illness:    Day: ASC + Mars - Saturn   | Night: ASC + Saturn - Mars
+    #  12. Courage:    Day: ASC + Fortune - Mars  | Night: ASC + Mars - Fortune
+    #  13. Reputation: Day: ASC + Fortune - Spirit | Night: ASC + Spirit - Fortune
+    #
+    # References:
+    #   - Vettius Valens, Anthology
+    #   - Firmicus Maternus, Mathesis
+    #   - Al-Biruni, Book of Instruction
+    # ═══════════════════════════════════════════════════════════════════════════════
+
     # 1. Part of Fortune (Lote da Fortuna)
     # Most important Arabic Part - body, health, material wealth
     # Diurnal: Asc + Moon - Sun
@@ -666,6 +695,154 @@ def calculate_arabic_parts(
         "house": get_house_for_position(necessity_lon, house_cusps),
     }
 
+    # Additional Arabic Parts (Issue #110 - Phase 2)
+    # Get additional planet longitudes
+    saturn_lon = get_planet_long("Saturn")
+    mars_lon = get_planet_long("Mars")
+    jupiter_lon = get_planet_long("Jupiter")
+
+    # 5. Part of Marriage (Lote do Casamento)
+    # Relationships, partnerships, matrimony
+    # Diurnal: Asc + Venus - Saturn
+    # Nocturnal: Asc + Saturn - Venus
+    if is_diurnal:
+        marriage_lon = (ascendant + venus_lon - saturn_lon) % 360
+    else:
+        marriage_lon = (ascendant + saturn_lon - venus_lon) % 360
+
+    parts["marriage"] = {
+        "longitude": marriage_lon,
+        "sign": get_sign(marriage_lon),
+        "degree": marriage_lon % 30,
+        "house": get_house_for_position(marriage_lon, house_cusps),
+    }
+
+    # 6. Part of Victory (Lote da Vitória)
+    # Success, triumph, achievement
+    # Diurnal: Asc + Jupiter - Fortune
+    # Nocturnal: Asc + Fortune - Jupiter
+    if is_diurnal:
+        victory_lon = (ascendant + jupiter_lon - fortune_lon) % 360
+    else:
+        victory_lon = (ascendant + fortune_lon - jupiter_lon) % 360
+
+    parts["victory"] = {
+        "longitude": victory_lon,
+        "sign": get_sign(victory_lon),
+        "degree": victory_lon % 30,
+        "house": get_house_for_position(victory_lon, house_cusps),
+    }
+
+    # 7. Part of Father (Lote do Pai)
+    # Paternal figure, authority, guidance
+    # Diurnal: Asc + Sun - Saturn
+    # Nocturnal: Asc + Saturn - Sun
+    if is_diurnal:
+        father_lon = (ascendant + sun_longitude - saturn_lon) % 360
+    else:
+        father_lon = (ascendant + saturn_lon - sun_longitude) % 360
+
+    parts["father"] = {
+        "longitude": father_lon,
+        "sign": get_sign(father_lon),
+        "degree": father_lon % 30,
+        "house": get_house_for_position(father_lon, house_cusps),
+    }
+
+    # 8. Part of Mother (Lote da Mãe)
+    # Maternal figure, nurturing, roots
+    # Diurnal: Asc + Moon - Venus
+    # Nocturnal: Asc + Venus - Moon
+    if is_diurnal:
+        mother_lon = (ascendant + moon_longitude - venus_lon) % 360
+    else:
+        mother_lon = (ascendant + venus_lon - moon_longitude) % 360
+
+    parts["mother"] = {
+        "longitude": mother_lon,
+        "sign": get_sign(mother_lon),
+        "degree": mother_lon % 30,
+        "house": get_house_for_position(mother_lon, house_cusps),
+    }
+
+    # 9. Part of Children (Lote dos Filhos)
+    # Offspring, creativity, fertility
+    # Diurnal: Asc + Jupiter - Moon
+    # Nocturnal: Asc + Moon - Jupiter
+    if is_diurnal:
+        children_lon = (ascendant + jupiter_lon - moon_longitude) % 360
+    else:
+        children_lon = (ascendant + moon_longitude - jupiter_lon) % 360
+
+    parts["children"] = {
+        "longitude": children_lon,
+        "sign": get_sign(children_lon),
+        "degree": children_lon % 30,
+        "house": get_house_for_position(children_lon, house_cusps),
+    }
+
+    # 10. Part of Exaltation (Lote da Exaltação)
+    # Honor, recognition, elevation
+    # FIXED FORMULA (does not reverse by sect): Asc + 19° Aries - Sun
+    # 19° Aries = Sun's exaltation degree (absolute longitude 19.0)
+    SUN_EXALTATION_DEGREE = 19.0
+    exaltation_lon = (ascendant + SUN_EXALTATION_DEGREE - sun_longitude) % 360
+
+    parts["exaltation"] = {
+        "longitude": exaltation_lon,
+        "sign": get_sign(exaltation_lon),
+        "degree": exaltation_lon % 30,
+        "house": get_house_for_position(exaltation_lon, house_cusps),
+    }
+
+    # 11. Part of Illness (Lote da Doença)
+    # Health challenges, vulnerabilities
+    # Diurnal: Asc + Mars - Saturn
+    # Nocturnal: Asc + Saturn - Mars
+    if is_diurnal:
+        illness_lon = (ascendant + mars_lon - saturn_lon) % 360
+    else:
+        illness_lon = (ascendant + saturn_lon - mars_lon) % 360
+
+    parts["illness"] = {
+        "longitude": illness_lon,
+        "sign": get_sign(illness_lon),
+        "degree": illness_lon % 30,
+        "house": get_house_for_position(illness_lon, house_cusps),
+    }
+
+    # 12. Part of Courage (Lote da Coragem)
+    # Bravery, boldness, initiative
+    # Diurnal: Asc + Fortune - Mars
+    # Nocturnal: Asc + Mars - Fortune
+    if is_diurnal:
+        courage_lon = (ascendant + fortune_lon - mars_lon) % 360
+    else:
+        courage_lon = (ascendant + mars_lon - fortune_lon) % 360
+
+    parts["courage"] = {
+        "longitude": courage_lon,
+        "sign": get_sign(courage_lon),
+        "degree": courage_lon % 30,
+        "house": get_house_for_position(courage_lon, house_cusps),
+    }
+
+    # 13. Part of Reputation (Lote da Reputação)
+    # Fame, public image, social standing
+    # Diurnal: Asc + Fortune - Spirit
+    # Nocturnal: Asc + Spirit - Fortune
+    if is_diurnal:
+        reputation_lon = (ascendant + fortune_lon - spirit_lon) % 360
+    else:
+        reputation_lon = (ascendant + spirit_lon - fortune_lon) % 360
+
+    parts["reputation"] = {
+        "longitude": reputation_lon,
+        "sign": get_sign(reputation_lon),
+        "degree": reputation_lon % 30,
+        "house": get_house_for_position(reputation_lon, house_cusps),
+    }
+
     return parts
 
 
@@ -675,6 +852,7 @@ def calculate_birth_chart(
     latitude: float,
     longitude: float,
     house_system: str = "placidus",
+    language: str = "pt-BR",
 ) -> dict[str, Any]:
     """
     Calculate complete birth chart.
@@ -685,6 +863,7 @@ def calculate_birth_chart(
         latitude: Geographic latitude
         longitude: Geographic longitude
         house_system: House system to use
+        language: Language for interpretations ('pt-BR' or 'en-US')
 
     Returns:
         Complete chart data dictionary
@@ -716,10 +895,10 @@ def calculate_birth_chart(
     sect = calculate_sect(ascendant, sun_longitude)
 
     # Calculate lunar phase
-    lunar_phase = calculate_lunar_phase(sun_longitude, moon_longitude)
+    lunar_phase = calculate_lunar_phase(sun_longitude, moon_longitude, language)
 
     # Calculate solar phase
-    solar_phase = calculate_solar_phase(sun_sign)
+    solar_phase = calculate_solar_phase(sun_sign, language)
 
     # Add essential dignities to each planet
     planets_with_dignities = []
@@ -735,7 +914,7 @@ def calculate_birth_chart(
     aspects = calculate_aspects(planets)
 
     # Find Lord of Nativity (planet with highest essential dignity score)
-    lord_of_nativity = find_lord_of_nativity(planets_with_dignities)
+    lord_of_nativity = find_lord_of_nativity(planets_with_dignities, language)
 
     # Calculate Temperament based on 5 traditional factors
     # Get ascendant sign
@@ -747,7 +926,9 @@ def calculate_birth_chart(
     ascendant_ruler_data = next(
         (p for p in planets_with_dignities if p.get("name") == ascendant_ruler_name), None
     )
-    ascendant_ruler_sign = ascendant_ruler_data.get("sign", ascendant_sign) if ascendant_ruler_data else ascendant_sign
+    ascendant_ruler_sign = (
+        ascendant_ruler_data.get("sign", ascendant_sign) if ascendant_ruler_data else ascendant_sign
+    )
     ascendant_ruler_dignities = (
         ascendant_ruler_data.get("dignities", {}).get("dignities")
         if ascendant_ruler_data and ascendant_ruler_data.get("dignities")
@@ -755,11 +936,13 @@ def calculate_birth_chart(
     )
 
     # Get lord of nativity, its sign, and dignities
-    lord_of_nativity_name = lord_of_nativity["planet"] if lord_of_nativity else "Sun"
+    lord_of_nativity_name = lord_of_nativity["planet_key"] if lord_of_nativity else "Sun"
     lord_of_nativity_data = next(
         (p for p in planets_with_dignities if p.get("name") == lord_of_nativity_name), None
     )
-    lord_of_nativity_sign = lord_of_nativity_data.get("sign", "Aries") if lord_of_nativity_data else "Aries"
+    lord_of_nativity_sign = (
+        lord_of_nativity_data.get("sign", "Aries") if lord_of_nativity_data else "Aries"
+    )
     lord_of_nativity_dignities = (
         lord_of_nativity_data.get("dignities", {}).get("dignities")
         if lord_of_nativity_data and lord_of_nativity_data.get("dignities")
@@ -777,6 +960,7 @@ def calculate_birth_chart(
         lord_of_nativity_sign=lord_of_nativity_sign,
         ascendant_ruler_dignities=ascendant_ruler_dignities,
         lord_of_nativity_dignities=lord_of_nativity_dignities,
+        language=language,
     )
 
     # Calculate Arabic Parts (Lots)
@@ -805,5 +989,5 @@ def calculate_birth_chart(
         "lord_of_nativity": lord_of_nativity,
         "temperament": temperament,
         "arabic_parts": arabic_parts,
-        "calculation_timestamp": datetime.utcnow().isoformat(),
+        "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

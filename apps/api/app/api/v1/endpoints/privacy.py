@@ -2,7 +2,7 @@
 Privacy and LGPD/GDPR compliance endpoints.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -115,13 +115,16 @@ async def export_user_data(
 
     # 5. Audit logs (últimos 90 dias apenas - para não expor demais)
     from datetime import timedelta
-    cutoff_date = datetime.utcnow() - timedelta(days=90)
+
+    cutoff_date = datetime.now(UTC) - timedelta(days=90)
 
     audit_result = await db.execute(
-        select(AuditLog).where(
+        select(AuditLog)
+        .where(
             AuditLog.user_id == current_user.id,
             AuditLog.created_at >= cutoff_date,
-        ).order_by(AuditLog.created_at.desc())
+        )
+        .order_by(AuditLog.created_at.desc())
     )
     audit_logs = audit_result.scalars().all()
     audit_data = [
@@ -138,7 +141,7 @@ async def export_user_data(
     # Montar JSON final
     export_data = {
         "export_info": {
-            "requested_at": datetime.utcnow().isoformat(),
+            "requested_at": datetime.now(UTC).isoformat(),
             "format": "JSON",
             "compliance": "LGPD Art. 18, V - Direito à portabilidade de dados",
         },
@@ -202,7 +205,7 @@ async def delete_user_account(
         )
 
     # Marcar para soft delete
-    current_user.deleted_at = datetime.utcnow()
+    current_user.deleted_at = datetime.now(UTC)
 
     # Audit log
     audit_log = AuditLog(
@@ -220,9 +223,7 @@ async def delete_user_account(
     return {
         "message": "Solicitação de exclusão registrada com sucesso",
         "deleted_at": current_user.deleted_at.isoformat(),
-        "permanent_deletion_date": (
-            current_user.deleted_at + timedelta(days=30)
-        ).isoformat(),
+        "permanent_deletion_date": (current_user.deleted_at + timedelta(days=30)).isoformat(),
         "cancellation_instructions": "Para cancelar a exclusão, faça login novamente nos próximos 30 dias",
     }
 
@@ -252,7 +253,7 @@ async def cancel_account_deletion(
     # Verificar se ainda está no período de carência (30 dias)
     from datetime import timedelta
 
-    if datetime.utcnow() > (current_user.deleted_at + timedelta(days=30)):
+    if datetime.now(UTC) > (current_user.deleted_at + timedelta(days=30)):
         raise HTTPException(
             status_code=status.HTTP_410_GONE,
             detail="Período de carência expirado. Conta será excluída em breve.",

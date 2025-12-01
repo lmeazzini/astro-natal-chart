@@ -41,6 +41,7 @@ class InterpretationCacheService:
         parameters: dict[str, Any],
         model: str,
         prompt_version: str,
+        language: str = "pt-BR",
     ) -> str:
         """
         Generate a unique cache key from interpretation parameters.
@@ -50,6 +51,7 @@ class InterpretationCacheService:
             parameters: Dictionary of parameters used for interpretation
             model: OpenAI model name
             prompt_version: Version of the prompt template
+            language: Language code for the interpretation (e.g., 'pt-BR', 'en-US')
 
         Returns:
             SHA-256 hash string (64 characters)
@@ -60,6 +62,7 @@ class InterpretationCacheService:
             "params": parameters,
             "model": model,
             "prompt_version": prompt_version,
+            "language": language,
         }
         # Sort keys to ensure consistent ordering
         key_string = json.dumps(key_data, sort_keys=True, ensure_ascii=True)
@@ -71,6 +74,7 @@ class InterpretationCacheService:
         parameters: dict[str, Any],
         model: str,
         prompt_version: str,
+        language: str = "pt-BR",
     ) -> str | None:
         """
         Get cached interpretation if available.
@@ -80,17 +84,16 @@ class InterpretationCacheService:
             parameters: Dictionary of parameters
             model: OpenAI model name
             prompt_version: Version of prompt template
+            language: Language code for the interpretation (e.g., 'pt-BR', 'en-US')
 
         Returns:
             Cached interpretation content or None if not found
         """
         cache_key = self.generate_cache_key(
-            interpretation_type, parameters, model, prompt_version
+            interpretation_type, parameters, model, prompt_version, language
         )
 
-        stmt = select(InterpretationCache).where(
-            InterpretationCache.cache_key == cache_key
-        )
+        stmt = select(InterpretationCache).where(InterpretationCache.cache_key == cache_key)
         result = await self.db.execute(stmt)
         cache_entry = result.scalar_one_or_none()
 
@@ -124,6 +127,7 @@ class InterpretationCacheService:
         content: str,
         model: str,
         prompt_version: str,
+        language: str = "pt-BR",
     ) -> InterpretationCache:
         """
         Store interpretation in cache.
@@ -135,12 +139,13 @@ class InterpretationCacheService:
             content: Generated interpretation text
             model: OpenAI model name
             prompt_version: Version of prompt template
+            language: Language code for the interpretation (e.g., 'pt-BR', 'en-US')
 
         Returns:
             Created cache entry
         """
         cache_key = self.generate_cache_key(
-            interpretation_type, parameters, model, prompt_version
+            interpretation_type, parameters, model, prompt_version, language
         )
 
         cache_entry = InterpretationCache(
@@ -158,9 +163,7 @@ class InterpretationCacheService:
             await self.db.commit()
             await self.db.refresh(cache_entry)
 
-            logger.info(
-                f"Cached new interpretation for {interpretation_type}: {subject}"
-            )
+            logger.info(f"Cached new interpretation for {interpretation_type}: {subject}")
             return cache_entry
         except IntegrityError:
             # Race condition: another request already created this entry
@@ -169,9 +172,7 @@ class InterpretationCacheService:
 
             # Fetch and return the existing entry
             existing = await self.db.execute(
-                select(InterpretationCache).where(
-                    InterpretationCache.cache_key == cache_key
-                )
+                select(InterpretationCache).where(InterpretationCache.cache_key == cache_key)
             )
             existing_entry = existing.scalar_one_or_none()
             if existing_entry:
@@ -194,7 +195,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        deleted = result.rowcount > 0
+        deleted: bool = result.rowcount > 0  # type: ignore[attr-defined]
         if deleted:
             logger.info(f"Deleted cache entry {cache_id}")
         return deleted
@@ -212,13 +213,11 @@ class InterpretationCacheService:
         ttl = ttl_days or self.DEFAULT_TTL_DAYS
         cutoff_date = datetime.now(UTC) - timedelta(days=ttl)
 
-        stmt = delete(InterpretationCache).where(
-            InterpretationCache.last_accessed_at < cutoff_date
-        )
+        stmt = delete(InterpretationCache).where(InterpretationCache.last_accessed_at < cutoff_date)
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        count = result.rowcount
+        count: int = result.rowcount  # type: ignore[attr-defined]
         if count > 0:
             logger.info(f"Cleared {count} expired cache entries (TTL: {ttl} days)")
         return count
@@ -241,7 +240,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        count = result.rowcount
+        count: int = result.rowcount  # type: ignore[attr-defined]
         if count > 0:
             logger.info(f"Cleared {count} cache entries for prompt version {prompt_version}")
         return count
@@ -257,7 +256,7 @@ class InterpretationCacheService:
         result = await self.db.execute(stmt)
         await self.db.commit()
 
-        count = result.rowcount
+        count: int = result.rowcount  # type: ignore[attr-defined]
         logger.warning(f"Cleared ALL {count} cache entries")
         return count
 
@@ -303,14 +302,16 @@ class InterpretationCacheService:
         # Estimated cost savings (assuming $0.00015 per 1K input tokens, $0.0006 per 1K output)
         # Average prompt ~500 tokens, response ~300 tokens
         # Cost per call: (0.5 * 0.00015) + (0.3 * 0.0006) = $0.000255
-        estimated_savings = (total_hits - total_entries) * 0.000255 if total_hits > total_entries else 0
+        estimated_savings = (
+            (total_hits - total_entries) * 0.000255 if total_hits > total_entries else 0
+        )
 
         return {
             "total_entries": total_entries,
             "total_hits": total_hits,
-            "cache_hit_ratio": round(
-                (total_hits - total_entries) / total_hits * 100, 2
-            ) if total_hits > 0 else 0,
+            "cache_hit_ratio": round((total_hits - total_entries) / total_hits * 100, 2)
+            if total_hits > 0
+            else 0,
             "entries_by_type": entries_by_type,
             "oldest_entry": oldest_entry.isoformat() if oldest_entry else None,
             "newest_entry": newest_entry.isoformat() if newest_entry else None,

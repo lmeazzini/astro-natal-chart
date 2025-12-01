@@ -27,9 +27,7 @@ class TimezoneDetectRequest(BaseModel):
 class TimezoneDetectResponse(BaseModel):
     """Schema for timezone detection response."""
 
-    timezone_id: str | None = Field(
-        None, description="Detected IANA timezone identifier"
-    )
+    timezone_id: str | None = Field(None, description="Detected IANA timezone identifier")
     timezone_info: TimezoneInfo | None = Field(
         None, description="Full timezone information if detected"
     )
@@ -55,9 +53,7 @@ class TimezoneListResponse(BaseModel):
 class TimezoneGroupedResponse(BaseModel):
     """Schema for timezones grouped by region."""
 
-    regions: dict[str, list[TimezoneInfo]] = Field(
-        ..., description="Timezones grouped by region"
-    )
+    regions: dict[str, list[TimezoneInfo]] = Field(..., description="Timezones grouped by region")
     total: int = Field(..., description="Total number of timezones")
 
 
@@ -66,6 +62,4 @@ class TimezoneValidateResponse(BaseModel):
 
     timezone_id: str = Field(..., description="Timezone identifier that was validated")
     valid: bool = Field(..., description="Whether the timezone is valid")
-    info: TimezoneInfo | None = Field(
-        None, description="Timezone info if valid"
-    )
+    info: TimezoneInfo | None = Field(None, description="Timezone info if valid")

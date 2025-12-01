@@ -1,4 +1,5 @@
 """Tests for RAG interpretation endpoints (available to all users)."""
+
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
@@ -15,8 +16,8 @@ from app.services.interpretation_service_rag import RAG_PROMPT_VERSION
 
 @pytest.fixture
 def test_chart_data() -> dict:
-    """Sample chart calculation result for testing."""
-    return {
+    """Sample chart calculation result for testing (language-first format)."""
+    base_data = {
         "planets": [
             {
                 "name": "Sun",
@@ -66,6 +67,11 @@ def test_chart_data() -> dict:
         "ascendant": 123.456,
         "mc": 234.567,
         "sect": "diurnal",
+    }
+    # Return language-first format
+    return {
+        "en-US": base_data,
+        "pt-BR": base_data,
     }
 
 
@@ -135,7 +141,14 @@ async def test_chart_with_interpretations(
         content="Cached interpretation for Sun in Taurus...",
         openai_model="gpt-4o-mini-rag",
         prompt_version=RAG_PROMPT_VERSION,
-        rag_sources=[{"source": "Test Book", "page": "42", "relevance_score": 0.95, "content_preview": "Preview..."}],
+        rag_sources=[
+            {
+                "source": "Test Book",
+                "page": "42",
+                "relevance_score": 0.95,
+                "content_preview": "Preview...",
+            }
+        ],
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -149,21 +162,23 @@ async def test_chart_with_interpretations(
 @pytest.fixture
 def mock_rag_services():
     """Mock RAG services for interpretation generation."""
-    with patch('app.api.v1.endpoints.interpretations.InterpretationServiceRAG') as mock_rag_class:
+    with patch("app.api.v1.endpoints.interpretations.InterpretationServiceRAG") as mock_rag_class:
         mock_instance = AsyncMock()
         mock_rag_class.return_value = mock_instance
 
         # Mock methods using the new public method name
-        mock_instance.retrieve_context = AsyncMock(return_value=[
-            {
-                "payload": {
-                    "content": "Test astrological content about Sun in Taurus",
-                    "title": "Traditional Astrology",
-                    "metadata": {"source": "Test Source", "page": 42},
-                },
-                "score": 0.95,
-            }
-        ])
+        mock_instance.retrieve_context = AsyncMock(
+            return_value=[
+                {
+                    "payload": {
+                        "content": "Test astrological content about Sun in Taurus",
+                        "title": "Traditional Astrology",
+                        "metadata": {"source": "Test Source", "page": 42},
+                    },
+                    "score": 0.95,
+                }
+            ]
+        )
         mock_instance._format_rag_context = AsyncMock(
             return_value="Contexto Astrológico Relevante:\nTest astrological context..."
         )
@@ -202,17 +217,17 @@ class TestRAGInterpretationsEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        # Check response structure
-        assert data["source"] == "rag"
+        # Check response structure (RAGInterpretationsResponse)
         assert "planets" in data
         assert "houses" in data
         assert "aspects" in data
         assert "arabic_parts" in data
-        assert "documents_used" in data
+        assert "metadata" in data
+        assert "documents_used" in data["metadata"]
 
         # Check cached planet interpretation
         assert "Sun" in data["planets"]
-        assert data["planets"]["Sun"]["source"] == "rag"
+        assert data["planets"]["Sun"]["source"] == "database"  # Loaded from database
         assert "Cached interpretation" in data["planets"]["Sun"]["content"]
         assert len(data["planets"]["Sun"]["rag_sources"]) > 0
 
@@ -233,7 +248,8 @@ class TestRAGInterpretationsEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert data["source"] == "rag"
+        # Check RAGInterpretationsResponse structure
+        assert "metadata" in data
         assert "planets" in data
 
     @pytest.mark.asyncio
@@ -242,13 +258,13 @@ class TestRAGInterpretationsEndpoints:
         client: AsyncClient,
         test_chart_for_user: BirthChart,
     ):
-        """Test unauthorized access returns 403 (no token provided)."""
+        """Test unauthorized request returns 401 (no token provided)."""
         response = await client.get(
             f"/api/v1/charts/{test_chart_for_user.id}/interpretations",
         )
 
         # FastAPI returns 403 when no token is provided via get_current_user dependency
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_get_interpretations_chart_not_found(
@@ -376,9 +392,10 @@ class TestRAGInterpretationsEndpoints:
         assert response.status_code == 200
         data = response.json()
 
-        assert data["source"] == "rag"
+        # Check RAGInterpretationsResponse structure
+        assert "metadata" in data
         assert "planets" in data
-        assert "documents_used" in data
+        assert "documents_used" in data["metadata"]
 
     @pytest.mark.asyncio
     async def test_regenerate_interpretations_unauthorized(
@@ -386,13 +403,13 @@ class TestRAGInterpretationsEndpoints:
         client: AsyncClient,
         test_chart_for_user: BirthChart,
     ):
-        """Test unauthorized regeneration returns 403 (no token provided)."""
+        """Test unauthorized request returns 401 (no token provided)."""
         response = await client.post(
             f"/api/v1/charts/{test_chart_for_user.id}/interpretations/regenerate",
         )
 
         # FastAPI returns 403 when no token is provided via get_current_user dependency
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_regenerate_interpretations_chart_not_found(
@@ -420,9 +437,10 @@ class TestRAGServiceIntegration:
         from app.services.interpretation_service_rag import InterpretationServiceRAG
 
         # Check method exists and is not private (doesn't start with _)
-        assert hasattr(InterpretationServiceRAG, 'retrieve_context')
-        assert not hasattr(InterpretationServiceRAG, '_retrieve_context') or \
-               hasattr(InterpretationServiceRAG, 'retrieve_context')
+        assert hasattr(InterpretationServiceRAG, "retrieve_context")
+        assert not hasattr(InterpretationServiceRAG, "_retrieve_context") or hasattr(
+            InterpretationServiceRAG, "retrieve_context"
+        )
 
     @pytest.mark.asyncio
     async def test_constants_are_exported(self):

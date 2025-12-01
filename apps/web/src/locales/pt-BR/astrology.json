@@ -17,7 +17,9 @@
     "Neptune": "Netuno",
     "Pluto": "Plutão",
     "NorthNode": "Nodo Norte",
+    "North Node": "Nodo Norte",
     "SouthNode": "Nodo Sul",
+    "South Node": "Nodo Sul",
     "Chiron": "Quíron"
   },
   "signs": {
@@ -84,13 +86,32 @@
     "dignity": "Dignidade",
     "dignities": "Dignidades",
     "domicile": "Domicílio",
+    "ruler": "Domicílio",
+    "exalted": "Exaltação",
     "exaltation": "Exaltação",
     "triplicity": "Triplicidade",
     "term": "Termo",
     "face": "Face",
-    "detriment": "Exílio",
+    "detriment": "Detrimento",
     "fall": "Queda",
-    "peregrine": "Peregrino"
+    "peregrine": "Peregrino",
+    "classification": {
+      "very_strong": "Muito Forte",
+      "strong": "Forte",
+      "moderate": "Moderado",
+      "weak": "Fraco",
+      "very_weak": "Muito Fraco"
+    },
+    "explanation": {
+      "no_info": "Sem informações de dignidades disponíveis.",
+      "ruler": "{{planet}} está em domicílio em {{sign}}, manifestando suas qualidades naturais com força total.",
+      "exalted": "{{planet}} está exaltado em {{sign}}, manifestando suas melhores qualidades de forma harmoniosa.",
+      "fall": "{{planet}} está em queda em {{sign}}, suas qualidades estão debilitadas e podem manifestar-se de forma desafiadora.",
+      "detriment": "{{planet}} está em detrimento em {{sign}}, encontrando dificuldades para expressar suas qualidades naturais.",
+      "minor": "{{planet}} possui dignidades menores em {{sign}}, tendo alguma força apesar de não estar em domicílio ou exaltação.",
+      "peregrine": "{{planet}} está peregrino em {{sign}}, sem dignidades essenciais significativas.",
+      "debilitated": "{{planet}} está debilitado em {{sign}}."
+    }
   },
   "sect": {
     "sect": "Secto",

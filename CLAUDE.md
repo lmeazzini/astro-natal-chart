@@ -10,7 +10,7 @@ This is a **natal chart (birth chart) generation system** using traditional astr
 
 **Tech Stack:**
 - **Monorepo**: Turborepo (npm workspaces)
-- **Backend**: Python 3.11+ with FastAPI (async), PostgreSQL 16 (JSONB), Redis
+- **Backend**: Python 3.13+ with FastAPI (async), PostgreSQL 16 (JSONB), Redis
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
 - **Astrology Engine**: PySwisseph (Moshier ephemeris - built-in)
 - **Infrastructure**: Docker Compose for development
@@ -548,6 +548,119 @@ Comprehensive tests in `apps/api/tests/test_services/test_s3_service.py`:
 - `VITE_API_URL`: Backend API URL (http://localhost:8000 in dev)
 - `VITE_GOOGLE_CLIENT_ID`: For Google OAuth button
 
+### Amplitude Analytics Integration
+
+**Location:** `apps/api/app/services/amplitude_service.py` (backend), `apps/web/src/services/amplitude.ts` (frontend)
+
+**Purpose:** Product analytics and user behavior tracking for data-driven decision making.
+
+**Status:** ✅ **IMPLEMENTED** (Issue #83) - Currently tracking authentication flows (login, registration)
+
+**Configuration:**
+
+Backend (`apps/api/.env`):
+```bash
+AMPLITUDE_API_KEY=ba74c26c341b758c91125fc96b517cb9
+AMPLITUDE_ENABLED=true
+```
+
+Frontend (`apps/web/.env`):
+```bash
+VITE_AMPLITUDE_API_KEY=ba74c26c341b758c91125fc96b517cb9
+VITE_AMPLITUDE_ENABLED=true
+```
+
+**Currently Tracked Events:**
+
+| Event | Location | Properties | When |
+|-------|----------|-----------|------|
+| `user_registered` | Backend: `auth.py:63`<br>Frontend: `AuthContext.tsx:137` | `method`, `accept_terms` | On successful registration |
+| `user_logged_in` | Backend: `auth.py:126`<br>Frontend: `AuthContext.tsx:111` | `method` | On successful login |
+| User identity reset | Frontend: `AuthContext.tsx:52` | - | On logout |
+
+**User Properties Set:**
+- `email` - User's email address
+- `full_name` - User's full name
+- `email_verified` - Email verification status (boolean)
+
+**Usage Examples:**
+
+Frontend (TypeScript):
+```typescript
+import { amplitudeService } from '@/services/amplitude';
+
+// Track an event
+amplitudeService.track('chart_created', {
+  house_system: 'placidus',
+  has_interpretations: true,
+});
+
+// Identify a user
+amplitudeService.identify(user.id, {
+  email: user.email,
+  full_name: user.full_name,
+  email_verified: user.email_verified,
+});
+
+// Reset on logout
+amplitudeService.reset();
+```
+
+Backend (Python):
+```python
+from app.services.amplitude_service import amplitude_service
+
+# Track an event
+amplitude_service.track(
+    event_type="chart_created",
+    user_id=str(user.id),
+    event_properties={
+        "house_system": "placidus",
+        "has_interpretations": True,
+    },
+)
+
+# Identify a user
+amplitude_service.identify(
+    user_id=str(user.id),
+    user_properties={
+        "email": user.email,
+        "full_name": user.full_name,
+        "email_verified": user.email_verified,
+    },
+)
+```
+
+**Best Practices:**
+
+⚠️ **IMPORTANT**: Before adding new tracking events, **READ** `docs/AMPLITUDE_BEST_PRACTICES.md`:
+- Use consistent event naming (`snake_case`, `verb_noun` pattern like `user_logged_in`)
+- **Always include `source` property** when action can be triggered from multiple locations
+  - Example: "Create Chart" button on dashboard vs landing page → `source: "dashboard"` vs `source: "landing"`
+  - This enables funnel analysis by entry point
+- Never send sensitive data (passwords, tokens, credit cards, exact birth dates)
+- Validate properties before sending (max 1000 chars for strings)
+- Track events on both frontend and backend when appropriate (see strategy table in manual)
+- Document all new events in the best practices manual catalog
+
+**Testing:**
+
+Amplitude services can be disabled for testing:
+```bash
+# Backend
+AMPLITUDE_ENABLED=false
+
+# Frontend
+VITE_AMPLITUDE_ENABLED=false
+```
+
+When disabled, tracking calls are silently ignored (no-op).
+
+**Resources:**
+- ✅ **Best Practices Manual**: `docs/AMPLITUDE_BEST_PRACTICES.md` (comprehensive guide)
+- Amplitude Dashboard: https://analytics.amplitude.com/
+- Official Docs: https://www.docs.developers.amplitude.com/
+
 ## Critical Development Patterns
 
 ### Adding New Repository
@@ -789,6 +902,7 @@ logger.bind(user_id=user.id).info("Chart created")
 - Docker development environment
 - Redis for caching and rate limiting
 - AI interpretations (OpenAI GPT-4o-mini) - optional
+- **Amplitude Analytics** (Issue #83) - Event tracking for login/registration flows
 - **Testing infrastructure** (439 tests, backend coverage improving)
 - **Traditional Astrology Calculations:**
   - ✅ Sect determination (day/night chart)

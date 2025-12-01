@@ -44,18 +44,12 @@ class BirthChartUpdate(BaseModel):
     visibility: str | None = Field(None, max_length=20)
 
     # Birth data (triggers recalculation if changed)
-    birth_datetime: datetime | None = Field(
-        None, description="Birth date and time in ISO format"
-    )
+    birth_datetime: datetime | None = Field(None, description="Birth date and time in ISO format")
     birth_timezone: str | None = Field(
         None, max_length=50, description="Timezone (e.g., America/Sao_Paulo)"
     )
-    latitude: float | None = Field(
-        None, ge=-90, le=90, description="Birth location latitude"
-    )
-    longitude: float | None = Field(
-        None, ge=-180, le=180, description="Birth location longitude"
-    )
+    latitude: float | None = Field(None, ge=-90, le=90, description="Birth location latitude")
+    longitude: float | None = Field(None, ge=-180, le=180, description="Birth location longitude")
     city: str | None = Field(None, max_length=100)
     country: str | None = Field(None, max_length=100)
 
@@ -173,9 +167,7 @@ class ChartStatusResponse(BaseModel):
 class PDFDownloadResponse(BaseModel):
     """Schema for PDF download/status response."""
 
-    status: str = Field(
-        description="PDF status: ready, generating, failed, not_found"
-    )
+    status: str = Field(description="PDF status: ready, generating, failed, not_found")
     download_url: str | None = Field(
         None,
         description="Presigned S3 URL for download (expires in 1 hour) or local URL",
@@ -185,26 +177,17 @@ class PDFDownloadResponse(BaseModel):
         None,
         description="Seconds until download URL expires (for S3 presigned URLs)",
     )
-    generated_at: datetime | None = Field(
-        None, description="Timestamp when PDF was generated"
-    )
+    generated_at: datetime | None = Field(None, description="Timestamp when PDF was generated")
     message: str | None = Field(None, description="Human-readable status message")
 
 
 class PDFDownloadURLResponse(BaseModel):
     """Schema for PDF download URL endpoint response."""
 
-    download_url: str = Field(
-        description="Direct S3 presigned URL or local file URL for download"
-    )
-    filename: str = Field(
-        description="Suggested filename for the PDF download"
-    )
+    download_url: str = Field(description="Direct S3 presigned URL or local file URL for download")
+    filename: str = Field(description="Suggested filename for the PDF download")
     expires_in: int | None = Field(
         None,
         description="Seconds until download URL expires (only for S3 presigned URLs)",
     )
-    content_type: str = Field(
-        default="application/pdf",
-        description="MIME type of the file"
-    )
+    content_type: str = Field(default="application/pdf", description="MIME type of the file")

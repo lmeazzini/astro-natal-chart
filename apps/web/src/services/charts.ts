@@ -87,6 +87,16 @@ export interface ArabicParts {
   spirit: ArabicPart;
   eros: ArabicPart;
   necessity: ArabicPart;
+  // Extended Arabic Parts (Issue #110 - Phase 2)
+  marriage?: ArabicPart;
+  victory?: ArabicPart;
+  father?: ArabicPart;
+  mother?: ArabicPart;
+  children?: ArabicPart;
+  exaltation?: ArabicPart;
+  illness?: ArabicPart;
+  courage?: ArabicPart;
+  reputation?: ArabicPart;
 }
 
 export interface PlanetSectStatus {
@@ -192,21 +202,14 @@ export const chartsService = {
    * Get chart count for the current user (for limit checking)
    */
   async getCount(token: string): Promise<number> {
-    const result = await apiClient.get<BirthChartList>(
-      '/api/v1/charts/?page=1&page_size=1',
-      token
-    );
+    const result = await apiClient.get<BirthChartList>('/api/v1/charts/?page=1&page_size=1', token);
     return result.total;
   },
 
   /**
    * List user's birth charts
    */
-  async list(
-    token: string,
-    page: number = 1,
-    pageSize: number = 20
-  ): Promise<BirthChartList> {
+  async list(token: string, page: number = 1, pageSize: number = 20): Promise<BirthChartList> {
     return apiClient.get<BirthChartList>(
       `/api/v1/charts/?page=${page}&page_size=${pageSize}`,
       token
@@ -215,9 +218,13 @@ export const chartsService = {
 
   /**
    * Get a specific birth chart
+   * @param chartId - The chart ID
+   * @param token - Authentication token
+   * @param language - Optional language code (e.g., "en-US", "pt-BR") to get localized chart data
    */
-  async getById(chartId: string, token: string): Promise<BirthChart> {
-    return apiClient.get<BirthChart>(`/api/v1/charts/${chartId}`, token);
+  async getById(chartId: string, token: string, language?: string): Promise<BirthChart> {
+    const langParam = language ? `?lang=${language}` : '';
+    return apiClient.get<BirthChart>(`/api/v1/charts/${chartId}${langParam}`, token);
   },
 
   /**
@@ -239,10 +246,7 @@ export const chartsService = {
    * Delete a birth chart
    */
   async delete(chartId: string, token: string, hardDelete: boolean = false): Promise<void> {
-    return apiClient.delete<void>(
-      `/api/v1/charts/${chartId}?hard_delete=${hardDelete}`,
-      token
-    );
+    return apiClient.delete<void>(`/api/v1/charts/${chartId}?hard_delete=${hardDelete}`, token);
   },
 
   /**

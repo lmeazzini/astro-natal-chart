@@ -212,14 +212,12 @@ class TimezoneService:
             timezone_id = tf.timezone_at(lat=latitude, lng=longitude)
             if timezone_id:
                 logger.debug(
-                    f"Detected timezone {timezone_id} for coordinates "
-                    f"({latitude}, {longitude})"
+                    f"Detected timezone {timezone_id} for coordinates ({latitude}, {longitude})"
                 )
             return timezone_id
         except Exception as e:
             logger.warning(
-                f"Failed to detect timezone for coordinates "
-                f"({latitude}, {longitude}): {e}"
+                f"Failed to detect timezone for coordinates ({latitude}, {longitude}): {e}"
             )
             return None
 
@@ -338,9 +336,7 @@ class TimezoneService:
 
         # Sort timezones within each region by offset then name
         for region in grouped:
-            grouped[region].sort(
-                key=lambda x: (x.get("offset_hours", 0), x.get("name", ""))
-            )
+            grouped[region].sort(key=lambda x: (x.get("offset_hours", 0), x.get("name", "")))
 
         return grouped
 

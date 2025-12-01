@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.rate_limit import RateLimits, limiter
+from app.services.amplitude_service import amplitude_service
 from app.services.oauth_service import OAuthService, oauth
 
 router = APIRouter()
@@ -138,6 +139,38 @@ async def oauth_callback(
             avatar_url=user_data.get("avatar_url"),
         )
 
+        # Track OAuth login success (identify user first)
+        amplitude_service.identify(
+            user_id=str(user.id),
+            user_properties={
+                "email": user.email,
+                "full_name": user.full_name,
+                "email_verified": user.email_verified,
+            },
+        )
+
+        # Track appropriate event based on whether user is new or existing
+        if is_new:
+            # New user registered via OAuth
+            amplitude_service.track(
+                event_type="user_registered",
+                user_id=str(user.id),
+                event_properties={
+                    "method": f"oauth_{provider}",
+                    "provider": provider,
+                },
+            )
+        else:
+            # Existing user logged in via OAuth
+            amplitude_service.track(
+                event_type="user_logged_in",
+                user_id=str(user.id),
+                event_properties={
+                    "method": f"oauth_{provider}",
+                    "provider": provider,
+                },
+            )
+
         # Create tokens
         tokens = oauth_service.create_tokens_for_user(user)
 
@@ -153,6 +186,15 @@ async def oauth_callback(
         return RedirectResponse(url=redirect_url)
 
     except Exception as e:
+        # Track OAuth failure (no user_id available in error case)
+        amplitude_service.track(
+            event_type="oauth_login_failed",
+            event_properties={
+                "provider": provider,
+                "error_type": type(e).__name__,
+            },
+        )
+
         # In production, log this error
         raise HTTPException(status_code=400, detail=f"OAuth authentication failed: {str(e)}") from e
 

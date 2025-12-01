@@ -3,7 +3,7 @@ Privacy and LGPD compliance Celery tasks.
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from loguru import logger
 from sqlalchemy import delete, select
@@ -45,7 +45,7 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
     """Versão async da tarefa de hard delete."""
     async with AsyncSessionLocal() as db:
         # Data de corte: 30 dias atrás
-        cutoff_date = datetime.utcnow() - timedelta(days=30)
+        cutoff_date = datetime.now(UTC) - timedelta(days=30)
 
         # Encontrar usuários para hard delete
         result = await db.execute(
@@ -76,7 +76,7 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
                 ip_address=None,
                 details={
                     "deleted_at": user.deleted_at.isoformat() if user.deleted_at else None,
-                    "hard_deleted_at": datetime.utcnow().isoformat(),
+                    "hard_deleted_at": datetime.now(UTC).isoformat(),
                     "retention_period_days": 30,
                 },
             )
@@ -86,25 +86,25 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
             charts_result = await db.execute(
                 delete(BirthChart).where(BirthChart.user_id == user.id)
             )
-            stats["birth_charts_deleted"] += charts_result.rowcount or 0
+            stats["birth_charts_deleted"] += charts_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 2. Deletar contas OAuth
             oauth_result = await db.execute(
                 delete(OAuthAccount).where(OAuthAccount.user_id == user.id)
             )
-            stats["oauth_accounts_deleted"] += oauth_result.rowcount or 0
+            stats["oauth_accounts_deleted"] += oauth_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 3. Deletar consentimentos
             consents_result = await db.execute(
                 delete(UserConsent).where(UserConsent.user_id == user.id)
             )
-            stats["consents_deleted"] += consents_result.rowcount or 0
+            stats["consents_deleted"] += consents_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 4. Deletar tokens de reset
             tokens_result = await db.execute(
                 delete(PasswordResetToken).where(PasswordResetToken.user_id == user.id)
             )
-            stats["password_reset_tokens_deleted"] += tokens_result.rowcount or 0
+            stats["password_reset_tokens_deleted"] += tokens_result.rowcount or 0  # type: ignore[attr-defined]
 
             # 5. Deletar usuário
             await db.delete(user)

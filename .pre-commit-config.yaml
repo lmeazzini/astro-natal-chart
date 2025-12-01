@@ -1,0 +1,110 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_language_version:
+  python: python3.13
+
+repos:
+  # =============================================================================
+  # General hooks
+  # =============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^apps/web/src/locales/
+      - id: end-of-file-fixer
+        exclude: ^apps/web/src/locales/
+      - id: check-yaml
+        args: [--unsafe]  # Allow custom tags in YAML
+      - id: check-json
+        exclude: ^apps/web/tsconfig.*\.json$  # tsconfig files allow comments (JSONC)
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: detect-private-key
+        exclude: ^nginx/localhost\.key$  # Dev-only self-signed cert for local HTTPS
+
+  # =============================================================================
+  # Python - Prevent deprecated datetime.utcnow() usage
+  # =============================================================================
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-blanket-type-ignore
+      - id: python-no-eval
+      - id: python-use-type-annotations
+      - id: text-unicode-replacement-char
+
+  - repo: local
+    hooks:
+      - id: no-datetime-utcnow
+        name: Prevent deprecated datetime.utcnow()
+        entry: 'datetime\.utcnow\('
+        language: pygrep
+        files: ^apps/api/.*\.py$
+        types: [python]
+        exclude: ^apps/api/tests/
+
+  # =============================================================================
+  # Backend (Python) - Ruff for linting and formatting
+  # =============================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.2
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^apps/api/
+      - id: ruff-format
+        files: ^apps/api/
+
+  # =============================================================================
+  # Backend (Python) - Mypy for type checking
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: bash -c 'cd apps/api && uv run mypy app/'
+        language: system
+        files: ^apps/api/app/.*\.py$
+        pass_filenames: false
+        # Note: pass_filenames=false because mypy needs to analyze the entire
+        # codebase for proper type inference. Running on individual files would
+        # miss cross-module type errors.
+
+  # =============================================================================
+  # Frontend (TypeScript/JavaScript) - Using local ESLint and Prettier
+  # =============================================================================
+  # Note: pass_filenames=false is intentional for frontend hooks because:
+  # 1. ESLint and Prettier are configured via npm scripts with project-specific settings
+  # 2. Running on individual files would miss project-wide configuration
+  # 3. The file patterns in 'files:' still ensure hooks only run when relevant files change
+  # 4. This ensures consistent behavior with local development (`npm run lint`)
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: bash -c 'cd apps/web && npm run lint'
+        language: system
+        files: ^apps/web/src/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: prettier
+        name: prettier
+        entry: bash -c 'cd apps/web && npx prettier --check "src/**/*.{ts,tsx,css,json}" --ignore-path .gitignore'
+        language: system
+        files: ^apps/web/src/.*\.(ts|tsx|css|json)$
+        pass_filenames: false
+
+  # =============================================================================
+  # Conventional Commits
+  # =============================================================================
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]

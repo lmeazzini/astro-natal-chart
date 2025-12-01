@@ -252,10 +252,7 @@ export const motionSafe = <T extends Variants>(
 };
 
 // Animation delay utility
-export const withDelay = (
-  delay: number,
-  transition: { [key: string]: unknown }
-) => ({
+export const withDelay = (delay: number, transition: { [key: string]: unknown }) => ({
   ...transition,
   delay,
 });

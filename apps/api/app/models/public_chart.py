@@ -66,17 +66,42 @@ class PublicChart(Base):
     # Content
     photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     short_bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    short_bio_i18n: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="Multilingual short bio: {language: content}",
+    )
     highlights: Mapped[list[str] | None] = mapped_column(
         ARRAY(Text),
         nullable=True,
     )  # Array of astrological insights
+    highlights_i18n: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="Multilingual highlights: {language: [items]}",
+    )
 
     # SEO
     meta_title: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    meta_title_i18n: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="Multilingual meta title: {language: title}",
+    )
     meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    meta_description_i18n: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="Multilingual meta description: {language: description}",
+    )
     meta_keywords: Mapped[list[str] | None] = mapped_column(
         ARRAY(String(100)),
         nullable=True,
+    )
+    meta_keywords_i18n: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="Multilingual meta keywords: {language: [keywords]}",
     )
 
     # Stats

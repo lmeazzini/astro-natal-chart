@@ -13,6 +13,7 @@ export interface PasswordResetRequestResponse {
 export interface PasswordResetConfirmRequest {
   token: string;
   new_password: string;
+  password_confirm: string;
 }
 
 class PasswordResetService {
@@ -20,10 +21,9 @@ class PasswordResetService {
    * Request password reset email
    */
   async requestReset(email: string): Promise<PasswordResetRequestResponse> {
-    return apiClient.post<PasswordResetRequestResponse>(
-      '/api/v1/password-reset/request',
-      { email }
-    );
+    return apiClient.post<PasswordResetRequestResponse>('/api/v1/password-reset/request', {
+      email,
+    });
   }
 
   /**
@@ -31,15 +31,14 @@ class PasswordResetService {
    */
   async confirmReset(
     token: string,
-    newPassword: string
+    newPassword: string,
+    passwordConfirm: string
   ): Promise<PasswordResetRequestResponse> {
-    return apiClient.post<PasswordResetRequestResponse>(
-      '/api/v1/password-reset/confirm',
-      {
-        token,
-        new_password: newPassword,
-      }
-    );
+    return apiClient.post<PasswordResetRequestResponse>('/api/v1/password-reset/confirm', {
+      token,
+      new_password: newPassword,
+      password_confirm: passwordConfirm,
+    });
   }
 }
 

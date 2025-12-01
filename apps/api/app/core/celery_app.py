@@ -17,6 +17,7 @@ celery_app = Celery(
         "app.tasks.cache_tasks",
         "app.tasks.pdf_tasks",
         "app.tasks.privacy",
+        "app.tasks.subscription_tasks",
     ],
 )
 
@@ -40,6 +41,11 @@ celery_app.conf.beat_schedule = {
     "cleanup-deleted-users-daily": {
         "task": "privacy.cleanup_deleted_users",
         "schedule": crontab(hour=3, minute=0),  # 3h AM diariamente
+    },
+    # Check and expire subscriptions daily at 2 AM
+    "check-and-expire-subscriptions-daily": {
+        "task": "subscriptions.check_and_expire",
+        "schedule": crontab(hour=2, minute=0),  # 2 AM daily
     },
     # Limpar tokens de reset de senha expirados (24h+)
     "cleanup-expired-password-reset-tokens-daily": {

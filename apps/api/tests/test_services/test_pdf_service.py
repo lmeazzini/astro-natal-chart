@@ -178,9 +178,7 @@ class TestPDFService:
         assert "interpretation" in template_data["aspects"][0]
         assert "Sun trine Moon" in template_data["aspects"][0]["interpretation"]
 
-    def test_prepare_template_data_without_interpretations(
-        self, pdf_service, sample_chart_data
-    ):
+    def test_prepare_template_data_without_interpretations(self, pdf_service, sample_chart_data):
         """Test template data preparation without interpretations."""
         template_data = pdf_service.prepare_template_data(
             chart_data=sample_chart_data,
@@ -204,9 +202,7 @@ class TestPDFService:
         assert "23.55°S" in coords or "23.5505°S" in coords
         assert "46.63°W" in coords or "46.6333°W" in coords
 
-    def test_prepare_template_data_retrograde_display(
-        self, pdf_service, sample_interpretations
-    ):
+    def test_prepare_template_data_retrograde_display(self, pdf_service, sample_interpretations):
         """Test retrograde planet display."""
         chart_data = {
             "person_name": "Test",
@@ -258,9 +254,7 @@ class TestPDFService:
         assert "°" in template_data["midheaven"]
 
     @pytest.mark.skip(reason="Requires LaTeX template files not available in test environment")
-    def test_render_template_basic(
-        self, pdf_service, sample_chart_data, sample_interpretations
-    ):
+    def test_render_template_basic(self, pdf_service, sample_chart_data, sample_interpretations):
         """Test basic LaTeX template rendering."""
         template_data = pdf_service.prepare_template_data(
             chart_data=sample_chart_data,

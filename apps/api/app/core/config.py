@@ -3,7 +3,6 @@ Application configuration using Pydantic Settings.
 Loads environment variables from .env file.
 """
 
-
 from typing import Literal
 
 from pydantic import PostgresDsn, RedisDsn
@@ -100,11 +99,7 @@ class Settings(BaseSettings):
     @property
     def s3_enabled(self) -> bool:
         """Check if S3 is properly configured."""
-        return bool(
-            self.AWS_ACCESS_KEY_ID
-            and self.AWS_SECRET_ACCESS_KEY
-            and self.S3_BUCKET_NAME
-        )
+        return bool(self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY and self.S3_BUCKET_NAME)
 
     # AWS S3 - Backup Storage (uses same AWS credentials)
     BACKUP_S3_BUCKET: str | None = None
@@ -116,11 +111,7 @@ class Settings(BaseSettings):
     @property
     def backup_s3_enabled(self) -> bool:
         """Check if Backup S3 is properly configured."""
-        return bool(
-            self.AWS_ACCESS_KEY_ID
-            and self.AWS_SECRET_ACCESS_KEY
-            and self.BACKUP_S3_BUCKET
-        )
+        return bool(self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY and self.BACKUP_S3_BUCKET)
 
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
@@ -159,6 +150,24 @@ class Settings(BaseSettings):
     # RAG Settings
     RAG_MAX_ASPECTS: int = 10  # Maximum aspects to interpret in RAG mode
 
+    # RAG Document Storage
+    RAG_STORAGE_TYPE: Literal["local", "s3"] = "local"  # Storage backend
+    RAG_S3_BUCKET: str | None = None  # S3 bucket for RAG documents (uses AWS credentials above)
+    RAG_S3_PREFIX: str = "rag-documents"  # S3 prefix for RAG documents
+    RAG_LOCAL_PATH: str = "rag_docs"  # Local path for RAG documents (relative to app root)
+    RAG_CACHE_DIR: str | None = "/tmp/rag_cache"  # Cache directory for S3 documents
+    RAG_CACHE_TTL: int = 3600  # Cache TTL in seconds (1 hour)
+
+    @property
+    def rag_s3_enabled(self) -> bool:
+        """Check if RAG S3 storage is enabled and configured."""
+        return bool(
+            self.RAG_STORAGE_TYPE == "s3"
+            and self.AWS_ACCESS_KEY_ID
+            and self.AWS_SECRET_ACCESS_KEY
+            and self.RAG_S3_BUCKET
+        )
+
     # Cookie Security Settings
     COOKIE_SECURE: bool = True  # Use secure cookies (HTTPS only) in production
     COOKIE_HTTPONLY: bool = True  # Prevent JavaScript access to cookies
@@ -166,7 +175,11 @@ class Settings(BaseSettings):
     COOKIE_DOMAIN: str | None = None  # Cookie domain (None = current domain)
 
     # Unverified User Limits
-    UNVERIFIED_USER_CHART_LIMIT: int = 5  # Max charts for unverified users
+    UNVERIFIED_USER_CHART_LIMIT: int = 1  # Max charts for unverified users
+
+    # Amplitude Analytics
+    AMPLITUDE_API_KEY: str | None = None
+    AMPLITUDE_ENABLED: bool = False
 
     @property
     def database_url_sync(self) -> str:

@@ -251,9 +251,7 @@ class TestGeneratePresignedURL:
 
     def test_generate_presigned_url_disabled(self, s3_service_disabled):
         """Test presigned URL generation when S3 is disabled."""
-        result = s3_service_disabled.generate_presigned_url(
-            "s3://bucket/key/file.pdf"
-        )
+        result = s3_service_disabled.generate_presigned_url("s3://bucket/key/file.pdf")
         assert result is None
 
     def test_generate_presigned_url_client_error(self, s3_service_enabled):
@@ -263,9 +261,7 @@ class TestGeneratePresignedURL:
             "GetObject",
         )
 
-        result = s3_service_enabled.generate_presigned_url(
-            "s3://bucket/key/file.pdf"
-        )
+        result = s3_service_enabled.generate_presigned_url("s3://bucket/key/file.pdf")
         assert result is None
 
 

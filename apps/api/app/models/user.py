@@ -22,8 +22,10 @@ class UserType(str, Enum):
     STUDENT = "student"
     CURIOUS = "curious"
 
+
 if TYPE_CHECKING:
     from app.models.chart import BirthChart
+    from app.models.subscription import Subscription
 
 
 class User(Base):
@@ -51,7 +53,7 @@ class User(Base):
     # Role-based access control
     role: Mapped[str] = mapped_column(
         String(20),
-        default=UserRole.GERAL.value,
+        default=UserRole.FREE.value,
         nullable=False,
         index=True,
     )
@@ -74,9 +76,7 @@ class User(Base):
     specializations: Mapped[list | None] = mapped_column(JSONB, nullable=True)
 
     # Preferences
-    allow_email_notifications: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
+    allow_email_notifications: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     analytics_consent: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Activity tracking
@@ -121,6 +121,12 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    subscription: Mapped["Subscription | None"] = relationship(  # noqa: F821
+        "Subscription",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email}>"
@@ -131,12 +137,17 @@ class User(Base):
         return self.role == UserRole.ADMIN.value or self.is_superuser
 
     @property
+    def is_premium(self) -> bool:
+        """Check if user has premium or higher role."""
+        return self.role in [UserRole.PREMIUM.value, UserRole.ADMIN.value] or self.is_superuser
+
+    @property
     def user_role(self) -> UserRole:
         """Get user role as enum."""
         try:
             return UserRole(self.role)
         except ValueError:
-            return UserRole.GERAL
+            return UserRole.FREE
 
 
 class OAuthAccount(Base):

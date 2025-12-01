@@ -243,6 +243,7 @@ async def main(clear: bool = False, docs_path: str | None = None):
         VectorDocument,
     )
     from app.models.interpretation import ChartInterpretation  # noqa: F401
+    from app.models.subscription import Subscription  # noqa: F401
 
     # Determine documents path
     if docs_path:

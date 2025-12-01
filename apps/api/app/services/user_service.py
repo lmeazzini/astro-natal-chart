@@ -140,9 +140,13 @@ async def get_stats(
         User statistics
     """
     # Count total charts (exclude soft-deleted)
-    count_stmt = select(func.count()).select_from(BirthChart).where(
-        BirthChart.user_id == user.id,
-        BirthChart.deleted_at.is_(None),
+    count_stmt = (
+        select(func.count())
+        .select_from(BirthChart)
+        .where(
+            BirthChart.user_id == user.id,
+            BirthChart.deleted_at.is_(None),
+        )
     )
     count_result = await db.execute(count_stmt)
     total_charts = count_result.scalar_one()
@@ -261,8 +265,8 @@ async def export_data(
     charts = result.scalars().all()
 
     # Get audit logs
-    audit_stmt = select(AuditLog).where(AuditLog.user_id == user.id).order_by(
-        AuditLog.created_at.desc()
+    audit_stmt = (
+        select(AuditLog).where(AuditLog.user_id == user.id).order_by(AuditLog.created_at.desc())
     )
     audit_result = await db.execute(audit_stmt)
     audit_logs = audit_result.scalars().all()

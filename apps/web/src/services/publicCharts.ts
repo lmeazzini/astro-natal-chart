@@ -61,6 +61,8 @@ export interface PublicChartInterpretations {
   aspects: Record<string, string>;
   arabic_parts?: Record<string, string>;
   source?: 'standard' | 'rag';
+  /** Language code of the interpretations (e.g., 'pt-BR' or 'en-US') */
+  language?: string;
 }
 
 /**
@@ -91,9 +93,18 @@ export async function listPublicCharts(
 
 /**
  * Get a public chart by slug
+ * @param slug - The chart's URL slug
+ * @param lang - Optional language code (e.g., 'pt-BR' or 'en-US')
  */
-export async function getPublicChart(slug: string): Promise<PublicChartDetail> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/public-charts/${slug}`);
+export async function getPublicChart(slug: string, lang?: string): Promise<PublicChartDetail> {
+  const searchParams = new URLSearchParams();
+  if (lang) {
+    searchParams.set('lang', lang);
+  }
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/api/v1/public-charts/${slug}${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -109,9 +120,7 @@ export async function getPublicChart(slug: string): Promise<PublicChartDetail> {
  * Get featured public charts
  */
 export async function getFeaturedCharts(limit: number = 10): Promise<PublicChartPreview[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/public-charts/featured?limit=${limit}`
-  );
+  const response = await fetch(`${API_BASE_URL}/api/v1/public-charts/featured?limit=${limit}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch featured charts');
@@ -134,37 +143,36 @@ export async function getCategories(): Promise<CategoryCount[]> {
 }
 
 /**
- * Category labels for display
- */
-export const CATEGORY_LABELS: Record<string, string> = {
-  scientist: 'Cientistas',
-  artist: 'Artistas',
-  leader: 'Líderes',
-  writer: 'Escritores',
-  athlete: 'Atletas',
-  actor: 'Atores',
-  musician: 'Músicos',
-  entrepreneur: 'Empreendedores',
-  historical: 'Figuras Históricas',
-  other: 'Outros',
-};
-
-/**
  * Get translated category label
+ * @param category - Category key (e.g., 'scientist', 'artist')
+ * @param t - i18next translation function
  */
-export function getCategoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] || category;
+export function getCategoryLabel(
+  category: string,
+  t: (key: string, options?: { defaultValue?: string }) => string
+): string {
+  // Capitalize first letter as fallback
+  const fallback = category.charAt(0).toUpperCase() + category.slice(1);
+  return t(`publicCharts.categories.${category}`, { defaultValue: fallback });
 }
 
 /**
  * Get interpretations for a public chart
+ * @param slug - The chart's URL slug
+ * @param lang - Optional language code (e.g., 'pt-BR' or 'en-US')
  */
 export async function getPublicChartInterpretations(
-  slug: string
+  slug: string,
+  lang?: string
 ): Promise<PublicChartInterpretations> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/public-charts/${slug}/interpretations`
-  );
+  const searchParams = new URLSearchParams();
+  if (lang) {
+    searchParams.set('lang', lang);
+  }
+  const queryString = searchParams.toString();
+  const url = `${API_BASE_URL}/api/v1/public-charts/${slug}/interpretations${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     if (response.status === 404) {

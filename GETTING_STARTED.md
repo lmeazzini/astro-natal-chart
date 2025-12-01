@@ -9,7 +9,7 @@ Antes de começar, certifique-se de ter instalado:
 - **Docker Desktop** (recomendado) - [Download](https://www.docker.com/products/docker-desktop)
   - OU -
 - **Node.js 18+** - [Download](https://nodejs.org/)
-- **Python 3.11+** - [Download](https://www.python.org/)
+- **Python 3.13+** - [Download](https://www.python.org/)
 - **PostgreSQL 16+** - [Download](https://www.postgresql.org/)
 - **Redis 7+** - [Download](https://redis.io/)
 

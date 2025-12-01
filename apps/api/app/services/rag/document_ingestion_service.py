@@ -1,4 +1,5 @@
 """Document ingestion service for processing and indexing content."""
+
 import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
@@ -97,6 +98,7 @@ class DocumentIngestionService:
         # Generate a deterministic UUID from the hash (Qdrant requires UUID or integer)
         hash_bytes = hashlib.sha256(hash_input.encode()).digest()[:16]
         import uuid
+
         return str(uuid.UUID(bytes=hash_bytes))
 
     async def ingest_text(
@@ -168,13 +170,15 @@ class DocumentIngestionService:
                     if embedding:
                         success = await self.qdrant.upsert_vectors(
                             vectors=[embedding],
-                            payloads=[{
-                                "document_id": str(doc.id),
-                                "title": doc.title,
-                                "document_type": doc.document_type,
-                                "content": chunk[:500],  # Store first 500 chars for preview
-                                "metadata": doc.doc_metadata,
-                            }],
+                            payloads=[
+                                {
+                                    "document_id": str(doc.id),
+                                    "title": doc.title,
+                                    "document_type": doc.document_type,
+                                    "content": chunk[:500],  # Store first 500 chars for preview
+                                    "metadata": doc.doc_metadata,
+                                }
+                            ],
                             ids=[doc.vector_id],
                         )
 
@@ -183,9 +187,13 @@ class DocumentIngestionService:
                             doc.embedding_model = settings.OPENAI_EMBEDDING_MODEL
                             logger.debug(f"Indexed chunk {i + 1}/{len(chunks)} for '{title}'")
                         else:
-                            logger.warning(f"Failed to index chunk {i + 1}/{len(chunks)} for '{title}'")
+                            logger.warning(
+                                f"Failed to index chunk {i + 1}/{len(chunks)} for '{title}'"
+                            )
                     else:
-                        logger.warning(f"No embedding generated for chunk {i + 1}/{len(chunks)} of '{title}'")
+                        logger.warning(
+                            f"No embedding generated for chunk {i + 1}/{len(chunks)} of '{title}'"
+                        )
 
                 # Create BM25 index entry
                 term_freqs = self.bm25.get_term_frequencies(chunk)
@@ -311,11 +319,7 @@ class DocumentIngestionService:
                 self.bm25.remove_document(doc.vector_id)
 
             # Delete search index entries
-            await db.execute(
-                delete(SearchIndex).where(
-                    SearchIndex.document_id == document_id
-                )
-            )
+            await db.execute(delete(SearchIndex).where(SearchIndex.document_id == document_id))
 
             # Delete document
             await db.delete(doc)
@@ -372,13 +376,15 @@ class DocumentIngestionService:
                     if embedding:
                         await self.qdrant.upsert_vectors(
                             vectors=[embedding],
-                            payloads=[{
-                                "document_id": str(doc.id),
-                                "title": doc.title,
-                                "document_type": doc.document_type,
-                                "content": content[:500],
-                                "metadata": doc.doc_metadata,
-                            }],
+                            payloads=[
+                                {
+                                    "document_id": str(doc.id),
+                                    "title": doc.title,
+                                    "document_type": doc.document_type,
+                                    "content": content[:500],
+                                    "metadata": doc.doc_metadata,
+                                }
+                            ],
                             ids=[doc.vector_id],
                         )
 
@@ -421,16 +427,12 @@ class DocumentIngestionService:
             )
 
             # Count total documents and chunks
-            total_docs = await db.execute(
-                select(func.count(VectorDocument.id))
-            )
+            total_docs = await db.execute(select(func.count(VectorDocument.id)))
             total_count = total_docs.scalar() or 0
 
             # Count indexed documents
             indexed_docs = await db.execute(
-                select(func.count(VectorDocument.id)).where(
-                    VectorDocument.indexed_at.isnot(None)
-                )
+                select(func.count(VectorDocument.id)).where(VectorDocument.indexed_at.isnot(None))
             )
             indexed_count = indexed_docs.scalar() or 0
 
@@ -445,9 +447,7 @@ class DocumentIngestionService:
             return {
                 "total_documents": total_count,
                 "indexed_documents": indexed_count,
-                "documents_by_type": {
-                    row[0]: row[1] for row in type_counts
-                },
+                "documents_by_type": {row[0]: row[1] for row in type_counts},
                 "bm25_stats": bm25_stats,
                 "qdrant_stats": qdrant_stats,
             }

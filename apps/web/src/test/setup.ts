@@ -8,6 +8,12 @@ import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 
+// Initialize i18next for tests with pt-BR as default
+import i18n from '@/i18n';
+
+// Force pt-BR language for consistent test results
+i18n.changeLanguage('pt-BR');
+
 // Cleanup after each test
 afterEach(() => {
   cleanup();

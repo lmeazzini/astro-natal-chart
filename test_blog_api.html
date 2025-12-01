@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Blog API</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #4338ca;
+        }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .post-card {
+            border-left: 4px solid #4f46e5;
+            padding-left: 16px;
+        }
+        .error {
+            color: #dc2626;
+            background: #fee2e2;
+            padding: 12px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌟 Test Blog API</h1>
+
+    <div class="card">
+        <h2>API Configuration</h2>
+        <p><strong>API URL:</strong> http://localhost:8000/api/v1/blog</p>
+        <button onclick="testAPI()">Test API Connection</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="card"><p>Loading...</p></div>';
+
+            try {
+                // Test 1: Get posts
+                console.log('Fetching posts...');
+                const postsResponse = await fetch('http://localhost:8000/api/v1/blog/posts');
+                const postsData = await postsResponse.json();
+
+                console.log('Posts response:', postsData);
+
+                if (!postsResponse.ok) {
+                    throw new Error(`HTTP ${postsResponse.status}: ${JSON.stringify(postsData)}`);
+                }
+
+                // Test 2: Get metadata
+                console.log('Fetching metadata...');
+                const metadataResponse = await fetch('http://localhost:8000/api/v1/blog/metadata');
+                const metadataData = await metadataResponse.json();
+
+                console.log('Metadata response:', metadataData);
+
+                // Display results
+                let html = '';
+
+                // Summary
+                html += `
+                    <div class="card">
+                        <h2>✅ API Working!</h2>
+                        <p><strong>Total Posts:</strong> ${postsData.total}</p>
+                        <p><strong>Current Page:</strong> ${postsData.page}/${postsData.total_pages}</p>
+                        <p><strong>Categories:</strong> ${metadataData.categories.map(c => c.category).join(', ')}</p>
+                    </div>
+                `;
+
+                // Posts
+                html += '<div class="card"><h2>📝 Blog Posts</h2>';
+                postsData.items.forEach(post => {
+                    html += `
+                        <div class="post-card" style="margin: 20px 0;">
+                            <h3>${post.title}</h3>
+                            <p><strong>Slug:</strong> <code>${post.slug}</code></p>
+                            <p><strong>Category:</strong> ${post.category}</p>
+                            <p><strong>Tags:</strong> ${post.tags.join(', ')}</p>
+                            <p><strong>Excerpt:</strong> ${post.excerpt}</p>
+                            <p><strong>Reading time:</strong> ${post.read_time_minutes} min | <strong>Views:</strong> ${post.views_count}</p>
+                            <p><strong>Published:</strong> ${new Date(post.published_at).toLocaleString('pt-BR')}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+
+                // Raw JSON
+                html += `
+                    <div class="card">
+                        <h3>Raw JSON Response (Posts)</h3>
+                        <pre>${JSON.stringify(postsData, null, 2)}</pre>
+                    </div>
+                `;
+
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="card">
+                        <div class="error">
+                            <h3>❌ Error</h3>
+                            <p><strong>Message:</strong> ${error.message}</p>
+                            <p><strong>Check:</strong></p>
+                            <ul>
+                                <li>Is the API running at http://localhost:8000?</li>
+                                <li>Is CORS configured correctly?</li>
+                                <li>Check browser console for more details</li>
+                            </ul>
+                        </div>
+                        <h3>Console Log:</h3>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, testing API...');
+            testAPI();
+        });
+    </script>
+</body>
+</html>

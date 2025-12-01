@@ -407,9 +407,7 @@ class TestSearchLocation:
             )
         ]
 
-        with patch.object(
-            service, "_search_nominatim", new_callable=AsyncMock
-        ) as mock_nominatim:
+        with patch.object(service, "_search_nominatim", new_callable=AsyncMock) as mock_nominatim:
             mock_nominatim.return_value = nominatim_results
 
             results = await service.search_location("Test City")
@@ -476,9 +474,7 @@ class TestSearchLocation:
         """Test that search respects the limit parameter."""
         service = GeocodingService()
 
-        with patch.object(
-            service, "_search_nominatim", new_callable=AsyncMock
-        ) as mock_nominatim:
+        with patch.object(service, "_search_nominatim", new_callable=AsyncMock) as mock_nominatim:
             mock_nominatim.return_value = []
 
             await service.search_location("Test", limit=10)
@@ -502,9 +498,7 @@ class TestGetCoordinates:
             country="Brazil",
         )
 
-        with patch.object(
-            service, "search_location", new_callable=AsyncMock
-        ) as mock_search:
+        with patch.object(service, "search_location", new_callable=AsyncMock) as mock_search:
             mock_search.return_value = [mock_result]
 
             result = await service.get_coordinates("São Paulo", "Brazil")
@@ -524,9 +518,7 @@ class TestGetCoordinates:
             longitude=2.3522,
         )
 
-        with patch.object(
-            service, "search_location", new_callable=AsyncMock
-        ) as mock_search:
+        with patch.object(service, "search_location", new_callable=AsyncMock) as mock_search:
             mock_search.return_value = [mock_result]
 
             coords = await service.get_coordinates("Paris")
@@ -539,9 +531,7 @@ class TestGetCoordinates:
         """Test coordinate lookup when location not found."""
         service = GeocodingService()
 
-        with patch.object(
-            service, "search_location", new_callable=AsyncMock
-        ) as mock_search:
+        with patch.object(service, "search_location", new_callable=AsyncMock) as mock_search:
             mock_search.return_value = []
 
             result = await service.get_coordinates("Nonexistent City XYZ")

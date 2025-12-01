@@ -9,9 +9,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { passwordResetService } from '../services/passwordReset';
+import { amplitudeService } from '../services/amplitude';
+import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
@@ -24,15 +34,31 @@ type ResetPasswordValues = {
 export function ResetPasswordPage() {
   const { t } = useTranslation();
 
+  // Track page view
+  useAmplitudePageView('Reset Password Page');
+
   // Zod schema inside component to access t()
   const resetPasswordSchema = z
     .object({
       password: z
         .string()
         .min(8, t('auth.register.passwordMinLength'))
-        .regex(/[A-Z]/, t('validation.passwordUppercase', { defaultValue: 'Senha deve conter pelo menos uma letra maiúscula' }))
-        .regex(/[a-z]/, t('validation.passwordLowercase', { defaultValue: 'Senha deve conter pelo menos uma letra minúscula' }))
-        .regex(/[0-9]/, t('validation.passwordNumber', { defaultValue: 'Senha deve conter pelo menos um número' })),
+        .regex(
+          /[A-Z]/,
+          t('validation.passwordUppercase', {
+            defaultValue: 'Senha deve conter pelo menos uma letra maiúscula',
+          })
+        )
+        .regex(
+          /[a-z]/,
+          t('validation.passwordLowercase', {
+            defaultValue: 'Senha deve conter pelo menos uma letra minúscula',
+          })
+        )
+        .regex(
+          /[0-9]/,
+          t('validation.passwordNumber', { defaultValue: 'Senha deve conter pelo menos um número' })
+        ),
       confirmPassword: z.string().min(1, t('validation.required')),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -57,7 +83,18 @@ export function ResetPasswordPage() {
   useEffect(() => {
     // Check if token exists
     if (!token) {
+      // Track invalid token access
+      amplitudeService.track('password_reset_failed', {
+        error_type: 'token_missing',
+        source: 'reset_password_page',
+      });
+
       setGeneralError(t('auth.resetPassword.invalidToken'));
+    } else {
+      // Track successful token access (reset link clicked)
+      amplitudeService.track('password_reset_link_accessed', {
+        source: 'reset_password_page',
+      });
     }
   }, [token, t]);
 
@@ -66,31 +103,60 @@ export function ResetPasswordPage() {
     setSuccessMessage('');
 
     if (!token) {
-      setGeneralError(t('auth.resetPassword.tokenNotFound', { defaultValue: 'Token de recuperação não encontrado' }));
+      // Track token not found error
+      amplitudeService.track('password_reset_failed', {
+        error_type: 'token_not_found',
+        source: 'reset_password_page',
+      });
+
+      setGeneralError(
+        t('auth.resetPassword.tokenNotFound', {
+          defaultValue: 'Token de recuperação não encontrado',
+        })
+      );
       return;
     }
+
+    // Track form submission
+    amplitudeService.track('password_reset_form_submitted', {
+      source: 'reset_password_page',
+    });
 
     try {
       const response = await passwordResetService.confirmReset(
         token,
-        values.password
+        values.password,
+        values.confirmPassword
       );
 
       if (response.success) {
+        // Track successful password reset
+        amplitudeService.track('password_reset_completed', {
+          source: 'reset_password_page',
+        });
+
         setSuccessMessage(response.message);
         // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/login');
         }, 3000);
       } else {
+        // Track reset failure
+        amplitudeService.track('password_reset_failed', {
+          error_type: 'reset_failed',
+          source: 'reset_password_page',
+        });
+
         setGeneralError(response.message);
       }
     } catch (error) {
-      setGeneralError(
-        error instanceof Error
-          ? error.message
-          : t('auth.resetPassword.error')
-      );
+      // Track error
+      amplitudeService.track('password_reset_failed', {
+        error_type: error instanceof Error ? error.name : 'unknown_error',
+        source: 'reset_password_page',
+      });
+
+      setGeneralError(error instanceof Error ? error.message : t('auth.resetPassword.error'));
     }
   }
 
@@ -102,9 +168,7 @@ export function ResetPasswordPage() {
           <h1 className="text-4xl font-bold text-foreground mb-2">
             {t('auth.resetPassword.title')}
           </h1>
-          <p className="text-muted-foreground">
-            {t('auth.resetPassword.subtitle')}
-          </p>
+          <p className="text-muted-foreground">{t('auth.resetPassword.subtitle')}</p>
         </div>
 
         {/* Form Card */}
@@ -112,7 +176,9 @@ export function ResetPasswordPage() {
           <CardHeader>
             <CardTitle>{t('auth.resetPassword.newPassword')}</CardTitle>
             <CardDescription>
-              {t('auth.resetPassword.chooseStrong', { defaultValue: 'Escolha uma senha forte e segura' })}
+              {t('auth.resetPassword.chooseStrong', {
+                defaultValue: 'Escolha uma senha forte e segura',
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -129,7 +195,9 @@ export function ResetPasswordPage() {
                 <AlertDescription className="text-green-700 dark:text-green-400">
                   {successMessage}
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {t('auth.resetPassword.redirecting', { defaultValue: 'Redirecionando para login em 3 segundos...' })}
+                    {t('auth.resetPassword.redirecting', {
+                      defaultValue: 'Redirecionando para login em 3 segundos...',
+                    })}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -154,7 +222,10 @@ export function ResetPasswordPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          {t('auth.resetPassword.passwordRequirements', { defaultValue: 'Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números' })}
+                          {t('auth.resetPassword.passwordRequirements', {
+                            defaultValue:
+                              'Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e números',
+                          })}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -180,15 +251,13 @@ export function ResetPasswordPage() {
                     )}
                   />
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={form.formState.isSubmitting}
-                  >
+                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {form.formState.isSubmitting ? t('common.loading') : t('auth.resetPassword.submit')}
+                    {form.formState.isSubmitting
+                      ? t('common.loading')
+                      : t('auth.resetPassword.submit')}
                   </Button>
                 </form>
               </Form>

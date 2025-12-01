@@ -1,4 +1,5 @@
 """Qdrant vector database service for semantic search."""
+
 from typing import Any
 
 from loguru import logger

@@ -11,9 +11,22 @@ import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChartUpdate, BirthChart } from '../services/charts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
@@ -78,10 +91,26 @@ export function EditChartPage() {
   });
 
   const STEPS = [
-    { number: 1, title: t('newChart.step1Title', { defaultValue: 'Personal Info' }), description: t('newChart.step1Desc', { defaultValue: 'Name and gender' }) },
-    { number: 2, title: t('newChart.step2Title', { defaultValue: 'Date and Time' }), description: t('newChart.step2Desc', { defaultValue: 'Birth' }) },
-    { number: 3, title: t('newChart.step3Title', { defaultValue: 'Location' }), description: t('newChart.step3Desc', { defaultValue: 'City and coordinates' }) },
-    { number: 4, title: t('newChart.step4Title', { defaultValue: 'Review' }), description: t('newChart.step4Desc', { defaultValue: 'Confirm data' }) },
+    {
+      number: 1,
+      title: t('newChart.step1Title', { defaultValue: 'Personal Info' }),
+      description: t('newChart.step1Desc', { defaultValue: 'Name and gender' }),
+    },
+    {
+      number: 2,
+      title: t('newChart.step2Title', { defaultValue: 'Date and Time' }),
+      description: t('newChart.step2Desc', { defaultValue: 'Birth' }),
+    },
+    {
+      number: 3,
+      title: t('newChart.step3Title', { defaultValue: 'Location' }),
+      description: t('newChart.step3Desc', { defaultValue: 'City and coordinates' }),
+    },
+    {
+      number: 4,
+      title: t('newChart.step4Title', { defaultValue: 'Review' }),
+      description: t('newChart.step4Desc', { defaultValue: 'Confirm data' }),
+    },
   ];
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -133,7 +162,9 @@ export function EditChartPage() {
 
         // Convert ISO datetime to local datetime-local format for the input
         const birthDatetime = chart.birth_datetime
-          ? dayjs(chart.birth_datetime).tz(chart.birth_timezone || 'UTC').format('YYYY-MM-DDTHH:mm')
+          ? dayjs(chart.birth_datetime)
+              .tz(chart.birth_timezone || 'UTC')
+              .format('YYYY-MM-DDTHH:mm')
           : '';
 
         // Pre-fill form with existing data
@@ -152,7 +183,11 @@ export function EditChartPage() {
           node_type: chart.node_type || 'true',
         });
       } catch (err) {
-        setGeneralError(err instanceof Error ? err.message : t('editChart.loadError', { defaultValue: 'Error loading chart' }));
+        setGeneralError(
+          err instanceof Error
+            ? err.message
+            : t('editChart.loadError', { defaultValue: 'Error loading chart' })
+        );
       } finally {
         setIsLoading(false);
       }
@@ -259,7 +294,9 @@ export function EditChartPage() {
       navigate(`/charts/${id}`);
     } catch (error) {
       setGeneralError(
-        error instanceof Error ? error.message : t('editChart.error', { defaultValue: 'Error updating chart' })
+        error instanceof Error
+          ? error.message
+          : t('editChart.error', { defaultValue: 'Error updating chart' })
       );
     }
   }
@@ -297,7 +334,9 @@ export function EditChartPage() {
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-body text-muted-foreground">{t('editChart.loading', { defaultValue: 'Loading chart data...' })}</p>
+          <p className="text-body text-muted-foreground">
+            {t('editChart.loading', { defaultValue: 'Loading chart data...' })}
+          </p>
         </div>
       </div>
     );
@@ -319,11 +358,7 @@ export function EditChartPage() {
           <div className="flex items-center gap-3">
             <LanguageSelector />
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/charts/${id}`)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate(`/charts/${id}`)}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('common.cancel')}
             </Button>
@@ -341,7 +376,8 @@ export function EditChartPage() {
           </h2>
           {originalChart && (
             <p className="text-muted-foreground mt-2">
-              {t('editChart.editing', { defaultValue: 'Editing chart for' })} <strong>{originalChart.person_name}</strong>
+              {t('editChart.editing', { defaultValue: 'Editing chart for' })}{' '}
+              <strong>{originalChart.person_name}</strong>
             </p>
           )}
         </div>
@@ -357,7 +393,9 @@ export function EditChartPage() {
                   active={currentStep === step.number}
                 />
                 <div className="text-center">
-                  <p className={`text-sm font-medium ${currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <p
+                    className={`text-sm font-medium ${currentStep >= step.number ? 'text-foreground' : 'text-muted-foreground'}`}
+                  >
                     {step.title}
                   </p>
                   <p className="text-xs text-muted-foreground hidden sm:block">
@@ -366,7 +404,9 @@ export function EditChartPage() {
                 </div>
               </div>
               {index < STEPS.length - 1 && (
-                <div className={`h-0.5 w-12 hidden sm:block ${currentStep > step.number ? 'bg-primary' : 'bg-border'}`} />
+                <div
+                  className={`h-0.5 w-12 hidden sm:block ${currentStep > step.number ? 'bg-primary' : 'bg-border'}`}
+                />
               )}
             </div>
           ))}
@@ -381,11 +421,14 @@ export function EditChartPage() {
 
         <Card className="shadow-xl border-0 animate-fade-in">
           <CardHeader>
-            <CardTitle className="text-h2">
-              {STEPS[currentStep - 1].title}
-            </CardTitle>
+            <CardTitle className="text-h2">{STEPS[currentStep - 1].title}</CardTitle>
             <CardDescription className="text-base">
-              {t('newChart.stepOf', { current: currentStep, total: STEPS.length, defaultValue: `Step ${currentStep} of ${STEPS.length}` })} - {STEPS[currentStep - 1].description}
+              {t('newChart.stepOf', {
+                current: currentStep,
+                total: STEPS.length,
+                defaultValue: `Step ${currentStep} of ${STEPS.length}`,
+              })}{' '}
+              - {STEPS[currentStep - 1].description}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -402,7 +445,9 @@ export function EditChartPage() {
                           <FormLabel className="text-base">{t('newChart.personName')} *</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t('newChart.personNamePlaceholder', { defaultValue: 'John Doe' })}
+                              placeholder={t('newChart.personNamePlaceholder', {
+                                defaultValue: 'John Doe',
+                              })}
                               className="text-base"
                               {...field}
                             />
@@ -417,11 +462,17 @@ export function EditChartPage() {
                       name="gender"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.gender')} ({t('common.optional')})</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.gender')} ({t('common.optional')})
+                          </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="text-base">
-                                <SelectValue placeholder={t('newChart.selectGender', { defaultValue: 'Select gender' })} />
+                                <SelectValue
+                                  placeholder={t('newChart.selectGender', {
+                                    defaultValue: 'Select gender',
+                                  })}
+                                />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -447,14 +498,13 @@ export function EditChartPage() {
                         <FormItem>
                           <FormLabel className="text-base">{t('newChart.birthDate')} *</FormLabel>
                           <FormControl>
-                            <Input
-                              type="datetime-local"
-                              className="text-base"
-                              {...field}
-                            />
+                            <Input type="datetime-local" className="text-base" {...field} />
                           </FormControl>
                           <p className="text-sm text-muted-foreground">
-                            {t('newChart.precisionNote', { defaultValue: 'The more precise the time, the more accurate the natal chart' })}
+                            {t('newChart.precisionNote', {
+                              defaultValue:
+                                'The more precise the time, the more accurate the natal chart',
+                            })}
                           </p>
                           <FormMessage />
                         </FormItem>
@@ -473,13 +523,19 @@ export function EditChartPage() {
                               onChange={field.onChange}
                               coordinates={
                                 form.watch('latitude') && form.watch('longitude')
-                                  ? { latitude: form.watch('latitude'), longitude: form.watch('longitude') }
+                                  ? {
+                                      latitude: form.watch('latitude'),
+                                      longitude: form.watch('longitude'),
+                                    }
                                   : null
                               }
                             />
                           </FormControl>
                           <p className="text-sm text-muted-foreground">
-                            {t('newChart.timezoneAutoDetect', 'Automatically detected from location. Adjust if needed.')}
+                            {t(
+                              'newChart.timezoneAutoDetect',
+                              'Automatically detected from location. Adjust if needed.'
+                            )}
                           </p>
                           <FormMessage />
                         </FormItem>
@@ -497,7 +553,9 @@ export function EditChartPage() {
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.birthLocation')} *</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.birthLocation')} *
+                          </FormLabel>
                           <FormControl>
                             <div className="relative" ref={suggestionRef}>
                               <Input
@@ -541,7 +599,8 @@ export function EditChartPage() {
                                             {location.display_name}
                                           </p>
                                           <p className="text-xs text-primary/80 mt-1.5 font-mono">
-                                            {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                            {location.latitude.toFixed(4)},{' '}
+                                            {location.longitude.toFixed(4)}
                                           </p>
                                         </div>
                                       </div>
@@ -561,7 +620,9 @@ export function EditChartPage() {
                       name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.country', { defaultValue: 'Country' })}</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.country', { defaultValue: 'Country' })}
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="Brazil" className="text-base" {...field} />
                           </FormControl>
@@ -615,7 +676,11 @@ export function EditChartPage() {
                     <Alert className="border-primary/20 bg-primary/5">
                       <AlertCircle className="h-4 w-4 text-primary" />
                       <AlertDescription className="text-sm">
-                        <strong>{t('newChart.important', { defaultValue: 'Important' })}:</strong> {t('newChart.coordinatesNote', { defaultValue: 'Coordinates are automatically filled when selecting a city. For better precision, use search or manually adjust.' })}
+                        <strong>{t('newChart.important', { defaultValue: 'Important' })}:</strong>{' '}
+                        {t('newChart.coordinatesNote', {
+                          defaultValue:
+                            'Coordinates are automatically filled when selecting a city. For better precision, use search or manually adjust.',
+                        })}
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -627,7 +692,11 @@ export function EditChartPage() {
                     <Alert className="border-amber-500/20 bg-amber-500/10">
                       <AlertCircle className="h-4 w-4 text-amber-500" />
                       <AlertDescription className="text-sm">
-                        <strong>{t('editChart.recalcWarning', { defaultValue: 'Note' })}:</strong> {t('editChart.recalcWarningDesc', { defaultValue: 'If you change birth date, time, or location, the chart will be recalculated automatically.' })}
+                        <strong>{t('editChart.recalcWarning', { defaultValue: 'Note' })}:</strong>{' '}
+                        {t('editChart.recalcWarningDesc', {
+                          defaultValue:
+                            'If you change birth date, time, or location, the chart will be recalculated automatically.',
+                        })}
                       </AlertDescription>
                     </Alert>
 
@@ -639,48 +708,72 @@ export function EditChartPage() {
 
                       <div className="grid gap-4">
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('newChart.personName')}</span>
-                          <span className="text-sm font-semibold text-right">{form.getValues('person_name') || '-'}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.personName')}
+                          </span>
+                          <span className="text-sm font-semibold text-right">
+                            {form.getValues('person_name') || '-'}
+                          </span>
                         </div>
 
                         {form.getValues('gender') && (
                           <div className="flex justify-between items-start py-3 border-b border-border">
-                            <span className="text-sm text-muted-foreground">{t('newChart.gender')}</span>
-                            <span className="text-sm font-semibold">{form.getValues('gender')}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {t('newChart.gender')}
+                            </span>
+                            <span className="text-sm font-semibold">
+                              {form.getValues('gender')}
+                            </span>
                           </div>
                         )}
 
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('chartDetail.birthDateTime')}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('chartDetail.birthDateTime')}
+                          </span>
                           <span className="text-sm font-semibold text-right font-mono">
                             {form.getValues('birth_datetime')
                               ? new Date(form.getValues('birth_datetime')).toLocaleString('pt-BR')
-                              : '-'
-                            }
+                              : '-'}
                           </span>
                         </div>
 
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('newChart.timezone')}</span>
-                          <span className="text-sm font-semibold">{form.getValues('birth_timezone')}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.timezone')}
+                          </span>
+                          <span className="text-sm font-semibold">
+                            {form.getValues('birth_timezone')}
+                          </span>
                         </div>
 
                         <div className="flex justify-between items-start py-3 border-b border-border">
-                          <span className="text-sm text-muted-foreground">{t('newChart.birthLocation')}</span>
-                          <span className="text-sm font-semibold text-right">{form.getValues('city') || '-'}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.birthLocation')}
+                          </span>
+                          <span className="text-sm font-semibold text-right">
+                            {form.getValues('city') || '-'}
+                          </span>
                         </div>
 
                         {form.getValues('country') && (
                           <div className="flex justify-between items-start py-3 border-b border-border">
-                            <span className="text-sm text-muted-foreground">{t('newChart.country', { defaultValue: 'Country' })}</span>
-                            <span className="text-sm font-semibold">{form.getValues('country')}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {t('newChart.country', { defaultValue: 'Country' })}
+                            </span>
+                            <span className="text-sm font-semibold">
+                              {form.getValues('country')}
+                            </span>
                           </div>
                         )}
 
                         <div className="flex justify-between items-start py-3">
-                          <span className="text-sm text-muted-foreground">{t('newChart.coordinates', { defaultValue: 'Coordinates' })}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {t('newChart.coordinates', { defaultValue: 'Coordinates' })}
+                          </span>
                           <span className="text-xs font-mono text-primary">
-                            {form.getValues('latitude').toFixed(6)}, {form.getValues('longitude').toFixed(6)}
+                            {form.getValues('latitude').toFixed(6)},{' '}
+                            {form.getValues('longitude').toFixed(6)}
                           </span>
                         </div>
                       </div>
@@ -691,10 +784,15 @@ export function EditChartPage() {
                       name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base">{t('newChart.notes')} ({t('common.optional')})</FormLabel>
+                          <FormLabel className="text-base">
+                            {t('newChart.notes')} ({t('common.optional')})
+                          </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder={t('newChart.notesPlaceholder', { defaultValue: 'Add observations, context or additional information about this chart...' })}
+                              placeholder={t('newChart.notesPlaceholder', {
+                                defaultValue:
+                                  'Add observations, context or additional information about this chart...',
+                              })}
                               rows={4}
                               className="text-base resize-none"
                               {...field}
@@ -721,11 +819,7 @@ export function EditChartPage() {
                   </Button>
 
                   {currentStep < 4 ? (
-                    <Button
-                      type="button"
-                      onClick={handleNext}
-                      className="gap-2"
-                    >
+                    <Button type="button" onClick={handleNext} className="gap-2">
                       {t('common.next')}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
@@ -735,10 +829,10 @@ export function EditChartPage() {
                       disabled={form.formState.isSubmitting}
                       className="gap-2 min-w-[200px]"
                     >
-                      {form.formState.isSubmitting && (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      )}
-                      {form.formState.isSubmitting ? t('editChart.saving', { defaultValue: 'Saving...' }) : t('editChart.saveChanges', { defaultValue: 'Save Changes' })}
+                      {form.formState.isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {form.formState.isSubmitting
+                        ? t('editChart.saving', { defaultValue: 'Saving...' })
+                        : t('editChart.saveChanges', { defaultValue: 'Save Changes' })}
                       {!form.formState.isSubmitting && <Check className="h-4 w-4" />}
                     </Button>
                   )}

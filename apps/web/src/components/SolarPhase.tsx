@@ -1,5 +1,8 @@
 /**
  * Solar Phase component - displays Sun phase at birth
+ *
+ * The API returns already-localized data based on the `lang` query parameter,
+ * so no frontend language switching is needed - just display the values directly.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -10,11 +13,9 @@ export interface SolarPhaseData {
   phase_number: number;
   phase_name: string;
   temperament: string;
-  temperament_pt: string;
+  temperament_key: string;
   qualities: string;
-  qualities_pt: string;
   signs: string[];
-  signs_pt: string[];
   description: string;
 }
 
@@ -22,7 +23,7 @@ interface SolarPhaseProps {
   solarPhase: SolarPhaseData;
 }
 
-// Temperament emoji mapping
+// Temperament emoji mapping (uses English keys for internal lookup)
 const temperamentEmoji: Record<string, string> = {
   Sanguine: '🌬️',
   Choleric: '🔥',
@@ -30,7 +31,7 @@ const temperamentEmoji: Record<string, string> = {
   Phlegmatic: '💧',
 };
 
-// Color classes for each temperament
+// Color classes for each temperament (uses English keys)
 const temperamentColors: Record<string, string> = {
   Sanguine: 'from-blue-500/10 to-cyan-500/10 border-blue-500/20',
   Choleric: 'from-red-500/10 to-orange-500/10 border-red-500/20',
@@ -39,25 +40,24 @@ const temperamentColors: Record<string, string> = {
 };
 
 export function SolarPhase({ solarPhase }: SolarPhaseProps) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language === 'en-US' || i18n.language === 'en';
+  const { t } = useTranslation();
 
-  const emoji = temperamentEmoji[solarPhase.temperament] || '☀️';
-  const colorClass = temperamentColors[solarPhase.temperament] || 'from-yellow-500/10 to-orange-500/10 border-yellow-500/20';
+  // Use temperament_key for emoji/color lookup (always English), fall back to temperament for legacy
+  const temperamentKey = solarPhase.temperament_key || solarPhase.temperament;
+  const emoji = temperamentEmoji[temperamentKey] || '☀️';
+  const colorClass =
+    temperamentColors[temperamentKey] || 'from-yellow-500/10 to-orange-500/10 border-yellow-500/20';
 
   return (
     <Card className={`bg-gradient-to-br ${colorClass}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
-          <span className="text-4xl" role="img" aria-label={solarPhase.temperament_pt}>
+          <span className="text-4xl" role="img" aria-label={solarPhase.temperament}>
             {emoji}
           </span>
           <div>
             <div className="text-lg font-semibold text-foreground">
-              {solarPhase.phase_name} - {isEn ? solarPhase.temperament : solarPhase.temperament_pt}
-            </div>
-            <div className="text-xs text-muted-foreground font-normal">
-              {isEn ? solarPhase.temperament_pt : solarPhase.temperament}
+              {solarPhase.phase_name} - {solarPhase.temperament}
             </div>
           </div>
         </CardTitle>
@@ -67,21 +67,16 @@ export function SolarPhase({ solarPhase }: SolarPhaseProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              {t('components.solarPhase.qualities', { defaultValue: 'Qualidades' })}
+              {t('components.solarPhase.qualities', { defaultValue: 'Qualities' })}
             </p>
-            <p className="text-sm font-semibold text-foreground">
-              {isEn ? solarPhase.qualities : solarPhase.qualities_pt}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {isEn ? solarPhase.qualities_pt : solarPhase.qualities}
-            </p>
+            <p className="text-sm font-semibold text-foreground">{solarPhase.qualities}</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
-              {t('components.solarPhase.phaseSigns', { defaultValue: 'Signos da Fase' })}
+              {t('components.solarPhase.phaseSigns', { defaultValue: 'Phase Signs' })}
             </p>
             <div className="flex flex-wrap gap-1">
-              {(isEn ? solarPhase.signs : solarPhase.signs_pt).map((sign, index) => (
+              {solarPhase.signs.map((sign, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
                   {sign}
                 </Badge>
@@ -93,17 +88,19 @@ export function SolarPhase({ solarPhase }: SolarPhaseProps) {
         {/* Description */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('components.solarPhase.interpretation', { defaultValue: 'Interpretação' })}
+            {t('components.solarPhase.interpretation', { defaultValue: 'Interpretation' })}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {solarPhase.description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{solarPhase.description}</p>
         </div>
 
         {/* Info Note */}
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            💡 {t('components.solarPhase.note', { defaultValue: 'A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional.' })}
+            💡{' '}
+            {t('components.solarPhase.note', {
+              defaultValue:
+                'The solar phase at birth is based on the Sun sign and reveals your fundamental temperament and primary personality qualities according to traditional astrology.',
+            })}
           </p>
         </div>
       </CardContent>

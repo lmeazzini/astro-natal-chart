@@ -15,10 +15,23 @@ import { useAstroTranslation } from '../hooks/useAstroTranslation';
 import type { RAGSourceInfo } from '../services/interpretations';
 
 // shadcn/ui components
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Button } from '@/components/ui/button';
@@ -40,11 +53,7 @@ interface AspectGridProps {
   ragSources?: Record<string, RAGSourceInfo[]>;
 }
 
-export function AspectGrid({
-  aspects,
-  interpretations,
-  ragSources,
-}: AspectGridProps) {
+export function AspectGrid({ aspects, interpretations, ragSources }: AspectGridProps) {
   const { t } = useTranslation();
   const { translatePlanet, translateAspect } = useAstroTranslation();
   const [filter, setFilter] = useState<'all' | 'major'>('all');
@@ -71,27 +80,50 @@ export function AspectGrid({
       <div className="flex flex-wrap items-center gap-4">
         {/* Filter */}
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-foreground">{t('components.aspectGrid.filter', { defaultValue: 'Filtro' })}:</label>
-          <ToggleGroup type="single" value={filter} onValueChange={(value) => value && setFilter(value as 'all' | 'major')}>
-            <ToggleGroupItem value="all" aria-label={t('components.aspectGrid.allAspects', { defaultValue: 'Todos os aspectos' })}>
+          <label className="text-sm font-medium text-foreground">
+            {t('components.aspectGrid.filter', { defaultValue: 'Filtro' })}:
+          </label>
+          <ToggleGroup
+            type="single"
+            value={filter}
+            onValueChange={(value) => value && setFilter(value as 'all' | 'major')}
+          >
+            <ToggleGroupItem
+              value="all"
+              aria-label={t('components.aspectGrid.allAspects', {
+                defaultValue: 'Todos os aspectos',
+              })}
+            >
               {t('components.aspectGrid.all', { defaultValue: 'Todos' })} ({aspects.length})
             </ToggleGroupItem>
-            <ToggleGroupItem value="major" aria-label={t('components.aspectGrid.majorAspects', { defaultValue: 'Aspectos principais' })}>
-              {t('components.aspectGrid.major', { defaultValue: 'Principais' })} ({aspects.filter((a) => isMajorAspect(a.aspect)).length})
+            <ToggleGroupItem
+              value="major"
+              aria-label={t('components.aspectGrid.majorAspects', {
+                defaultValue: 'Aspectos principais',
+              })}
+            >
+              {t('components.aspectGrid.major', { defaultValue: 'Principais' })} (
+              {aspects.filter((a) => isMajorAspect(a.aspect)).length})
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
 
         {/* Sort */}
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-foreground">{t('components.aspectGrid.sort', { defaultValue: 'Ordenar' })}:</label>
+          <label className="text-sm font-medium text-foreground">
+            {t('components.aspectGrid.sort', { defaultValue: 'Ordenar' })}:
+          </label>
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'orb' | 'type')}>
             <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="orb">{t('components.aspectGrid.byOrb', { defaultValue: 'Por Orbe (exato → amplo)' })}</SelectItem>
-              <SelectItem value="type">{t('components.aspectGrid.byType', { defaultValue: 'Por Tipo' })}</SelectItem>
+              <SelectItem value="orb">
+                {t('components.aspectGrid.byOrb', { defaultValue: 'Por Orbe (exato → amplo)' })}
+              </SelectItem>
+              <SelectItem value="type">
+                {t('components.aspectGrid.byType', { defaultValue: 'Por Tipo' })}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -102,22 +134,33 @@ export function AspectGrid({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('components.aspectGrid.planet1', { defaultValue: 'Planeta 1' })}</TableHead>
-              <TableHead className="text-center">{t('components.aspectGrid.aspect', { defaultValue: 'Aspecto' })}</TableHead>
-              <TableHead>{t('components.aspectGrid.planet2', { defaultValue: 'Planeta 2' })}</TableHead>
-              <TableHead className="text-center">{t('components.aspectGrid.orb', { defaultValue: 'Orbe' })}</TableHead>
-              <TableHead className="text-center">{t('components.aspectGrid.status', { defaultValue: 'Status' })}</TableHead>
-              <TableHead className="text-right">{t('components.aspectGrid.angle', { defaultValue: 'Ângulo' })}</TableHead>
+              <TableHead>
+                {t('components.aspectGrid.planet1', { defaultValue: 'Planeta 1' })}
+              </TableHead>
+              <TableHead className="text-center">
+                {t('components.aspectGrid.aspect', { defaultValue: 'Aspecto' })}
+              </TableHead>
+              <TableHead>
+                {t('components.aspectGrid.planet2', { defaultValue: 'Planeta 2' })}
+              </TableHead>
+              <TableHead className="text-center">
+                {t('components.aspectGrid.orb', { defaultValue: 'Orbe' })}
+              </TableHead>
+              <TableHead className="text-center">
+                {t('components.aspectGrid.status', { defaultValue: 'Status' })}
+              </TableHead>
+              <TableHead className="text-right">
+                {t('components.aspectGrid.angle', { defaultValue: 'Ângulo' })}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedAspects.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center text-muted-foreground"
-                >
-                  {t('components.aspectGrid.noAspects', { defaultValue: 'Nenhum aspecto encontrado' })}
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  {t('components.aspectGrid.noAspects', {
+                    defaultValue: 'Nenhum aspecto encontrado',
+                  })}
                 </TableCell>
               </TableRow>
             ) : (
@@ -148,10 +191,7 @@ export function AspectGrid({
                         >
                           {getAspectSymbol(aspect.aspect)}
                         </span>
-                        <span
-                          className="text-xs font-medium"
-                          style={{ color: aspectColor }}
-                        >
+                        <span className="text-xs font-medium" style={{ color: aspectColor }}>
                           {translateAspect(aspect.aspect)}
                         </span>
                       </div>
@@ -176,8 +216,8 @@ export function AspectGrid({
                           aspect.orb <= 1
                             ? 'text-primary font-semibold'
                             : aspect.orb <= 3
-                            ? 'text-foreground'
-                            : 'text-muted-foreground'
+                              ? 'text-foreground'
+                              : 'text-muted-foreground'
                         }`}
                       >
                         {formatOrb(aspect.orb)}
@@ -186,10 +226,10 @@ export function AspectGrid({
 
                     {/* Applying/Separating */}
                     <TableCell className="text-center">
-                      <Badge
-                        variant={aspect.applying ? 'default' : 'outline'}
-                      >
-                        {aspect.applying ? t('components.aspectGrid.applying', { defaultValue: 'Aplicando' }) : t('components.aspectGrid.separating', { defaultValue: 'Separando' })}
+                      <Badge variant={aspect.applying ? 'default' : 'outline'}>
+                        {aspect.applying
+                          ? t('components.aspectGrid.applying', { defaultValue: 'Aplicando' })
+                          : t('components.aspectGrid.separating', { defaultValue: 'Separando' })}
                       </Badge>
                     </TableCell>
 
@@ -210,31 +250,48 @@ export function AspectGrid({
       {/* Legend */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">{t('components.aspectGrid.legend', { defaultValue: 'Legenda' })}</CardTitle>
+          <CardTitle className="text-sm">
+            {t('components.aspectGrid.legend', { defaultValue: 'Legenda' })}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            <strong>{t('components.aspectGrid.orb', { defaultValue: 'Orbe' })}:</strong> {t('components.aspectGrid.orbDesc', { defaultValue: 'Distância do aspecto exato. Orbes menores indicam aspectos mais fortes.' })}
+            <strong>{t('components.aspectGrid.orb', { defaultValue: 'Orbe' })}:</strong>{' '}
+            {t('components.aspectGrid.orbDesc', {
+              defaultValue:
+                'Distância do aspecto exato. Orbes menores indicam aspectos mais fortes.',
+            })}
           </p>
           <p>
-            <strong>{t('components.aspectGrid.applying', { defaultValue: 'Aplicando' })}:</strong> {t('components.aspectGrid.applyingDesc', { defaultValue: 'Aspecto se aproximando da exatidão.' })}{' '}
-            <strong>{t('components.aspectGrid.separating', { defaultValue: 'Separando' })}:</strong> {t('components.aspectGrid.separatingDesc', { defaultValue: 'Aspecto se afastando da exatidão.' })}
+            <strong>{t('components.aspectGrid.applying', { defaultValue: 'Aplicando' })}:</strong>{' '}
+            {t('components.aspectGrid.applyingDesc', {
+              defaultValue: 'Aspecto se aproximando da exatidão.',
+            })}{' '}
+            <strong>{t('components.aspectGrid.separating', { defaultValue: 'Separando' })}:</strong>{' '}
+            {t('components.aspectGrid.separatingDesc', {
+              defaultValue: 'Aspecto se afastando da exatidão.',
+            })}
           </p>
           <div className="flex flex-wrap gap-3 mt-2">
             <span className="flex items-center gap-1">
-              <span style={{ color: getAspectColor('Conjunction') }}>●</span> {t('components.aspectGrid.conjunction', { defaultValue: 'Conjunção' })}
+              <span style={{ color: getAspectColor('Conjunction') }}>●</span>{' '}
+              {t('components.aspectGrid.conjunction', { defaultValue: 'Conjunção' })}
             </span>
             <span className="flex items-center gap-1">
-              <span style={{ color: getAspectColor('Opposition') }}>●</span> {t('components.aspectGrid.opposition', { defaultValue: 'Oposição' })}
+              <span style={{ color: getAspectColor('Opposition') }}>●</span>{' '}
+              {t('components.aspectGrid.opposition', { defaultValue: 'Oposição' })}
             </span>
             <span className="flex items-center gap-1">
-              <span style={{ color: getAspectColor('Trine') }}>●</span> {t('components.aspectGrid.trine', { defaultValue: 'Trígono' })}
+              <span style={{ color: getAspectColor('Trine') }}>●</span>{' '}
+              {t('components.aspectGrid.trine', { defaultValue: 'Trígono' })}
             </span>
             <span className="flex items-center gap-1">
-              <span style={{ color: getAspectColor('Square') }}>●</span> {t('components.aspectGrid.square', { defaultValue: 'Quadratura' })}
+              <span style={{ color: getAspectColor('Square') }}>●</span>{' '}
+              {t('components.aspectGrid.square', { defaultValue: 'Quadratura' })}
             </span>
             <span className="flex items-center gap-1">
-              <span style={{ color: getAspectColor('Sextile') }}>●</span> {t('components.aspectGrid.sextile', { defaultValue: 'Sextil' })}
+              <span style={{ color: getAspectColor('Sextile') }}>●</span>{' '}
+              {t('components.aspectGrid.sextile', { defaultValue: 'Sextil' })}
             </span>
           </div>
         </CardContent>
@@ -244,7 +301,9 @@ export function AspectGrid({
       {interpretations && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-foreground">
-            {t('components.aspectGrid.astrologicalInterpretations', { defaultValue: 'Interpretações Astrológicas' })}
+            {t('components.aspectGrid.astrologicalInterpretations', {
+              defaultValue: 'Interpretações Astrológicas',
+            })}
           </h3>
 
           <div className="space-y-4">
@@ -259,7 +318,9 @@ export function AspectGrid({
               return (
                 <Card key={aspectKey}>
                   <CardHeader>
-                    <div className="text-sm text-muted-foreground mb-1">{translateAspect(aspect)}</div>
+                    <div className="text-sm text-muted-foreground mb-1">
+                      {translateAspect(aspect)}
+                    </div>
                     <CardTitle className="flex items-center gap-2 flex-wrap">
                       <span className="text-xl">{getPlanetSymbol(planet1)}</span>
                       <span className="text-sm">{translatePlanet(planet1)}</span>
@@ -267,9 +328,13 @@ export function AspectGrid({
                       <span className="text-xl">{getPlanetSymbol(planet2)}</span>
                       <span className="text-sm">{translatePlanet(planet2)}</span>
                       {sources.length > 0 && (
-                        <Badge variant="outline" className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20">
+                        <Badge
+                          variant="outline"
+                          className="ml-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
+                        >
                           <BookOpen className="h-3 w-3 mr-1" />
-                          {sources.length} {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
+                          {sources.length}{' '}
+                          {t('chartDetail.rag.sources', { defaultValue: 'fontes' })}
                         </Badge>
                       )}
                     </CardTitle>
@@ -283,7 +348,11 @@ export function AspectGrid({
                     {sources.length > 0 && (
                       <Collapsible>
                         <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-between text-purple-600 hover:text-purple-700 hover:bg-purple-500/10"
+                          >
                             <span className="flex items-center gap-2">
                               <BookOpen className="h-4 w-4" />
                               {t('chartDetail.rag.sources', { defaultValue: 'Fontes RAG' })}
@@ -294,14 +363,20 @@ export function AspectGrid({
                         <CollapsibleContent className="mt-2">
                           <div className="space-y-2 p-3 bg-purple-500/5 rounded-lg border border-purple-500/10">
                             <p className="text-xs text-muted-foreground mb-2">
-                              {t('chartDetail.rag.sourcesDesc', { defaultValue: 'Documentos usados para esta interpretação' })}
+                              {t('chartDetail.rag.sourcesDesc', {
+                                defaultValue: 'Documentos usados para esta interpretação',
+                              })}
                             </p>
                             {sources.map((source, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-2 bg-background rounded border text-xs">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between p-2 bg-background rounded border text-xs"
+                              >
                                 <span className="font-medium text-foreground">{source.source}</span>
                                 {source.page && (
                                   <Badge variant="secondary" className="text-xs">
-                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })} {source.page}
+                                    {t('chartDetail.rag.page', { defaultValue: 'Página' })}{' '}
+                                    {source.page}
                                   </Badge>
                                 )}
                               </div>
@@ -316,7 +391,9 @@ export function AspectGrid({
             })}
             {Object.keys(interpretations).length === 0 && (
               <p className="text-center text-muted-foreground py-8">
-                {t('components.aspectGrid.noInterpretations', { defaultValue: 'Nenhuma interpretação disponível' })}
+                {t('components.aspectGrid.noInterpretations', {
+                  defaultValue: 'Nenhuma interpretação disponível',
+                })}
               </p>
             )}
           </div>
@@ -324,7 +401,16 @@ export function AspectGrid({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>{t('components.aspectGrid.aboutInterpretations', { defaultValue: 'Sobre as interpretações' })}:</strong> {t('components.aspectGrid.interpretationsDesc', { defaultValue: 'Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram a natureza do aspecto e os planetas envolvidos.' })}
+              <strong>
+                {t('components.aspectGrid.aboutInterpretations', {
+                  defaultValue: 'Sobre as interpretações',
+                })}
+                :
+              </strong>{' '}
+              {t('components.aspectGrid.interpretationsDesc', {
+                defaultValue:
+                  'Geradas por IA baseando-se em princípios de astrologia tradicional. Interpretações consideram a natureza do aspecto e os planetas envolvidos.',
+              })}
             </AlertDescription>
           </Alert>
         </div>

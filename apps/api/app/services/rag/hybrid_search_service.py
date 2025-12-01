@@ -1,4 +1,5 @@
 """Hybrid search service combining dense and sparse retrieval."""
+
 from typing import Any
 
 from loguru import logger
@@ -298,6 +299,7 @@ class HybridSearchService:
         qdrant_info = None
         if self.qdrant.enabled:
             import asyncio
+
             loop = asyncio.get_event_loop()
             qdrant_info = loop.run_until_complete(self.qdrant.get_collection_info())
 

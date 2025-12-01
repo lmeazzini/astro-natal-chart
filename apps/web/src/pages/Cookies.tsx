@@ -14,16 +14,11 @@ export function CookiesPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            to="/"
-            className="text-primary hover:underline inline-flex items-center gap-2 mb-4"
-          >
+          <Link to="/" className="text-primary hover:underline inline-flex items-center gap-2 mb-4">
             <ArrowLeft className="h-5 w-5" />
             {t('legal.back')}
           </Link>
-          <h1 className="text-4xl font-bold text-foreground">
-            {t('cookies.title')}
-          </h1>
+          <h1 className="text-4xl font-bold text-foreground">{t('cookies.title')}</h1>
           <p className="text-muted-foreground mt-2">
             {t('legal.lastUpdated', { date: '15/11/2025' })}
           </p>
@@ -50,22 +45,30 @@ export function CookiesPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td><code>astro_access_token</code></td>
+                  <td>
+                    <code>astro_access_token</code>
+                  </td>
                   <td>{t('cookies.table.jwtAuth')}</td>
                   <td>15 min</td>
                 </tr>
                 <tr>
-                  <td><code>astro_refresh_token</code></td>
+                  <td>
+                    <code>astro_refresh_token</code>
+                  </td>
                   <td>{t('cookies.table.refreshAuth')}</td>
                   <td>30 days</td>
                 </tr>
                 <tr>
-                  <td><code>astro_session</code></td>
+                  <td>
+                    <code>astro_session</code>
+                  </td>
                   <td>{t('cookies.table.sessionId')}</td>
                   <td>{t('cookies.table.session')}</td>
                 </tr>
                 <tr>
-                  <td><code>astro_csrf_token</code></td>
+                  <td>
+                    <code>astro_csrf_token</code>
+                  </td>
                   <td>{t('cookies.table.csrfProtection')}</td>
                   <td>{t('cookies.table.session')}</td>
                 </tr>
@@ -87,22 +90,30 @@ export function CookiesPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td><code>astro_lang</code></td>
+                  <td>
+                    <code>astro_lang</code>
+                  </td>
                   <td>{t('cookies.table.language')}</td>
                   <td>1 year</td>
                 </tr>
                 <tr>
-                  <td><code>astro_theme</code></td>
+                  <td>
+                    <code>astro_theme</code>
+                  </td>
                   <td>{t('cookies.table.theme')}</td>
                   <td>1 year</td>
                 </tr>
                 <tr>
-                  <td><code>astro_timezone</code></td>
+                  <td>
+                    <code>astro_timezone</code>
+                  </td>
                   <td>{t('cookies.table.timezone')}</td>
                   <td>1 year</td>
                 </tr>
                 <tr>
-                  <td><code>astro_consent</code></td>
+                  <td>
+                    <code>astro_consent</code>
+                  </td>
                   <td>{t('cookies.table.consentRecord')}</td>
                   <td>1 year</td>
                 </tr>
@@ -125,19 +136,25 @@ export function CookiesPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td><code>_ga</code></td>
+                  <td>
+                    <code>_ga</code>
+                  </td>
                   <td>Google Analytics</td>
                   <td>{t('cookies.table.distinguishUsers')}</td>
                   <td>2 years</td>
                 </tr>
                 <tr>
-                  <td><code>_gid</code></td>
+                  <td>
+                    <code>_gid</code>
+                  </td>
                   <td>Google Analytics</td>
                   <td>{t('cookies.table.distinguishUsers')}</td>
                   <td>24 hours</td>
                 </tr>
                 <tr>
-                  <td><code>_gat</code></td>
+                  <td>
+                    <code>_gat</code>
+                  </td>
                   <td>Google Analytics</td>
                   <td>{t('cookies.table.rateLimit')}</td>
                   <td>1 min</td>
@@ -211,10 +228,18 @@ export function CookiesPage() {
 
           <h3>{t('cookies.manage.browserTitle')}</h3>
           <ul>
-            <li><strong>{t('cookies.manage.chrome')}</strong></li>
-            <li><strong>{t('cookies.manage.firefox')}</strong></li>
-            <li><strong>{t('cookies.manage.safari')}</strong></li>
-            <li><strong>{t('cookies.manage.edge')}</strong></li>
+            <li>
+              <strong>{t('cookies.manage.chrome')}</strong>
+            </li>
+            <li>
+              <strong>{t('cookies.manage.firefox')}</strong>
+            </li>
+            <li>
+              <strong>{t('cookies.manage.safari')}</strong>
+            </li>
+            <li>
+              <strong>{t('cookies.manage.edge')}</strong>
+            </li>
           </ul>
 
           <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-md border border-yellow-200 dark:border-yellow-800">
@@ -241,8 +266,12 @@ export function CookiesPage() {
           <h3>{t('cookies.otherTech.storageTitle')}</h3>
           <p>{t('cookies.otherTech.storageDesc')}</p>
           <ul>
-            <li><strong>{t('cookies.otherTech.localStorage')}</strong></li>
-            <li><strong>{t('cookies.otherTech.sessionStorage')}</strong></li>
+            <li>
+              <strong>{t('cookies.otherTech.localStorage')}</strong>
+            </li>
+            <li>
+              <strong>{t('cookies.otherTech.sessionStorage')}</strong>
+            </li>
           </ul>
           <p className="text-sm">{t('cookies.otherTech.noSensitive')}</p>
 

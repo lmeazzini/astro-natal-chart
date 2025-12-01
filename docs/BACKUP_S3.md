@@ -30,8 +30,8 @@ aws s3 mb s3://your-backup-bucket-name --region us-east-1
 ```
 
 **Recommended naming:**
-- Development: `astro-backups-dev`
-- Production: `astro-backups-prod`
+- Development: `genesis-559050210551-backup-dev`
+- Production: `genesis-559050210551-backup-prod`
 
 ### 2. Configure IAM Policy
 
@@ -69,7 +69,7 @@ AWS_SECRET_ACCESS_KEY=your-aws-secret-key
 AWS_REGION=us-east-1
 
 # Backup S3 Configuration
-BACKUP_S3_BUCKET=astro-backups-dev
+BACKUP_S3_BUCKET=genesis-559050210551-backup-dev
 BACKUP_S3_PREFIX=backups
 BACKUP_S3_RETENTION_DAYS=30
 BACKUP_S3_GLACIER_DAYS=30
@@ -112,31 +112,76 @@ The backup script automatically uploads to S3 if `BACKUP_S3_BUCKET` is configure
 ### List Backups in S3
 
 ```bash
-# Using restore script
-./scripts/restore-db.sh --list-s3
+# Using AWS CLI
+aws s3 ls s3://genesis-559050210551-backup-dev/backups/ --recursive --human-readable
 
 # Output:
-# Found 30 backups in S3:
-#
-# Date         Size       Filename                              S3 URL
-# --------------------------------------------------------------------------------------------
-# 2025-01-20     48.50MB  astro_backup_20250120_143000.sql.gz  s3://...
-# 2025-01-19     47.80MB  astro_backup_20250119_030000.sql.gz  s3://...
+# 2025-01-20 14:30:00   48.5 MiB backups/20250120/astro_backup_20250120_143000.sql.gz
+# 2025-01-19 03:00:00   47.8 MiB backups/20250119/astro_backup_20250119_030000.sql.gz
 # ...
+
+# Using verify script (also lists S3 backups)
+./scripts/verify-backups.sh
 ```
 
 ### Restore from S3
 
+The `restore-db.sh` script now supports **automatic S3 download** with three convenient options:
+
+#### Option 1: Restore Latest Backup (Recommended)
+
 ```bash
-# 1. List backups to find S3 URL
+# Automatically download and restore the most recent backup from S3
+./scripts/restore-db.sh --from-s3-latest
+
+# With auto-confirmation (for automation/CI-CD)
+./scripts/restore-db.sh --from-s3-latest --confirm
+
+# Dry run to validate latest backup without restoring
+./scripts/restore-db.sh --from-s3-latest --dry-run
+```
+
+#### Option 2: Restore Specific Backup
+
+```bash
+# 1. List available backups
 ./scripts/restore-db.sh --list-s3
 
-# 2. Download and restore specific backup
-./scripts/restore-db.sh --download-s3 s3://bucket/backups/20250120/astro_backup_20250120_143000.sql.gz
-
-# With auto-confirmation (dangerous!)
-./scripts/restore-db.sh --download-s3 s3://... --no-confirm
+# 2. Copy the S3 URL from the list and restore
+./scripts/restore-db.sh --from-s3 s3://genesis-559050210551-backup-dev/backups/20250128/astro_backup_20250128_143000.sql.gz
 ```
+
+#### Option 3: Manual Download (Legacy)
+
+```bash
+# 1. Download manually using AWS CLI
+aws s3 cp s3://genesis-559050210551-backup-dev/backups/20250128/astro_backup_20250128_143000.sql.gz /var/backups/astro-db/
+
+# 2. Restore from local file
+./scripts/restore-db.sh --backup-file /var/backups/astro-db/astro_backup_20250128_143000.sql.gz
+```
+
+**Features:**
+- ✅ Automatic S3 bucket detection (reads `BACKUP_S3_BUCKET` from environment)
+- ✅ AWS credentials validation before download
+- ✅ Progress tracking during download
+- ✅ Pre-restore safety backup
+- ✅ Service management (stops API/Celery during restore)
+- ✅ Post-restore validation
+
+**Requirements:**
+- AWS CLI installed: `aws --version`
+- AWS credentials configured: `aws configure` or environment variables
+- `BACKUP_S3_BUCKET` environment variable set (reads from `.env`)
+
+**Common Issues:**
+
+| Error | Solution |
+|-------|----------|
+| "AWS CLI not found" | Install: `curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install` |
+| "AWS credentials not configured" | Run `aws configure` or set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in `.env` |
+| "S3 not configured" | Set `BACKUP_S3_BUCKET=genesis-559050210551-backup-dev` in `apps/api/.env` |
+| "No backups found in S3" | Verify bucket name and run `./scripts/backup-db.sh` to create first backup |
 
 ## S3 Lifecycle Policy (Optional)
 

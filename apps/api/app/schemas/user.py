@@ -84,7 +84,9 @@ class UserUpdate(BaseModel):
     avatar_url: str | None = None
     bio: str | None = Field(None, max_length=500, description="User biography")
     profile_public: bool | None = Field(None, description="Make profile publicly visible")
-    user_type: UserType | None = Field(None, description="User type: professional, student, or curious")
+    user_type: UserType | None = Field(
+        None, description="User type: professional, student, or curious"
+    )
 
     # Social links
     website: str | None = Field(None, max_length=200)
@@ -154,7 +156,7 @@ class UserRead(UserBase):
     email_verified: bool
     is_active: bool
     is_superuser: bool
-    role: str  # User role (geral, admin)
+    role: str  # User role (free, premium, admin)
     bio: str | None
     profile_public: bool
     user_type: str

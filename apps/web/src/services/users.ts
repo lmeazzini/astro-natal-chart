@@ -90,11 +90,7 @@ export const userService = {
   /**
    * Get user activity log
    */
-  async getActivity(
-    token: string,
-    limit = 50,
-    offset = 0
-  ): Promise<UserActivityList> {
+  async getActivity(token: string, limit = 50, offset = 0): Promise<UserActivityList> {
     return apiClient.get<UserActivityList>(
       `/api/v1/users/me/activity?limit=${limit}&offset=${offset}`,
       token
@@ -119,19 +115,13 @@ export const userService = {
    * Get OAuth connections
    */
   async getOAuthConnections(token: string): Promise<OAuthConnection[]> {
-    return apiClient.get<OAuthConnection[]>(
-      '/api/v1/users/me/oauth-connections',
-      token
-    );
+    return apiClient.get<OAuthConnection[]>('/api/v1/users/me/oauth-connections', token);
   },
 
   /**
    * Disconnect OAuth provider
    */
   async disconnectOAuth(provider: string, token: string): Promise<void> {
-    return apiClient.delete(
-      `/api/v1/users/me/oauth-connections/${provider}`,
-      token
-    );
+    return apiClient.delete(`/api/v1/users/me/oauth-connections/${provider}`, token);
   },
 };

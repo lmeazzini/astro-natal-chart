@@ -1,4 +1,5 @@
 """Tests for RAG API endpoints."""
+
 import json
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
@@ -13,8 +14,8 @@ from app.models.vector_document import VectorDocument
 @pytest.fixture
 async def mock_rag_services():
     """Mock RAG services."""
-    with patch('app.api.v1.endpoints.rag.hybrid_search_service') as mock_hybrid:
-        with patch('app.api.v1.endpoints.rag.document_ingestion_service') as mock_ingestion:
+    with patch("app.api.v1.endpoints.rag.hybrid_search_service") as mock_hybrid:
+        with patch("app.api.v1.endpoints.rag.document_ingestion_service") as mock_ingestion:
             yield mock_hybrid, mock_ingestion
 
 
@@ -33,14 +34,16 @@ class TestRAGSearch:
         mock_hybrid, _ = mock_rag_services
 
         # Mock search results
-        mock_hybrid.search = AsyncMock(return_value=[
-            {
-                "document_id": str(uuid4()),
-                "hybrid_score": 0.95,
-                "dense_score": 0.9,
-                "sparse_score": 8.5,
-            }
-        ])
+        mock_hybrid.search = AsyncMock(
+            return_value=[
+                {
+                    "document_id": str(uuid4()),
+                    "hybrid_score": 0.95,
+                    "dense_score": 0.9,
+                    "sparse_score": 8.5,
+                }
+            ]
+        )
 
         # Create test document in database
         test_doc = VectorDocument(
@@ -119,7 +122,7 @@ class TestRAGSearch:
         )
 
         # FastAPI returns 403 Forbidden when no authentication is provided
-        assert response.status_code == 403
+        assert response.status_code == 401
 
 
 class TestRAGIngestion:
@@ -353,27 +356,29 @@ class TestRAGStatistics:
         _, mock_ingestion = mock_rag_services
 
         # Mock statistics
-        mock_ingestion.get_ingestion_stats = AsyncMock(return_value={
-            "total_documents": 100,
-            "indexed_documents": 95,
-            "documents_by_type": {
-                "text": 50,
-                "pdf": 40,
-                "interpretation": 10,
-            },
-            "bm25_stats": {
-                "num_documents": 100,
-                "avg_doc_length": 250,
-                "total_terms": 25000,
-                "unique_terms": 3000,
-            },
-            "qdrant_stats": {
-                "vectors_count": 95,
-                "points_count": 95,
-                "segments_count": 1,
-                "status": "green",
-            },
-        })
+        mock_ingestion.get_ingestion_stats = AsyncMock(
+            return_value={
+                "total_documents": 100,
+                "indexed_documents": 95,
+                "documents_by_type": {
+                    "text": 50,
+                    "pdf": 40,
+                    "interpretation": 10,
+                },
+                "bm25_stats": {
+                    "num_documents": 100,
+                    "avg_doc_length": 250,
+                    "total_terms": 25000,
+                    "unique_terms": 3000,
+                },
+                "qdrant_stats": {
+                    "vectors_count": 95,
+                    "points_count": 95,
+                    "segments_count": 1,
+                    "status": "green",
+                },
+            }
+        )
 
         response = await client.get(
             "/api/v1/rag/stats",
@@ -398,9 +403,7 @@ class TestRAGStatistics:
     ):
         """Test getting RAG statistics with error."""
         _, mock_ingestion = mock_rag_services
-        mock_ingestion.get_ingestion_stats = AsyncMock(
-            side_effect=Exception("Stats error")
-        )
+        mock_ingestion.get_ingestion_stats = AsyncMock(side_effect=Exception("Stats error"))
 
         response = await client.get(
             "/api/v1/rag/stats",

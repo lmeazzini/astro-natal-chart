@@ -2,6 +2,7 @@
 """
 Script para testar compilação do template LaTeX refatorado
 """
+
 import asyncio
 import shutil
 import subprocess
@@ -28,9 +29,7 @@ async def test_pdf_compilation():
         "postgresql+asyncpg://astro:dev_password@localhost:5432/astro_dev",
         echo=False,
     )
-    async_session = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as db:
         # Fetch chart
@@ -60,18 +59,18 @@ async def test_pdf_compilation():
 
         # Build interpretations dict
         interpretations: dict[str, dict[str, str]] = {
-            'planets': {},
-            'houses': {},
-            'aspects': {},
-            'arabic_parts': {},
+            "planets": {},
+            "houses": {},
+            "aspects": {},
+            "arabic_parts": {},
         }
         for interp in existing_interps:
             if interp.interpretation_type in interpretations:
                 interpretations[interp.interpretation_type][interp.subject] = interp.content or ""
 
-        has_planet_interps = bool(interpretations.get('planets'))
-        has_house_interps = bool(interpretations.get('houses'))
-        has_aspect_interps = bool(interpretations.get('aspects'))
+        has_planet_interps = bool(interpretations.get("planets"))
+        has_house_interps = bool(interpretations.get("houses"))
+        has_aspect_interps = bool(interpretations.get("aspects"))
 
         print(f"   Planets: {len(interpretations.get('planets', {}))} interpretations")
         print(f"   Houses: {len(interpretations.get('houses', {}))} interpretations")
@@ -90,14 +89,14 @@ async def test_pdf_compilation():
         template_data = pdf_service.prepare_template_data(
             chart_data={
                 **birth_chart.chart_data,
-                'person_name': birth_chart.person_name,
-                'birth_datetime': birth_chart.birth_datetime,
-                'city': birth_chart.city,
-                'country': birth_chart.country,
-                'latitude': float(birth_chart.latitude),
-                'longitude': float(birth_chart.longitude),
-                'house_system': birth_chart.house_system,
-                'zodiac_type': birth_chart.zodiac_type,
+                "person_name": birth_chart.person_name,
+                "birth_datetime": birth_chart.birth_datetime,
+                "city": birth_chart.city,
+                "country": birth_chart.country,
+                "latitude": float(birth_chart.latitude),
+                "longitude": float(birth_chart.longitude),
+                "house_system": birth_chart.house_system,
+                "zodiac_type": birth_chart.zodiac_type,
             },
             interpretations=interpretations,
             chart_image_path=None,
@@ -117,7 +116,7 @@ async def test_pdf_compilation():
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             tex_file = temp_path / "document.tex"
-            tex_file.write_text(latex_source, encoding='utf-8')
+            tex_file.write_text(latex_source, encoding="utf-8")
 
             print(f"   LaTeX source: {tex_file}")
 
@@ -126,8 +125,7 @@ async def test_pdf_compilation():
             macros_file = templates_dir / "macros.tex"
             if macros_file.exists():
                 (temp_path / "macros.tex").write_text(
-                    macros_file.read_text(encoding='utf-8'),
-                    encoding='utf-8'
+                    macros_file.read_text(encoding="utf-8"), encoding="utf-8"
                 )
                 print("   Copied macros.tex")
 
@@ -136,9 +134,10 @@ async def test_pdf_compilation():
                 print(f"\n   🔄 Running pdflatex pass {pass_num}/2...")
                 process = subprocess.run(
                     [
-                        'pdflatex',
-                        '-interaction=nonstopmode',
-                        '-output-directory', str(temp_path),
+                        "pdflatex",
+                        "-interaction=nonstopmode",
+                        "-output-directory",
+                        str(temp_path),
                         str(tex_file),
                     ],
                     capture_output=True,

@@ -222,7 +222,10 @@ class TestUnifiedInterpretationsEndpoint:
         second_data = response.json()
 
         # Should have regenerated planets and houses
-        assert second_data["metadata"]["rag_generations"] >= 11 + 12  # 11 planets + 12 houses
+        # test_chart_data has 2 planets + 2 houses
+        assert (
+            second_data["metadata"]["rag_generations"] >= 4
+        )  # 2 planets + 2 houses from test data
 
     async def test_get_unified_interpretations_invalid_regenerate_param(
         self,

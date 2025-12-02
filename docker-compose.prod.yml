@@ -41,6 +41,20 @@ services:
     networks:
       - astro-network
 
+  # Qdrant Vector Database (RAG)
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: astro-qdrant-prod
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=WARN
+    networks:
+      - astro-network
+    # Qdrant is only accessible within Docker network
+
   # FastAPI Backend
   api:
     build:
@@ -59,6 +73,7 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
       - COOKIE_SECURE=true
       - COOKIE_HTTPONLY=true
       - COOKIE_SAMESITE=lax
@@ -68,6 +83,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      qdrant:
+        condition: service_started
     networks:
       - astro-network
     # API is only accessible via nginx reverse proxy
@@ -92,9 +109,11 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
     depends_on:
       - db
       - redis
+      - qdrant
     networks:
       - astro-network
 
@@ -148,6 +167,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  qdrant_data:
     driver: local
 
 networks:

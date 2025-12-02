@@ -86,3 +86,6 @@ backups/
 *.sql
 *.sql.gz
 *.dump
+
+# Production environment
+.env.prod

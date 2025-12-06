@@ -2,11 +2,11 @@
 Birth Chart schemas for request/response validation.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class BirthChartCreate(BaseModel):
@@ -14,7 +14,9 @@ class BirthChartCreate(BaseModel):
 
     person_name: str = Field(..., min_length=1, max_length=100)
     gender: str | None = Field(None, max_length=50)
-    birth_datetime: datetime = Field(..., description="Birth date and time in ISO format")
+    birth_datetime: datetime = Field(
+        ..., description="Birth date and time in ISO format (must be timezone-aware, preferably UTC)"
+    )
     birth_timezone: str = Field(
         ..., max_length=50, description="Timezone (e.g., America/Sao_Paulo)"
     )
@@ -27,6 +29,18 @@ class BirthChartCreate(BaseModel):
     house_system: str = Field(default="placidus", max_length=20)
     zodiac_type: str = Field(default="tropical", max_length=20)
     node_type: str = Field(default="true", max_length=20)
+
+    @field_validator("birth_datetime", mode="after")
+    @classmethod
+    def ensure_timezone_aware_utc(cls, v: datetime) -> datetime:
+        """Ensure birth_datetime is timezone-aware and convert to UTC."""
+        if v.tzinfo is None:
+            raise ValueError(
+                "birth_datetime must be timezone-aware. "
+                'Send as ISO 8601 with timezone (e.g., "2024-01-15T10:30:00Z" or "2024-01-15T10:30:00-03:00")'
+            )
+        # Convert to UTC for consistent storage
+        return v.astimezone(timezone.utc)
 
 
 class BirthChartUpdate(BaseModel):
@@ -44,7 +58,9 @@ class BirthChartUpdate(BaseModel):
     visibility: str | None = Field(None, max_length=20)
 
     # Birth data (triggers recalculation if changed)
-    birth_datetime: datetime | None = Field(None, description="Birth date and time in ISO format")
+    birth_datetime: datetime | None = Field(
+        None, description="Birth date and time in ISO format (must be timezone-aware if provided)"
+    )
     birth_timezone: str | None = Field(
         None, max_length=50, description="Timezone (e.g., America/Sao_Paulo)"
     )
@@ -57,6 +73,20 @@ class BirthChartUpdate(BaseModel):
     house_system: str | None = Field(None, max_length=20)
     zodiac_type: str | None = Field(None, max_length=20)
     node_type: str | None = Field(None, max_length=20)
+
+    @field_validator("birth_datetime", mode="after")
+    @classmethod
+    def ensure_timezone_aware_utc(cls, v: datetime | None) -> datetime | None:
+        """Ensure birth_datetime is timezone-aware and convert to UTC if provided."""
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            raise ValueError(
+                "birth_datetime must be timezone-aware. "
+                'Send as ISO 8601 with timezone (e.g., "2024-01-15T10:30:00Z" or "2024-01-15T10:30:00-03:00")'
+            )
+        # Convert to UTC for consistent storage
+        return v.astimezone(timezone.utc)
 
 
 class PlanetPosition(BaseModel):

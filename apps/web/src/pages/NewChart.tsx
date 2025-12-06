@@ -288,7 +288,8 @@ export function NewChartPage() {
       const birthTimezone = values.birth_timezone; // e.g., "America/Sao_Paulo"
 
       // Parse the datetime as if it's in the birth timezone and convert to ISO
-      const isoDatetime = dayjs.tz(localDatetime, birthTimezone).toISOString();
+      // IMPORTANT: Must specify format explicitly for dayjs.tz to correctly interpret the local time
+      const isoDatetime = dayjs.tz(localDatetime, 'YYYY-MM-DDTHH:mm', birthTimezone).toISOString();
 
       const chartData: BirthChartCreate = {
         ...values,

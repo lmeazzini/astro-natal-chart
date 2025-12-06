@@ -1,0 +1,18 @@
+# Temporary HTTP-only configuration for Let's Encrypt validation
+server {
+    listen 80;
+    listen [::]:80;
+    server_name realastrology.ai www.realastrology.ai;
+
+    # Let's Encrypt ACME Challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        allow all;
+    }
+
+    # Temporary: serve simple test page
+    location / {
+        return 200 'Server is ready for SSL certificate validation\n';
+        add_header Content-Type text/plain;
+    }
+}

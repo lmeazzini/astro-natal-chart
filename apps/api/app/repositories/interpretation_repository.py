@@ -115,6 +115,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
         language: str,
         openai_model: str,
         prompt_version: str,
+        rag_sources: list[dict[str, Any]] | None = None,
     ) -> ChartInterpretation:
         """
         Create or update an interpretation (upsert pattern).
@@ -131,6 +132,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
             language: Language code ('pt-BR', 'en-US')
             openai_model: Model used for generation
             prompt_version: Prompt version identifier
+            rag_sources: Optional list of RAG source references
 
         Returns:
             Created or updated interpretation instance
@@ -148,6 +150,8 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
             existing.content = content
             existing.openai_model = openai_model
             existing.prompt_version = prompt_version
+            if rag_sources is not None:
+                existing.rag_sources = rag_sources
             await self.db.flush()
             logger.debug(
                 f"Updated interpretation: {interpretation_type}/{subject} for chart {chart_id}"
@@ -163,6 +167,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
                 openai_model=openai_model,
                 prompt_version=prompt_version,
                 language=language,
+                rag_sources=rag_sources,
             )
             self.db.add(new_interpretation)
             await self.db.flush()
@@ -176,6 +181,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
         Delete all interpretations for a chart.
 
         Useful when regenerating interpretations or when chart is deleted.
+        Uses flush() instead of commit() to let the caller manage the transaction.
 
         Args:
             chart_id: Chart UUID
@@ -185,7 +191,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
         """
         stmt = delete(ChartInterpretation).where(ChartInterpretation.chart_id == chart_id)
         result = await self.db.execute(stmt)
-        await self.db.commit()
+        await self.db.flush()
         return result.rowcount  # type: ignore[attr-defined, no-any-return]
 
     async def exists_for_chart(self, chart_id: UUID) -> bool:

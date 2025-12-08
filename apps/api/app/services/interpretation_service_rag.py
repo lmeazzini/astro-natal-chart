@@ -6,6 +6,7 @@ retrieving relevant knowledge from a vector database before generating
 interpretations, resulting in more accurate and contextually grounded responses.
 """
 
+import asyncio
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -27,6 +28,10 @@ from app.services.rag import hybrid_search_service
 # RAG model and version identifiers
 RAG_MODEL_ID = "gpt-4o-mini-rag"
 RAG_PROMPT_VERSION = "rag-v1"
+
+# Semaphore to limit concurrent OpenAI API calls (avoid rate limits)
+# Using 5 concurrent calls as a safe default for OpenAI's rate limits
+OPENAI_CONCURRENCY_LIMIT = 5
 
 
 # =============================================================================
@@ -157,6 +162,9 @@ class InterpretationServiceRAG:
         self.use_rag = use_rag
         self.language = language
         self.rag_context_limit = 3  # Number of relevant documents to retrieve
+
+        # Semaphore for limiting concurrent OpenAI calls
+        self._semaphore = asyncio.Semaphore(OPENAI_CONCURRENCY_LIMIT)
 
         # Initialize OpenAI client
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
@@ -906,6 +914,31 @@ class InterpretationServiceRAG:
                 return f"Interpretation not available for {part_name} in {sign}."
             return f"Interpretação não disponível para {part_name_pt} em {sign}."
 
+    async def _generate_with_semaphore(
+        self,
+        coro: Any,
+        key: str,
+        category: str,
+    ) -> tuple[str, str, str]:
+        """
+        Execute a coroutine with semaphore limiting for rate control.
+
+        Args:
+            coro: The coroutine to execute
+            key: The key identifier for this interpretation
+            category: The category (planets, houses, aspects, arabic_parts)
+
+        Returns:
+            Tuple of (category, key, interpretation_text)
+        """
+        async with self._semaphore:
+            try:
+                result = await coro
+                return (category, key, result)
+            except Exception as e:
+                logger.error(f"Failed to generate {category} interpretation for {key}: {e}")
+                return (category, key, "")
+
     async def generate_all_rag_interpretations(
         self,
         chart: BirthChart,
@@ -914,6 +947,9 @@ class InterpretationServiceRAG:
     ) -> dict[str, dict[str, str]]:
         """
         Generate all RAG-enhanced interpretations for a chart and save to database.
+
+        Uses parallel processing with semaphore limiting to speed up generation
+        while respecting OpenAI rate limits (max 5 concurrent calls).
 
         Args:
             chart: BirthChart model instance
@@ -941,7 +977,11 @@ class InterpretationServiceRAG:
         arabic_parts = lang_data.get("arabic_parts", {})
         sect = lang_data.get("sect", "diurnal")
 
-        # Generate planet interpretations
+        # Phase 1: Check which interpretations already exist and collect tasks
+        tasks: list[tuple[Any, str, str, str, dict[str, Any]]] = []
+        # Format: (coroutine, category, key, interpretation_type, params_for_db)
+
+        # Collect planet interpretation tasks
         for planet in planets:
             planet_name = planet.get("name", "")
             if not planet_name:
@@ -952,49 +992,34 @@ class InterpretationServiceRAG:
             retrograde = planet.get("retrograde", False)
             dignities = planet.get("dignities", {})
 
-            try:
-                # Check if interpretation already exists (unless force=True)
-                if not force:
-                    existing = await self.repo.get_by_chart_and_subject(
-                        chart_id=chart.id,  # type: ignore[arg-type]
-                        subject=planet_name,
-                        interpretation_type="planet",
-                        language=self.language,
-                    )
-                    if existing:
-                        logger.debug(
-                            f"Skipping planet {planet_name} - interpretation already exists ({self.language})"
-                        )
-                        results["planets"][planet_name] = existing.content
-                        continue
-
-                # Generate new interpretation
-                interpretation = await self.generate_planet_interpretation(
-                    planet=planet_name,
-                    sign=sign,
-                    house=house,
-                    dignities=dignities,
-                    sect=sect,
-                    retrograde=retrograde,
-                )
-                results["planets"][planet_name] = interpretation
-
-                # Save to database using upsert (for force=True case)
-                await self.repo.upsert_interpretation(
-                    chart_id=chart.id,
-                    interpretation_type="planet",
+            # Check if interpretation already exists (unless force=True)
+            if not force:
+                existing = await self.repo.get_by_chart_and_subject(
+                    chart_id=chart.id,  # type: ignore[arg-type]
                     subject=planet_name,
-                    content=interpretation,
+                    interpretation_type="planet",
                     language=self.language,
-                    openai_model=RAG_MODEL_ID,
-                    prompt_version=RAG_PROMPT_VERSION,
                 )
-            except Exception as e:
-                logger.error(f"Failed to generate RAG planet interpretation for {planet_name}: {e}")
+                if existing:
+                    logger.debug(
+                        f"Skipping planet {planet_name} - interpretation already exists ({self.language})"
+                    )
+                    results["planets"][planet_name] = existing.content
+                    continue
 
-        # Generate house interpretations
+            # Add to tasks for parallel generation
+            coro = self.generate_planet_interpretation(
+                planet=planet_name,
+                sign=sign,
+                house=house,
+                dignities=dignities,
+                sect=sect,
+                retrograde=retrograde,
+            )
+            tasks.append((coro, "planets", planet_name, "planet", {}))
+
+        # Collect house interpretation tasks
         for house_data in houses:
-            # The house data uses "house" key (not "number") for the house number
             house_number = house_data.get("house", 0) or house_data.get("number", 0)
             house_sign = house_data.get("sign", "")
 
@@ -1003,55 +1028,31 @@ class InterpretationServiceRAG:
 
             house_key = str(house_number)
 
-            try:
-                # Check if interpretation already exists (unless force=True)
-                if not force:
-                    existing = await self.repo.get_by_chart_and_subject(
-                        chart_id=chart.id,  # type: ignore[arg-type]
-                        subject=house_key,
-                        interpretation_type="house",
-                        language=self.language,
-                    )
-                    if existing:
-                        logger.debug(
-                            f"Skipping house {house_number} - interpretation already exists ({self.language})"
-                        )
-                        results["houses"][house_key] = existing.content
-                        continue
-
-                # Get ruler for the house sign (imported at module level)
-                ruler = get_sign_ruler(house_sign) or "Unknown"
-
-                # Generate house interpretation using the proper method
-                interpretation = await self.generate_house_interpretation(
-                    house=house_number,
-                    sign=house_sign,
-                    ruler=ruler,
-                    ruler_dignities={},
-                    sect=sect,
-                )
-
-                if not interpretation:
-                    interpretation = (
-                        f"Casa {house_number} ({house_sign}): "
-                        f"Esta casa governa áreas específicas da vida conforme sua posição em {house_sign}."
-                    )
-                results["houses"][house_key] = interpretation
-
-                # Save to database using upsert (for force=True case)
-                await self.repo.upsert_interpretation(
-                    chart_id=chart.id,
-                    interpretation_type="house",
+            if not force:
+                existing = await self.repo.get_by_chart_and_subject(
+                    chart_id=chart.id,  # type: ignore[arg-type]
                     subject=house_key,
-                    content=interpretation,
+                    interpretation_type="house",
                     language=self.language,
-                    openai_model=RAG_MODEL_ID,
-                    prompt_version=RAG_PROMPT_VERSION,
                 )
-            except Exception as e:
-                logger.error(f"Failed to generate RAG house interpretation for {house_key}: {e}")
+                if existing:
+                    logger.debug(
+                        f"Skipping house {house_number} - interpretation already exists ({self.language})"
+                    )
+                    results["houses"][house_key] = existing.content
+                    continue
 
-        # Generate aspect interpretations (limited)
+            ruler = get_sign_ruler(house_sign) or "Unknown"
+            coro = self.generate_house_interpretation(
+                house=house_number,
+                sign=house_sign,
+                ruler=ruler,
+                ruler_dignities={},
+                sect=sect,
+            )
+            tasks.append((coro, "houses", house_key, "house", {"house_sign": house_sign}))
+
+        # Collect aspect interpretation tasks
         max_aspects = settings.RAG_MAX_ASPECTS
         for aspect in aspects[:max_aspects]:
             planet1 = aspect.get("planet1", "")
@@ -1064,104 +1065,142 @@ class InterpretationServiceRAG:
 
             aspect_key = f"{planet1}-{aspect_name}-{planet2}"
 
-            try:
-                # Check if interpretation already exists (unless force=True)
-                if not force:
-                    existing = await self.repo.get_by_chart_and_subject(
-                        chart_id=chart.id,  # type: ignore[arg-type]
-                        subject=aspect_key,
-                        interpretation_type="aspect",
-                        language=self.language,
-                    )
-                    if existing:
-                        logger.debug(
-                            f"Skipping aspect {aspect_key} - interpretation already exists ({self.language})"
-                        )
-                        results["aspects"][aspect_key] = existing.content
-                        continue
-
-                # Get planet signs and dignities
-                planet1_data: dict[str, Any] = next(
-                    (p for p in planets if p.get("name") == planet1), {}
-                )
-                planet2_data: dict[str, Any] = next(
-                    (p for p in planets if p.get("name") == planet2), {}
-                )
-
-                interpretation = await self.generate_aspect_interpretation(
-                    planet1=planet1,
-                    planet2=planet2,
-                    aspect=aspect_name,
-                    sign1=planet1_data.get("sign", ""),
-                    sign2=planet2_data.get("sign", ""),
-                    orb=orb,
-                    applying=aspect.get("applying", False),
-                    sect=sect,
-                    dignities1=planet1_data.get("dignities", {}),
-                    dignities2=planet2_data.get("dignities", {}),
-                )
-                results["aspects"][aspect_key] = interpretation
-
-                # Save to database using upsert (for force=True case)
-                await self.repo.upsert_interpretation(
-                    chart_id=chart.id,
-                    interpretation_type="aspect",
+            if not force:
+                existing = await self.repo.get_by_chart_and_subject(
+                    chart_id=chart.id,  # type: ignore[arg-type]
                     subject=aspect_key,
-                    content=interpretation,
+                    interpretation_type="aspect",
                     language=self.language,
-                    openai_model=RAG_MODEL_ID,
-                    prompt_version=RAG_PROMPT_VERSION,
                 )
-            except Exception as e:
-                logger.error(f"Failed to generate RAG aspect interpretation for {aspect_key}: {e}")
+                if existing:
+                    logger.debug(
+                        f"Skipping aspect {aspect_key} - interpretation already exists ({self.language})"
+                    )
+                    results["aspects"][aspect_key] = existing.content
+                    continue
 
-        # Generate Arabic Parts interpretations
+            planet1_data: dict[str, Any] = next(
+                (p for p in planets if p.get("name") == planet1), {}
+            )
+            planet2_data: dict[str, Any] = next(
+                (p for p in planets if p.get("name") == planet2), {}
+            )
+
+            coro = self.generate_aspect_interpretation(
+                planet1=planet1,
+                planet2=planet2,
+                aspect=aspect_name,
+                sign1=planet1_data.get("sign", ""),
+                sign2=planet2_data.get("sign", ""),
+                orb=orb,
+                applying=aspect.get("applying", False),
+                sect=sect,
+                dignities1=planet1_data.get("dignities", {}),
+                dignities2=planet2_data.get("dignities", {}),
+            )
+            tasks.append((coro, "aspects", aspect_key, "aspect", {}))
+
+        # Collect Arabic Parts interpretation tasks
         for part_key, part_data in arabic_parts.items():
             if part_key not in ARABIC_PARTS:
                 continue
 
-            try:
-                # Check if interpretation already exists (unless force=True)
-                if not force:
-                    existing = await self.repo.get_by_chart_and_subject(
-                        chart_id=chart.id,  # type: ignore[arg-type]
-                        subject=part_key,
-                        interpretation_type="arabic_part",
-                        language=self.language,
+            if not force:
+                existing = await self.repo.get_by_chart_and_subject(
+                    chart_id=chart.id,  # type: ignore[arg-type]
+                    subject=part_key,
+                    interpretation_type="arabic_part",
+                    language=self.language,
+                )
+                if existing:
+                    logger.debug(
+                        f"Skipping arabic_part {part_key} - interpretation already exists ({self.language})"
                     )
-                    if existing:
-                        logger.debug(
-                            f"Skipping arabic_part {part_key} - interpretation already exists ({self.language})"
+                    results["arabic_parts"][part_key] = existing.content
+                    continue
+
+            coro = self.generate_arabic_part_interpretation(
+                part_key=part_key,
+                sign=part_data.get("sign", ""),
+                house=part_data.get("house", 1),
+                degree=part_data.get("degree", 0.0),
+                sect=sect,
+            )
+            tasks.append((coro, "arabic_parts", part_key, "arabic_part", {}))
+
+        # Phase 2: Generate all interpretations in parallel with semaphore
+        if tasks:
+            logger.info(
+                f"Generating {len(tasks)} interpretations in parallel "
+                f"(semaphore limit: {OPENAI_CONCURRENCY_LIMIT}) for chart {chart.id}"
+            )
+
+            # Create semaphore-wrapped tasks
+            semaphore_tasks = [
+                self._generate_with_semaphore(coro, key, category)
+                for coro, category, key, _, _ in tasks
+            ]
+
+            # Run all tasks in parallel
+            generation_results = await asyncio.gather(*semaphore_tasks, return_exceptions=True)
+
+            # Process results and prepare for database save
+            task_map = {(t[1], t[2]): (t[3], t[4]) for t in tasks}  # (category, key) -> (type, params)
+
+            for result in generation_results:
+                if isinstance(result, Exception):
+                    logger.error(f"Task failed with exception: {result}")
+                    continue
+
+                category, key, interpretation = result
+                if not interpretation:
+                    # Handle empty interpretation for houses
+                    if category == "houses":
+                        params = task_map.get((category, key), ({},))[1]
+                        house_sign = params.get("house_sign", "")
+                        interpretation = (
+                            f"Casa {key} ({house_sign}): "
+                            f"Esta casa governa áreas específicas da vida conforme sua posição em {house_sign}."
                         )
-                        results["arabic_parts"][part_key] = existing.content
+                    else:
                         continue
 
-                interpretation = await self.generate_arabic_part_interpretation(
-                    part_key=part_key,
-                    sign=part_data.get("sign", ""),
-                    house=part_data.get("house", 1),
-                    degree=part_data.get("degree", 0.0),
-                    sect=sect,
-                )
-                results["arabic_parts"][part_key] = interpretation
+                results[category][key] = interpretation
 
-                # Save to database using upsert (for force=True case)
-                await self.repo.upsert_interpretation(
-                    chart_id=chart.id,
-                    interpretation_type="arabic_part",
-                    subject=part_key,
-                    content=interpretation,
-                    language=self.language,
-                    openai_model=RAG_MODEL_ID,
-                    prompt_version=RAG_PROMPT_VERSION,
+        # Phase 3: Save all new interpretations to database
+        for category, interpretations in results.items():
+            # Map category to interpretation_type
+            type_map = {
+                "planets": "planet",
+                "houses": "house",
+                "aspects": "aspect",
+                "arabic_parts": "arabic_part",
+            }
+            interpretation_type = type_map[category]
+
+            for key, content in interpretations.items():
+                # Only save if this was a newly generated interpretation
+                was_generated = any(
+                    t[1] == category and t[2] == key for t in tasks
                 )
-            except Exception as e:
-                logger.error(
-                    f"Failed to generate RAG Arabic Part interpretation for {part_key}: {e}"
-                )
+                if was_generated and content:
+                    try:
+                        await self.repo.upsert_interpretation(
+                            chart_id=chart.id,
+                            interpretation_type=interpretation_type,
+                            subject=key,
+                            content=content,
+                            language=self.language,
+                            openai_model=RAG_MODEL_ID,
+                            prompt_version=RAG_PROMPT_VERSION,
+                        )
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to save {interpretation_type} interpretation for {key}: {e}"
+                        )
 
         # Commit all interpretations
-        await self.db.commit()
+        await self.db.flush()
         logger.info(
             f"Generated and saved {len(results['planets'])} planet, "
             f"{len(results['houses'])} house, {len(results['aspects'])} aspect, "

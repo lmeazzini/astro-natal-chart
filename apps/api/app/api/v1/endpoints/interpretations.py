@@ -733,17 +733,16 @@ async def _generate_rag_interpretations(
 
         # Save planet interpretation to database
         if repo:
-            planet_interpretation = ChartInterpretation(
+            await repo.upsert_interpretation(
                 chart_id=chart.id,
                 interpretation_type="planet",
                 subject=planet_name,
                 content=interpretation,
+                language=language,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
-                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
-            await repo.create(planet_interpretation)
 
     # Process houses
     for house in houses:
@@ -801,17 +800,16 @@ async def _generate_rag_interpretations(
 
         # Save house interpretation to database
         if repo:
-            house_interpretation_record = ChartInterpretation(
+            await repo.upsert_interpretation(
                 chart_id=chart.id,
                 interpretation_type="house",
                 subject=house_key,
                 content=house_interpretation,
+                language=language,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
-                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
-            await repo.create(house_interpretation_record)
 
     # Process aspects (limited by RAG_MAX_ASPECTS setting)
     aspects = chart_data.get("aspects", [])
@@ -875,17 +873,16 @@ async def _generate_rag_interpretations(
 
         # Save aspect interpretation to database
         if repo:
-            aspect_interpretation = ChartInterpretation(
+            await repo.upsert_interpretation(
                 chart_id=chart.id,
                 interpretation_type="aspect",
                 subject=aspect_key,
                 content=interpretation,
+                language=language,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
-                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
-            await repo.create(aspect_interpretation)
 
     # Process Arabic Parts
     for part_key, part_data in arabic_parts.items():
@@ -929,17 +926,16 @@ async def _generate_rag_interpretations(
 
         # Save Arabic Part interpretation to database
         if repo:
-            arabic_part_interpretation = ChartInterpretation(
+            await repo.upsert_interpretation(
                 chart_id=chart.id,
                 interpretation_type="arabic_part",
                 subject=part_key,
                 content=interpretation,
+                language=language,
                 openai_model=RAG_MODEL_ID,
                 prompt_version=RAG_PROMPT_VERSION,
-                language=language,
                 rag_sources=[s.model_dump() for s in rag_sources] if rag_sources else None,
             )
-            await repo.create(arabic_part_interpretation)
 
     # Commit all interpretations to database
     if repo:

@@ -99,6 +99,7 @@ class InterpretationCacheService:
 
         if cache_entry:
             # Update hit count and last accessed time
+            # Use flush() instead of commit() to avoid conflicts with parent transaction
             update_stmt = (
                 update(InterpretationCache)
                 .where(InterpretationCache.id == cache_entry.id)
@@ -108,7 +109,7 @@ class InterpretationCacheService:
                 )
             )
             await self.db.execute(update_stmt)
-            await self.db.commit()
+            await self.db.flush()
 
             logger.debug(
                 f"Cache HIT for {interpretation_type}: {cache_entry.subject} "
@@ -160,7 +161,8 @@ class InterpretationCacheService:
 
         try:
             self.db.add(cache_entry)
-            await self.db.commit()
+            # Use flush() instead of commit() to avoid conflicts with parent transaction
+            await self.db.flush()
             await self.db.refresh(cache_entry)
 
             logger.info(f"Cached new interpretation for {interpretation_type}: {subject}")

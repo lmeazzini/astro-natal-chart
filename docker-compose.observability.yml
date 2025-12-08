@@ -47,7 +47,8 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_SERVER_ROOT_URL=https://realastrology.ai/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
@@ -73,4 +74,4 @@ volumes:
 networks:
   astro-network:
     external: true
-    name: astro_astro-network
+    name: astro-natal-chart_astro-network

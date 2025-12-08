@@ -64,3 +64,45 @@ async def init_db() -> None:
 async def close_db() -> None:
     """Close database connection pool."""
     await engine.dispose()
+
+
+def create_task_local_session() -> tuple[async_sessionmaker[AsyncSession], "create_async_engine"]:
+    """
+    Create a task-local async engine and session factory.
+
+    This is required for Celery tasks that use asyncio.run() because each call
+    creates a new event loop. The global engine's connection pool would hold
+    connections bound to old/closed event loops, causing "Event loop is closed"
+    and "Future attached to a different loop" errors.
+
+    Usage in Celery tasks:
+        async def my_async_task():
+            TaskSessionLocal, task_engine = create_task_local_session()
+            try:
+                async with TaskSessionLocal() as session:
+                    # ... use session
+            finally:
+                await task_engine.dispose()
+
+    Returns:
+        Tuple of (session_factory, engine) - caller must dispose engine when done
+    """
+    from sqlalchemy.pool import NullPool
+
+    # Create a fresh engine with NullPool - no connection persistence
+    # This ensures connections don't outlive the event loop
+    task_engine = create_async_engine(
+        str(settings.DATABASE_URL),
+        echo=settings.DEBUG,
+        poolclass=NullPool,  # No pooling - fresh connection each time
+    )
+
+    task_session_factory = async_sessionmaker(
+        task_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+
+    return task_session_factory, task_engine

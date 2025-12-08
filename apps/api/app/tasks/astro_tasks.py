@@ -9,7 +9,6 @@ from uuid import UUID
 from loguru import logger
 
 from app.core.celery_app import celery_app
-from app.translations import SUPPORTED_LANGUAGES
 
 if TYPE_CHECKING:
     from celery import Task

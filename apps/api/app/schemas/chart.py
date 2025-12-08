@@ -2,7 +2,7 @@
 Birth Chart schemas for request/response validation.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -40,7 +40,7 @@ class BirthChartCreate(BaseModel):
                 'Send as ISO 8601 with timezone (e.g., "2024-01-15T10:30:00Z" or "2024-01-15T10:30:00-03:00")'
             )
         # Convert to UTC for consistent storage
-        return v.astimezone(timezone.utc)
+        return v.astimezone(UTC)
 
 
 class BirthChartUpdate(BaseModel):
@@ -86,7 +86,7 @@ class BirthChartUpdate(BaseModel):
                 'Send as ISO 8601 with timezone (e.g., "2024-01-15T10:30:00Z" or "2024-01-15T10:30:00-03:00")'
             )
         # Convert to UTC for consistent storage
-        return v.astimezone(timezone.utc)
+        return v.astimezone(UTC)
 
 
 class PlanetPosition(BaseModel):

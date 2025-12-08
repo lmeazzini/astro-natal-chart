@@ -200,10 +200,29 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const error: ApiError = await response.json();
-        throw new Error(
-          typeof error.detail === 'string' ? error.detail : error.detail[0]?.msg || 'Request error'
-        );
+        // Handle rate limit errors (429) - SlowAPI returns plain text
+        if (response.status === 429) {
+          const text = await response.text();
+          throw new Error(text || 'Too many requests. Please try again later.');
+        }
+
+        // Handle JSON error responses (FastAPI standard format)
+        try {
+          const error: ApiError = await response.json();
+          const message =
+            typeof error.detail === 'string'
+              ? error.detail
+              : Array.isArray(error.detail)
+                ? error.detail[0]?.msg || 'Request error'
+                : 'Request error';
+          throw new Error(message);
+        } catch (parseError) {
+          // If JSON parsing fails, use status text or generic message
+          if (parseError instanceof Error && parseError.message !== 'Request error') {
+            throw parseError;
+          }
+          throw new Error(response.statusText || `Request failed with status ${response.status}`);
+        }
       }
 
       // Handle 204 No Content

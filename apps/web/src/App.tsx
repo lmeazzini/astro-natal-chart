@@ -33,6 +33,7 @@ import { FeatureList } from './components/FeatureList';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSelector } from './components/LanguageSelector';
+import { chartsService } from './services/charts';
 
 // shadcn/ui components (used by DashboardPage)
 import { Button } from '@/components/ui/button';
@@ -106,16 +107,8 @@ function DashboardPage() {
       const token = localStorage.getItem('astro_access_token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:8000/api/v1/charts/?page=1&page_size=1', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setChartCount(data.total || 0);
-      }
+      const response = await chartsService.list(token, 1, 1);
+      setChartCount(response.total || 0);
     } catch (error) {
       console.error('Error loading chart count:', error);
     } finally {

@@ -11,12 +11,15 @@
 
 ## Características Principais
 
-- **Cálculos Precisos**: Swiss Ephemeris (JPL DE431) com erro < 1 arcsecond
-- **Astrologia Tradicional**: Dignidades essenciais, sect, triplicidades
-- **Interpretações IA**: Geração automática de interpretações usando OpenAI GPT-4o-mini
+- **Cálculos Precisos**: Swiss Ephemeris (Moshier) com alta precisão
+- **Astrologia Tradicional**: Dignidades essenciais, sect, Arabic Parts, temperamento, fases lunares
+- **Interpretações IA + RAG**: Geração automática de interpretações usando OpenAI + Qdrant
 - **Visualização Profissional**: Gráficos SVG interativos
-- **Exportação LaTeX**: PDFs profissionais de alta qualidade
 - **Autenticação Completa**: JWT + OAuth2 (Google, GitHub, Facebook)
+- **Verificação de Email**: Tokens JWT com expiração de 24h
+- **Reset de Senha**: Tokens SHA256 com expiração de 1h
+- **Rate Limiting**: Proteção SlowAPI + Redis em todos endpoints críticos
+- **LGPD/GDPR**: Compliance completo com política de privacidade
 - **Interface Moderna**: React + TypeScript + Tailwind CSS
 - **API RESTful**: FastAPI com documentação automática (OpenAPI)
 
@@ -24,37 +27,47 @@
 
 ### Backend
 - **Python 3.13+** com FastAPI
+- **UV** (package manager - 10-100x mais rápido que pip)
 - **PostgreSQL 16** (JSONB para dados flexíveis)
-- **PySwisseph** para cálculos astrológicos
+- **PySwisseph** para cálculos astrológicos (Moshier ephemeris)
 - **Celery + Redis** para processamento assíncrono
 - **SQLAlchemy 2.0** (async ORM)
-- **LaTeX + Jinja2** para geração de PDFs
+- **Qdrant** para RAG (interpretações IA)
+- **Ruff** para linting e formatação
+- **Mypy** para type checking
 
 ### Frontend
 - **React 18+** com TypeScript
-- **Vite** (build tool)
+- **Vite 5** (build tool com HMR rápido)
 - **TailwindCSS** (estilização)
-- **AstroChart** (visualização de mapas)
-- **React Query** (cache e gerenciamento de estado)
-- **React Hook Form + Zod** (formulários e validação)
+- **Componentes SVG** customizados para visualização de mapas
 
 ### Infraestrutura
 - **Turborepo** (monorepo)
 - **Docker + Docker Compose**
-- **Nginx** (reverse proxy)
+- **AWS S3** (armazenamento de PDFs - opcional)
 
 ## Estrutura do Projeto
 
 ```
 astro-natal-chart-monorepo/
 ├── apps/
-│   ├── api/              # Backend FastAPI
+│   ├── api/              # Backend FastAPI (Python 3.13+)
+│   │   ├── app/          # Código principal
+│   │   │   ├── api/      # Endpoints REST
+│   │   │   ├── astro/    # Cálculos astrológicos tradicionais
+│   │   │   ├── models/   # SQLAlchemy models
+│   │   │   ├── services/ # Lógica de negócio
+│   │   │   └── repositories/ # Acesso a dados
+│   │   └── tests/        # Testes pytest (439 testes)
 │   └── web/              # Frontend React
-├── packages/
-│   ├── shared-types/     # TypeScript types compartilhados
-│   └── ui-components/    # Componentes React reutilizáveis
-├── docs/
-│   └── PROJECT_SPEC.md   # Especificação técnica completa
+│       └── src/          # Código React + TypeScript
+├── packages/             # (Planejado para código compartilhado)
+├── docs/                 # Documentação
+│   ├── PROJECT_SPEC.md   # Especificação técnica completa
+│   ├── PRIVACY_POLICY.md # Política de privacidade (LGPD)
+│   └── TERMS_OF_SERVICE.md # Termos de serviço
+├── scripts/              # Scripts de automação (backup, restore)
 ├── package.json          # Workspace root
 ├── turbo.json            # Configuração Turborepo
 └── docker-compose.yml    # Ambiente de desenvolvimento
@@ -63,11 +76,11 @@ astro-natal-chart-monorepo/
 ## Pré-requisitos
 
 - **Node.js** >= 18.0.0
-- **Python** >= 3.11
+- **Python** >= 3.13
+- **UV** (package manager) - `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **PostgreSQL** >= 16
 - **Redis** >= 7
-- **TeX Live** (para geração de PDFs)
-- **Docker** (opcional, recomendado)
+- **Docker** (recomendado para desenvolvimento)
 
 ## Instalação
 
@@ -93,23 +106,21 @@ docker-compose exec api alembic upgrade head
 ### Opção 2: Desenvolvimento Local
 
 ```bash
-# Instalar dependências
+# Instalar dependências do monorepo
 npm install
 
-# Backend
+# Backend (usando UV - muito mais rápido que pip)
 cd apps/api
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+uv sync  # Instala todas as dependências do pyproject.toml
 
 # Configurar .env (ver apps/api/.env.example)
 cp .env.example .env
 
 # Executar migrations
-alembic upgrade head
+uv run alembic upgrade head
 
 # Frontend
-cd apps/web
+cd ../web
 npm install
 
 # Executar em modo desenvolvimento (de volta à raiz)
@@ -519,22 +530,19 @@ storage_uri="memory://",  # In-memory storage (não persistente)
 ## Testes
 
 ```bash
-# Backend (pytest)
+# Backend (pytest) - 439 testes
 cd apps/api
-pytest
+uv run pytest
 
 # Com coverage
-pytest --cov=app --cov-report=html
+uv run pytest --cov=app --cov-report=html
 
-# Testes de rate limiting
-pytest tests/test_rate_limit.py -v
+# Teste específico
+uv run pytest tests/test_api/test_auth.py -v
 
 # Frontend (vitest)
 cd apps/web
 npm run test
-
-# E2E (playwright)
-npm run test:e2e
 ```
 
 ## Documentação
@@ -546,27 +554,36 @@ npm run test:e2e
 
 ## Roadmap
 
-### Fase 1: MVP (10 semanas) ✅ Em Progresso
+### Fase 1: MVP (~88% Completo) ✅
 - [x] Especificação técnica completa
-- [x] Setup do monorepo
-- [ ] Sistema de autenticação (JWT + OAuth2)
-- [ ] Engine de cálculos astrológicos
-- [ ] Interface de criação de mapas
-- [ ] Visualização gráfica
-- [ ] Export básico (JSON)
+- [x] Setup do monorepo com Turborepo
+- [x] Sistema de autenticação (JWT + OAuth2: Google, GitHub, Facebook)
+- [x] Verificação de email e reset de senha
+- [x] Engine de cálculos astrológicos (PySwisseph)
+- [x] Cálculos tradicionais (dignidades, sect, Arabic Parts, temperamento)
+- [x] Interface de criação de mapas com geocoding
+- [x] Visualização gráfica (SVG interativo)
+- [x] Rate limiting (SlowAPI + Redis)
+- [x] LGPD/GDPR compliance
+- [x] Backup automation (PostgreSQL + S3)
+- [x] Interpretações IA + RAG (OpenAI + Qdrant)
+- [x] Profile management e configurações
+- [x] Amplitude Analytics
 
-### Fase 2: Enriquecimento (4-6 semanas)
+### Fase 2: Enriquecimento
 - [ ] Geração de PDF com LaTeX
-- [x] Interpretações textuais ricas (IA com OpenAI GPT-4o-mini)
+- [ ] Chiron e asteroides (Ceres, Pallas, Juno, Vesta)
 - [ ] Estrelas fixas
 - [ ] Tema dark mode
 - [ ] Internacionalização (i18n)
 
 ### Fase 3: Features Avançadas
+- [ ] Profections e Firdaria
+- [ ] Solar Returns
 - [ ] Trânsitos planetários
 - [ ] Sinastria (comparação de mapas)
 - [ ] Progressões secundárias
-- [ ] Compartilhamento de mapas
+- [ ] Galeria pública de mapas famosos
 
 ## Contribuindo
 
@@ -603,10 +620,11 @@ gh pr create --base dev
 
 ### Padrões de Código
 
-- **Backend**: Ruff (linting), mypy (type checking), pytest
+- **Backend**: UV (package manager), Ruff (linting + formatting), Mypy (type checking), pytest
 - **Frontend**: ESLint, Prettier, TypeScript strict mode
 - **Commits**: Conventional Commits (feat:, fix:, docs:, etc.)
 - **PRs**: Sempre para `dev`, nunca direto para `main`
+- **CI/CD**: GitHub Actions (backend + frontend checks obrigatórios)
 
 ### Pre-commit Hooks
 
@@ -665,6 +683,8 @@ uv run pre-commit run --all-files
 
 ---
 
-**Status do Projeto**: 🚧 Em Desenvolvimento Ativo
+**Status do Projeto**: 🚧 MVP em Desenvolvimento (~88% Completo)
+
+**Testes**: 439 testes backend | CI/CD com GitHub Actions
 
 Para mais detalhes técnicos, consulte [`PROJECT_SPEC.md`](./PROJECT_SPEC.md).

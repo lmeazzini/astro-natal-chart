@@ -12,6 +12,34 @@ from slowapi.util import get_remote_address
 from app.core.config import settings
 
 
+def get_real_client_ip(request: Request) -> str:
+    """
+    Extract real client IP from request, handling reverse proxy headers.
+
+    Checks X-Forwarded-For and X-Real-IP headers before falling back
+    to the direct connection address.
+
+    Args:
+        request: FastAPI request object
+
+    Returns:
+        Client IP address string
+    """
+    # Check X-Forwarded-For header (set by reverse proxies like Nginx)
+    # Format: "client, proxy1, proxy2" - first IP is the real client
+    forwarded_for = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+    if forwarded_for:
+        return forwarded_for
+
+    # Check X-Real-IP header (alternative proxy header)
+    real_ip = request.headers.get("X-Real-IP", "").strip()
+    if real_ip:
+        return real_ip
+
+    # Fallback to direct connection address
+    return get_remote_address(request)
+
+
 def get_identifier_from_request(request: Request) -> str:
     """
     Get identifier for rate limiting from request.
@@ -32,8 +60,8 @@ def get_identifier_from_request(request: Request) -> str:
         if user_id:
             return f"user:{user_id}"
 
-    # Fallback to IP address for public endpoints
-    return f"ip:{get_remote_address(request)}"
+    # Fallback to real client IP for public endpoints
+    return f"ip:{get_real_client_ip(request)}"
 
 
 # Initialize rate limiter with Redis storage
@@ -52,7 +80,7 @@ class RateLimits:
 
     # Authentication endpoints (by IP)
     LOGIN = "10/minute"  # 10 login attempts per minute
-    REGISTER = "5/hour"  # 5 registrations per hour
+    REGISTER = "20/hour"  # 20 registrations per hour per IP
     REFRESH = "10/minute"  # 10 token refreshes per minute
 
     # Chart endpoints (by user_id)

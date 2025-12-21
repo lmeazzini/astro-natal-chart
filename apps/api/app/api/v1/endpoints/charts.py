@@ -7,6 +7,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -376,8 +377,32 @@ async def create_chart(
         )
 
         # Dispatch Celery task to process in background
-        generate_birth_chart_task.delay(str(chart.id))
+        task = generate_birth_chart_task.delay(str(chart.id))
 
+        # Verify task was accepted and store task_id for tracking
+        if not task or not task.id:
+            logger.error(f"Failed to queue task for chart {chart.id}")
+            # Update chart status to failed
+            chart_repo = ChartRepository(db)
+            chart_obj = await chart_repo.get_by_id(chart.id)
+            if chart_obj:
+                chart_obj.status = "failed"
+                chart_obj.error_message = "Task queue unavailable. Please try again."
+                await db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Chart processing unavailable. Please try again later.",
+            )
+
+        # Store task_id on chart for tracking
+        chart_repo = ChartRepository(db)
+        chart_obj = await chart_repo.get_by_id(chart.id)
+        if chart_obj:
+            chart_obj.task_id = task.id
+            await db.commit()
+            await db.refresh(chart_obj)
+
+        logger.info(f"Dispatched task {task.id} for chart {chart.id}")
         return chart  # type: ignore[return-value]
     except HTTPException:
         raise
@@ -1025,8 +1050,24 @@ async def recalculate_chart(
         await db.refresh(chart)
 
         # Dispatch Celery task to recalculate in background
-        generate_birth_chart_task.delay(str(chart_id))
+        task = generate_birth_chart_task.delay(str(chart_id))
 
+        # Verify task was accepted and store task_id
+        if not task or not task.id:
+            logger.error(f"Failed to queue recalculation task for chart {chart_id}")
+            chart.status = "failed"
+            chart.error_message = "Task queue unavailable. Please try again."
+            await db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Chart recalculation unavailable. Please try again later.",
+            )
+
+        chart.task_id = task.id
+        await db.commit()
+        await db.refresh(chart)
+
+        logger.info(f"Dispatched recalculation task {task.id} for chart {chart_id}")
         return chart  # type: ignore[return-value]
 
     except chart_service.ChartNotFoundError:

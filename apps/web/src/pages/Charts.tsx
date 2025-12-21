@@ -289,7 +289,7 @@ export function ChartsPage() {
                       {formatBirthDateTime(
                         chart.birth_datetime,
                         chart.birth_timezone || 'UTC',
-                        false
+                        true
                       )}
                     </p>
                     <p>

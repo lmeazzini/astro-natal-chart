@@ -6,7 +6,8 @@ from typing import Any
 from uuid import UUID
 
 from loguru import logger
-from sqlalchemy import and_, delete, select
+from sqlalchemy import and_, delete, func, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.interpretation import ChartInterpretation
@@ -115,13 +116,13 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
         language: str,
         openai_model: str,
         prompt_version: str,
+        rag_sources: list[dict[str, Any]] | None = None,
     ) -> ChartInterpretation:
         """
-        Create or update an interpretation (upsert pattern).
+        Create or update an interpretation using PostgreSQL upsert (atomic).
 
-        This method handles the unique constraint gracefully:
-        - If interpretation exists, updates it
-        - If not, creates new one
+        Uses INSERT ... ON CONFLICT DO UPDATE to handle race conditions
+        when multiple parallel tasks try to insert the same interpretation.
 
         Args:
             chart_id: Chart UUID
@@ -131,51 +132,51 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
             language: Language code ('pt-BR', 'en-US')
             openai_model: Model used for generation
             prompt_version: Prompt version identifier
+            rag_sources: Optional list of RAG source references
 
         Returns:
             Created or updated interpretation instance
         """
-        # Try to find existing interpretation
-        existing = await self.get_by_chart_and_subject(
-            chart_id=chart_id,
-            subject=subject,
-            interpretation_type=interpretation_type,
-            language=language,
-        )
+        # Build values dict
+        values = {
+            "chart_id": chart_id,
+            "interpretation_type": interpretation_type,
+            "subject": subject,
+            "content": content,
+            "language": language,
+            "openai_model": openai_model,
+            "prompt_version": prompt_version,
+        }
+        if rag_sources is not None:
+            values["rag_sources"] = rag_sources
 
-        if existing:
-            # Update existing
-            existing.content = content
-            existing.openai_model = openai_model
-            existing.prompt_version = prompt_version
-            await self.db.flush()
-            logger.debug(
-                f"Updated interpretation: {interpretation_type}/{subject} for chart {chart_id}"
-            )
-            return existing
-        else:
-            # Create new
-            new_interpretation = ChartInterpretation(
-                chart_id=chart_id,
-                interpretation_type=interpretation_type,
-                subject=subject,
-                content=content,
-                openai_model=openai_model,
-                prompt_version=prompt_version,
-                language=language,
-            )
-            self.db.add(new_interpretation)
-            await self.db.flush()
-            logger.debug(
-                f"Created interpretation: {interpretation_type}/{subject} for chart {chart_id}"
-            )
-            return new_interpretation
+        # PostgreSQL INSERT ... ON CONFLICT DO UPDATE (atomic upsert)
+        stmt = insert(ChartInterpretation).values(**values)
+        stmt = stmt.on_conflict_do_update(
+            constraint="uq_chart_interpretation",  # Unique constraint name
+            set_={
+                "content": stmt.excluded.content,
+                "openai_model": stmt.excluded.openai_model,
+                "prompt_version": stmt.excluded.prompt_version,
+                "rag_sources": stmt.excluded.rag_sources,
+                "updated_at": func.now(),
+            },
+        ).returning(ChartInterpretation)
+
+        result = await self.db.execute(stmt)
+        interpretation = result.scalar_one()
+
+        logger.debug(
+            f"Upserted interpretation: {interpretation_type}/{subject} for chart {chart_id}"
+        )
+        return interpretation
 
     async def delete_by_chart_id(self, chart_id: UUID) -> int:
         """
         Delete all interpretations for a chart.
 
         Useful when regenerating interpretations or when chart is deleted.
+        Uses flush() instead of commit() to let the caller manage the transaction.
 
         Args:
             chart_id: Chart UUID
@@ -185,7 +186,7 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
         """
         stmt = delete(ChartInterpretation).where(ChartInterpretation.chart_id == chart_id)
         result = await self.db.execute(stmt)
-        await self.db.commit()
+        await self.db.flush()
         return result.rowcount  # type: ignore[attr-defined, no-any-return]
 
     async def exists_for_chart(self, chart_id: UUID) -> bool:

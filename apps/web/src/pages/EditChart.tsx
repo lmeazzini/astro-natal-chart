@@ -271,9 +271,10 @@ export function EditChartPage() {
       }
 
       // Convert datetime-local value to ISO string with correct timezone
+      // IMPORTANT: Must specify format explicitly to correctly interpret the datetime-local value
       const localDatetime = values.birth_datetime;
       const birthTimezone = values.birth_timezone;
-      const isoDatetime = dayjs.tz(localDatetime, birthTimezone).toISOString();
+      const isoDatetime = dayjs.tz(localDatetime, 'YYYY-MM-DDTHH:mm', birthTimezone).toISOString();
 
       const updateData: BirthChartUpdate = {
         person_name: values.person_name,

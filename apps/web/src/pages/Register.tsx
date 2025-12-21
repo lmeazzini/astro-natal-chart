@@ -59,11 +59,16 @@ export function RegisterPage() {
   // Complex password validation schema (inside component to access t())
   const registerFormSchema = z
     .object({
-      email: z.string().min(1, t('validation.required')).email(t('validation.email')),
-      fullName: z.string().min(3, t('validation.minLength', { min: 3 })),
+      email: z
+        .string()
+        .min(1, t('validation.required', { defaultValue: 'Este campo é obrigatório' }))
+        .email(t('validation.email', { defaultValue: 'E-mail inválido' })),
+      fullName: z
+        .string()
+        .min(3, t('validation.minLength', { min: 3, defaultValue: 'Mínimo de 3 caracteres' })),
       password: z
         .string()
-        .min(8, t('auth.register.passwordMinLength'))
+        .min(8, t('auth.register.passwordMinLength', { defaultValue: 'Mínimo de 8 caracteres' }))
         .regex(
           /[A-Z]/,
           t('validation.passwordUppercase', {
@@ -86,7 +91,9 @@ export function RegisterPage() {
             defaultValue: 'Senha deve conter pelo menos um caractere especial',
           })
         ),
-      passwordConfirm: z.string().min(1, t('validation.required')),
+      passwordConfirm: z
+        .string()
+        .min(1, t('validation.required', { defaultValue: 'Este campo é obrigatório' })),
       acceptedTerms: z.boolean().refine((val) => val === true, {
         message: t('validation.acceptTerms', {
           defaultValue: 'Você deve aceitar os Termos de Uso e a Política de Privacidade',
@@ -94,7 +101,7 @@ export function RegisterPage() {
       }),
     })
     .refine((data) => data.password === data.passwordConfirm, {
-      message: t('validation.passwordMismatch'),
+      message: t('validation.passwordMismatch', { defaultValue: 'As senhas não coincidem' }),
       path: ['passwordConfirm'],
     });
 

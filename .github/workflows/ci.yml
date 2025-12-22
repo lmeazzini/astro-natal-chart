@@ -75,7 +75,7 @@ jobs:
           SECRET_KEY: test-secret-key
           OPENAI_API_KEY: sk-test-dummy-key-for-ci
         run: |
-          uv run mypy app/
+          uv run ty check app/
 
       - name: Install Redis tools
         run: sudo apt-get update && sudo apt-get install -y redis-tools

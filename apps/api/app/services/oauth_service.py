@@ -71,7 +71,7 @@ class OAuthService:
         email: str,
         full_name: str,
         avatar_url: str | None = None,
-    ) -> tuple[User, bool]:
+    ) -> tuple[User, bool, bool]:
         """
         Get or create a user from OAuth provider data.
 
@@ -83,7 +83,9 @@ class OAuthService:
             avatar_url: Optional avatar URL
 
         Returns:
-            Tuple of (user, is_new) where is_new is True if user was created
+            Tuple of (user, is_new_user, is_new_oauth_connection) where:
+            - is_new_user: True if user was created
+            - is_new_oauth_connection: True if a new OAuth connection was created
         """
         # Check if OAuth account already exists
         stmt = select(OAuthAccount).where(
@@ -98,7 +100,7 @@ class OAuthService:
             user_stmt = select(User).where(User.id == oauth_account.user_id)
             user_result = await self.db.execute(user_stmt)
             user = user_result.scalar_one()
-            return user, False
+            return user, False, False  # Existing user, existing connection
 
         # Check if user with this email already exists
         email_stmt = select(User).where(User.email == email)
@@ -114,7 +116,7 @@ class OAuthService:
             )
             self.db.add(new_oauth_account)
             await self.db.commit()
-            return existing_user, False
+            return existing_user, False, True  # Existing user, NEW connection
 
         # Create new user with OAuth account
         new_user = User(
@@ -139,7 +141,7 @@ class OAuthService:
         await self.db.commit()
         await self.db.refresh(new_user)
 
-        return new_user, True
+        return new_user, True, True  # New user, new connection
 
     def create_tokens_for_user(self, user: User) -> dict[str, str]:
         """

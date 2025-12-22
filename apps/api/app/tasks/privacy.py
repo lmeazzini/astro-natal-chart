@@ -14,6 +14,7 @@ from app.models.chart import AuditLog, BirthChart
 from app.models.password_reset import PasswordResetToken
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
+from app.services.amplitude_service import amplitude_service
 
 
 @celery_app.task(name="privacy.cleanup_deleted_users")
@@ -106,7 +107,20 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
             )
             stats["password_reset_tokens_deleted"] += tokens_result.rowcount or 0  # type: ignore[attr-defined]
 
-            # 5. Deletar usuário
+            # 5. Track account deletion before deleting user
+            days_since_request = (
+                (datetime.now(UTC) - user.deleted_at).days if user.deleted_at else 0
+            )
+            amplitude_service.track(
+                event_type="account_deleted",
+                user_id=str(user.id),
+                event_properties={
+                    "deletion_method": "scheduled",
+                    "days_since_request": days_since_request,
+                },
+            )
+
+            # 6. Deletar usuário
             await db.delete(user)
             stats["users_deleted"] += 1
 

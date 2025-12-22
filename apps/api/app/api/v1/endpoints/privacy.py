@@ -14,6 +14,7 @@ from app.core.dependencies import get_current_user
 from app.models.chart import AuditLog, BirthChart
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
+from app.services.amplitude_service import amplitude_service
 
 router = APIRouter(prefix="/users/me", tags=["Privacy & LGPD"])
 
@@ -220,6 +221,17 @@ async def delete_user_account(
 
     await db.commit()
 
+    # Track account deletion request
+    amplitude_service.track(
+        event_type="account_deletion_requested",
+        user_id=str(current_user.id),
+        event_properties={
+            "deletion_type": "scheduled",
+            "scheduled_days": 30,
+            "source": "api",
+        },
+    )
+
     return {
         "message": "Solicitação de exclusão registrada com sucesso",
         "deleted_at": current_user.deleted_at.isoformat(),
@@ -261,6 +273,7 @@ async def cancel_account_deletion(
 
     # Restaurar conta
     deleted_at = current_user.deleted_at
+    days_remaining = 30 - (datetime.now(UTC) - deleted_at).days if deleted_at else 0
     current_user.deleted_at = None
 
     # Audit log
@@ -275,6 +288,16 @@ async def cancel_account_deletion(
     db.add(audit_log)
 
     await db.commit()
+
+    # Track account deletion cancellation
+    amplitude_service.track(
+        event_type="account_deletion_cancelled",
+        user_id=str(current_user.id),
+        event_properties={
+            "days_remaining": days_remaining,
+            "source": "api",
+        },
+    )
 
     return {
         "message": "Solicitação de exclusão cancelada com sucesso",

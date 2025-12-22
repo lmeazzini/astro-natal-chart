@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import {
   userService,
   UserStats,
@@ -228,6 +229,11 @@ export function ProfilePage() {
     }
   }, [user, activeTab]);
 
+  // Track profile page view
+  useEffect(() => {
+    amplitudeService.track('profile_viewed', { source: 'profile_page' });
+  }, []);
+
   async function loadSecurityData() {
     const token = localStorage.getItem('astro_access_token');
     if (!token) return;
@@ -277,6 +283,28 @@ export function ProfilePage() {
       setUser(updatedUser);
       setProfileSuccess(t('profile.success'));
 
+      // Track profile update with changed fields
+      const changedFields: string[] = [];
+      if (user?.full_name !== data.full_name) changedFields.push('full_name');
+      if (user?.bio !== data.bio) changedFields.push('bio');
+      if (user?.locale !== data.locale) changedFields.push('locale');
+      if (user?.timezone !== data.timezone) changedFields.push('timezone');
+      if (user?.profile_public !== data.profile_public) changedFields.push('profile_public');
+      if (user?.user_type !== data.user_type) changedFields.push('user_type');
+      if (user?.website !== data.website) changedFields.push('website');
+      if (user?.instagram !== data.instagram) changedFields.push('instagram');
+      if (user?.twitter !== data.twitter) changedFields.push('twitter');
+      if (user?.location !== data.location) changedFields.push('location');
+      if (user?.professional_since !== data.professional_since)
+        changedFields.push('professional_since');
+      if (JSON.stringify(user?.specializations) !== JSON.stringify(data.specializations))
+        changedFields.push('specializations');
+
+      amplitudeService.track('profile_updated', {
+        fields_changed: changedFields,
+        source: 'profile_page',
+      });
+
       setTimeout(() => setProfileSuccess(''), 5000);
     } catch (error) {
       setProfileError(error instanceof Error ? error.message : t('profile.error'));
@@ -307,9 +335,19 @@ export function ProfilePage() {
       setPasswordSuccess(t('profile.passwordSuccess'));
       passwordForm.reset();
 
+      // Track successful password change
+      amplitudeService.track('profile_password_changed', { source: 'profile_page' });
+
       setTimeout(() => setPasswordSuccess(''), 5000);
     } catch (error) {
-      setPasswordError(error instanceof Error ? error.message : t('profile.passwordError'));
+      const errorMessage = error instanceof Error ? error.message : 'unknown';
+      setPasswordError(errorMessage);
+
+      // Track failed password change
+      amplitudeService.track('profile_password_change_failed', {
+        error_type: errorMessage,
+        source: 'profile_page',
+      });
     } finally {
       setPasswordLoading(false);
     }
@@ -352,6 +390,13 @@ export function ProfilePage() {
       if (!token) return;
 
       await userService.deleteAccount(token);
+
+      // Track account deletion request
+      amplitudeService.track('account_deletion_requested', {
+        deletion_type: 'scheduled',
+        source: 'profile_page',
+      });
+
       logout();
       navigate('/');
     } catch (error) {
@@ -367,6 +412,12 @@ export function ProfilePage() {
     try {
       await userService.disconnectOAuth(provider, token);
       setOAuthConnections(oauthConnections.filter((conn) => conn.provider !== provider));
+
+      // Track OAuth disconnection
+      amplitudeService.track('oauth_connection_removed', {
+        provider: provider,
+        source: 'profile_page',
+      });
     } catch (error) {
       alert(t('profile.security.disconnectError', { defaultValue: 'Error disconnecting OAuth' }));
     }

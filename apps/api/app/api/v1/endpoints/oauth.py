@@ -160,6 +160,15 @@ async def oauth_callback(
                     "provider": provider,
                 },
             )
+            # Track OAuth connection added (new user always creates new connection)
+            amplitude_service.track(
+                event_type="oauth_connection_added",
+                user_id=str(user.id),
+                event_properties={
+                    "provider": provider,
+                    "source": "oauth_callback",
+                },
+            )
         else:
             # Existing user logged in via OAuth
             amplitude_service.track(

@@ -20,6 +20,7 @@ from app.schemas.user import UserPublicProfile, UserRead, UserUpdate
 from app.schemas.user_activity import UserActivityList
 from app.schemas.user_stats import UserStats
 from app.services import subscription_service, user_service
+from app.services.amplitude_service import amplitude_service
 from app.services.s3_service import s3_service
 
 router = APIRouter()
@@ -78,7 +79,20 @@ async def update_user_profile(
     Returns:
         Updated user profile
     """
-    return await user_service.update_profile(db, current_user, profile_data)
+    updated_user = await user_service.update_profile(db, current_user, profile_data)
+
+    # Track profile update
+    fields_changed = list(profile_data.model_dump(exclude_unset=True).keys())
+    amplitude_service.track(
+        event_type="profile_updated",
+        user_id=str(current_user.id),
+        event_properties={
+            "fields_changed": fields_changed,
+            "source": "api",
+        },
+    )
+
+    return updated_user
 
 
 @router.put(
@@ -115,6 +129,13 @@ async def change_user_password(
         password_data,
         ip_address=ip_address,
         user_agent=user_agent,
+    )
+
+    # Track successful password change
+    amplitude_service.track(
+        event_type="profile_password_changed",
+        user_id=str(current_user.id),
+        event_properties={"source": "api"},
     )
 
 
@@ -311,6 +332,16 @@ async def disconnect_oauth_provider(
 
     # Delete the OAuth account
     await oauth_repo.delete(account_to_delete)
+
+    # Track OAuth disconnection
+    amplitude_service.track(
+        event_type="oauth_connection_removed",
+        user_id=str(current_user.id),
+        event_properties={
+            "provider": provider,
+            "source": "api",
+        },
+    )
 
 
 @router.post(

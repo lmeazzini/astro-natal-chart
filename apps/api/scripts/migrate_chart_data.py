@@ -11,7 +11,7 @@ from datetime import datetime
 # Add app to path
 sys.path.insert(0, "/app")
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -25,9 +25,7 @@ async def migrate_birth_charts(session: AsyncSession) -> int:
     """Migrate all birth_charts to new chart_data format with language-first structure."""
     print("Fetching birth_charts...")
 
-    result = await session.execute(
-        select(BirthChart).where(BirthChart.deleted_at.is_(None))
-    )
+    result = await session.execute(select(BirthChart).where(BirthChart.deleted_at.is_(None)))
     charts = result.scalars().all()
 
     print(f"Found {len(charts)} birth_charts to migrate")

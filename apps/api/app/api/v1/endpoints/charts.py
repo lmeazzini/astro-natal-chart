@@ -380,11 +380,12 @@ async def create_chart(
         task = generate_birth_chart_task.delay(str(chart.id))
 
         # Verify task was accepted and store task_id for tracking
+        chart_uuid = UUID(str(chart.id))
         if not task or not task.id:
             logger.error(f"Failed to queue task for chart {chart.id}")
             # Update chart status to failed
             chart_repo = ChartRepository(db)
-            chart_obj = await chart_repo.get_by_id(chart.id)
+            chart_obj = await chart_repo.get_by_id(chart_uuid)
             if chart_obj:
                 chart_obj.status = "failed"
                 chart_obj.error_message = "Task queue unavailable. Please try again."
@@ -396,7 +397,7 @@ async def create_chart(
 
         # Store task_id on chart for tracking
         chart_repo = ChartRepository(db)
-        chart_obj = await chart_repo.get_by_id(chart.id)
+        chart_obj = await chart_repo.get_by_id(chart_uuid)
         if chart_obj:
             chart_obj.task_id = task.id
             await db.commit()

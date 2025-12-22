@@ -123,20 +123,32 @@ async def change_user_password(
     ip_address = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
 
-    await user_service.change_password(
-        db,
-        current_user,
-        password_data,
-        ip_address=ip_address,
-        user_agent=user_agent,
-    )
+    try:
+        await user_service.change_password(
+            db,
+            current_user,
+            password_data,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
 
-    # Track successful password change
-    amplitude_service.track(
-        event_type="profile_password_changed",
-        user_id=str(current_user.id),
-        event_properties={"source": "api"},
-    )
+        # Track successful password change
+        amplitude_service.track(
+            event_type="profile_password_changed",
+            user_id=str(current_user.id),
+            event_properties={"source": "api"},
+        )
+    except HTTPException as e:
+        # Track failed password change
+        amplitude_service.track(
+            event_type="profile_password_change_failed",
+            user_id=str(current_user.id),
+            event_properties={
+                "error_type": e.detail if isinstance(e.detail, str) else "validation_error",
+                "source": "api",
+            },
+        )
+        raise
 
 
 @router.get(

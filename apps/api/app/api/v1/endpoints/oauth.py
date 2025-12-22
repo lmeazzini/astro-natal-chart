@@ -131,7 +131,11 @@ async def oauth_callback(
             )
 
         # Get or create user
-        user, is_new = await oauth_service.get_or_create_user_from_oauth(
+        (
+            user,
+            is_new_user,
+            is_new_oauth_connection,
+        ) = await oauth_service.get_or_create_user_from_oauth(
             provider=provider,
             provider_user_id=user_data["provider_user_id"],
             email=user_data["email"],
@@ -150,7 +154,7 @@ async def oauth_callback(
         )
 
         # Track appropriate event based on whether user is new or existing
-        if is_new:
+        if is_new_user:
             # New user registered via OAuth
             amplitude_service.track(
                 event_type="user_registered",
@@ -158,15 +162,6 @@ async def oauth_callback(
                 event_properties={
                     "method": f"oauth_{provider}",
                     "provider": provider,
-                },
-            )
-            # Track OAuth connection added (new user always creates new connection)
-            amplitude_service.track(
-                event_type="oauth_connection_added",
-                user_id=str(user.id),
-                event_properties={
-                    "provider": provider,
-                    "source": "oauth_callback",
                 },
             )
         else:
@@ -177,6 +172,18 @@ async def oauth_callback(
                 event_properties={
                     "method": f"oauth_{provider}",
                     "provider": provider,
+                },
+            )
+
+        # Track OAuth connection added (for new users OR existing users adding new provider)
+        if is_new_oauth_connection:
+            amplitude_service.track(
+                event_type="oauth_connection_added",
+                user_id=str(user.id),
+                event_properties={
+                    "provider": provider,
+                    "source": "oauth_callback",
+                    "is_new_user": is_new_user,
                 },
             )
 

@@ -262,6 +262,17 @@ async def delete_user_account(
         user_agent=user_agent,
     )
 
+    # Track account deletion request
+    amplitude_service.track(
+        event_type="account_deletion_requested",
+        user_id=str(current_user.id),
+        event_properties={
+            "deletion_type": "scheduled",
+            "scheduled_days": 30,
+            "source": "api",
+        },
+    )
+
 
 @router.get(
     "/me/oauth-connections",

@@ -215,7 +215,7 @@ async def delete_user_account(
         resource_type="user",
         resource_id=current_user.id,
         ip_address=None,  # TODO: Get from request
-        details={"reason": "user_request"},
+        extra_data={"reason": "user_request"},
     )
     db.add(audit_log)
 
@@ -283,7 +283,7 @@ async def cancel_account_deletion(
         resource_type="user",
         resource_id=current_user.id,
         ip_address=None,  # TODO: Get from request
-        details={"original_deletion_date": deleted_at.isoformat() if deleted_at else None},
+        extra_data={"original_deletion_date": deleted_at.isoformat() if deleted_at else None},
     )
     db.add(audit_log)
 

@@ -127,7 +127,7 @@ class TestOAuthAmplitudeTracking:
 class TestPrivacyAmplitudeTracking:
     """Tests for Amplitude tracking in privacy-related endpoints."""
 
-    @patch("app.api.v1.endpoints.privacy.amplitude_service")
+    @patch("app.api.v1.endpoints.users.amplitude_service")
     async def test_account_deletion_request_tracks_event(
         self,
         mock_amplitude: MagicMock,
@@ -141,7 +141,8 @@ class TestPrivacyAmplitudeTracking:
             headers=auth_headers,
         )
 
-        assert response.status_code == 200
+        # DELETE endpoint returns 204 No Content on success
+        assert response.status_code == 204
         mock_amplitude.track.assert_called_once()
 
         call_args = mock_amplitude.track.call_args

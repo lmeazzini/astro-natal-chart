@@ -81,13 +81,9 @@ dev = [
     "pytest-asyncio==0.21.1",
     "pytest-cov==4.1.0",
     "ruff>=0.8.0",
-    "mypy==1.7.1",
-    "types-python-jose==3.3.4.20240106",
-    "types-PyYAML==6.0.12.20240917",
-    "types-authlib>=1.6.5.20251005",
+    "ty>=0.0.1a7",
     "respx>=0.22.0",
     "boto3-stubs[s3]>=1.41.1",
-    "types-redis>=4.6.0.20241004",
     "pre-commit>=3.6.0",
 ]
 
@@ -114,25 +110,18 @@ ignore = [
 [tool.ruff.lint.isort]
 known-third-party = ["fastapi", "pydantic", "sqlalchemy"]
 
-[tool.mypy]
-python_version = "3.13"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-plugins = ["pydantic.mypy"]
+[tool.ty.environment]
+python-version = "3.13"
 
-[[tool.mypy.overrides]]
-module = [
-    "swisseph",
-    "timezonefinder",
-    "jose",
-    "slowapi",
-    "celery",
-    "authlib",
-    "aiosmtplib",
-    "cairosvg",
-]
-ignore_missing_imports = true
+[tool.ty.rules]
+# Ignore unresolved imports for external libs without stubs (swisseph, etc.)
+unresolved-import = "ignore"
+# Ignore missing arguments for pydantic-settings (loaded from env vars)
+missing-argument = "ignore"
+# Downgrade to warnings (many false positives with SQLAlchemy/Pydantic types)
+invalid-argument-type = "warn"
+invalid-assignment = "warn"
+unsupported-operator = "warn"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

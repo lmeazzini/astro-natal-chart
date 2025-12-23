@@ -2,7 +2,7 @@
 Tests for chart_service.py - Update functionality
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -66,7 +66,7 @@ class TestNeedsRecalculation:
         chart.zodiac_type = "tropical"
         chart.node_type = "true"
 
-        update_data = BirthChartUpdate(birth_datetime=datetime(1990, 5, 15, 12, 0))
+        update_data = BirthChartUpdate(birth_datetime=datetime(1990, 5, 15, 12, 0, tzinfo=UTC))
 
         result = _needs_recalculation(update_data, chart)
         assert result is True

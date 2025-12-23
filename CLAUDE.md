@@ -71,7 +71,7 @@ cd apps/api && uv lock --upgrade
 
 # Run commands in UV-managed environment
 cd apps/api && uv run pytest
-cd apps/api && uv run mypy app/
+cd apps/api && uv run ty check app/
 
 # Create/update uv.lock from pyproject.toml
 cd apps/api && uv lock
@@ -129,7 +129,7 @@ make lint
 make format
 
 # Backend type checking
-cd apps/api && mypy app/
+cd apps/api && uv run ty check app/
 
 # Frontend type checking
 cd apps/web && npm run type-check
@@ -142,7 +142,7 @@ cd apps/web && npm run type-check
 ```bash
 # Quick verification (runs all CI checks locally)
 make lint                    # Backend + Frontend linting
-cd apps/api && uv run mypy app/    # Backend type checking
+cd apps/api && uv run ty check app/    # Backend type checking
 cd apps/web && npm run type-check  # Frontend type checking
 cd apps/web && npm run build       # Verify frontend builds
 
@@ -155,10 +155,10 @@ cd apps/web && npm run lint           # Frontend linting (ESLint)
 - The CI pipeline runs the EXACT same checks
 - If any check fails locally, it WILL fail in CI
 - Failed CI blocks merging and wastes time
-- Mypy and Ruff have **zero tolerance** for errors
+- ty and Ruff have **zero tolerance** for errors
 
 **CI Pipeline Jobs:**
-1. **Backend**: Ruff linting + Mypy type checking
+1. **Backend**: Ruff linting + ty type checking
 2. **Frontend**: ESLint + TypeScript type checking
 3. **Build**: Vite production build
 
@@ -947,7 +947,7 @@ logger.bind(user_id=user.id).info("Chart created")
    - PostgreSQL 16 + Redis 7 services
    - UV package manager for dependencies
    - Ruff linting
-   - Mypy type checking (must pass with 0 errors)
+   - ty type checking (must pass with 0 errors)
    - Pytest with coverage
    - Coverage uploaded to Codecov
 
@@ -963,7 +963,7 @@ logger.bind(user_id=user.id).info("Chart created")
    - Turborepo build (all apps)
    - Turborepo lint (all apps)
 
-**Critical:** All checks must pass before merging. Mypy and Ruff have zero tolerance for errors.
+**Critical:** All checks must pass before merging. ty and Ruff have zero tolerance for errors.
 
 ## Development Workflow
 
@@ -1014,7 +1014,7 @@ We use a simplified GitFlow with two main branches:
    ```bash
    # Backend linting and type checking
    cd apps/api && uv run ruff check .
-   cd apps/api && uv run mypy app/
+   cd apps/api && uv run ty check app/
 
    # Frontend linting and type checking
    cd apps/web && npm run lint

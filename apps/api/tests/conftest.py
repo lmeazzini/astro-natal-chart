@@ -441,7 +441,6 @@ async def test_user_with_oauth(db_session: AsyncSession, test_user: User) -> Use
         provider="google",
         provider_user_id="google_123456789",
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC),
     )
     db_session.add(oauth_account)
     await db_session.commit()

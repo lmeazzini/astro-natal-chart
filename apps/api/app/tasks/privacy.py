@@ -75,7 +75,7 @@ async def _cleanup_deleted_users_async() -> dict[str, int]:
                 resource_type="user",
                 resource_id=user.id,
                 ip_address=None,
-                details={
+                extra_data={
                     "deleted_at": user.deleted_at.isoformat() if user.deleted_at else None,
                     "hard_deleted_at": datetime.now(UTC).isoformat(),
                     "retention_period_days": 30,

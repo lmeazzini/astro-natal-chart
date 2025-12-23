@@ -141,7 +141,8 @@ class TestPrivacyAmplitudeTracking:
             headers=auth_headers,
         )
 
-        assert response.status_code == 200
+        # DELETE endpoint returns 204 No Content on success
+        assert response.status_code == 204
         mock_amplitude.track.assert_called_once()
 
         call_args = mock_amplitude.track.call_args

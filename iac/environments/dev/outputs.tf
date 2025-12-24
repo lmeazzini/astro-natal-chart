@@ -18,13 +18,37 @@ output "environment" {
 }
 
 # -----------------------------------------------------------------------------
-# Future outputs (uncomment as modules are added)
+# VPC Outputs
 # -----------------------------------------------------------------------------
 
-# output "vpc_id" {
-#   description = "VPC ID"
-#   value       = module.vpc.vpc_id
-# }
+output "vpc_id" {
+  description = "VPC ID"
+  value       = module.vpc.vpc_id
+}
+
+output "public_subnet_id" {
+  description = "Public subnet ID"
+  value       = module.vpc.public_subnet_id
+}
+
+output "private_subnet_id" {
+  description = "Private subnet ID"
+  value       = module.vpc.private_subnet_id
+}
+
+output "database_subnet_id" {
+  description = "Database subnet ID"
+  value       = module.vpc.database_subnet_id
+}
+
+output "nat_gateway_public_ip" {
+  description = "NAT Gateway public IP"
+  value       = module.vpc.nat_gateway_public_ip
+}
+
+# -----------------------------------------------------------------------------
+# Future outputs (uncomment as modules are added)
+# -----------------------------------------------------------------------------
 
 # output "alb_dns_name" {
 #   description = "ALB DNS name"

@@ -74,12 +74,16 @@ data "aws_region" "current" {}
 # Modules
 # -----------------------------------------------------------------------------
 
-# Modules will be added here as they are implemented:
-#
-# module "vpc" {
-#   source = "../../modules/vpc"
-#   # ... variables
-# }
+module "vpc" {
+  source = "../../modules/vpc"
+
+  environment        = var.environment
+  vpc_cidr           = var.vpc_cidr
+  availability_zone  = var.availability_zone
+  enable_nat_gateway = var.enable_nat_gateway
+}
+
+# Upcoming modules:
 #
 # module "rds" {
 #   source = "../../modules/rds"

@@ -10,6 +10,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Crown, Sparkles, ArrowRight } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import { amplitudeService } from '@/services/amplitude';
 
 interface PremiumUpsellProps {
@@ -48,6 +49,7 @@ export function PremiumUpsell({
   compact = false,
 }: PremiumUpsellProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const location = useLocation();
 
   // Track upsell link clicks
@@ -55,6 +57,7 @@ export function PremiumUpsell({
     amplitudeService.track('premium_upsell_clicked', {
       feature_name: feature || 'generic',
       source: location.pathname,
+      ...(user?.id && { user_id: user.id }),
     });
   };
 

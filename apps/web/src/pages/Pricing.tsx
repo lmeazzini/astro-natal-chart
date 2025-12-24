@@ -5,7 +5,7 @@
  * The actual payment integration will be implemented in a future issue.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -48,22 +48,30 @@ export function PricingPage() {
   const { user } = useAuth();
   const { isPremium, isAdmin, role } = usePermissions();
   const [searchParams] = useSearchParams();
+  const hasTrackedPageView = useRef(false);
 
-  // Track page view on mount
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
   useEffect(() => {
-    amplitudeService.track('pricing_page_viewed', {
-      source: searchParams.get('source') || 'direct',
-      user_tier: role || 'anonymous',
-    });
-  }, [searchParams, role]);
+    if (!hasTrackedPageView.current) {
+      amplitudeService.track('pricing_page_viewed', {
+        source: searchParams.get('source') || 'direct',
+        user_tier: role || 'anonymous',
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Track once on mount only
 
-  // Track plan button clicks
-  const handlePlanClick = (planName: string) => {
+  // Track plan button clicks (skip if button is disabled)
+  const handlePlanClick = (planName: string, isDisabled?: boolean) => {
+    if (isDisabled) return; // Don't track clicks on disabled buttons
     amplitudeService.track('pricing_plan_clicked', {
       plan_name: planName,
       current_tier: role || 'anonymous',
       billing_cycle: 'monthly',
       source: 'pricing_page',
+      ...(user?.id && { user_id: user.id }),
     });
   };
 
@@ -304,7 +312,7 @@ export function PricingPage() {
                       asChild
                       className="w-full"
                       variant="outline"
-                      onClick={() => handlePlanClick(plan.id)}
+                      onClick={() => handlePlanClick(plan.id, plan.disabled)}
                     >
                       <Link to="/register">
                         <Zap className="h-4 w-4 mr-2" />
@@ -320,7 +328,7 @@ export function PricingPage() {
                       }`}
                       variant={plan.highlighted ? 'default' : 'outline'}
                       disabled={plan.disabled}
-                      onClick={() => handlePlanClick(plan.id)}
+                      onClick={() => handlePlanClick(plan.id, plan.disabled)}
                     >
                       {plan.disabled ? (
                         <>

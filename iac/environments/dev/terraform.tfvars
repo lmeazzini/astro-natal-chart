@@ -1,0 +1,17 @@
+# =============================================================================
+# Development Environment Values
+# =============================================================================
+
+aws_region  = "us-east-1"
+environment = "dev"
+
+# -----------------------------------------------------------------------------
+# Future values (uncomment as modules are added)
+# -----------------------------------------------------------------------------
+
+# vpc_cidr          = "10.0.0.0/16"
+# availability_zone = "us-east-1a"
+# db_instance_class = "db.t3.micro"
+# redis_node_type   = "cache.t3.micro"
+# ecs_cpu           = 256
+# ecs_memory        = 512

@@ -89,3 +89,18 @@ backups/
 
 # Production environment
 .env.prod
+
+# Terraform
+iac/.terraform/
+iac/**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars.local
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+iac/.env

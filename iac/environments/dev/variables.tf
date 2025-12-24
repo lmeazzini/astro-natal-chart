@@ -15,20 +15,30 @@ variable "environment" {
 }
 
 # -----------------------------------------------------------------------------
-# Future variables (uncomment as modules are added)
+# VPC Variables
 # -----------------------------------------------------------------------------
 
-# variable "vpc_cidr" {
-#   description = "CIDR block for VPC"
-#   type        = string
-#   default     = "10.0.0.0/16"
-# }
+variable "vpc_cidr" {
+  description = "CIDR block for VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
 
-# variable "availability_zone" {
-#   description = "Availability zone for single-AZ deployment"
-#   type        = string
-#   default     = "us-east-1a"
-# }
+variable "availability_zone" {
+  description = "Availability zone for single-AZ deployment"
+  type        = string
+  default     = "us-east-1a"
+}
+
+variable "enable_nat_gateway" {
+  description = "Enable NAT Gateway (~$32/month). Set to false to save costs."
+  type        = bool
+  default     = true
+}
+
+# -----------------------------------------------------------------------------
+# Future variables (uncomment as modules are added)
+# -----------------------------------------------------------------------------
 
 # variable "db_instance_class" {
 #   description = "RDS instance class"

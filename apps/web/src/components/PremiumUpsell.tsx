@@ -6,10 +6,11 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Crown, Sparkles, ArrowRight } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { amplitudeService } from '@/services/amplitude';
 
 interface PremiumUpsellProps {
   /** Feature name to display (e.g., "horary", "profections") */
@@ -47,6 +48,15 @@ export function PremiumUpsell({
   compact = false,
 }: PremiumUpsellProps) {
   const { t } = useTranslation();
+  const location = useLocation();
+
+  // Track upsell link clicks
+  const handleUpgradeClick = () => {
+    amplitudeService.track('premium_upsell_clicked', {
+      feature_name: feature || 'generic',
+      source: location.pathname,
+    });
+  };
 
   // Resolve display text
   const displayTitle =
@@ -85,8 +95,11 @@ export function PremiumUpsell({
           size="sm"
           variant="outline"
           className="flex-shrink-0 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900"
+          onClick={handleUpgradeClick}
         >
-          <Link to="/pricing">{t('premium.upgrade', { defaultValue: 'Upgrade' })}</Link>
+          <Link to="/pricing?source=upsell">
+            {t('premium.upgrade', { defaultValue: 'Upgrade' })}
+          </Link>
         </Button>
       </div>
     );
@@ -108,8 +121,9 @@ export function PremiumUpsell({
             <Button
               asChild
               className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-md"
+              onClick={handleUpgradeClick}
             >
-              <Link to="/pricing" className="inline-flex items-center gap-2">
+              <Link to="/pricing?source=upsell" className="inline-flex items-center gap-2">
                 {t('premium.viewPlans', { defaultValue: 'View Plans' })}
                 <ArrowRight className="h-4 w-4" />
               </Link>

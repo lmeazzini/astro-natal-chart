@@ -539,6 +539,74 @@ amplitudeService.track('user_logged_in', {
 });
 ```
 
+### Premium/Subscription Events (Issue #220)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `pricing_page_viewed` | Frontend: `Pricing.tsx` | `source`, `user_tier` | User views pricing page |
+| `pricing_plan_clicked` | Frontend: `Pricing.tsx` | `plan_name`, `current_tier`, `billing_cycle`, `source` | User clicks plan button |
+| `premium_feature_blocked` | Frontend: `PremiumFeatureGate.tsx` | `feature_name`, `source` | Free user hits premium gate |
+| `premium_upsell_clicked` | Frontend: `PremiumUpsell.tsx` | `feature_name`, `source` | User clicks upgrade link |
+| `subscription_granted` | Backend: `subscription_service.py` | `days`, `is_lifetime`, `granted_by_admin_id`, `source` | Admin grants premium |
+| `subscription_extended` | Backend: `subscription_service.py` | `extend_days`, `previous_expires_at`, `new_expires_at`, `source` | Admin extends subscription |
+| `subscription_revoked` | Backend: `subscription_service.py` | `was_active`, `days_remaining`, `revoked_by_admin_id`, `source` | Admin revokes subscription |
+| `subscription_expired` | Backend: `subscription_service.py` | `expired_at`, `source` | System auto-expires subscription |
+
+**Event Details**:
+
+#### `pricing_page_viewed`
+**Description**: User views the pricing/plans page.
+
+**Properties**:
+- `source` (string): Where user came from (`"direct"`, `"navbar"`, `"upsell"`, `"feature_gate"`)
+- `user_tier` (string): User's current tier (`"anonymous"`, `"free"`, `"premium"`, `"admin"`)
+
+**Example**:
+```typescript
+amplitudeService.track('pricing_page_viewed', {
+  source: 'upsell',
+  user_tier: 'free',
+});
+```
+
+#### `premium_feature_blocked`
+**Description**: Free user attempts to access a premium-only feature.
+
+**Properties**:
+- `feature_name` (string): Feature attempted (`"horary"`, `"profections"`, `"firdaria"`, `"solar_returns"`)
+- `source` (string): Page path where blocked
+
+**Example**:
+```typescript
+amplitudeService.track('premium_feature_blocked', {
+  feature_name: 'horary',
+  source: '/chart/123',
+});
+```
+
+#### `subscription_granted`
+**Description**: Admin grants premium subscription to a user.
+
+**Properties**:
+- `days` (number | null): Days granted (null = lifetime)
+- `is_lifetime` (boolean): Whether lifetime subscription
+- `granted_by_admin_id` (string): Admin UUID
+- `source` (string): `"admin_panel"`
+
+**Example**:
+```python
+amplitude_service.track(
+    event_type="subscription_granted",
+    user_id=str(user_id),
+    event_properties={
+        "days": 30,
+        "is_lifetime": False,
+        "granted_by_admin_id": str(admin_user.id),
+        "source": "admin_panel",
+    },
+)
+```
+
 ### Planned Events (Issue #218)
 
 See [Issue #218](https://github.com/lmeazzini/astro-natal-chart/issues/218) for comprehensive list of planned events across all user flows.

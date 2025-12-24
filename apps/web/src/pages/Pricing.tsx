@@ -5,7 +5,8 @@
  * The actual payment integration will be implemented in a future issue.
  */
 
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import { amplitudeService } from '@/services/amplitude';
 import { Check, Crown, Sparkles, Star, Zap, ArrowLeft } from 'lucide-react';
 
 interface PlanFeature {
@@ -45,6 +47,25 @@ export function PricingPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { isPremium, isAdmin, role } = usePermissions();
+  const [searchParams] = useSearchParams();
+
+  // Track page view on mount
+  useEffect(() => {
+    amplitudeService.track('pricing_page_viewed', {
+      source: searchParams.get('source') || 'direct',
+      user_tier: role || 'anonymous',
+    });
+  }, [searchParams, role]);
+
+  // Track plan button clicks
+  const handlePlanClick = (planName: string) => {
+    amplitudeService.track('pricing_plan_clicked', {
+      plan_name: planName,
+      current_tier: role || 'anonymous',
+      billing_cycle: 'monthly',
+      source: 'pricing_page',
+    });
+  };
 
   const plans: Plan[] = [
     {
@@ -279,7 +300,12 @@ export function PricingPage() {
                 <CardFooter>
                   {/* Non-authenticated users clicking free plan go to register */}
                   {!user && plan.id === 'free' ? (
-                    <Button asChild className="w-full" variant="outline">
+                    <Button
+                      asChild
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => handlePlanClick(plan.id)}
+                    >
                       <Link to="/register">
                         <Zap className="h-4 w-4 mr-2" />
                         {plan.ctaText}
@@ -294,6 +320,7 @@ export function PricingPage() {
                       }`}
                       variant={plan.highlighted ? 'default' : 'outline'}
                       disabled={plan.disabled}
+                      onClick={() => handlePlanClick(plan.id)}
                     >
                       {plan.disabled ? (
                         <>

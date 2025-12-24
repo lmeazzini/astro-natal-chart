@@ -8,6 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from loguru import logger
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -762,18 +763,44 @@ async def generate_chart_pdf(
                 detail="Chart must be fully calculated before generating PDF. Wait for chart calculations to complete.",
             )
 
-        # Check if PDF is already being generated (prevent concurrent generation)
-        if chart.pdf_generating:
+        # Atomically acquire PDF generation lock (prevents race conditions)
+        # This UPDATE only succeeds if pdf_generating is currently False
+        stmt = (
+            update(BirthChart)
+            .where(BirthChart.id == chart_id, BirthChart.pdf_generating == False)  # noqa: E712
+            .values(pdf_generating=True)
+        )
+        result = await db.execute(stmt)
+        await db.commit()
+
+        if result.rowcount == 0:  # type: ignore[attr-defined]
+            # Another request already started PDF generation
+            # Refresh chart to get current task_id for debugging
+            await db.refresh(chart)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"PDF is already being generated for this chart. Task ID: {chart.pdf_task_id}. Please wait for the current generation to complete.",
             )
 
-        # Dispatch Celery task to generate PDF in background
-        task = generate_chart_pdf_task.delay(str(chart_id))
+        # Dispatch Celery task now that we have the lock
+        try:
+            task = generate_chart_pdf_task.delay(str(chart_id))
+        except Exception as e:
+            # Rollback the flag if task dispatch fails (e.g., Redis down)
+            logger.error(f"Failed to dispatch PDF task for chart {chart_id}: {e}")
+            rollback_stmt = (
+                update(BirthChart)
+                .where(BirthChart.id == chart_id)
+                .values(pdf_generating=False, pdf_task_id=None)
+            )
+            await db.execute(rollback_stmt)
+            await db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="PDF generation service temporarily unavailable. Please try again later.",
+            ) from e
 
-        # Mark chart as generating and save task ID
-        chart.pdf_generating = True
+        # Update with task ID for tracking
         chart.pdf_task_id = task.id
         await db.commit()
 

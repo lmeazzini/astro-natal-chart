@@ -18,19 +18,29 @@ VIEW_DEDUP_WINDOW_SECONDS = 30 * 60
 # Redis key prefix for view deduplication
 VIEW_DEDUP_KEY_PREFIX = "view_dedup:"
 
+# Connection pool singleton (reused across requests for performance)
+_redis_pool: redis.ConnectionPool | None = None
 
-def _get_redis_client() -> redis.Redis | None:
+
+def _get_redis_pool() -> redis.ConnectionPool | None:
     """
-    Get a Redis client connection.
+    Get or create the Redis connection pool (singleton).
+
+    Using a connection pool avoids the overhead of creating new connections
+    for each request, significantly improving performance under load.
 
     Returns:
-        Redis client or None if connection fails
+        Redis connection pool or None if creation fails
     """
-    try:
-        return redis.from_url(str(settings.REDIS_URL), decode_responses=True)
-    except Exception as e:
-        logger.warning(f"Failed to connect to Redis for view deduplication: {e}")
-        return None
+    global _redis_pool
+    if _redis_pool is None:
+        try:
+            _redis_pool = redis.ConnectionPool.from_url(
+                str(settings.REDIS_URL), decode_responses=True
+            )
+        except Exception as e:
+            logger.warning(f"Failed to create Redis connection pool: {e}")
+    return _redis_pool
 
 
 def _generate_view_key(slug: str, client_ip: str) -> str:
@@ -55,6 +65,9 @@ def should_increment_view(slug: str, client_ip: str) -> bool:
     """
     Check if view should be incremented (no recent view from this IP).
 
+    Uses atomic SET NX operation to prevent race conditions where two
+    concurrent requests could both pass an exists check.
+
     Args:
         slug: Chart slug
         client_ip: Client IP address
@@ -62,28 +75,28 @@ def should_increment_view(slug: str, client_ip: str) -> bool:
     Returns:
         True if view should be counted, False if already viewed recently
     """
-    client = _get_redis_client()
-    if not client:
+    pool = _get_redis_pool()
+    if not pool:
         # If Redis is unavailable, allow the increment (fail open)
-        logger.debug("Redis unavailable, allowing view increment")
+        logger.debug("Redis pool unavailable, allowing view increment")
         return True
 
     try:
+        client = redis.Redis(connection_pool=pool)
         key = _generate_view_key(slug, client_ip)
 
-        # Check if key exists
-        if client.exists(key):
+        # Atomic SET NX (set if not exists) with expiration
+        # Returns True if key was set (new view), None if key already existed
+        result = client.set(key, "1", ex=VIEW_DEDUP_WINDOW_SECONDS, nx=True)
+
+        if result:
+            logger.debug(f"View dedup: new view recorded ({slug})")
+            return True
+        else:
             logger.debug(f"View dedup: already viewed recently ({slug})")
             return False
-
-        # Set key with expiration
-        client.setex(key, VIEW_DEDUP_WINDOW_SECONDS, "1")
-        logger.debug(f"View dedup: new view recorded ({slug})")
-        return True
 
     except Exception as e:
         logger.warning(f"Redis error in view deduplication: {e}")
         # On error, allow the increment (fail open)
         return True
-    finally:
-        client.close()

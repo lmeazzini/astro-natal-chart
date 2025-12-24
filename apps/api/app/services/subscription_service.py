@@ -6,12 +6,48 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import SubscriptionStatus, UserRole
+from app.models.enums import SubscriptionChangeType, SubscriptionStatus, UserRole
 from app.models.subscription import Subscription
+from app.models.subscription_history import SubscriptionHistory
 from app.models.user import User
 from app.repositories.audit_repository import AuditRepository
+from app.repositories.subscription_history_repository import SubscriptionHistoryRepository
 from app.repositories.subscription_repository import SubscriptionRepository
 from app.repositories.user_repository import UserRepository
+
+
+async def _create_history_record(
+    db: AsyncSession,
+    subscription: Subscription,
+    change_type: SubscriptionChangeType,
+    changed_by_user_id: UUID | None = None,
+    change_reason: str | None = None,
+) -> SubscriptionHistory:
+    """
+    Create an immutable history record for a subscription change.
+
+    Args:
+        db: Database session
+        subscription: The subscription being changed
+        change_type: Type of change (granted, extended, revoked, expired)
+        changed_by_user_id: Admin user who made the change (None if system auto-expired)
+        change_reason: Optional reason for the change
+
+    Returns:
+        Created history record
+    """
+    history_repo = SubscriptionHistoryRepository(db)
+    history = SubscriptionHistory(
+        subscription_id=subscription.id,
+        user_id=subscription.user_id,
+        status=subscription.status,
+        started_at=subscription.started_at,
+        expires_at=subscription.expires_at,
+        change_type=change_type.value,
+        changed_by_user_id=changed_by_user_id,
+        change_reason=change_reason,
+    )
+    return await history_repo.create(history)
 
 
 async def grant_premium_subscription(
@@ -87,6 +123,14 @@ async def grant_premium_subscription(
         },
     )
 
+    # Create subscription history record
+    await _create_history_record(
+        db=db,
+        subscription=subscription,
+        change_type=SubscriptionChangeType.GRANTED,
+        changed_by_user_id=admin_user.id,
+    )
+
     # Commit everything atomically
     await db.commit()
     await db.refresh(subscription)
@@ -150,6 +194,14 @@ async def revoke_premium_subscription(
             if subscription.expires_at
             else None,
         },
+    )
+
+    # Create subscription history record
+    await _create_history_record(
+        db=db,
+        subscription=subscription,
+        change_type=SubscriptionChangeType.REVOKED,
+        changed_by_user_id=admin_user.id,
     )
 
     # Commit everything atomically
@@ -232,6 +284,14 @@ async def extend_premium_subscription(
         },
     )
 
+    # Create subscription history record
+    await _create_history_record(
+        db=db,
+        subscription=subscription,
+        change_type=SubscriptionChangeType.EXTENDED,
+        changed_by_user_id=admin_user.id,
+    )
+
     # Commit everything atomically
     await db.commit()
     await db.refresh(subscription)
@@ -308,6 +368,14 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
             },
         )
 
+        # Create subscription history record (system auto-expired, no changed_by_user_id)
+        await _create_history_record(
+            db=db,
+            subscription=subscription,
+            change_type=SubscriptionChangeType.EXPIRED,
+            changed_by_user_id=None,  # System auto-expired
+        )
+
         count += 1
 
     # Commit all changes atomically
@@ -317,3 +385,25 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
         logger.info(f"Expired {count} subscriptions")
 
     return count
+
+
+async def get_subscription_history(
+    db: AsyncSession,
+    user_id: UUID,
+    skip: int = 0,
+    limit: int = 50,
+) -> list[SubscriptionHistory]:
+    """
+    Get subscription history for a user.
+
+    Args:
+        db: Database session
+        user_id: User ID to get history for
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
+
+    Returns:
+        List of subscription history records, ordered by created_at descending
+    """
+    history_repo = SubscriptionHistoryRepository(db)
+    return await history_repo.get_by_user_id(user_id, skip=skip, limit=limit)

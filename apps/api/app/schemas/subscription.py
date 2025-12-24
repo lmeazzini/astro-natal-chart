@@ -70,3 +70,31 @@ class UserSubscriptionRead(BaseModel):
     )
 
     model_config = {"from_attributes": True}
+
+
+class SubscriptionHistoryRead(BaseModel):
+    """Schema for reading subscription history records."""
+
+    id: UUID = Field(..., description="History record ID")
+    subscription_id: UUID = Field(..., description="Subscription ID")
+    user_id: UUID = Field(..., description="User ID")
+
+    # Snapshot of subscription state at this point in time
+    status: str = Field(..., description="Subscription status at time of change")
+    started_at: datetime = Field(..., description="Subscription start date at time of change")
+    expires_at: datetime | None = Field(
+        None, description="Subscription expiration at time of change (None = lifetime)"
+    )
+
+    # Change metadata
+    change_type: str = Field(
+        ..., description="Type of change (granted, extended, revoked, expired)"
+    )
+    changed_by_user_id: UUID | None = Field(
+        None, description="Admin user who made the change (None if system auto-expired)"
+    )
+    change_reason: str | None = Field(None, description="Optional reason for the change")
+
+    created_at: datetime = Field(..., description="When this history record was created")
+
+    model_config = {"from_attributes": True}

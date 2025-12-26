@@ -212,3 +212,12 @@ resource "aws_iam_role_policy_attachment" "ecs_task_s3_pdf" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = var.s3_pdf_policy_arn
 }
+
+# Attach ECR pull policy to execution role (from ECR module)
+# Allows ECS to pull container images from private ECR repository
+resource "aws_iam_role_policy_attachment" "ecs_execution_ecr_pull" {
+  count = var.ecr_pull_policy_arn != null ? 1 : 0
+
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = var.ecr_pull_policy_arn
+}

@@ -134,6 +134,9 @@ module "ecs" {
   # S3 integration for PDF storage
   s3_pdf_policy_arn = module.s3.pdf_access_policy_arn
 
+  # ECR integration for container image pulling
+  ecr_pull_policy_arn = module.ecr.pull_policy_arn
+
   # SSL/TLS for ALB (optional - requires DNS module)
   acm_certificate_arn = var.domain_name != null ? module.dns[0].alb_certificate_arn : null
 }

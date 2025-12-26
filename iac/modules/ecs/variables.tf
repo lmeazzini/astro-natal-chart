@@ -201,6 +201,12 @@ variable "s3_pdf_policy_arn" {
   default     = null
 }
 
+variable "ecr_pull_policy_arn" {
+  description = "IAM policy ARN for pulling images from ECR (from ECR module)"
+  type        = string
+  default     = null
+}
+
 # -----------------------------------------------------------------------------
 # SSL/TLS Configuration
 # -----------------------------------------------------------------------------

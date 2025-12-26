@@ -27,10 +27,11 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECS_CLUSTER: astro-dev-cluster
-  ECS_SERVICE: astro-dev-api
-  ECR_REPOSITORY: astro-api-dev
-  FRONTEND_BUCKET: astro-dev-frontend-559050210551
+  # Infrastructure values from Terraform outputs (configure as secrets)
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE_NAME }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+  FRONTEND_BUCKET: ${{ secrets.FRONTEND_BUCKET_NAME }}
   CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 
 jobs:
@@ -73,8 +74,9 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd apps/api
+          # Build once, tag twice (more efficient than building twice)
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
@@ -137,7 +139,7 @@ jobs:
       - name: Download current task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition astro-dev-api \
+            --task-definition ${{ env.ECS_SERVICE }} \
             --query taskDefinition > task-definition.json
 
       - name: Update task definition with new image
@@ -232,12 +234,16 @@ jobs:
 
       - name: Run Alembic migrations
         run: |
-          aws ecs execute-command \
+          # Run migrations without --interactive flag (not supported in CI)
+          # Using timeout to prevent hanging if the command fails to start
+          timeout 300 aws ecs execute-command \
             --cluster ${{ env.ECS_CLUSTER }} \
             --task ${{ steps.get-task.outputs.task_arn }} \
             --container astro-api \
-            --interactive \
-            --command "alembic upgrade head"
+            --command "alembic upgrade head" || {
+              echo "Migration command failed or timed out"
+              exit 1
+            }
 
   # ---------------------------------------------------------------------------
   # Health checks

@@ -43,6 +43,10 @@ locals {
   # Full repository name includes environment
   full_repository_name = "${var.repository_name}-${var.environment}"
 
+  # Production uses immutable tags for safety (prevents overwriting releases)
+  # Dev/staging use mutable tags for flexibility during development
+  effective_image_tag_mutability = var.environment == "prod" ? "IMMUTABLE" : var.image_tag_mutability
+
   common_tags = merge(var.tags, {
     Module = "ecr"
   })
@@ -54,7 +58,7 @@ locals {
 
 resource "aws_ecr_repository" "main" {
   name                 = local.full_repository_name
-  image_tag_mutability = var.image_tag_mutability
+  image_tag_mutability = local.effective_image_tag_mutability
 
   image_scanning_configuration {
     scan_on_push = var.scan_on_push

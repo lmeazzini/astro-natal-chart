@@ -79,6 +79,20 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Truncate plan output if too long (GitHub comment limit is ~65536 chars)
+            const maxPlanLength = 60000;
+            let planOutput = `${{ steps.plan.outputs.plan }}`;
+            let truncated = false;
+
+            if (planOutput.length > maxPlanLength) {
+              planOutput = planOutput.substring(0, maxPlanLength);
+              truncated = true;
+            }
+
+            const truncationNotice = truncated
+              ? '\n\n... (plan output truncated due to size)\n'
+              : '';
+
             const output = `### Terraform Plan - \`${{ matrix.environment }}\`
 
             #### Format Check 🖌 \`${{ steps.fmt.outcome }}\`
@@ -89,7 +103,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             \`\`\`terraform
-            ${{ steps.plan.outputs.plan }}
+            ${planOutput}${truncationNotice}
             \`\`\`
 
             </details>

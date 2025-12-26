@@ -80,6 +80,9 @@ resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${local.name_prefix}-api"
   retention_in_days = var.log_retention_days
 
+  # Optional KMS encryption for logs at rest
+  kms_key_id = var.log_encryption_kms_key_arn
+
   tags = merge(local.common_tags, {
     Name = "/ecs/${local.name_prefix}-api"
   })

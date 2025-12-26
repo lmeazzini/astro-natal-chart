@@ -58,12 +58,25 @@ variable "cpu" {
   description = "CPU units for the task (256 = 0.25 vCPU)"
   type        = number
   default     = 256
+
+  validation {
+    condition     = contains([256, 512, 1024, 2048, 4096, 8192, 16384], var.cpu)
+    error_message = "CPU must be a valid Fargate value: 256, 512, 1024, 2048, 4096, 8192, or 16384."
+  }
 }
 
 variable "memory" {
   description = "Memory in MB for the task"
   type        = number
   default     = 512
+
+  validation {
+    condition = (
+      (var.memory >= 512 && var.memory <= 30720) ||
+      contains([512, 1024, 2048, 3072, 4096, 5120, 6144, 7168, 8192], var.memory)
+    )
+    error_message = "Memory must be between 512 MB and 30720 MB (valid Fargate values)."
+  }
 }
 
 variable "desired_count" {
@@ -86,6 +99,11 @@ variable "container_image" {
   description = "Container image to run (defaults to nginx placeholder)"
   type        = string
   default     = "nginx:alpine"
+
+  validation {
+    condition     = length(var.container_image) > 0
+    error_message = "Container image must not be empty."
+  }
 }
 
 # -----------------------------------------------------------------------------
@@ -152,6 +170,29 @@ variable "log_retention_days" {
   description = "CloudWatch log retention in days"
   type        = number
   default     = 30
+}
+
+variable "log_encryption_kms_key_arn" {
+  description = "KMS key ARN for CloudWatch Logs encryption (optional, null for no encryption)"
+  type        = string
+  default     = null
+}
+
+# -----------------------------------------------------------------------------
+# S3 Access
+# -----------------------------------------------------------------------------
+
+variable "s3_bucket_arns" {
+  description = "List of S3 bucket ARNs the task can access (for PDF storage, etc.)"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for arn in var.s3_bucket_arns : can(regex("^arn:aws:s3:::", arn))
+    ])
+    error_message = "All S3 bucket ARNs must be valid (start with arn:aws:s3:::)."
+  }
 }
 
 # -----------------------------------------------------------------------------

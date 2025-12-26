@@ -68,12 +68,14 @@ module "ecs" {
 | `private_subnet_id` | Private subnet for ECS tasks | `string` | - |
 | `alb_security_group_id` | Security group for ALB | `string` | - |
 | `ecs_security_group_id` | Security group for ECS tasks | `string` | - |
-| `cpu` | CPU units (256 = 0.25 vCPU) | `number` | `256` |
-| `memory` | Memory in MB | `number` | `512` |
+| `cpu` | CPU units (valid: 256, 512, 1024, 2048, 4096, 8192, 16384) | `number` | `256` |
+| `memory` | Memory in MB (valid: 512-30720) | `number` | `512` |
 | `desired_count` | Number of tasks | `number` | `1` |
-| `container_image` | Container image | `string` | `nginx:alpine` |
+| `container_image` | Container image (must not be empty) | `string` | `nginx:alpine` |
 | `container_port` | Container port | `number` | `8000` |
 | `health_check_path` | Health check path | `string` | `/health` |
+| `s3_bucket_arns` | S3 bucket ARNs for task access | `list(string)` | `[]` |
+| `log_encryption_kms_key_arn` | KMS key ARN for log encryption | `string` | `null` |
 
 ## Outputs
 

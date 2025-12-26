@@ -151,8 +151,11 @@ resource "aws_iam_role_policy" "ecs_task_logs" {
   })
 }
 
-# Policy for S3 access (for PDF storage - future use)
+# Policy for S3 access (for PDF storage)
+# Only created when s3_bucket_arns is provided
 resource "aws_iam_role_policy" "ecs_task_s3" {
+  count = length(var.s3_bucket_arns) > 0 ? 1 : 0
+
   name = "${local.name_prefix}-ecs-task-s3"
   role = aws_iam_role.ecs_task.id
 
@@ -164,13 +167,16 @@ resource "aws_iam_role_policy" "ecs_task_s3" {
         Action = [
           "s3:GetObject",
           "s3:PutObject",
-          "s3:DeleteObject",
+          "s3:DeleteObject"
+        ]
+        Resource = [for arn in var.s3_bucket_arns : "${arn}/*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "s3:ListBucket"
         ]
-        Resource = [
-          "arn:aws:s3:::astro-*-${data.aws_caller_identity.current.account_id}",
-          "arn:aws:s3:::astro-*-${data.aws_caller_identity.current.account_id}/*"
-        ]
+        Resource = var.s3_bucket_arns
       }
     ]
   })

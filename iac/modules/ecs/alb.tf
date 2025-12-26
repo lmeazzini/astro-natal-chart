@@ -14,7 +14,11 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
-  subnets            = [var.public_subnet_id]
+
+  # SINGLE-AZ DEPLOYMENT (cost optimization for dev/staging)
+  # NOTE: For production, add a second subnet in a different AZ.
+  # ALB requires 2+ subnets in different AZs for high availability.
+  subnets = [var.public_subnet_id]
 
   # Enable deletion protection in production
   enable_deletion_protection = var.environment == "prod" ? true : false

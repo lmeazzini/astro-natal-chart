@@ -75,10 +75,12 @@ resource "aws_ecs_task_definition" "api" {
       }
 
       # Container health check
+      # Using wget for nginx:alpine compatibility (curl not available)
+      # For FastAPI, replace with: curl -f http://localhost:${var.container_port}${var.health_check_path}
       healthCheck = {
         command = [
           "CMD-SHELL",
-          "curl -f http://localhost:${var.container_port}${var.health_check_path} || exit 1"
+          "wget --no-verbose --tries=1 --spider http://localhost:${var.container_port}/ || exit 1"
         ]
         interval    = 30
         timeout     = 5

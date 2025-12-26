@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import { Clock, Eye, Calendar, ChevronLeft, ChevronRight, Tag, FolderOpen } from 'lucide-react';
 
 function formatDate(dateString: string | null, locale: string): string {
@@ -36,6 +37,7 @@ export function BlogPage() {
   const [metadata, setMetadata] = React.useState<BlogMetadata | null>(null);
   const [totalPages, setTotalPages] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
+  const hasTrackedPageView = React.useRef(false);
 
   const category = searchParams.get('category') || undefined;
   const tag = searchParams.get('tag') || undefined;
@@ -75,6 +77,31 @@ export function BlogPage() {
     } catch (error) {
       console.error('Error loading blog metadata:', error);
     }
+  }
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  React.useEffect(() => {
+    if (!hasTrackedPageView.current && !loading) {
+      amplitudeService.track('blog_viewed', {
+        source: searchParams.get('source') || 'direct',
+        post_count: posts.length,
+        ...(category && { category_filter: category }),
+        ...(tag && { tag_filter: tag }),
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]); // Track once when loading completes
+
+  // Track post clicks
+  function handlePostClick(post: BlogPostListItem) {
+    amplitudeService.track('blog_post_clicked', {
+      post_slug: post.slug,
+      post_title: post.title,
+      source: 'blog_list',
+      ...(user?.id && { user_id: user.id }),
+    });
   }
 
   function handleCategoryClick(cat: string | null) {
@@ -208,7 +235,11 @@ export function BlogPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {posts.map((post) => (
-                    <Link key={post.id} to={`/blog/${post.slug}`}>
+                    <Link
+                      key={post.id}
+                      to={`/blog/${post.slug}`}
+                      onClick={() => handlePostClick(post)}
+                    >
                       <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
                         {post.featured_image_url ? (
                           <img

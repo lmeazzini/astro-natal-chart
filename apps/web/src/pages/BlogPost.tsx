@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import ReactMarkdown from 'react-markdown';
@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import {
   Clock,
   Eye,
@@ -47,6 +48,7 @@ export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [post, setPost] = React.useState<BlogPost | null>(null);
   const [recentPosts, setRecentPosts] = React.useState<BlogPostListItem[]>([]);
@@ -54,6 +56,18 @@ export function BlogPostPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [sharing, setSharing] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+
+  // Amplitude tracking refs
+  const hasTrackedPageView = React.useRef(false);
+  const hasTrackedReadCompletion = React.useRef(false);
+  const pageLoadTime = React.useRef(Date.now());
+
+  // Reset tracking refs when slug changes (for SPA navigation between posts)
+  React.useEffect(() => {
+    hasTrackedPageView.current = false;
+    hasTrackedReadCompletion.current = false;
+    pageLoadTime.current = Date.now();
+  }, [slug]);
 
   React.useEffect(() => {
     if (!slug) return;
@@ -87,6 +101,57 @@ export function BlogPostPage() {
 
     loadRecent();
   }, [slug]);
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  React.useEffect(() => {
+    if (!hasTrackedPageView.current && post && !loading) {
+      amplitudeService.track('blog_post_viewed', {
+        post_slug: post.slug,
+        post_title: post.title,
+        reading_time: post.read_time_minutes,
+        source: searchParams.get('source') || 'direct',
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+      pageLoadTime.current = Date.now(); // Reset page load time when post loads
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, loading]); // Track once when post loads
+
+  // Track read completion with Intersection Observer
+  React.useEffect(() => {
+    if (!post || hasTrackedReadCompletion.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedReadCompletion.current) {
+            const timeOnPage = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+            amplitudeService.track('blog_post_read_completed', {
+              post_slug: post.slug,
+              estimated_read_percentage: 80,
+              time_on_page_seconds: timeOnPage,
+              ...(user?.id && { user_id: user.id }),
+            });
+            hasTrackedReadCompletion.current = true;
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      const endMarker = document.getElementById('blog-post-end-marker');
+      if (endMarker) observer.observe(endMarker);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [post, user?.id]);
 
   async function handleShare() {
     if (sharing) return;
@@ -384,6 +449,9 @@ export function BlogPostPage() {
                     {post.content}
                   </ReactMarkdown>
                 </div>
+
+                {/* Invisible marker for read completion tracking */}
+                <div id="blog-post-end-marker" aria-hidden="true" />
 
                 {/* Tags */}
                 {post.tags.length > 0 && (

@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import { listRagDocuments, getRagStats, type RagDocument, type RagStats } from '../services/rag';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import { LanguageSelector } from '../components/LanguageSelector';
 export function RagDocumentsPage() {
   const { t } = useTranslation();
   const { user, isLoading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
   const [documents, setDocuments] = React.useState<RagDocument[]>([]);
   const [stats, setStats] = React.useState<RagStats | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -22,6 +24,9 @@ export function RagDocumentsPage() {
   const [total, setTotal] = React.useState(0);
   const [filterType, setFilterType] = React.useState<string>('');
   const pageSize = 20;
+
+  // Amplitude tracking ref
+  const hasTrackedPageView = React.useRef(false);
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -47,6 +52,30 @@ export function RagDocumentsPage() {
       loadData();
     }
   }, [user, loadData]);
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  React.useEffect(() => {
+    if (!hasTrackedPageView.current && !loading && user) {
+      amplitudeService.track('rag_documents_viewed', {
+        source: searchParams.get('source') || 'direct',
+        document_count: total,
+        filter_type: filterType || 'all',
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]); // Track once when loading completes
+
+  // Track document clicks
+  function handleDocumentClick(doc: RagDocument) {
+    amplitudeService.track('rag_document_clicked', {
+      document_id: doc.id,
+      document_type: doc.document_type,
+      title: doc.title,
+      ...(user?.id && { user_id: user.id }),
+    });
+  }
 
   if (authLoading) {
     return (
@@ -209,7 +238,11 @@ export function RagDocumentsPage() {
                 </Card>
               ) : (
                 documents.map((doc) => (
-                  <Card key={doc.id}>
+                  <Card
+                    key={doc.id}
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => handleDocumentClick(doc)}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>

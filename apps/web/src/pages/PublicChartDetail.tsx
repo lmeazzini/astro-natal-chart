@@ -6,8 +6,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { amplitudeService } from '../services/amplitude';
 import {
   getPublicChart,
   getCategoryLabel,
@@ -76,6 +77,7 @@ export function PublicChartDetailPage() {
   const { translateSign, translatePlanet } = useAstroTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [chart, setChart] = useState<PublicChartDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +86,14 @@ export function PublicChartDetailPage() {
 
   // Track the last language we loaded interpretations for (to avoid reload loops)
   const lastLoadedLanguageRef = useRef<string | null>(null);
+
+  // Amplitude tracking ref
+  const hasTrackedPageView = useRef(false);
+
+  // Reset tracking ref when slug changes (for SPA navigation between charts)
+  useEffect(() => {
+    hasTrackedPageView.current = false;
+  }, [slug]);
 
   const loadChart = useCallback(async () => {
     if (!slug) return;
@@ -116,6 +126,21 @@ export function PublicChartDetailPage() {
   useEffect(() => {
     loadChart();
   }, [loadChart]);
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  useEffect(() => {
+    if (!hasTrackedPageView.current && chart && !isLoading) {
+      amplitudeService.track('public_chart_detail_viewed', {
+        chart_slug: chart.slug,
+        person_name: chart.full_name,
+        ...(chart.category && { category: chart.category }),
+        source: searchParams.get('source') || 'direct',
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart, isLoading]); // Track once when chart loads
 
   // Load interpretations when chart is loaded
   useEffect(() => {

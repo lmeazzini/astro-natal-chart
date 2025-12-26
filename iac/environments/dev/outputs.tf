@@ -137,3 +137,37 @@ output "frontend_invalidate_command" {
   description = "AWS CLI command to invalidate CloudFront cache"
   value       = module.cloudfront.invalidate_command
 }
+
+# -----------------------------------------------------------------------------
+# ECR Outputs
+# -----------------------------------------------------------------------------
+
+output "ecr_repository_url" {
+  description = "ECR repository URL (for docker push/pull)"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_arn" {
+  description = "ECR repository ARN"
+  value       = module.ecr.repository_arn
+}
+
+output "ecr_repository_name" {
+  description = "ECR repository name"
+  value       = module.ecr.repository_name
+}
+
+output "ecr_push_policy_arn" {
+  description = "IAM policy ARN for pushing images (attach to CI/CD role)"
+  value       = module.ecr.push_policy_arn
+}
+
+output "ecr_pull_policy_arn" {
+  description = "IAM policy ARN for pulling images (attach to ECS role)"
+  value       = module.ecr.pull_policy_arn
+}
+
+output "ecr_docker_login_command" {
+  description = "AWS CLI command to login to ECR"
+  value       = module.ecr.docker_login_command
+}

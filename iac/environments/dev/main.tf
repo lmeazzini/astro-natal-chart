@@ -230,3 +230,30 @@ module "dns" {
   create_alb_certificate = true
   wait_for_validation    = true
 }
+
+# -----------------------------------------------------------------------------
+# ECR Module (Container Registry for CI/CD)
+# -----------------------------------------------------------------------------
+# Private container registry for storing API Docker images.
+# Used by GitHub Actions to push images and ECS to pull them.
+# -----------------------------------------------------------------------------
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  environment = var.environment
+  aws_region  = var.aws_region
+
+  # Repository configuration
+  repository_name      = "astro-api"
+  image_tag_mutability = "MUTABLE"
+  scan_on_push         = true
+
+  # Lifecycle policy (cost optimization)
+  max_image_count            = 30
+  untagged_image_expiry_days = 7
+
+  tags = {
+    Project = "astro"
+  }
+}

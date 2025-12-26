@@ -106,6 +106,12 @@ variable "monthly_backup_expiration_days" {
   default     = 365
 }
 
+variable "monthly_backup_transition_to_glacier_days" {
+  description = "Days before transitioning monthly backups to Glacier"
+  type        = number
+  default     = 30
+}
+
 # -----------------------------------------------------------------------------
 # Lifecycle Configuration - Logs
 # -----------------------------------------------------------------------------
@@ -114,6 +120,22 @@ variable "logs_expiration_days" {
   description = "Days before expiring logs"
   type        = number
   default     = 90
+}
+
+# -----------------------------------------------------------------------------
+# Security Configuration
+# -----------------------------------------------------------------------------
+
+variable "enable_ssl_only" {
+  description = "Require HTTPS for all bucket access (recommended)"
+  type        = bool
+  default     = true
+}
+
+variable "prevent_destroy" {
+  description = "Prevent accidental bucket deletion (recommended for prod)"
+  type        = bool
+  default     = false
 }
 
 # -----------------------------------------------------------------------------

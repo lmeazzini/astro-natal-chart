@@ -58,6 +58,12 @@ resource "aws_s3_bucket" "pdfs" {
     Name    = "${local.name_prefix}-pdfs"
     Purpose = "Birth chart PDF reports and avatars"
   })
+
+  # Prevent accidental deletion in production
+  # NOTE: This is a static value. Set prevent_destroy = true for prod environments.
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "aws_s3_bucket_versioning" "pdfs" {
@@ -118,6 +124,12 @@ resource "aws_s3_bucket" "backups" {
     Name    = "${local.name_prefix}-backups"
     Purpose = "Database backups (PostgreSQL, Qdrant)"
   })
+
+  # Prevent accidental deletion in production
+  # NOTE: This is a static value. Set prevent_destroy = true for prod environments.
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "aws_s3_bucket_versioning" "backups" {
@@ -194,4 +206,96 @@ resource "aws_s3_bucket_public_access_block" "logs" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+# =============================================================================
+# SSL-Only Bucket Policies
+# =============================================================================
+# Deny all requests that don't use HTTPS for enhanced security.
+
+resource "aws_s3_bucket_policy" "pdfs_ssl_only" {
+  count  = var.enable_ssl_only ? 1 : 0
+  bucket = aws_s3_bucket.pdfs.id
+
+  # Ensure public access block is applied first
+  depends_on = [aws_s3_bucket_public_access_block.pdfs]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.pdfs.arn,
+          "${aws_s3_bucket.pdfs.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket_policy" "backups_ssl_only" {
+  count  = var.enable_ssl_only ? 1 : 0
+  bucket = aws_s3_bucket.backups.id
+
+  # Ensure public access block is applied first
+  depends_on = [aws_s3_bucket_public_access_block.backups]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.backups.arn,
+          "${aws_s3_bucket.backups.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket_policy" "logs_ssl_only" {
+  count  = var.enable_logs_bucket && var.enable_ssl_only ? 1 : 0
+  bucket = aws_s3_bucket.logs[0].id
+
+  # Ensure public access block is applied first
+  depends_on = [aws_s3_bucket_public_access_block.logs]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.logs[0].arn,
+          "${aws_s3_bucket.logs[0].arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
 }

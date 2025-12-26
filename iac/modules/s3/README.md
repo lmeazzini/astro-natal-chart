@@ -38,6 +38,7 @@ This module creates and manages S3 buckets for:
 - **KMS Encryption**: Server-side encryption using the secrets module KMS key
 - **Versioning**: Enabled by default for data protection (PDFs and backups)
 - **Public Access Blocked**: All buckets have public access completely blocked
+- **SSL-Only Access**: Bucket policies deny non-HTTPS requests (enabled by default)
 - **CORS**: Configured for presigned URL downloads from frontend
 - **Lifecycle Policies**: Automatic tiering to reduce storage costs
 - **IAM Policies**: Least-privilege policies for ECS and backup scripts
@@ -80,13 +81,16 @@ module "s3" {
 | `allowed_origins` | CORS allowed origins | `list(string)` | `["*"]` | no |
 | `enable_logs_bucket` | Create logs bucket | `bool` | `false` | no |
 | `enable_versioning` | Enable bucket versioning | `bool` | `true` | no |
+| `enable_ssl_only` | Require HTTPS for bucket access | `bool` | `true` | no |
 | `force_destroy` | Allow bucket deletion with contents | `bool` | `false` | no |
+| `prevent_destroy` | Prevent accidental bucket deletion | `bool` | `false` | no |
 | `pdf_transition_to_ia_days` | Days before PDF → Standard-IA | `number` | `90` | no |
 | `pdf_transition_to_glacier_days` | Days before PDF → Glacier | `number` | `365` | no |
 | `pdf_noncurrent_expiration_days` | Days before noncurrent PDF versions expire | `number` | `30` | no |
 | `backup_transition_to_glacier_days` | Days before backup → Glacier | `number` | `7` | no |
 | `backup_expiration_days` | Days before daily backups expire | `number` | `30` | no |
 | `monthly_backup_expiration_days` | Days before monthly backups expire | `number` | `365` | no |
+| `monthly_backup_transition_to_glacier_days` | Days before monthly backups → Glacier | `number` | `30` | no |
 | `logs_expiration_days` | Days before logs expire | `number` | `90` | no |
 | `tags` | Additional tags | `map(string)` | `{}` | no |
 
@@ -156,7 +160,26 @@ Storage costs decrease significantly with lifecycle policies:
 ## Security
 
 - All buckets have public access completely blocked
+- **SSL-only access enforced** via bucket policy (denies HTTP requests)
 - Server-side encryption with KMS (customer-managed key)
 - Presigned URLs for secure, temporary access (1-hour expiration)
-- IAM policies follow least-privilege principle
+- IAM policies follow least-privilege principle (includes `kms:DescribeKey`)
 - Versioning protects against accidental deletion
+- Lifecycle `prevent_destroy` available for production environments
+
+### Production Recommendations
+
+For production environments, set these values:
+
+```hcl
+module "s3" {
+  # ... other config ...
+
+  # Security
+  enable_ssl_only = true    # Default: true
+  force_destroy   = false   # Default: false (don't allow deletion with objects)
+
+  # NOTE: For prevent_destroy, manually set lifecycle.prevent_destroy = true
+  # in the bucket resources for production environments.
+}
+```

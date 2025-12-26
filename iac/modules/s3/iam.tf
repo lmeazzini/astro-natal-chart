@@ -54,7 +54,8 @@ resource "aws_iam_policy" "pdf_access" {
         Action = [
           "kms:GenerateDataKey",
           "kms:Decrypt",
-          "kms:Encrypt"
+          "kms:Encrypt",
+          "kms:DescribeKey"
         ]
         Resource = var.kms_key_arn
       }
@@ -108,7 +109,8 @@ resource "aws_iam_policy" "backup_access" {
         Action = [
           "kms:GenerateDataKey",
           "kms:Decrypt",
-          "kms:Encrypt"
+          "kms:Encrypt",
+          "kms:DescribeKey"
         ]
         Resource = var.kms_key_arn
       }

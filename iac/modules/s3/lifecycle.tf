@@ -93,7 +93,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backups" {
     }
 
     transition {
-      days          = 30
+      days          = var.monthly_backup_transition_to_glacier_days
       storage_class = "GLACIER"
     }
 

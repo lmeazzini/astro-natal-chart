@@ -29,8 +29,9 @@ Amplitude Analytics is integrated into the Real Astrology application to track u
 - ✅ Backend: `apps/api/app/services/amplitude_service.py`
 - ✅ Frontend: `apps/web/src/services/amplitude.ts`
 - ✅ **Session Replay**: `@amplitude/plugin-session-replay-browser` (100% sample rate)
-- ✅ **Fully Implemented**: ~77 events across 9 categories
+- ✅ **Fully Implemented**: ~75 events across 9 categories
 - ✅ **Coverage**: Authentication, Charts, Session, Navigation, Premium, Content, Errors, Profile, Password Reset, Email Verification
+- ✅ **Session Tracking**: Handled automatically by Amplitude SDK (`defaultTracking.sessions: true`)
 
 **Key Principles**:
 1. **Consistency**: Use standardized naming and property formats

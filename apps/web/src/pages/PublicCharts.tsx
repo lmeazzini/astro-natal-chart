@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 
 export function PublicChartsPage() {
   const { t } = useTranslation();
@@ -28,6 +29,10 @@ export function PublicChartsPage() {
   const [total, setTotal] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
   const [searchInput, setSearchInput] = React.useState(searchParams.get('search') || '');
+
+  // Amplitude tracking refs
+  const hasTrackedPageView = React.useRef(false);
+  const lastTrackedSearch = React.useRef<string | null>(null);
 
   const category = searchParams.get('category') || undefined;
   const search = searchParams.get('search') || undefined;
@@ -69,6 +74,42 @@ export function PublicChartsPage() {
     } catch (error) {
       console.error('Error loading categories:', error);
     }
+  }
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  React.useEffect(() => {
+    if (!hasTrackedPageView.current && !loading) {
+      amplitudeService.track('public_charts_viewed', {
+        source: searchParams.get('source') || 'direct',
+        chart_count: total,
+        ...(category && { category_filter: category }),
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]); // Track once when loading completes
+
+  // Track search when search param changes and we have results
+  React.useEffect(() => {
+    if (search && !loading && search !== lastTrackedSearch.current) {
+      amplitudeService.track('public_chart_searched', {
+        query: search,
+        results_count: total,
+        ...(user?.id && { user_id: user.id }),
+      });
+      lastTrackedSearch.current = search;
+    }
+  }, [search, loading, total, user?.id]);
+
+  // Track chart clicks
+  function handleChartClick(chart: PublicChartPreview) {
+    amplitudeService.track('public_chart_clicked', {
+      chart_slug: chart.slug,
+      person_name: chart.full_name,
+      ...(chart.category && { category: chart.category }),
+      ...(user?.id && { user_id: user.id }),
+    });
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -245,7 +286,11 @@ export function PublicChartsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {charts.map((chart) => (
-              <PublicChartCard key={chart.id} chart={chart} />
+              <PublicChartCard
+                key={chart.id}
+                chart={chart}
+                onClick={() => handleChartClick(chart)}
+              />
             ))}
           </div>
         )}
@@ -379,10 +424,10 @@ export function PublicChartsPage() {
   );
 }
 
-function PublicChartCard({ chart }: { chart: PublicChartPreview }) {
+function PublicChartCard({ chart, onClick }: { chart: PublicChartPreview; onClick?: () => void }) {
   const { t } = useTranslation();
   return (
-    <Link to={`/public-charts/${chart.slug}`}>
+    <Link to={`/public-charts/${chart.slug}`} onClick={onClick}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
         <CardContent className="p-6 flex flex-col items-center text-center">
           {chart.photo_url ? (

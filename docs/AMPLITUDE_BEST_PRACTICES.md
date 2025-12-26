@@ -607,6 +607,66 @@ amplitude_service.track(
 )
 ```
 
+### Content & Engagement Events (Issue #221)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `blog_viewed` | Frontend: `Blog.tsx` | `source`, `post_count`, `category_filter`, `tag_filter` | User views blog list |
+| `blog_post_clicked` | Frontend: `Blog.tsx` | `post_slug`, `post_title`, `source` | User clicks blog post card |
+| `blog_post_viewed` | Frontend: `BlogPost.tsx` | `post_slug`, `post_title`, `reading_time`, `source` | User views blog post detail |
+| `blog_post_read_completed` | Frontend: `BlogPost.tsx` | `post_slug`, `estimated_read_percentage`, `time_on_page_seconds` | User scrolls to 80%+ of article |
+| `public_charts_viewed` | Frontend: `PublicCharts.tsx` | `source`, `chart_count`, `category_filter` | User views famous charts gallery |
+| `public_chart_searched` | Frontend: `PublicCharts.tsx` | `query`, `results_count` | User searches famous charts |
+| `public_chart_clicked` | Frontend: `PublicCharts.tsx` | `chart_slug`, `person_name`, `category` | User clicks famous chart card |
+| `public_chart_detail_viewed` | Frontend: `PublicChartDetail.tsx` | `chart_slug`, `person_name`, `category`, `source` | User views famous chart detail |
+| `rag_documents_viewed` | Frontend: `RagDocuments.tsx` | `source`, `document_count`, `filter_type` | User views RAG documents list |
+| `rag_document_clicked` | Frontend: `RagDocuments.tsx` | `document_id`, `document_type`, `title` | User clicks RAG document card |
+
+**Event Details**:
+
+#### `blog_post_read_completed`
+**Description**: User has scrolled to approximately 80% of the blog post content, indicating they've likely read most of the article.
+
+**Properties**:
+- `post_slug` (string): Blog post identifier
+- `estimated_read_percentage` (number): Always 80 (threshold for tracking)
+- `time_on_page_seconds` (number): Time spent on page before completion
+
+**Implementation**:
+Uses Intersection Observer API for performance-efficient scroll tracking:
+```typescript
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const timeOnPage = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+        amplitudeService.track('blog_post_read_completed', {
+          post_slug: post.slug,
+          estimated_read_percentage: 80,
+          time_on_page_seconds: timeOnPage,
+        });
+      }
+    });
+  },
+  { threshold: 0.5 }
+);
+```
+
+#### `public_chart_searched`
+**Description**: User searches for famous/public charts in the gallery.
+
+**Properties**:
+- `query` (string): Search query text
+- `results_count` (number): Number of results returned
+
+**Example**:
+```typescript
+amplitudeService.track('public_chart_searched', {
+  query: 'einstein',
+  results_count: 3,
+});
+```
+
 ### Planned Events (Issue #218)
 
 See [Issue #218](https://github.com/lmeazzini/astro-natal-chart/issues/218) for comprehensive list of planned events across all user flows.

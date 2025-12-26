@@ -38,6 +38,13 @@ LOG_FILE="/tmp/astro-restore-test-${TIMESTAMP}.log"
 TEST_USER_EMAIL="test-restore-${TIMESTAMP}@example.com"
 TEST_USER_NAME="Test Restore User"
 
+# Qdrant configuration
+QDRANT_HOST="${QDRANT_HOST:-localhost}"
+QDRANT_PORT="${QDRANT_PORT:-6333}"
+QDRANT_TEST_COLLECTION="test_restore_collection"
+QDRANT_SNAPSHOT_DIR="/tmp/qdrant-restore-test"
+QDRANT_TEST_FAILED=false
+
 # ============================================================================
 # Colors for output
 # ============================================================================
@@ -78,6 +85,7 @@ check_prerequisites() {
     # Check for required commands
     local missing_commands=()
 
+    # Check PostgreSQL tools
     for cmd in pg_dump pg_restore psql createdb dropdb; do
         if ! command -v $cmd >/dev/null 2>&1; then
             missing_commands+=("$cmd")
@@ -87,6 +95,19 @@ check_prerequisites() {
     if [ ${#missing_commands[@]} -gt 0 ]; then
         error "Missing required commands: ${missing_commands[*]}"
         error "Please install PostgreSQL client tools"
+        return 1
+    fi
+
+    # Check tools for Qdrant testing (curl for API, jq for JSON parsing)
+    for cmd in curl jq; do
+        if ! command -v $cmd >/dev/null 2>&1; then
+            missing_commands+=("$cmd")
+        fi
+    done
+
+    if [ ${#missing_commands[@]} -gt 0 ]; then
+        error "Missing required commands: ${missing_commands[*]}"
+        error "Please install curl and jq for Qdrant testing"
         return 1
     fi
 
@@ -377,6 +398,228 @@ cleanup() {
 }
 
 # ============================================================================
+# Qdrant Test Functions
+# ============================================================================
+
+check_qdrant_available() {
+    # Returns 0 if Qdrant is reachable, 1 otherwise
+    curl -sf "http://${QDRANT_HOST}:${QDRANT_PORT}/healthz" >/dev/null 2>&1
+}
+
+create_qdrant_test_collection() {
+    log "Creating Qdrant test collection: $QDRANT_TEST_COLLECTION"
+
+    local response
+    response=$(curl -sf -X PUT "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "vectors": {
+                "size": 4,
+                "distance": "Cosine"
+            }
+        }' 2>&1)
+
+    if [ $? -eq 0 ]; then
+        success "Qdrant test collection created"
+        return 0
+    else
+        error "Failed to create Qdrant test collection: $response"
+        return 1
+    fi
+}
+
+insert_qdrant_test_vectors() {
+    log "Inserting test vectors into Qdrant..."
+
+    local response
+    response=$(curl -sf -X PUT "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/points" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "points": [
+                {"id": 1, "vector": [0.1, 0.2, 0.3, 0.4], "payload": {"name": "vector1"}},
+                {"id": 2, "vector": [0.5, 0.6, 0.7, 0.8], "payload": {"name": "vector2"}},
+                {"id": 3, "vector": [0.9, 1.0, 1.1, 1.2], "payload": {"name": "vector3"}}
+            ]
+        }' 2>&1)
+
+    if [ $? -eq 0 ]; then
+        success "Test vectors inserted (3 vectors)"
+        return 0
+    else
+        error "Failed to insert test vectors: $response"
+        return 1
+    fi
+}
+
+create_qdrant_snapshot() {
+    log "Creating Qdrant snapshot..."
+
+    local response
+    response=$(curl -sf -X POST "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/snapshots" 2>&1)
+
+    if [ $? -eq 0 ]; then
+        local snapshot_name
+        snapshot_name=$(echo "$response" | jq -r '.result.name')
+        if [ -n "$snapshot_name" ] && [ "$snapshot_name" != "null" ]; then
+            success "Qdrant snapshot created: $snapshot_name"
+            echo "$snapshot_name"
+            return 0
+        fi
+    fi
+
+    error "Failed to create Qdrant snapshot: $response"
+    return 1
+}
+
+download_qdrant_snapshot() {
+    local snapshot_name="$1"
+    local output_path="$2"
+
+    log "Downloading Qdrant snapshot to: $output_path"
+
+    if curl -sf -o "$output_path" \
+        "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/snapshots/${snapshot_name}"; then
+        local file_size
+        file_size=$(stat -c%s "$output_path" 2>/dev/null || stat -f%z "$output_path" 2>/dev/null)
+        success "Snapshot downloaded ($(numfmt --to=iec-i --suffix=B $file_size 2>/dev/null || echo ${file_size}B))"
+        return 0
+    else
+        error "Failed to download Qdrant snapshot"
+        return 1
+    fi
+}
+
+modify_qdrant_data() {
+    log "Modifying Qdrant data to simulate changes..."
+
+    # Delete vector 2
+    local delete_response
+    delete_response=$(curl -sf -X POST "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/points/delete" \
+        -H "Content-Type: application/json" \
+        -d '{"points": [2]}' 2>&1)
+
+    if [ $? -ne 0 ]; then
+        error "Failed to delete vector 2: $delete_response"
+        return 1
+    fi
+
+    # Add vector 4 (post-backup)
+    local insert_response
+    insert_response=$(curl -sf -X PUT "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/points" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "points": [
+                {"id": 4, "vector": [1.3, 1.4, 1.5, 1.6], "payload": {"name": "vector4_post_backup"}}
+            ]
+        }' 2>&1)
+
+    if [ $? -eq 0 ]; then
+        success "Qdrant data modified (deleted vector 2, added vector 4)"
+        return 0
+    else
+        error "Failed to add vector 4: $insert_response"
+        return 1
+    fi
+}
+
+restore_qdrant_snapshot() {
+    local snapshot_path="$1"
+
+    log "Restoring Qdrant from snapshot..."
+
+    # Delete current collection
+    curl -sf -X DELETE "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}" >/dev/null 2>&1 || true
+
+    # Wait a moment for deletion to complete
+    sleep 1
+
+    # Restore from snapshot using upload endpoint
+    local response
+    response=$(curl -sf -X POST "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/snapshots/upload?priority=snapshot" \
+        -H "Content-Type: multipart/form-data" \
+        -F "snapshot=@${snapshot_path}" 2>&1)
+
+    if [ $? -eq 0 ]; then
+        success "Qdrant snapshot restored"
+        # Wait for restore to complete
+        sleep 2
+        return 0
+    else
+        error "Failed to restore Qdrant snapshot: $response"
+        return 1
+    fi
+}
+
+validate_qdrant_restore() {
+    log "Validating Qdrant restored data..."
+
+    local errors=0
+
+    # Check vector count (should be 3, not 2 or 4)
+    local count_response
+    count_response=$(curl -sf "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}" 2>&1)
+    local count
+    count=$(echo "$count_response" | jq -r '.result.points_count')
+
+    if [ "$count" != "3" ]; then
+        error "Qdrant: Expected 3 vectors, got $count"
+        ((errors++))
+    else
+        info "Vector count: $count (expected 3) ✓"
+    fi
+
+    # Check vector 2 exists (was deleted post-backup, should be restored)
+    local v2_response
+    v2_response=$(curl -sf "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/points/2" 2>&1)
+    local v2_exists
+    v2_exists=$(echo "$v2_response" | jq -r '.result | length')
+
+    if [ "$v2_exists" == "0" ] || [ "$v2_exists" == "null" ] || [ -z "$v2_exists" ]; then
+        error "Qdrant: Vector 2 not restored (deleted user should be restored)"
+        ((errors++))
+    else
+        info "Vector 2 exists (restored) ✓"
+    fi
+
+    # Check vector 4 does NOT exist (added post-backup, should not be in restore)
+    local v4_status
+    v4_status=$(curl -sf -o /dev/null -w "%{http_code}" "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/points/4" 2>&1)
+
+    # A 404 or empty result means vector doesn't exist (expected)
+    local v4_response
+    v4_response=$(curl -sf "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}/points/4" 2>&1)
+    local v4_result
+    v4_result=$(echo "$v4_response" | jq -r '.result | length' 2>/dev/null)
+
+    if [ "$v4_result" != "0" ] && [ "$v4_result" != "null" ] && [ -n "$v4_result" ]; then
+        error "Qdrant: Vector 4 should not exist (added post-backup)"
+        ((errors++))
+    else
+        info "Vector 4 does not exist (correct) ✓"
+    fi
+
+    if [ $errors -eq 0 ]; then
+        success "All Qdrant validation checks passed ✓"
+        return 0
+    else
+        error "Qdrant validation failed with $errors error(s)"
+        return 1
+    fi
+}
+
+cleanup_qdrant() {
+    log "Cleaning up Qdrant test environment..."
+
+    # Delete test collection
+    curl -sf -X DELETE "http://${QDRANT_HOST}:${QDRANT_PORT}/collections/${QDRANT_TEST_COLLECTION}" >/dev/null 2>&1 || true
+
+    # Remove snapshot directory
+    rm -rf "$QDRANT_SNAPSHOT_DIR" 2>/dev/null || true
+
+    success "Qdrant test environment cleaned up"
+}
+
+# ============================================================================
 # Main Test Process
 # ============================================================================
 
@@ -454,16 +697,110 @@ main() {
         failed=true
     fi
 
-    # Cleanup
+    # Cleanup PostgreSQL
     cleanup
+
+    # ========================================
+    # Qdrant Backup/Restore Test
+    # ========================================
+    echo ""
+    echo "=========================================="
+    echo "  Qdrant Backup/Restore Test"
+    echo "=========================================="
+
+    if check_qdrant_available; then
+        info "Qdrant available at ${QDRANT_HOST}:${QDRANT_PORT}"
+        mkdir -p "$QDRANT_SNAPSHOT_DIR"
+
+        local SNAPSHOT_NAME=""
+
+        # Step 1: Create test collection
+        info "[Qdrant Step 1/6] Creating test collection..."
+        if ! create_qdrant_test_collection; then
+            error "Qdrant Step 1 failed"
+            QDRANT_TEST_FAILED=true
+        fi
+
+        # Step 2: Insert test vectors
+        if [ "$QDRANT_TEST_FAILED" != "true" ]; then
+            info "[Qdrant Step 2/6] Inserting test vectors..."
+            if ! insert_qdrant_test_vectors; then
+                error "Qdrant Step 2 failed"
+                QDRANT_TEST_FAILED=true
+            fi
+        fi
+
+        # Step 3: Create snapshot
+        if [ "$QDRANT_TEST_FAILED" != "true" ]; then
+            info "[Qdrant Step 3/6] Creating snapshot..."
+            SNAPSHOT_NAME=$(create_qdrant_snapshot)
+            if [ -z "$SNAPSHOT_NAME" ] || [ "$SNAPSHOT_NAME" == "null" ]; then
+                error "Qdrant Step 3 failed"
+                QDRANT_TEST_FAILED=true
+            else
+                # Download snapshot
+                if ! download_qdrant_snapshot "$SNAPSHOT_NAME" "$QDRANT_SNAPSHOT_DIR/test.snapshot"; then
+                    error "Qdrant Step 3 failed (download)"
+                    QDRANT_TEST_FAILED=true
+                fi
+            fi
+        fi
+
+        # Step 4: Modify data
+        if [ "$QDRANT_TEST_FAILED" != "true" ]; then
+            info "[Qdrant Step 4/6] Modifying data (simulating changes)..."
+            if ! modify_qdrant_data; then
+                error "Qdrant Step 4 failed"
+                QDRANT_TEST_FAILED=true
+            fi
+        fi
+
+        # Step 5: Restore from snapshot
+        if [ "$QDRANT_TEST_FAILED" != "true" ]; then
+            info "[Qdrant Step 5/6] Restoring from snapshot..."
+            if ! restore_qdrant_snapshot "$QDRANT_SNAPSHOT_DIR/test.snapshot"; then
+                error "Qdrant Step 5 failed"
+                QDRANT_TEST_FAILED=true
+            fi
+        fi
+
+        # Step 6: Validate restored data
+        if [ "$QDRANT_TEST_FAILED" != "true" ]; then
+            info "[Qdrant Step 6/6] Validating restored data..."
+            if ! validate_qdrant_restore; then
+                error "Qdrant Step 6 failed"
+                QDRANT_TEST_FAILED=true
+            fi
+        fi
+
+        # Cleanup Qdrant
+        cleanup_qdrant
+    else
+        warn "Qdrant not available at ${QDRANT_HOST}:${QDRANT_PORT}, skipping Qdrant tests"
+    fi
 
     # Summary
     echo ""
     echo "=========================================="
-    if [ "$failed" = true ]; then
+    if [ "$failed" = true ] || [ "$QDRANT_TEST_FAILED" = true ]; then
         error "RESTORE TEST FAILED"
         echo "=========================================="
         echo "See log file for details: $LOG_FILE"
+        echo ""
+        echo "Summary:"
+        if [ "$failed" = true ]; then
+            echo "  - PostgreSQL restore: FAILED ✗"
+        else
+            echo "  - PostgreSQL restore: PASSED ✓"
+        fi
+        if [ "$QDRANT_TEST_FAILED" = true ]; then
+            echo "  - Qdrant restore: FAILED ✗"
+        elif check_qdrant_available; then
+            echo "  - Qdrant restore: PASSED ✓"
+        else
+            echo "  - Qdrant restore: SKIPPED (not available)"
+        fi
+        echo ""
         exit 1
     else
         success "RESTORE TEST PASSED ✓"
@@ -471,7 +808,7 @@ main() {
         echo "All tests completed successfully!"
         echo "Log file: $LOG_FILE"
         echo ""
-        echo "Summary:"
+        echo "Summary - PostgreSQL:"
         echo "  - Test database created ✓"
         echo "  - Test data inserted ✓"
         echo "  - Backup created ✓"
@@ -480,6 +817,20 @@ main() {
         echo "  - Data validation passed ✓"
         echo "  - Cleanup completed ✓"
         echo ""
+        if check_qdrant_available; then
+            echo "Summary - Qdrant:"
+            echo "  - Test collection created ✓"
+            echo "  - Test vectors inserted ✓"
+            echo "  - Snapshot created ✓"
+            echo "  - Data modified ✓"
+            echo "  - Snapshot restored ✓"
+            echo "  - Data validation passed ✓"
+            echo "  - Cleanup completed ✓"
+            echo ""
+        else
+            echo "Qdrant: Skipped (not available)"
+            echo ""
+        fi
         exit 0
     fi
 }

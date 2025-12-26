@@ -33,20 +33,35 @@ jobs:
         ports:
           - 5432:5432
 
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install PostgreSQL client tools
+      - name: Install required tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client-16
+          sudo apt-get install -y postgresql-client-16 jq curl
 
       - name: Verify PostgreSQL connectivity
         env:
           PGPASSWORD: test_password
         run: |
           psql -h localhost -p 5432 -U astro_user -d astro_restore_test -c "SELECT 1" || exit 1
+
+      - name: Verify Qdrant connectivity
+        run: |
+          curl -sf http://localhost:6333/healthz || exit 1
+          echo "Qdrant is healthy"
 
       - name: Make scripts executable
         run: |
@@ -56,11 +71,15 @@ jobs:
 
       - name: Run automated backup/restore test
         env:
+          # PostgreSQL configuration
           TEST_DB_HOST: localhost
           TEST_DB_PORT: 5432
           TEST_DB_USER: astro_user
           TEST_DB_PASSWORD: test_password
           TEST_DB_NAME: astro_restore_test
+          # Qdrant configuration
+          QDRANT_HOST: localhost
+          QDRANT_PORT: 6333
         run: |
           ./scripts/test-restore.sh
 
@@ -136,15 +155,22 @@ jobs:
           echo "- **Test Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
           echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "- **PostgreSQL Version:** 16" >> $GITHUB_STEP_SUMMARY
+          echo "- **Qdrant Version:** latest" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ "${{ job.status }}" == "success" ]; then
             echo "✅ All backup and restore procedures are working correctly." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The following operations were tested:" >> $GITHUB_STEP_SUMMARY
+            echo "### PostgreSQL Operations Tested:" >> $GITHUB_STEP_SUMMARY
             echo "- Database backup creation" >> $GITHUB_STEP_SUMMARY
             echo "- Backup file integrity verification" >> $GITHUB_STEP_SUMMARY
             echo "- Database restore from backup" >> $GITHUB_STEP_SUMMARY
             echo "- Data validation after restore" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Qdrant Operations Tested:" >> $GITHUB_STEP_SUMMARY
+            echo "- Collection snapshot creation" >> $GITHUB_STEP_SUMMARY
+            echo "- Snapshot download and storage" >> $GITHUB_STEP_SUMMARY
+            echo "- Collection restore from snapshot" >> $GITHUB_STEP_SUMMARY
+            echo "- Vector data validation after restore" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Backup test failed. Please review the logs and fix the issue." >> $GITHUB_STEP_SUMMARY
           fi

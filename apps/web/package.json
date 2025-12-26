@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.31.3",
+    "@amplitude/plugin-session-replay-browser": "^1.25.4",
     "@astrodraw/astrochart": "^3.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.12",

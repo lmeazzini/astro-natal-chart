@@ -12,6 +12,7 @@ import {
   isMajorAspect,
 } from '../utils/astro';
 import { useAstroTranslation } from '../hooks/useAstroTranslation';
+import { amplitudeService } from '../services/amplitude';
 import type { RAGSourceInfo } from '../services/interpretations';
 
 // shadcn/ui components
@@ -168,7 +169,20 @@ export function AspectGrid({ aspects, interpretations, ragSources }: AspectGridP
                 const aspectColor = getAspectColor(aspect.aspect);
 
                 return (
-                  <TableRow key={`${aspect.planet1}-${aspect.planet2}-${aspect.aspect}`}>
+                  <TableRow
+                    key={`${aspect.planet1}-${aspect.planet2}-${aspect.aspect}`}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      amplitudeService.track('aspect_row_clicked', {
+                        planet1: aspect.planet1,
+                        planet2: aspect.planet2,
+                        aspect_type: aspect.aspect,
+                        orb: aspect.orb,
+                        applying: aspect.applying,
+                        source: 'aspect_grid',
+                      });
+                    }}
+                  >
                     {/* Planet 1 */}
                     <TableCell>
                       <div className="flex items-center gap-2">

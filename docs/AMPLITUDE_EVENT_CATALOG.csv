@@ -64,3 +64,13 @@ api_request_failed,error_monitoring,frontend,api.ts:89,"endpoint,method,status_c
 slow_performance_detected,performance,frontend,usePerformanceMonitoring.ts:61,"page_path,load_time_ms,threshold_ms,resource_type,source",Page load exceeds threshold,5
 rate_limit_hit,error_monitoring,frontend,api.ts:106,"endpoint,limit_type,retry_after_seconds,source",User receives 429 response,5
 page_viewed,system,frontend,useAmplitudePageView.ts:23,"page_path,page_title,source",User navigates to any page,2
+session_started,session,frontend,App.tsx:57,source,User starts a new session,2
+session_ended,session,frontend,App.tsx:70,"session_duration_seconds,source",User ends session (page unload),2
+user_logged_out,session,frontend,AuthContext.tsx:60,"session_duration_minutes,source",User explicitly logs out,2
+dashboard_viewed,navigation,frontend,App.tsx:105,source,User views dashboard page,2
+feature_card_clicked,navigation,frontend,App.tsx:132,"feature_name,source",User clicks dashboard feature card,2
+rag_filter_changed,content,frontend,RagDocuments.tsx:82,"filter_type,previous_filter,source",User changes RAG documents filter,4
+interpretation_tab_changed,charts,frontend,ChartDetail.tsx:260,"tab_name,previous_tab,chart_id,source",User changes interpretation tab,2
+planet_row_clicked,charts,frontend,PlanetList.tsx:304,"planet_name,sign,house,retrograde,source",User clicks planet table row,2
+aspect_row_clicked,charts,frontend,AspectGrid.tsx:176,"planet1,planet2,aspect_type,orb,applying,source",User clicks aspect table row,2
+growth_section_expanded,charts,frontend,GrowthSuggestions.tsx:54,"section_name,section_type,source",User expands growth suggestion section,2

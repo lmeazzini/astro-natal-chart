@@ -48,7 +48,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       authService.logout(token).catch(console.error);
     }
 
-    // Track logout event
+    // Calculate session duration
+    const sessionStartTime = localStorage.getItem('session_start_time');
+    let sessionDurationMinutes: number | undefined;
+    if (sessionStartTime) {
+      const startTime = parseInt(sessionStartTime, 10);
+      sessionDurationMinutes = Math.round((Date.now() - startTime) / 1000 / 60);
+    }
+
+    // Track logout event before reset
+    amplitudeService.track('user_logged_out', {
+      ...(sessionDurationMinutes !== undefined && {
+        session_duration_minutes: sessionDurationMinutes,
+      }),
+      source: 'manual_logout',
+    });
+
+    // Clear session tracking
+    localStorage.removeItem('session_start_time');
+
+    // Reset Amplitude identity
     amplitudeService.reset();
 
     clearTokens();
@@ -81,6 +100,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (token) {
         const userData = await authService.getCurrentUser(token);
         setUser(userData);
+
+        // Set session start time if not already set (new browser session)
+        if (!localStorage.getItem('session_start_time')) {
+          localStorage.setItem('session_start_time', Date.now().toString());
+        }
       }
     } catch (error) {
       console.error('Failed to load user:', error);
@@ -111,6 +135,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       amplitudeService.track('user_logged_in', {
         method: 'email_password',
       });
+
+      // Store session start time for duration tracking
+      localStorage.setItem('session_start_time', Date.now().toString());
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

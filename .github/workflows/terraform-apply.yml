@@ -1,0 +1,172 @@
+# =============================================================================
+# Terraform Apply Workflow
+# =============================================================================
+# Applies Terraform changes when IaC code is merged to main or dev.
+# Requires manual approval via GitHub environment protection rules.
+# =============================================================================
+
+name: Terraform Apply
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'iac/**'
+
+  # Allow manual trigger for emergency fixes
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to apply (dev)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+
+env:
+  TF_VERSION: "1.5.0"
+  AWS_REGION: us-east-1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Determine which environment to deploy
+  # ---------------------------------------------------------------------------
+  determine-environment:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+
+    steps:
+      - name: Set environment
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Run terraform plan first
+  # ---------------------------------------------------------------------------
+  plan:
+    name: Plan
+    needs: determine-environment
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -out=tfplan 2>&1 | tee plan_output.txt
+          exit_code=$?
+          set -e
+
+          # Exit codes: 0 = no changes, 1 = error, 2 = changes present
+          if [ "$exit_code" -eq 1 ]; then
+            echo "Terraform plan failed with error"
+            exit 1
+          elif [ "$exit_code" -eq 2 ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+        working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: iac/environments/${{ needs.determine-environment.outputs.environment }}/tfplan
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # Apply changes with environment protection
+  # ---------------------------------------------------------------------------
+  apply:
+    name: Apply
+    needs: [determine-environment, plan]
+    if: needs.plan.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.determine-environment.outputs.environment }}-infrastructure
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
+      - name: Post apply summary
+        run: |
+          echo "## Terraform Apply - ${{ needs.determine-environment.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Applied successfully" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Skip message when no changes
+  # ---------------------------------------------------------------------------
+  no-changes:
+    name: No Changes
+    needs: [determine-environment, plan]
+    if: needs.plan.outputs.has_changes == 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post summary
+        run: |
+          echo "## Terraform Apply - ${{ needs.determine-environment.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No infrastructure changes detected. Skipping apply." >> $GITHUB_STEP_SUMMARY

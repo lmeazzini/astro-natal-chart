@@ -134,6 +134,9 @@ module "ecs" {
   # S3 integration for PDF storage
   s3_pdf_policy_arn = module.s3.pdf_access_policy_arn
 
+  # ECR integration for container image pulling
+  ecr_pull_policy_arn = module.ecr.pull_policy_arn
+
   # SSL/TLS for ALB (optional - requires DNS module)
   acm_certificate_arn = var.domain_name != null ? module.dns[0].alb_certificate_arn : null
 }
@@ -229,4 +232,31 @@ module "dns" {
   # Certificate options
   create_alb_certificate = true
   wait_for_validation    = true
+}
+
+# -----------------------------------------------------------------------------
+# ECR Module (Container Registry for CI/CD)
+# -----------------------------------------------------------------------------
+# Private container registry for storing API Docker images.
+# Used by GitHub Actions to push images and ECS to pull them.
+# -----------------------------------------------------------------------------
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  environment = var.environment
+  aws_region  = var.aws_region
+
+  # Repository configuration
+  repository_name      = "astro-api"
+  image_tag_mutability = "MUTABLE"
+  scan_on_push         = true
+
+  # Lifecycle policy (cost optimization)
+  max_image_count            = 30
+  untagged_image_expiry_days = 7
+
+  tags = {
+    Project = "astro"
+  }
 }

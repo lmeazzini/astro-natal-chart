@@ -5,6 +5,9 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  workflow_call:
+    # Allow this workflow to be called by other workflows (e.g., deploy-prod.yml)
+    # No inputs needed - CI checks are consistent across all callers
 
 jobs:
   # Backend tests

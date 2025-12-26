@@ -14,6 +14,7 @@ from app.repositories.audit_repository import AuditRepository
 from app.repositories.subscription_history_repository import SubscriptionHistoryRepository
 from app.repositories.subscription_repository import SubscriptionRepository
 from app.repositories.user_repository import UserRepository
+from app.services.amplitude_service import amplitude_service
 
 
 async def _create_history_record(
@@ -135,6 +136,20 @@ async def grant_premium_subscription(
     await db.commit()
     await db.refresh(subscription)
 
+    # Track with Amplitude
+    grant_properties: dict[str, str | int | float | bool | list[str]] = {
+        "is_lifetime": days is None,
+        "granted_by_admin_id": str(admin_user.id),
+        "source": "admin_panel",
+    }
+    if days is not None:
+        grant_properties["days"] = days
+    amplitude_service.track(
+        event_type="subscription_granted",
+        user_id=str(user_id),
+        event_properties=grant_properties,
+    )
+
     logger.bind(user_id=user_id, admin_id=admin_user.id).info(
         f"Premium subscription {action}",
         days=days,
@@ -173,6 +188,10 @@ async def revoke_premium_subscription(
     if not subscription:
         raise ValueError(f"Subscription not found for user {user_id}")
 
+    # Capture state before revocation for tracking
+    was_active = subscription.status == SubscriptionStatus.ACTIVE.value
+    days_remaining = subscription.days_remaining
+
     # Update subscription status
     subscription.status = SubscriptionStatus.CANCELLED.value
     subscription.updated_at = datetime.now(UTC)
@@ -206,6 +225,20 @@ async def revoke_premium_subscription(
 
     # Commit everything atomically
     await db.commit()
+
+    # Track with Amplitude
+    revoke_properties: dict[str, str | int | float | bool | list[str]] = {
+        "was_active": was_active,
+        "revoked_by_admin_id": str(admin_user.id),
+        "source": "admin_panel",
+    }
+    if days_remaining is not None:
+        revoke_properties["days_remaining"] = days_remaining
+    amplitude_service.track(
+        event_type="subscription_revoked",
+        user_id=str(user_id),
+        event_properties=revoke_properties,
+    )
 
     logger.bind(user_id=user_id, admin_id=admin_user.id).info("Premium subscription revoked")
 
@@ -296,6 +329,18 @@ async def extend_premium_subscription(
     await db.commit()
     await db.refresh(subscription)
 
+    # Track with Amplitude
+    amplitude_service.track(
+        event_type="subscription_extended",
+        user_id=str(user_id),
+        event_properties={
+            "extend_days": extend_days,
+            "previous_expires_at": old_expires_at.isoformat(),
+            "new_expires_at": new_expires_at.isoformat(),
+            "source": "admin_panel",
+        },
+    )
+
     logger.bind(user_id=user_id, admin_id=admin_user.id).info(
         f"Premium subscription extended by {extend_days} days",
         old_expires_at=old_expires_at,
@@ -374,6 +419,18 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
             subscription=subscription,
             change_type=SubscriptionChangeType.EXPIRED,
             changed_by_user_id=None,  # System auto-expired
+        )
+
+        # Track with Amplitude
+        expire_properties: dict[str, str | int | float | bool | list[str]] = {
+            "source": "system_auto_expire",
+        }
+        if subscription.expires_at:
+            expire_properties["expired_at"] = subscription.expires_at.isoformat()
+        amplitude_service.track(
+            event_type="subscription_expired",
+            user_id=str(subscription.user_id),
+            event_properties=expire_properties,
         )
 
         count += 1

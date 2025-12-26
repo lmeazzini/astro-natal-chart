@@ -77,6 +77,17 @@ export function RagDocumentsPage() {
     });
   }
 
+  // Track filter changes
+  function handleFilterChange(newFilter: string) {
+    amplitudeService.track('rag_filter_changed', {
+      filter_type: newFilter || 'all',
+      previous_filter: filterType || 'all',
+      source: 'rag_documents_page',
+    });
+    setFilterType(newFilter);
+    setPage(1);
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -177,30 +188,21 @@ export function RagDocumentsPage() {
           <Button
             variant={filterType === '' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => {
-              setFilterType('');
-              setPage(1);
-            }}
+            onClick={() => handleFilterChange('')}
           >
             {t('ragDocuments.filterAll', 'All')}
           </Button>
           <Button
             variant={filterType === 'text' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => {
-              setFilterType('text');
-              setPage(1);
-            }}
+            onClick={() => handleFilterChange('text')}
           >
             {t('ragDocuments.filterText', 'Text')}
           </Button>
           <Button
             variant={filterType === 'pdf' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => {
-              setFilterType('pdf');
-              setPage(1);
-            }}
+            onClick={() => handleFilterChange('pdf')}
           >
             {t('ragDocuments.filterPdf', 'PDF')}
           </Button>

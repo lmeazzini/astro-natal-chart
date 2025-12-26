@@ -28,8 +28,10 @@ Amplitude Analytics is integrated into the Real Astrology application to track u
 **Integration Status**:
 - ✅ Backend: `apps/api/app/services/amplitude_service.py`
 - ✅ Frontend: `apps/web/src/services/amplitude.ts`
-- ✅ **Fully Implemented**: ~70 events across 8 categories
-- ✅ **Coverage**: Authentication, Charts, Premium, Content, Errors, Profile, Password Reset, Email Verification
+- ✅ **Session Replay**: `@amplitude/plugin-session-replay-browser` (100% sample rate)
+- ✅ **Fully Implemented**: ~75 events across 9 categories
+- ✅ **Coverage**: Authentication, Charts, Session, Navigation, Premium, Content, Errors, Profile, Password Reset, Email Verification
+- ✅ **Session Tracking**: Handled automatically by Amplitude SDK (`defaultTracking.sessions: true`)
 
 **Key Principles**:
 1. **Consistency**: Use standardized naming and property formats
@@ -353,6 +355,34 @@ const handleCreateChart = () => {
   navigate('/charts/new');
 };
 ```
+
+### Session Replay Integration
+
+**Status**: ✅ Implemented
+
+Amplitude Session Replay captures user sessions for debugging and UX analysis.
+
+**Configuration**:
+```bash
+# apps/web/.env
+VITE_SESSION_REPLAY_SAMPLE_RATE=1  # 0.0 to 1.0 (default: 1.0 = 100%)
+```
+
+**How It Works**:
+1. Session Replay plugin is added before Amplitude initialization
+2. All user interactions are recorded (clicks, scrolls, form inputs)
+3. Recordings are viewable in Amplitude's Session Replay dashboard
+4. Sample rate controls percentage of sessions recorded (1.0 = 100%)
+
+**Privacy Considerations**:
+- Session Replay automatically masks sensitive inputs (passwords, credit cards)
+- Email fields and other PII are masked by default
+- Review recordings to ensure no sensitive data is exposed
+
+**Accessing Recordings**:
+1. Go to Amplitude Dashboard → Session Replay
+2. Filter by user_id, event, or time range
+3. Watch recordings to debug issues or analyze UX
 
 ### Backend Implementation
 

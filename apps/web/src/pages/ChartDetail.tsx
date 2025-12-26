@@ -67,6 +67,9 @@ export function ChartDetailPage() {
   // Interpretations loading state
   const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
 
+  // Tab tracking for Amplitude
+  const [currentTab, setCurrentTab] = useState('visual');
+
   // Track the last language we loaded interpretations for (to avoid reload loops)
   const lastLoadedLanguageRef = useRef<string | null>(null);
 
@@ -251,6 +254,17 @@ export function ChartDetailPage() {
     if (!open) {
       loadInterpretations();
     }
+  }
+
+  // Track tab changes for Amplitude
+  function handleTabChange(newTab: string) {
+    amplitudeService.track('interpretation_tab_changed', {
+      tab_name: newTab,
+      previous_tab: currentTab,
+      chart_id: id || '',
+      source: 'chart_detail_page',
+    });
+    setCurrentTab(newTab);
   }
 
   // Regenerate interpretations (forces new generation, used for language change)
@@ -685,7 +699,7 @@ export function ChartDetailPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="visual" className="w-full">
+        <Tabs defaultValue="visual" className="w-full" onValueChange={handleTabChange}>
           <TabsList className="w-full justify-start mb-6">
             <TabsTrigger value="visual">{t('chartDetail.tabs.visual')}</TabsTrigger>
             <TabsTrigger value="planets">

@@ -86,6 +86,16 @@ jobs:
       - name: Flush Redis before tests
         run: redis-cli FLUSHALL
 
+      - name: Run database migrations
+        working-directory: ./apps/api
+        env:
+          DATABASE_URL: postgresql+asyncpg://astro:test_password@localhost:5432/astro_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+          OPENAI_API_KEY: sk-test-dummy-key-for-ci
+        run: |
+          uv run alembic upgrade head
+
       - name: Run tests
         working-directory: ./apps/api
         env:

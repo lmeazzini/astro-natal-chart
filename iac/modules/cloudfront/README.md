@@ -39,6 +39,9 @@ This module creates a globally distributed static site hosting infrastructure op
 - **HTTPS** - TLS 1.2+ with CloudFront default or custom ACM certificate
 - **Versioning** - S3 versioning for deployment rollback
 - **Private S3** - Bucket completely private, only accessible via CloudFront
+- **Security Headers** - HSTS, X-Frame-Options, X-Content-Type-Options, XSS Protection
+- **Static Asset Caching** - Separate cache behavior with 1-year TTL for `/assets/*`
+- **Origin Shield** - Optional reduced origin load for high-traffic production sites
 
 ## Usage
 
@@ -90,7 +93,8 @@ module "cloudfront" {
 | `min_ttl` | Minimum cache TTL in seconds | `number` | `0` |
 | `max_ttl` | Maximum cache TTL in seconds | `number` | `31536000` |
 | `enable_waf` | Enable WAF protection | `bool` | `false` |
-| `waf_web_acl_arn` | WAF Web ACL ARN | `string` | `null` |
+| `waf_web_acl_arn` | WAF Web ACL ARN (required if enable_waf=true) | `string` | `null` |
+| `enable_origin_shield` | Enable Origin Shield for production | `bool` | `false` |
 | `enable_access_logs` | Enable CloudFront access logging | `bool` | `false` |
 | `access_logs_bucket` | S3 bucket for access logs | `string` | `null` |
 | `access_logs_prefix` | Prefix for log files | `string` | `cloudfront-logs/` |
@@ -193,14 +197,21 @@ This ensures deep links work correctly.
 - **HTTPS enforced** - All HTTP requests redirected to HTTPS
 - **TLS 1.2+** - Modern protocol versions only
 - **Server-side encryption** - AES256 encryption at rest
+- **Security Headers** - Automatically applied to all responses:
+  - `X-Content-Type-Options: nosniff` - Prevent MIME type sniffing
+  - `X-Frame-Options: DENY` - Prevent clickjacking
+  - `X-XSS-Protection: 1; mode=block` - XSS protection for older browsers
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` - HSTS
+  - `Referrer-Policy: strict-origin-when-cross-origin` - Privacy-preserving referrer
 
 ## Future Enhancements
 
 - [ ] Custom domain with Route53 (issue #247)
 - [ ] ACM certificate provisioning
-- [ ] WAF Web ACL for DDoS protection
+- [x] ~~WAF Web ACL for DDoS protection~~ (implemented, set `enable_waf=true`)
 - [ ] Real-time logs to Kinesis
 - [ ] Lambda@Edge for advanced routing
+- [x] ~~Origin Shield~~ (implemented, set `enable_origin_shield=true`)
 
 ## Requirements
 

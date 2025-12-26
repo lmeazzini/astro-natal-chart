@@ -111,6 +111,21 @@ variable "waf_web_acl_arn" {
   description = "ARN of WAF Web ACL to associate with the distribution"
   type        = string
   default     = null
+
+  validation {
+    condition     = var.waf_web_acl_arn == null || can(regex("^arn:aws:wafv2:", var.waf_web_acl_arn))
+    error_message = "WAF Web ACL ARN must be a valid WAFv2 ARN."
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Performance
+# -----------------------------------------------------------------------------
+
+variable "enable_origin_shield" {
+  description = "Enable Origin Shield for reduced origin load (recommended for production)"
+  type        = bool
+  default     = false
 }
 
 # -----------------------------------------------------------------------------

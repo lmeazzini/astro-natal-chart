@@ -57,17 +57,33 @@ variable "redis_node_type" {
 }
 
 # -----------------------------------------------------------------------------
+# ECS Variables
+# -----------------------------------------------------------------------------
+
+variable "ecs_cpu" {
+  description = "ECS task CPU units (256 = 0.25 vCPU)"
+  type        = number
+  default     = 256
+}
+
+variable "ecs_memory" {
+  description = "ECS task memory (MB)"
+  type        = number
+  default     = 512
+}
+
+variable "ecs_desired_count" {
+  description = "Number of ECS tasks to run"
+  type        = number
+  default     = 1
+}
+
+# -----------------------------------------------------------------------------
 # Future variables (uncomment as modules are added)
 # -----------------------------------------------------------------------------
 
-# variable "ecs_cpu" {
-#   description = "ECS task CPU units"
-#   type        = number
-#   default     = 256
-# }
-
-# variable "ecs_memory" {
-#   description = "ECS task memory (MB)"
-#   type        = number
-#   default     = 512
+# variable "s3_bucket_prefix" {
+#   description = "Prefix for S3 bucket names"
+#   type        = string
+#   default     = "astro"
 # }

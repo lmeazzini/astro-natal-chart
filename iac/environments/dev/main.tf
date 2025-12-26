@@ -103,9 +103,24 @@ module "elasticache" {
   availability_zone = var.availability_zone
 }
 
+module "ecs" {
+  source = "../../modules/ecs"
+
+  environment           = var.environment
+  aws_region            = var.aws_region
+  vpc_id                = module.vpc.vpc_id
+  public_subnet_id      = module.vpc.public_subnet_id
+  private_subnet_id     = module.vpc.private_subnet_id
+  alb_security_group_id = module.vpc.alb_security_group_id
+  ecs_security_group_id = module.vpc.ecs_security_group_id
+  cpu                   = var.ecs_cpu
+  memory                = var.ecs_memory
+  desired_count         = var.ecs_desired_count
+}
+
 # Upcoming modules:
 #
-# module "ecs" {
-#   source = "../../modules/ecs"
+# module "s3" {
+#   source = "../../modules/s3"
 #   # ... variables
 # }

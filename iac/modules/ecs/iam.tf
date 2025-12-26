@@ -173,8 +173,8 @@ resource "aws_iam_role_policy" "ecs_task_logs" {
   })
 }
 
-# Policy for S3 access (for PDF storage)
-# Only created when s3_bucket_arns is provided
+# Policy for S3 access (for PDF storage) - Inline policy approach
+# Only created when s3_bucket_arns is provided (legacy/simple use case)
 resource "aws_iam_role_policy" "ecs_task_s3" {
   count = length(var.s3_bucket_arns) > 0 ? 1 : 0
 
@@ -202,4 +202,13 @@ resource "aws_iam_role_policy" "ecs_task_s3" {
       }
     ]
   })
+}
+
+# Attach managed policy for S3 PDF access (from S3 module)
+# Preferred approach - includes KMS permissions for encrypted buckets
+resource "aws_iam_role_policy_attachment" "ecs_task_s3_pdf" {
+  count = var.s3_pdf_policy_arn != null ? 1 : 0
+
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = var.s3_pdf_policy_arn
 }

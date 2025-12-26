@@ -195,6 +195,12 @@ variable "s3_bucket_arns" {
   }
 }
 
+variable "s3_pdf_policy_arn" {
+  description = "IAM policy ARN for S3 PDF access (from S3 module, includes KMS permissions)"
+  type        = string
+  default     = null
+}
+
 # -----------------------------------------------------------------------------
 # Secrets Manager Integration
 # -----------------------------------------------------------------------------

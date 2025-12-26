@@ -1,0 +1,66 @@
+event_name,category,location,source_files,properties,description,phase
+user_registered,authentication,both,"auth.py:63,oauth.py:159,AuthContext.tsx:137","method,accept_terms,source",User completes registration,1
+user_logged_in,authentication,both,"auth.py:126,oauth.py:169,AuthContext.tsx:111","method,source",User logs in successfully,1
+oauth_login_initiated,authentication,frontend,"Login.tsx:92,Register.tsx:142","provider,source",User clicks OAuth button,2
+oauth_login_completed,authentication,frontend,OAuthCallback.tsx:76,"provider,source",OAuth login succeeds,2
+oauth_login_failed,authentication,both,"OAuthCallback.tsx:34|59|84,oauth.py:206","provider,error_type,error_message,source",OAuth login fails,2
+oauth_connection_added,authentication,backend,oauth.py:180,"provider,source",OAuth linked to existing account,2
+login_form_submitted,authentication,frontend,Login.tsx:105,source,User submits login form,2
+login_failed,authentication,frontend,Login.tsx:114,"error_type,error_message,source",Login attempt fails,2
+registration_form_submitted,authentication,frontend,Register.tsx:155,"accept_terms,source",User submits registration form,2
+registration_failed,authentication,frontend,Register.tsx:170,"error_type,error_message,source",Registration attempt fails,2
+email_verification_attempted,email_verification,frontend,VerifyEmailPage.tsx:47,source,User accesses verification link,2
+email_verified,email_verification,both,"VerifyEmailPage.tsx:75,auth.py:332","method,source",Email verification succeeds,2
+email_verification_failed,email_verification,both,"VerifyEmailPage.tsx:62|87|105,auth.py:343","error_type,error_message,source",Email verification fails,2
+verification_email_resent,email_verification,backend,auth.py:386,source,User requests new verification email,2
+verification_email_resend_failed,email_verification,backend,auth.py:397,"error_type,error_message,source",Resend verification fails,2
+password_reset_requested,password_reset,frontend,ForgotPassword.tsx:57,source,User submits forgot password form,2
+password_reset_email_sent,password_reset,both,"ForgotPassword.tsx:66,password_reset.py:52","method,source",Reset email sent successfully,2
+password_reset_link_accessed,password_reset,frontend,ResetPassword.tsx:95,source,User clicks reset link in email,2
+password_reset_form_submitted,password_reset,frontend,ResetPassword.tsx:121,source,User submits new password,2
+password_reset_completed,password_reset,both,"ResetPassword.tsx:134,password_reset.py:108","method,source",Password successfully reset,2
+password_reset_failed,password_reset,both,"ResetPassword.tsx:87|107|145|154,ForgotPassword.tsx:74|83,password_reset.py:59|121","error_type,error_message,source",Password reset fails at any stage,2
+chart_list_viewed,charts,frontend,Charts.tsx:63,"chart_count,source",User views charts list page,2
+chart_detail_viewed,charts,frontend,ChartDetail.tsx:166,"chart_id,has_interpretation,source",User views a chart,2
+chart_creation_started,charts,frontend,NewChart.tsx:99,source,User navigates to create chart page,2
+chart_location_searched,charts,frontend,NewChart.tsx:212,"query,results_count",User searches for birth location,2
+chart_location_selected,charts,frontend,NewChart.tsx:250,"location_type,has_timezone",User selects a location,2
+chart_creation_submitted,charts,frontend,NewChart.tsx:268,"house_system,has_name,source",User submits chart creation form,2
+chart_created,charts,frontend,NewChart.tsx:302,"chart_id,house_system,has_name,source",Chart created successfully,2
+chart_creation_failed,charts,frontend,NewChart.tsx:317,"error_type,error_message,source",Chart creation fails,2
+chart_deleted,charts,frontend,Charts.tsx:91,"chart_id,source",User deletes a chart,2
+chart_deletion_cancelled,charts,frontend,Charts.tsx:77,"chart_id,source",User cancels chart deletion,2
+interpretation_generation_started,charts,frontend,ChartDetail.tsx:198,"chart_id,source",User requests AI interpretation,2
+interpretation_generated,charts,frontend,ChartDetail.tsx:211,"chart_id,generation_time_ms,source",AI interpretation completed,2
+interpretation_generation_failed,charts,frontend,ChartDetail.tsx:224|233,"chart_id,error_type,error_message,source",AI interpretation fails,2
+profile_viewed,profile,frontend,Profile.tsx:234,source,User views profile page,2
+profile_updated,profile,backend,users.py:86,"fields_changed,source",User updates profile info,2
+profile_password_changed,profile,backend,users.py:136,source,User changes password,2
+profile_password_change_failed,profile,backend,users.py:143,"error_type,source",Password change fails,2
+oauth_connection_removed,profile,backend,users.py:360,"provider,source",User disconnects OAuth provider,2
+account_deletion_requested,profile,backend,"users.py:266,privacy.py:225","has_charts,chart_count,source",User requests account deletion,2
+account_deletion_cancelled,profile,backend,privacy.py:293,source,User cancels pending deletion,2
+account_deleted,profile,backend,privacy.py:114,"had_charts,chart_count,source",Account hard deleted (30 days later),2
+pricing_page_viewed,premium,frontend,Pricing.tsx:56,"source,user_tier",User views pricing page,3
+pricing_plan_clicked,premium,frontend,Pricing.tsx:69,"plan_name,current_tier,billing_cycle,source",User clicks plan button,3
+premium_feature_blocked,premium,frontend,PremiumFeatureGate.tsx:43,"feature_name,source",Free user hits premium gate,3
+premium_upsell_clicked,premium,frontend,PremiumUpsell.tsx:57,"feature_name,source",User clicks upgrade link,3
+subscription_granted,premium,backend,subscription_service.py:147,"days,is_lifetime,granted_by_admin_id,source",Admin grants premium,3
+subscription_extended,premium,backend,subscription_service.py:333,"extend_days,previous_expires_at,new_expires_at,source",Admin extends subscription,3
+subscription_revoked,premium,backend,subscription_service.py:237,"was_active,days_remaining,revoked_by_admin_id,source",Admin revokes subscription,3
+subscription_expired,premium,backend,subscription_service.py:430,"expired_at,source",System auto-expires subscription,3
+blog_viewed,content,frontend,Blog.tsx:85,"source,post_count,category_filter,tag_filter",User views blog list,4
+blog_post_clicked,content,frontend,Blog.tsx:99,"post_slug,post_title,source",User clicks blog post card,4
+blog_post_viewed,content,frontend,BlogPost.tsx:108,"post_slug,post_title,reading_time,source",User views blog post detail,4
+blog_post_read_completed,content,frontend,BlogPost.tsx:130,"post_slug,estimated_read_percentage,time_on_page_seconds",User scrolls to 80%+ of article,4
+public_charts_viewed,content,frontend,PublicCharts.tsx:82,"source,chart_count,category_filter",User views famous charts gallery,4
+public_chart_searched,content,frontend,PublicCharts.tsx:96,"query,results_count",User searches famous charts,4
+public_chart_clicked,content,frontend,PublicCharts.tsx:107,"chart_slug,person_name,category",User clicks famous chart card,4
+public_chart_detail_viewed,content,frontend,PublicChartDetail.tsx:133,"chart_slug,person_name,category,source",User views famous chart detail,4
+rag_documents_viewed,content,frontend,RagDocuments.tsx:59,"source,document_count,filter_type",User views RAG documents list,4
+rag_document_clicked,content,frontend,RagDocuments.tsx:72,"document_id,document_type,title",User clicks RAG document card,4
+error_occurred,error_monitoring,frontend,"ErrorBoundary.tsx:43,main.tsx:14|34","error_type,error_message,page_path,component_name,stack_trace_snippet,source",React error boundary or global handler catches error,5
+api_request_failed,error_monitoring,frontend,api.ts:89,"endpoint,method,status_code,error_message,source",API call fails (non-401),5
+slow_performance_detected,performance,frontend,usePerformanceMonitoring.ts:61,"page_path,load_time_ms,threshold_ms,resource_type,source",Page load exceeds threshold,5
+rate_limit_hit,error_monitoring,frontend,api.ts:106,"endpoint,limit_type,retry_after_seconds,source",User receives 429 response,5
+page_viewed,system,frontend,useAmplitudePageView.ts:23,"page_path,page_title,source",User navigates to any page,2

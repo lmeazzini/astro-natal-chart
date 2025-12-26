@@ -554,7 +554,7 @@ Comprehensive tests in `apps/api/tests/test_services/test_s3_service.py`:
 
 **Purpose:** Product analytics and user behavior tracking for data-driven decision making.
 
-**Status:** ✅ **IMPLEMENTED** (Issue #83) - Currently tracking authentication flows (login, registration)
+**Status:** ✅ **FULLY IMPLEMENTED** (Issues #83, #217-#223) - ~70 events across 8 categories
 
 **Configuration:**
 
@@ -570,13 +570,18 @@ VITE_AMPLITUDE_API_KEY=ba74c26c341b758c91125fc96b517cb9
 VITE_AMPLITUDE_ENABLED=true
 ```
 
-**Currently Tracked Events:**
+**Event Categories:**
 
-| Event | Location | Properties | When |
-|-------|----------|-----------|------|
-| `user_registered` | Backend: `auth.py:63`<br>Frontend: `AuthContext.tsx:137` | `method`, `accept_terms` | On successful registration |
-| `user_logged_in` | Backend: `auth.py:126`<br>Frontend: `AuthContext.tsx:111` | `method` | On successful login |
-| User identity reset | Frontend: `AuthContext.tsx:52` | - | On logout |
+| Category | Events | Examples |
+|----------|--------|----------|
+| Authentication | 10 | `user_logged_in`, `oauth_login_initiated`, `login_failed` |
+| Email Verification | 5 | `email_verified`, `verification_email_resent` |
+| Password Reset | 6 | `password_reset_requested`, `password_reset_completed` |
+| Charts | 13 | `chart_created`, `chart_deleted`, `interpretation_generated` |
+| Profile/Account | 8 | `profile_updated`, `account_deleted` |
+| Premium | 8 | `pricing_page_viewed`, `subscription_granted` |
+| Content | 10 | `blog_post_viewed`, `public_chart_clicked` |
+| Error/Performance | 4 | `error_occurred`, `api_request_failed`, `rate_limit_hit` |
 
 **User Properties Set:**
 - `email` - User's email address
@@ -593,6 +598,7 @@ import { amplitudeService } from '@/services/amplitude';
 amplitudeService.track('chart_created', {
   house_system: 'placidus',
   has_interpretations: true,
+  source: 'new_chart_page',
 });
 
 // Identify a user
@@ -617,16 +623,7 @@ amplitude_service.track(
     event_properties={
         "house_system": "placidus",
         "has_interpretations": True,
-    },
-)
-
-# Identify a user
-amplitude_service.identify(
-    user_id=str(user.id),
-    user_properties={
-        "email": user.email,
-        "full_name": user.full_name,
-        "email_verified": user.email_verified,
+        "source": "api",
     },
 )
 ```
@@ -636,11 +633,9 @@ amplitude_service.identify(
 ⚠️ **IMPORTANT**: Before adding new tracking events, **READ** `docs/AMPLITUDE_BEST_PRACTICES.md`:
 - Use consistent event naming (`snake_case`, `verb_noun` pattern like `user_logged_in`)
 - **Always include `source` property** when action can be triggered from multiple locations
-  - Example: "Create Chart" button on dashboard vs landing page → `source: "dashboard"` vs `source: "landing"`
-  - This enables funnel analysis by entry point
 - Never send sensitive data (passwords, tokens, credit cards, exact birth dates)
-- Validate properties before sending (max 1000 chars for strings)
-- Track events on both frontend and backend when appropriate (see strategy table in manual)
+- Error messages are sanitized via `sanitizeErrorMessage()` to remove PII
+- Track events on both frontend and backend when appropriate
 - Document all new events in the best practices manual catalog
 
 **Testing:**
@@ -658,6 +653,7 @@ When disabled, tracking calls are silently ignored (no-op).
 
 **Resources:**
 - ✅ **Best Practices Manual**: `docs/AMPLITUDE_BEST_PRACTICES.md` (comprehensive guide)
+- ✅ **Event Catalog CSV**: `docs/AMPLITUDE_EVENT_CATALOG.csv` (all ~70 events)
 - Amplitude Dashboard: https://analytics.amplitude.com/
 - Official Docs: https://www.docs.developers.amplitude.com/
 

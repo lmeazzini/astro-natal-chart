@@ -48,21 +48,21 @@ resource "aws_ecs_task_definition" "api" {
         }
       ]
 
-      # Secrets from Secrets Manager (to be configured when #245 is implemented)
-      # secrets = [
-      #   {
-      #     name      = "DATABASE_URL"
-      #     valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:astro/${var.environment}/database-url"
-      #   },
-      #   {
-      #     name      = "SECRET_KEY"
-      #     valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:astro/${var.environment}/secret-key"
-      #   },
-      #   {
-      #     name      = "REDIS_URL"
-      #     valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:astro/${var.environment}/redis-url"
-      #   }
-      # ]
+      # Secrets from Secrets Manager (injected from secrets module)
+      secrets = var.secret_arns != null ? [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = var.secret_arns.database_url
+        },
+        {
+          name      = "SECRET_KEY"
+          valueFrom = var.secret_arns.secret_key
+        },
+        {
+          name      = "REDIS_URL"
+          valueFrom = var.secret_arns.redis_url
+        }
+      ] : []
 
       # CloudWatch Logs
       logConfiguration = {

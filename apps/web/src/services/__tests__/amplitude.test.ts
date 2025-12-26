@@ -5,6 +5,11 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import * as amplitude from '@amplitude/analytics-browser';
 
+// Mock the session replay plugin
+vi.mock('@amplitude/plugin-session-replay-browser', () => ({
+  sessionReplayPlugin: vi.fn(() => ({})),
+}));
+
 // Mock the amplitude module
 vi.mock('@amplitude/analytics-browser', () => ({
   init: vi.fn(),
@@ -13,6 +18,7 @@ vi.mock('@amplitude/analytics-browser', () => ({
   identify: vi.fn(),
   reset: vi.fn(),
   flush: vi.fn(() => Promise.resolve()),
+  add: vi.fn(),
   Identify: vi.fn().mockImplementation(() => ({
     set: vi.fn(),
   })),

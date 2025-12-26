@@ -3,6 +3,8 @@
  */
 
 import i18n from '../i18n';
+import { amplitudeService } from './amplitude';
+import { sanitizeErrorMessage } from '../utils/errorSanitizer';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -61,6 +63,55 @@ class ApiClient {
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
+  }
+
+  /**
+   * Infer the rate limit type from the endpoint for Amplitude tracking
+   */
+  private inferLimitType(endpoint: string): string {
+    if (endpoint.includes('/auth/login')) return 'login';
+    if (endpoint.includes('/auth/register')) return 'register';
+    if (endpoint.includes('/password-reset')) return 'password_reset';
+    if (endpoint.includes('/geocoding')) return 'geocoding';
+    return 'api';
+  }
+
+  /**
+   * Track API request failure in Amplitude
+   */
+  private trackApiFailure(
+    endpoint: string,
+    method: string,
+    statusCode: number,
+    errorMessage: string
+  ): void {
+    try {
+      amplitudeService.track('api_request_failed', {
+        endpoint,
+        method,
+        status_code: statusCode,
+        error_message: sanitizeErrorMessage(errorMessage),
+        source: 'api_client',
+      });
+    } catch {
+      // Silently fail - don't let tracking errors affect the app
+    }
+  }
+
+  /**
+   * Track rate limit hit in Amplitude
+   */
+  private trackRateLimitHit(endpoint: string, retryAfter: number): void {
+    try {
+      amplitudeService.track('rate_limit_hit', {
+        endpoint,
+        limit_type: this.inferLimitType(endpoint),
+        retry_after_seconds: retryAfter,
+        source: 'api_client',
+      });
+    } catch {
+      // Silently fail - don't let tracking errors affect the app
+    }
   }
 
   /**
@@ -203,26 +254,40 @@ class ApiClient {
         // Handle rate limit errors (429) - SlowAPI returns plain text
         if (response.status === 429) {
           const text = await response.text();
+          const retryAfter = parseInt(response.headers.get('Retry-After') || '0', 10);
+
+          // Track rate limit hit
+          this.trackRateLimitHit(endpoint, retryAfter);
+
           throw new Error(text || 'Too many requests. Please try again later.');
         }
 
         // Handle JSON error responses (FastAPI standard format)
+        let errorMessage = '';
         try {
           const error: ApiError = await response.json();
-          const message =
+          errorMessage =
             typeof error.detail === 'string'
               ? error.detail
               : Array.isArray(error.detail)
                 ? error.detail[0]?.msg || 'Request error'
                 : 'Request error';
-          throw new Error(message);
-        } catch (parseError) {
+        } catch {
           // If JSON parsing fails, use status text or generic message
-          if (parseError instanceof Error && parseError.message !== 'Request error') {
-            throw parseError;
-          }
-          throw new Error(response.statusText || `Request failed with status ${response.status}`);
+          errorMessage = response.statusText || `Request failed with status ${response.status}`;
         }
+
+        // Track API failure (except 401 which is handled separately)
+        if (response.status !== 401) {
+          this.trackApiFailure(
+            endpoint,
+            fetchOptions.method || 'GET',
+            response.status,
+            errorMessage
+          );
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Handle 204 No Content

@@ -365,7 +365,8 @@
     },
     "sections": {
       "chartWheel": "Roda do Mapa Natal",
-      "temperament": "Cálculo Final do Temperamento"
+      "temperament": "Cálculo Final do Temperamento",
+      "mentality": "Análise de Mentalidade"
     },
     "temperament": "Análise de Temperamento",
     "birthInfo": "Informações de Nascimento",
@@ -809,6 +810,23 @@
       "note": "O temperamento é determinado pela soma das qualidades elementares (Quente, Frio, Úmido, Seco) de 5 fatores do mapa natal: Ascendente, Regente do Ascendente, Quadrante Solar, Fase Lunar e Senhor da Natividade, seguindo a tradição da astrologia medieval.",
       "weightNote": "Os fatores planetários (Regente do Ascendente e Senhor da Natividade) têm seus pesos ajustados pela dignidade essencial: planetas dignificados (domicílio, exaltação) contribuem mais, enquanto planetas debilitados (detrimento, queda) contribuem menos.",
       "weightTooltip": "Peso baseado na dignidade do planeta"
+    },
+    "mentality": {
+      "title": "Mentalidade",
+      "subtitle": "Estilo intelectual baseado na análise de Mercúrio",
+      "mentalScores": "Pontuação Mental",
+      "strength": "Força",
+      "speed": "Velocidade",
+      "depth": "Profundidade",
+      "versatility": "Versatilidade",
+      "mercuryAnalysis": "Análise de Mercúrio",
+      "mercuryIn": "Mercúrio em",
+      "house": "Casa",
+      "retrograde": "Retrógrado",
+      "contributingFactors": "Fatores Contribuintes",
+      "interpretation": "Interpretação",
+      "note": "A Mentalidade difere do Temperamento. Enquanto o Temperamento descreve a constituição física/emocional, a Mentalidade analisa a capacidade intelectual, o estilo de pensamento e os padrões de comunicação baseados principalmente na posição, dignidades e aspectos de Mercúrio.",
+      "scoreNote": "As pontuações variam de: Força (0-100), Velocidade (-15 a +20), Profundidade (0-25), Versatilidade (0-20). Velocidade positiva indica pensamento rápido; velocidade negativa indica pensamento reflexivo."
     },
     "lordOfNativity": {
       "title": "Senhor da Natividade",

@@ -24,6 +24,7 @@ import { LunarPhase } from '../components/LunarPhase';
 import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
+import { MentalityCard } from '../components/MentalityCard';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { GrowthSuggestions } from '../components/GrowthSuggestions';
@@ -871,6 +872,18 @@ export function ChartDetailPage() {
                         })}
                       </h3>
                       <TemperamentDisplay temperament={chart.chart_data.temperament} />
+                    </div>
+                  )}
+
+                  {/* Mentality (Issue #57) */}
+                  {chart.chart_data.mentality && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.sections.mentality', {
+                          defaultValue: 'Análise de Mentalidade',
+                        })}
+                      </h3>
+                      <MentalityCard mentality={chart.chart_data.mentality} />
                     </div>
                   )}
 

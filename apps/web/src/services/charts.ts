@@ -7,6 +7,7 @@ import type { LunarPhaseData } from '@/components/LunarPhase';
 import type { SolarPhaseData } from '@/components/SolarPhase';
 import type { LordOfNativityData } from '@/components/LordOfNativity';
 import type { TemperamentData } from '@/components/TemperamentDisplay';
+import type { MentalityData } from '@/components/MentalityCard';
 
 export interface BirthChartCreate {
   person_name: string;
@@ -159,6 +160,7 @@ export interface BirthChart {
     solar_phase?: SolarPhaseData;
     lord_of_nativity?: LordOfNativityData;
     temperament?: TemperamentData;
+    mentality?: MentalityData;
     arabic_parts?: ArabicParts;
     calculation_timestamp: string;
   } | null;

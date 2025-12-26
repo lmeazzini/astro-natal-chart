@@ -365,7 +365,8 @@
     },
     "sections": {
       "chartWheel": "Birth Chart Wheel",
-      "temperament": "Temperament Calculation"
+      "temperament": "Temperament Calculation",
+      "mentality": "Mentality Analysis"
     },
     "temperament": "Temperament Analysis",
     "birthInfo": "Birth Information",
@@ -813,6 +814,23 @@
       "note": "Temperament is determined by the sum of elemental qualities (Hot, Cold, Wet, Dry) from 5 factors of the natal chart: Ascendant, Ascendant Ruler, Solar Quadrant, Lunar Phase and Lord of the Nativity, following medieval astrology tradition.",
       "weightNote": "Planetary factors (Ascendant Ruler and Lord of Nativity) have their weights adjusted by essential dignity: dignified planets (domicile, exaltation) contribute more, while debilitated planets (detriment, fall) contribute less.",
       "weightTooltip": "Weight based on planet dignity"
+    },
+    "mentality": {
+      "title": "Mentality",
+      "subtitle": "Intellectual style based on Mercury analysis",
+      "mentalScores": "Mental Scores",
+      "strength": "Strength",
+      "speed": "Speed",
+      "depth": "Depth",
+      "versatility": "Versatility",
+      "mercuryAnalysis": "Mercury Analysis",
+      "mercuryIn": "Mercury in",
+      "house": "House",
+      "retrograde": "Retrograde",
+      "contributingFactors": "Contributing Factors",
+      "interpretation": "Interpretation",
+      "note": "Mentality differs from Temperament. While Temperament describes physical/emotional constitution, Mentality analyzes intellectual capacity, thinking style, and communication patterns based primarily on Mercury's position, dignities, and aspects.",
+      "scoreNote": "Scores range from: Strength (0-100), Speed (-15 to +20), Depth (0-25), Versatility (0-20). Positive speed indicates quick thinking; negative speed indicates reflective thinking."
     },
     "lordOfNativity": {
       "title": "Lord of Nativity",

@@ -62,6 +62,13 @@ export function BlogPostPage() {
   const hasTrackedReadCompletion = React.useRef(false);
   const pageLoadTime = React.useRef(Date.now());
 
+  // Reset tracking refs when slug changes (for SPA navigation between posts)
+  React.useEffect(() => {
+    hasTrackedPageView.current = false;
+    hasTrackedReadCompletion.current = false;
+    pageLoadTime.current = Date.now();
+  }, [slug]);
+
   React.useEffect(() => {
     if (!slug) return;
 

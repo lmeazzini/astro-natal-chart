@@ -81,7 +81,7 @@ export function BlogPage() {
 
   // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
   React.useEffect(() => {
-    if (!hasTrackedPageView.current && !loading && posts.length >= 0) {
+    if (!hasTrackedPageView.current && !loading) {
       amplitudeService.track('blog_viewed', {
         source: searchParams.get('source') || 'direct',
         post_count: posts.length,

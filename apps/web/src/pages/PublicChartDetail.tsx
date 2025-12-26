@@ -90,6 +90,11 @@ export function PublicChartDetailPage() {
   // Amplitude tracking ref
   const hasTrackedPageView = useRef(false);
 
+  // Reset tracking ref when slug changes (for SPA navigation between charts)
+  useEffect(() => {
+    hasTrackedPageView.current = false;
+  }, [slug]);
+
   const loadChart = useCallback(async () => {
     if (!slug) return;
 

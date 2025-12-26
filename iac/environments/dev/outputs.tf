@@ -47,22 +47,46 @@ output "nat_gateway_public_ip" {
 }
 
 # -----------------------------------------------------------------------------
+# RDS Outputs
+# -----------------------------------------------------------------------------
+
+output "rds_endpoint" {
+  description = "RDS endpoint"
+  value       = module.rds.endpoint
+}
+
+output "rds_database_name" {
+  description = "RDS database name"
+  value       = module.rds.database_name
+}
+
+output "rds_connection_string" {
+  description = "RDS connection string"
+  value       = module.rds.connection_string
+  sensitive   = true
+}
+
+# -----------------------------------------------------------------------------
+# ElastiCache Outputs
+# -----------------------------------------------------------------------------
+
+output "redis_endpoint" {
+  description = "Redis endpoint"
+  value       = module.elasticache.endpoint
+}
+
+output "redis_url" {
+  description = "Redis connection URL"
+  value       = module.elasticache.redis_url
+}
+
+# -----------------------------------------------------------------------------
 # Future outputs (uncomment as modules are added)
 # -----------------------------------------------------------------------------
 
 # output "alb_dns_name" {
 #   description = "ALB DNS name"
 #   value       = module.ecs.alb_dns_name
-# }
-
-# output "rds_endpoint" {
-#   description = "RDS endpoint"
-#   value       = module.rds.endpoint
-# }
-
-# output "redis_endpoint" {
-#   description = "Redis endpoint"
-#   value       = module.elasticache.endpoint
 # }
 
 # output "cloudfront_domain" {

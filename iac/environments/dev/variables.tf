@@ -37,20 +37,28 @@ variable "enable_nat_gateway" {
 }
 
 # -----------------------------------------------------------------------------
-# Future variables (uncomment as modules are added)
+# RDS Variables
 # -----------------------------------------------------------------------------
 
-# variable "db_instance_class" {
-#   description = "RDS instance class"
-#   type        = string
-#   default     = "db.t3.micro"
-# }
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
+}
 
-# variable "redis_node_type" {
-#   description = "ElastiCache node type"
-#   type        = string
-#   default     = "cache.t3.micro"
-# }
+# -----------------------------------------------------------------------------
+# ElastiCache Variables
+# -----------------------------------------------------------------------------
+
+variable "redis_node_type" {
+  description = "ElastiCache node type"
+  type        = string
+  default     = "cache.t3.micro"
+}
+
+# -----------------------------------------------------------------------------
+# Future variables (uncomment as modules are added)
+# -----------------------------------------------------------------------------
 
 # variable "ecs_cpu" {
 #   description = "ECS task CPU units"

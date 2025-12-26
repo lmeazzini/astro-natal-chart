@@ -667,6 +667,104 @@ amplitudeService.track('public_chart_searched', {
 });
 ```
 
+### Error & Performance Monitoring Events (Issue #222)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `error_occurred` | Frontend: `ErrorBoundary.tsx`, `main.tsx` | `error_type`, `error_message`, `page_path`, `component_name`, `stack_trace_snippet`, `source` | React error boundary catch or global error handler |
+| `api_request_failed` | Frontend: `api.ts` | `endpoint`, `method`, `status_code`, `error_message`, `source` | API call fails (non-401) |
+| `slow_performance_detected` | Frontend: `usePerformanceMonitoring.ts` | `page_path`, `load_time_ms`, `threshold_ms`, `resource_type`, `source` | Page load exceeds 3 seconds |
+| `rate_limit_hit` | Frontend: `api.ts` | `endpoint`, `limit_type`, `retry_after_seconds`, `source` | User receives 429 response |
+| `feature_unavailable` | Various | `feature_name`, `error_message`, `source` | Feature/service temporarily down |
+
+**Event Details**:
+
+#### `error_occurred`
+**Description**: Captures JavaScript runtime errors for monitoring application stability.
+
+**Properties**:
+- `error_type` (string): Type of error (`runtime`, `network`, `validation`)
+- `error_message` (string): Sanitized error message (PII removed)
+- `page_path` (string): Current page path
+- `component_name` (string): React component where error occurred
+- `stack_trace_snippet` (string): First 200 chars of stack trace (sanitized)
+- `source` (string): Error source (`error_boundary`, `global_handler`, `unhandled_rejection`)
+
+**Implementation**:
+```typescript
+// ErrorBoundary.tsx
+componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  amplitudeService.track('error_occurred', {
+    error_type: 'runtime',
+    error_message: sanitizeErrorMessage(error.message),
+    page_path: window.location.pathname,
+    component_name: extractComponentName(errorInfo.componentStack),
+    stack_trace_snippet: sanitizeStackTrace(error.stack),
+    source: 'error_boundary',
+  });
+}
+```
+
+#### `api_request_failed`
+**Description**: Tracks API failures for monitoring backend health and user experience issues.
+
+**Properties**:
+- `endpoint` (string): API endpoint path
+- `method` (string): HTTP method (GET, POST, PUT, DELETE)
+- `status_code` (number): HTTP status code
+- `error_message` (string): Sanitized error message
+- `source` (string): Always `api_client`
+
+**Example**:
+```typescript
+amplitudeService.track('api_request_failed', {
+  endpoint: '/api/v1/charts',
+  method: 'POST',
+  status_code: 500,
+  error_message: 'Internal server error',
+  source: 'api_client',
+});
+```
+
+#### `rate_limit_hit`
+**Description**: Tracks when users hit rate limits to identify abuse or capacity issues.
+
+**Properties**:
+- `endpoint` (string): Rate-limited endpoint
+- `limit_type` (string): Type of limit (`login`, `register`, `password_reset`, `geocoding`, `api`)
+- `retry_after_seconds` (number): Seconds until retry allowed
+- `source` (string): Always `api_client`
+
+#### `slow_performance_detected`
+**Description**: Tracks slow page loads to identify performance bottlenecks.
+
+**Properties**:
+- `page_path` (string): Page that loaded slowly
+- `load_time_ms` (number): Actual load time in milliseconds
+- `threshold_ms` (number): Threshold that was exceeded (default: 3000)
+- `resource_type` (string): Type of resource (`page`)
+- `source` (string): Page identifier
+
+**Usage**:
+```typescript
+// In any page component
+import { usePerformanceMonitoring } from '@/hooks';
+
+function Dashboard() {
+  usePerformanceMonitoring('dashboard');
+  return <div>...</div>;
+}
+```
+
+**PII Sanitization**:
+All error messages are sanitized before tracking:
+- Emails → `[EMAIL]`
+- Bearer tokens → `Bearer [TOKEN]`
+- JWT tokens → `[JWT_TOKEN]`
+- Passwords → `password=[REDACTED]`
+- UUIDs → `[UUID]`
+- API keys → `[API_KEY]`
+
 ### Planned Events (Issue #218)
 
 See [Issue #218](https://github.com/lmeazzini/astro-natal-chart/issues/218) for comprehensive list of planned events across all user flows.

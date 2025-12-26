@@ -81,13 +81,32 @@ output "redis_url" {
 }
 
 # -----------------------------------------------------------------------------
-# Future outputs (uncomment as modules are added)
+# ECS Outputs
 # -----------------------------------------------------------------------------
 
-# output "alb_dns_name" {
-#   description = "ALB DNS name"
-#   value       = module.ecs.alb_dns_name
-# }
+output "alb_dns_name" {
+  description = "ALB DNS name"
+  value       = module.ecs.alb_dns_name
+}
+
+output "ecs_cluster_name" {
+  description = "ECS cluster name"
+  value       = module.ecs.cluster_name
+}
+
+output "ecs_service_name" {
+  description = "ECS service name"
+  value       = module.ecs.service_name
+}
+
+output "api_url" {
+  description = "URL to access the API"
+  value       = module.ecs.api_url
+}
+
+# -----------------------------------------------------------------------------
+# Future outputs (uncomment as modules are added)
+# -----------------------------------------------------------------------------
 
 # output "cloudfront_domain" {
 #   description = "CloudFront distribution domain"

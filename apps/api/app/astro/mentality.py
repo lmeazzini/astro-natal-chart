@@ -30,23 +30,74 @@ Mentality Types:
 
 from typing import Any
 
+from app.astro.temperament import DIGNITY_WEIGHTS
 from app.translations import DEFAULT_LANGUAGE, get_translation
 
-# Dignity weight scale (same as temperament.py)
-DIGNITY_WEIGHTS = {
-    "domicile": 2.0,
-    "ruler": 2.0,
-    "exalted": 1.75,
-    "triplicity": 1.5,
-    "triplicity_day": 1.5,
-    "triplicity_night": 1.5,
-    "triplicity_participant": 1.5,
-    "term": 1.25,
-    "face": 1.1,
-    "peregrine": 1.0,
-    "detriment": 0.75,
-    "fall": 0.5,
-}
+# ==============================================================================
+# TYPE DETERMINATION THRESHOLDS
+# ==============================================================================
+# These thresholds determine how mentality type is assigned based on scores.
+# Documented in docstring of determine_mentality_type() function.
+
+# House strength threshold for abstract/concrete type assignment
+HOUSE_STRENGTH_THRESHOLD = 70  # House 3 or 9 strength must exceed this
+
+# Versatility thresholds
+VERSATILITY_HIGH_THRESHOLD = 12  # Above this -> "versatile" type
+VERSATILITY_LOW_THRESHOLD = 5  # Below this + depth > 12 -> "specialized" type
+SPECIALIZED_DEPTH_THRESHOLD = 12  # Minimum depth for "specialized" type
+
+# Speed thresholds
+SPEED_FAST_THRESHOLD = 5  # Above this -> "agile" types
+SPEED_SLOW_THRESHOLD = 0  # Below this -> "slow" types
+
+# Depth thresholds
+DEPTH_HIGH_THRESHOLD = 15  # Above this -> "deep" types
+DEPTH_LOW_THRESHOLD = 10  # Below this -> "superficial" types
+
+# ==============================================================================
+# SCORE CONTRIBUTION CONSTANTS
+# ==============================================================================
+# Points added/subtracted for various factors
+
+# Aspect scoring
+BENEFIC_ASPECT_SCORE = 5  # Points per benefic aspect to Mercury
+MALEFIC_ASPECT_PENALTY = 5  # Points deducted per malefic aspect to Mercury
+MAX_BENEFIC_SCORE = 20  # Maximum points from benefic aspects
+MAX_MALEFIC_PENALTY = 20  # Maximum penalty from malefic aspects
+
+# Speed modifiers
+SPEED_ASPECT_BONUS = 5  # Bonus for Mars/Uranus aspects
+RETROGRADE_PENALTY = 10  # Speed penalty for retrograde Mercury
+DIRECT_BONUS = 5  # Speed bonus for direct Mercury
+
+# Depth modifiers
+DEPTH_ASPECT_BONUS = 5  # Bonus for Saturn/Pluto aspects
+DEPTH_HOUSE_BONUS = 5  # Bonus for Mercury in Houses 8/12
+DEPTH_DIGNITY_BONUS_HIGH = 5  # Bonus for exaltation or better
+DEPTH_DIGNITY_BONUS_LOW = 3  # Bonus for triplicity
+DEPTH_DIGNITY_THRESHOLD = 1.5  # Minimum weight for depth bonus
+DEPTH_DIGNITY_HIGH_THRESHOLD = 1.75  # Weight for higher bonus
+
+# Versatility modifiers
+VERSATILITY_MUTABLE_BONUS = 10  # Bonus for Mercury in mutable sign
+VERSATILITY_ASPECTS_BONUS = 5  # Bonus for 3+ aspects to Mercury
+VERSATILITY_ASPECTS_THRESHOLD = 3  # Minimum aspects for bonus
+VERSATILITY_CADENT_BONUS = 5  # Bonus for 3+ planets in cadent houses
+VERSATILITY_CADENT_THRESHOLD = 3  # Minimum planets for bonus
+
+# House strength modifiers
+PLANET_HOUSE_SCORE = 10  # Points per planet in house
+BENEFIC_HOUSE_BONUS = 10  # Extra points for benefic in house
+MALEFIC_HOUSE_PENALTY = 5  # Penalty for malefic in house
+
+# Mental house modifiers
+BENEFIC_MENTAL_HOUSE_SCORE = 7.5  # Points per benefic in Houses 3/9
+MAX_MENTAL_HOUSE_SCORE = 15  # Maximum points from benefics in mental houses
+
+# Base score
+STRENGTH_BASE_SCORE = 50  # Starting point for strength calculation
+HOUSE_BASE_STRENGTH = 50  # Base house strength
 
 # Sign element mappings for mental characteristics
 SIGN_ELEMENTS = {
@@ -291,7 +342,7 @@ def calculate_mental_strength(
 
     # Benefic aspects to Mercury (0-20)
     benefic_count = sum(1 for a in mercury_aspects if is_benefic_aspect(a))
-    benefic_score = min(benefic_count * 5, 20)
+    benefic_score = min(benefic_count * BENEFIC_ASPECT_SCORE, MAX_BENEFIC_SCORE)
     strength += benefic_score
 
     if benefic_score > 0:
@@ -306,7 +357,7 @@ def calculate_mental_strength(
 
     # Malefic aspects to Mercury (reduce score, 0-20)
     malefic_count = sum(1 for a in mercury_aspects if is_malefic_aspect(a))
-    malefic_penalty = min(malefic_count * 5, 20)
+    malefic_penalty = min(malefic_count * MALEFIC_ASPECT_PENALTY, MAX_MALEFIC_PENALTY)
     strength -= malefic_penalty
 
     if malefic_penalty > 0:
@@ -337,8 +388,8 @@ def calculate_mental_strength(
     # Benefics in houses 3/9 (0-15)
     benefics = ["Venus", "Jupiter"]
     benefics_in_mental_houses = [p for p in planets_in_3_9 if p.get("name") in benefics]
-    mental_house_score = len(benefics_in_mental_houses) * 7.5
-    mental_house_score = min(mental_house_score, 15)
+    mental_house_score = len(benefics_in_mental_houses) * BENEFIC_MENTAL_HOUSE_SCORE
+    mental_house_score = min(mental_house_score, MAX_MENTAL_HOUSE_SCORE)
     strength += mental_house_score
 
     if mental_house_score > 0:
@@ -352,8 +403,8 @@ def calculate_mental_strength(
             }
         )
 
-    # Base score adjustment (start from 50)
-    strength += 50
+    # Base score adjustment
+    strength += STRENGTH_BASE_SCORE
 
     # Clamp to 0-100
     return max(0, min(100, strength))
@@ -417,7 +468,7 @@ def calculate_mental_speed(
             continue
         # Conjunction and hard aspects also boost speed (Mars/Uranus are activating)
         if is_benefic_aspect(aspect) or is_conjunction(aspect) or is_malefic_aspect(aspect):
-            speed += 5
+            speed += SPEED_ASPECT_BONUS
             planet_name = get_translation(f"planets.{other_planet}", language)
             aspect_name = get_translation(
                 f"aspects.{aspect.get('aspect', 'conjunction')}", language
@@ -427,29 +478,29 @@ def calculate_mental_speed(
                     "factor_key": f"mercury_{other_planet.lower()}_aspect",
                     "factor": f"Mercury-{planet_name} {aspect_name}",
                     "value": f"{aspect.get('orb', 0):.1f}\u00b0",
-                    "contribution": f"+5 {get_translation('mentality.speed', language)}",
+                    "contribution": f"+{SPEED_ASPECT_BONUS} {get_translation('mentality.speed', language)}",
                 }
             )
 
     # Retrograde status
     if mercury_retrograde:
-        speed -= 10
+        speed -= RETROGRADE_PENALTY
         factors.append(
             {
                 "factor_key": "mercury_retrograde",
                 "factor": get_translation("mentality.factors.mercury_retrograde", language),
                 "value": get_translation("common.yes", language),
-                "contribution": f"-10 {get_translation('mentality.speed', language)}",
+                "contribution": f"-{RETROGRADE_PENALTY} {get_translation('mentality.speed', language)}",
             }
         )
     else:
-        speed += 5
+        speed += DIRECT_BONUS
         factors.append(
             {
                 "factor_key": "mercury_direct",
                 "factor": get_translation("mentality.factors.mercury_direct", language),
                 "value": get_translation("common.yes", language),
-                "contribution": f"+5 {get_translation('mentality.speed', language)}",
+                "contribution": f"+{DIRECT_BONUS} {get_translation('mentality.speed', language)}",
             }
         )
 
@@ -516,7 +567,7 @@ def calculate_mental_depth(
         if not other_planet:
             continue
         # Any aspect to Saturn/Pluto adds depth (even hard aspects)
-        depth += 5
+        depth += DEPTH_ASPECT_BONUS
         planet_name = get_translation(f"planets.{other_planet}", language)
         aspect_name = get_translation(f"aspects.{aspect.get('aspect', 'conjunction')}", language)
         factors.append(
@@ -524,27 +575,31 @@ def calculate_mental_depth(
                 "factor_key": f"mercury_{other_planet.lower()}_depth",
                 "factor": f"Mercury-{planet_name} {aspect_name}",
                 "value": f"{aspect.get('orb', 0):.1f}\u00b0",
-                "contribution": f"+5 {get_translation('mentality.depth', language)}",
+                "contribution": f"+{DEPTH_ASPECT_BONUS} {get_translation('mentality.depth', language)}",
             }
         )
 
     # Mercury in House 8/12 (depth houses)
     depth_houses = [8, 12]
     if mercury_house in depth_houses:
-        depth += 5
+        depth += DEPTH_HOUSE_BONUS
         factors.append(
             {
                 "factor_key": "mercury_depth_house",
                 "factor": get_translation("mentality.factors.mercury_depth_house", language),
                 "value": str(mercury_house),
-                "contribution": f"+5 {get_translation('mentality.depth', language)}",
+                "contribution": f"+{DEPTH_HOUSE_BONUS} {get_translation('mentality.depth', language)}",
             }
         )
 
     # Essential dignity bonus
     merc_weight, merc_dignity = calculate_dignity_weight(mercury_dignities)
-    if merc_weight >= 1.5:  # Triplicity or better
-        dignity_bonus = 5 if merc_weight >= 1.75 else 3
+    if merc_weight >= DEPTH_DIGNITY_THRESHOLD:  # Triplicity or better
+        dignity_bonus = (
+            DEPTH_DIGNITY_BONUS_HIGH
+            if merc_weight >= DEPTH_DIGNITY_HIGH_THRESHOLD
+            else DEPTH_DIGNITY_BONUS_LOW
+        )
         depth += dignity_bonus
         factors.append(
             {
@@ -589,39 +644,39 @@ def calculate_mental_versatility(
     # Mercury in mutable sign
     modality = SIGN_MODALITIES.get(mercury_sign, "fixed")
     if modality == "mutable":
-        versatility += 10
+        versatility += VERSATILITY_MUTABLE_BONUS
         sign_name = get_translation(f"signs.{mercury_sign}", language)
         factors.append(
             {
                 "factor_key": "mercury_mutable",
                 "factor": get_translation("mentality.factors.mercury_mutable", language),
                 "value": sign_name,
-                "contribution": f"+10 {get_translation('mentality.versatility', language)}",
+                "contribution": f"+{VERSATILITY_MUTABLE_BONUS} {get_translation('mentality.versatility', language)}",
             }
         )
 
     # Multiple aspects to Mercury (3+)
     aspect_count = len(mercury_aspects)
-    if aspect_count >= 3:
-        versatility += 5
+    if aspect_count >= VERSATILITY_ASPECTS_THRESHOLD:
+        versatility += VERSATILITY_ASPECTS_BONUS
         factors.append(
             {
                 "factor_key": "mercury_many_aspects",
                 "factor": get_translation("mentality.factors.mercury_many_aspects", language),
                 "value": str(aspect_count),
-                "contribution": f"+5 {get_translation('mentality.versatility', language)}",
+                "contribution": f"+{VERSATILITY_ASPECTS_BONUS} {get_translation('mentality.versatility', language)}",
             }
         )
 
     # Planets in cadent houses (3+ planets)
-    if len(planets_in_cadent) >= 3:
-        versatility += 5
+    if len(planets_in_cadent) >= VERSATILITY_CADENT_THRESHOLD:
+        versatility += VERSATILITY_CADENT_BONUS
         factors.append(
             {
                 "factor_key": "cadent_emphasis",
                 "factor": get_translation("mentality.factors.cadent_emphasis", language),
                 "value": str(len(planets_in_cadent)),
-                "contribution": f"+5 {get_translation('mentality.versatility', language)}",
+                "contribution": f"+{VERSATILITY_CADENT_BONUS} {get_translation('mentality.versatility', language)}",
             }
         )
 
@@ -648,12 +703,12 @@ def calculate_house_strength(
     Returns:
         House strength score (0-100)
     """
-    strength = 50.0  # Base
+    strength = float(HOUSE_BASE_STRENGTH)
 
     planets_in_house = get_planets_in_house(planets, house_number)
 
     # Each planet adds strength
-    strength += len(planets_in_house) * 10
+    strength += len(planets_in_house) * PLANET_HOUSE_SCORE
 
     # Benefics add more, malefics less
     benefics = ["Venus", "Jupiter"]
@@ -661,9 +716,9 @@ def calculate_house_strength(
     for planet in planets_in_house:
         name = planet.get("name", "")
         if name in benefics:
-            strength += 10
+            strength += BENEFIC_HOUSE_BONUS
         elif name in malefics:
-            strength -= 5
+            strength -= MALEFIC_HOUSE_PENALTY
 
     # House ruler dignity
     ruler_weight, _ = calculate_dignity_weight(house_ruler_dignities)
@@ -683,15 +738,15 @@ def determine_mentality_type(
     """
     Determine the mentality type based on scores.
 
-    Types:
-    1. agile_and_superficial: High speed (>5), low depth (<10)
-    2. agile_and_deep: High speed (>5), high depth (>15) - rare
-    3. slow_and_deep: Low speed (<0), high depth (>15)
-    4. slow_and_superficial: Low speed (<0), low depth (<10)
-    5. versatile: High versatility (>12)
-    6. specialized: Low versatility (<5), moderate/high depth
-    7. abstract: Strong House 9 (>70), Mercury in Air sign
-    8. concrete: Strong House 3 (>70), Mercury in Earth sign
+    Types (thresholds defined as module constants):
+    1. agile_and_superficial: High speed (>SPEED_FAST_THRESHOLD), low depth (<DEPTH_LOW_THRESHOLD)
+    2. agile_and_deep: High speed (>SPEED_FAST_THRESHOLD), high depth (>DEPTH_HIGH_THRESHOLD) - rare
+    3. slow_and_deep: Low speed (<SPEED_SLOW_THRESHOLD), high depth (>DEPTH_HIGH_THRESHOLD)
+    4. slow_and_superficial: Low speed (<SPEED_SLOW_THRESHOLD), low depth (<DEPTH_LOW_THRESHOLD)
+    5. versatile: High versatility (>VERSATILITY_HIGH_THRESHOLD)
+    6. specialized: Low versatility (<VERSATILITY_LOW_THRESHOLD), depth > SPECIALIZED_DEPTH_THRESHOLD
+    7. abstract: Strong House 9 (>HOUSE_STRENGTH_THRESHOLD), Mercury in Air sign
+    8. concrete: Strong House 3 (>HOUSE_STRENGTH_THRESHOLD), Mercury in Earth sign
 
     Args:
         speed: Mental speed score (-15 to +20)
@@ -707,22 +762,22 @@ def determine_mentality_type(
     element = SIGN_ELEMENTS.get(mercury_sign, "earth")
 
     # Check for abstract/concrete types first (based on house emphasis)
-    if house_9_strength > 70 and element == "air":
+    if house_9_strength > HOUSE_STRENGTH_THRESHOLD and element == "air":
         return "abstract"
-    if house_3_strength > 70 and element == "earth":
+    if house_3_strength > HOUSE_STRENGTH_THRESHOLD and element == "earth":
         return "concrete"
 
     # Check versatility extremes
-    if versatility > 12:
+    if versatility > VERSATILITY_HIGH_THRESHOLD:
         return "versatile"
-    if versatility < 5 and depth > 12:
+    if versatility < VERSATILITY_LOW_THRESHOLD and depth > SPECIALIZED_DEPTH_THRESHOLD:
         return "specialized"
 
     # Speed/depth combinations
-    is_fast = speed > 5
-    is_slow = speed < 0
-    is_deep = depth > 15
-    is_shallow = depth < 10
+    is_fast = speed > SPEED_FAST_THRESHOLD
+    is_slow = speed < SPEED_SLOW_THRESHOLD
+    is_deep = depth > DEPTH_HIGH_THRESHOLD
+    is_shallow = depth < DEPTH_LOW_THRESHOLD
 
     if is_fast and is_deep:
         return "agile_and_deep"

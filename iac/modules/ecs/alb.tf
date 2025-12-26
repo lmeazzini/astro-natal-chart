@@ -64,10 +64,13 @@ resource "aws_lb_target_group" "api" {
 }
 
 # -----------------------------------------------------------------------------
-# HTTP Listener
+# HTTP Listener (forward when no cert, redirect when cert available)
 # -----------------------------------------------------------------------------
 
+# HTTP listener that forwards to target group (when no HTTPS)
 resource "aws_lb_listener" "http" {
+  count = var.acm_certificate_arn == null ? 1 : 0
+
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
@@ -82,40 +85,48 @@ resource "aws_lb_listener" "http" {
   })
 }
 
+# HTTP listener that redirects to HTTPS (when cert is available)
+resource "aws_lb_listener" "http_redirect" {
+  count = var.acm_certificate_arn != null ? 1 : 0
+
+  load_balancer_arn = aws_lb.main.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-http-redirect"
+  })
+}
+
 # -----------------------------------------------------------------------------
-# HTTPS Listener (to be enabled when ACM certificate is available - issue #247)
+# HTTPS Listener (enabled when ACM certificate is provided)
 # -----------------------------------------------------------------------------
-#
-# resource "aws_lb_listener" "https" {
-#   load_balancer_arn = aws_lb.main.arn
-#   port              = 443
-#   protocol          = "HTTPS"
-#   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-#   certificate_arn   = var.certificate_arn
-#
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.api.arn
-#   }
-#
-#   tags = merge(local.common_tags, {
-#     Name = "${local.name_prefix}-https-listener"
-#   })
-# }
-#
-# # Redirect HTTP to HTTPS
-# resource "aws_lb_listener" "http_redirect" {
-#   load_balancer_arn = aws_lb.main.arn
-#   port              = 80
-#   protocol          = "HTTP"
-#
-#   default_action {
-#     type = "redirect"
-#
-#     redirect {
-#       port        = "443"
-#       protocol    = "HTTPS"
-#       status_code = "HTTP_301"
-#     }
-#   }
-# }
+
+resource "aws_lb_listener" "https" {
+  count = var.acm_certificate_arn != null ? 1 : 0
+
+  load_balancer_arn = aws_lb.main.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = var.ssl_policy
+  certificate_arn   = var.acm_certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
+  }
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-https-listener"
+  })
+}

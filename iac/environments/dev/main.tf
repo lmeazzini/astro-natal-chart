@@ -133,6 +133,9 @@ module "ecs" {
 
   # S3 integration for PDF storage
   s3_pdf_policy_arn = module.s3.pdf_access_policy_arn
+
+  # SSL/TLS for ALB (optional - requires DNS module)
+  acm_certificate_arn = var.domain_name != null ? module.dns[0].alb_certificate_arn : null
 }
 
 module "secrets" {
@@ -184,4 +187,46 @@ module "cloudfront" {
   # Dev settings
   force_destroy     = true # Allow bucket deletion for dev
   enable_versioning = true # Keep for rollback capability
+
+  # Custom domain (optional - requires DNS module)
+  acm_certificate_arn = var.domain_name != null ? module.dns[0].cloudfront_certificate_arn : null
+  domain_aliases      = var.domain_name != null ? [module.dns[0].frontend_fqdn] : []
+}
+
+# -----------------------------------------------------------------------------
+# DNS Module (optional - only when domain_name is set)
+# -----------------------------------------------------------------------------
+# Creates Route53 hosted zone, ACM certificates, and DNS records.
+# Set domain_name variable to enable custom domain configuration.
+# -----------------------------------------------------------------------------
+
+module "dns" {
+  source = "../../modules/dns"
+  count  = var.domain_name != null ? 1 : 0
+
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  environment = var.environment
+  aws_region  = var.aws_region
+  domain_name = var.domain_name
+
+  # Hosted zone configuration
+  create_hosted_zone = var.create_hosted_zone
+  frontend_subdomain = var.frontend_subdomain
+  api_subdomain      = var.api_subdomain
+
+  # CloudFront integration
+  cloudfront_domain_name    = module.cloudfront.distribution_domain_name
+  cloudfront_hosted_zone_id = module.cloudfront.distribution_hosted_zone_id
+
+  # ALB integration
+  alb_dns_name = module.ecs.alb_dns_name
+  alb_zone_id  = module.ecs.alb_zone_id
+
+  # Certificate options
+  create_alb_certificate = true
+  wait_for_validation    = true
 }

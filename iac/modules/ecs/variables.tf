@@ -202,6 +202,22 @@ variable "s3_pdf_policy_arn" {
 }
 
 # -----------------------------------------------------------------------------
+# SSL/TLS Configuration
+# -----------------------------------------------------------------------------
+
+variable "acm_certificate_arn" {
+  description = "ACM certificate ARN for HTTPS listener (from DNS module)"
+  type        = string
+  default     = null
+}
+
+variable "ssl_policy" {
+  description = "SSL policy for HTTPS listener"
+  type        = string
+  default     = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+}
+
+# -----------------------------------------------------------------------------
 # Secrets Manager Integration
 # -----------------------------------------------------------------------------
 

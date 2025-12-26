@@ -118,9 +118,22 @@ module "ecs" {
   desired_count         = var.ecs_desired_count
 }
 
+module "cloudfront" {
+  source = "../../modules/cloudfront"
+
+  environment = var.environment
+  aws_region  = var.aws_region
+  price_class = "PriceClass_100" # US, Canada, Europe only (cheapest)
+  default_ttl = 3600             # 1 hour for dev (faster iteration)
+
+  # Dev settings
+  force_destroy     = true # Allow bucket deletion for dev
+  enable_versioning = true # Keep for rollback capability
+}
+
 # Upcoming modules:
 #
-# module "s3" {
-#   source = "../../modules/s3"
+# module "secrets" {
+#   source = "../../modules/secrets"
 #   # ... variables
 # }

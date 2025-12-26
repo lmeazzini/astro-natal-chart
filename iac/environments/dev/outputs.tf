@@ -105,10 +105,35 @@ output "api_url" {
 }
 
 # -----------------------------------------------------------------------------
-# Future outputs (uncomment as modules are added)
+# CloudFront Outputs
 # -----------------------------------------------------------------------------
 
-# output "cloudfront_domain" {
-#   description = "CloudFront distribution domain"
-#   value       = module.cloudfront.distribution_domain_name
-# }
+output "frontend_url" {
+  description = "URL to access the frontend"
+  value       = module.cloudfront.frontend_url
+}
+
+output "cloudfront_domain" {
+  description = "CloudFront distribution domain"
+  value       = module.cloudfront.distribution_domain_name
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID (for cache invalidation)"
+  value       = module.cloudfront.distribution_id
+}
+
+output "frontend_bucket" {
+  description = "S3 bucket name for frontend files"
+  value       = module.cloudfront.bucket_name
+}
+
+output "frontend_deploy_command" {
+  description = "AWS CLI command to deploy frontend files"
+  value       = module.cloudfront.deploy_command
+}
+
+output "frontend_invalidate_command" {
+  description = "AWS CLI command to invalidate CloudFront cache"
+  value       = module.cloudfront.invalidate_command
+}

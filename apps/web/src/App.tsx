@@ -42,89 +42,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
-/**
- * Component that tracks session start/end events for Amplitude analytics.
- * Must be placed inside AuthProvider to access user state.
- */
-function SessionTracker({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const hasTrackedSessionStart = React.useRef(false);
-
-  // Track session_started when user is authenticated
-  React.useEffect(() => {
-    if (user && !hasTrackedSessionStart.current) {
-      hasTrackedSessionStart.current = true;
-      amplitudeService.track('session_started', {
-        source: 'app_mount',
-      });
-    }
-  }, [user]);
-
-  // Track session_ended on page unload
-  React.useEffect(() => {
-    function handleBeforeUnload() {
-      const sessionStartTime = localStorage.getItem('session_start_time');
-      if (sessionStartTime) {
-        const startTime = parseInt(sessionStartTime, 10);
-        const sessionDurationSeconds = Math.round((Date.now() - startTime) / 1000);
-        amplitudeService.track('session_ended', {
-          session_duration_seconds: sessionDurationSeconds,
-          source: 'page_unload',
-        });
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
-
-  return <>{children}</>;
-}
-
 function App() {
   return (
     <HelmetProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <MotionProvider>
           <AuthProvider>
-            <SessionTracker>
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-                  <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/charts" element={<ChartsPage />} />
-                  <Route path="/charts/new" element={<NewChartPage />} />
-                  <Route path="/charts/:id" element={<ChartDetailPage />} />
-                  <Route path="/charts/:id/edit" element={<EditChartPage />} />
-                  {/* Legal Pages */}
-                  <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/privacy" element={<PrivacyPage />} />
-                  <Route path="/cookies" element={<CookiesPage />} />
-                  <Route path="/consent" element={<ConsentPage />} />
-                  {/* About Pages */}
-                  <Route path="/about/methodology" element={<MethodologyPage />} />
-                  {/* Public Charts */}
-                  <Route path="/public-charts" element={<PublicChartsPage />} />
-                  <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
-                  {/* RAG Knowledge Base */}
-                  <Route path="/rag-documents" element={<RagDocumentsPage />} />
-                  {/* Pricing */}
-                  <Route path="/pricing" element={<PricingPage />} />
-                  {/* Blog */}
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:slug" element={<BlogPostPage />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-                <CookieBanner />
-              </BrowserRouter>
-            </SessionTracker>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/charts" element={<ChartsPage />} />
+                <Route path="/charts/new" element={<NewChartPage />} />
+                <Route path="/charts/:id" element={<ChartDetailPage />} />
+                <Route path="/charts/:id/edit" element={<EditChartPage />} />
+                {/* Legal Pages */}
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/cookies" element={<CookiesPage />} />
+                <Route path="/consent" element={<ConsentPage />} />
+                {/* About Pages */}
+                <Route path="/about/methodology" element={<MethodologyPage />} />
+                {/* Public Charts */}
+                <Route path="/public-charts" element={<PublicChartsPage />} />
+                <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
+                {/* RAG Knowledge Base */}
+                <Route path="/rag-documents" element={<RagDocumentsPage />} />
+                {/* Pricing */}
+                <Route path="/pricing" element={<PricingPage />} />
+                {/* Blog */}
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <CookieBanner />
+            </BrowserRouter>
           </AuthProvider>
         </MotionProvider>
       </ThemeProvider>

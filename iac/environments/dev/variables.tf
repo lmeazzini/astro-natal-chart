@@ -79,11 +79,29 @@ variable "ecs_desired_count" {
 }
 
 # -----------------------------------------------------------------------------
-# Future variables (uncomment as modules are added)
+# DNS Variables (optional - skip DNS module if not set)
 # -----------------------------------------------------------------------------
 
-# variable "s3_bucket_prefix" {
-#   description = "Prefix for S3 bucket names"
-#   type        = string
-#   default     = "astro"
-# }
+variable "domain_name" {
+  description = "Root domain name for the application (optional, skip DNS if null)"
+  type        = string
+  default     = null
+}
+
+variable "create_hosted_zone" {
+  description = "Create new hosted zone (true) or use existing (false)"
+  type        = bool
+  default     = false
+}
+
+variable "frontend_subdomain" {
+  description = "Subdomain for frontend"
+  type        = string
+  default     = "www"
+}
+
+variable "api_subdomain" {
+  description = "Subdomain for API"
+  type        = string
+  default     = "api"
+}

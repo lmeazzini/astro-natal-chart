@@ -1,8 +1,8 @@
 # Disaster Recovery Plan
 
 **Astro Natal Chart Application**
-**Version:** 1.0.0
-**Last Updated:** 2025-11-25
+**Version:** 1.1.0
+**Last Updated:** 2025-12-26
 **Owner:** DevOps Team
 
 ---
@@ -346,6 +346,99 @@ BACKUP_NAME="pre_migration_$(date +%Y%m%d_%H%M%S)" ./scripts/backup-db.sh
 
 ---
 
+### Scenario 5: Qdrant Vector Database Recovery
+
+**Symptoms:**
+- RAG (Retrieval-Augmented Generation) not working
+- AI interpretations returning generic/no results
+- "Collection not found" errors
+- Empty search results from vector queries
+- Qdrant service unresponsive
+
+**Recovery Steps:**
+
+1. **Check Qdrant health**
+   ```bash
+   curl http://localhost:6333/healthz
+   # Also check collections
+   curl http://localhost:6333/collections
+   ```
+
+2. **Stop dependent services**
+   ```bash
+   docker-compose stop api celery_worker
+   ```
+
+3. **Option A: Restore from snapshot** (preferred)
+   ```bash
+   # Find latest snapshot
+   ls -lh /var/backups/qdrant/
+
+   # Delete corrupted collection (if exists)
+   curl -X DELETE "http://localhost:6333/collections/astrology_knowledge"
+
+   # Wait for deletion
+   sleep 2
+
+   # Restore from snapshot
+   curl -X POST "http://localhost:6333/collections/astrology_knowledge/snapshots/upload?priority=snapshot" \
+       -H "Content-Type: multipart/form-data" \
+       -F "snapshot=@/var/backups/qdrant/qdrant_snapshot_YYYYMMDD.snapshot"
+   ```
+
+4. **Option B: Download from S3** (if local backup unavailable)
+   ```bash
+   # Download from S3
+   aws s3 cp s3://your-bucket/backups/qdrant/qdrant_snapshot_YYYYMMDD.snapshot \
+       /tmp/qdrant_restore.snapshot
+
+   # Restore
+   curl -X POST "http://localhost:6333/collections/astrology_knowledge/snapshots/upload?priority=snapshot" \
+       -H "Content-Type: multipart/form-data" \
+       -F "snapshot=@/tmp/qdrant_restore.snapshot"
+   ```
+
+5. **Option C: Regenerate from source** (if no backup available)
+   ```bash
+   # Re-run the knowledge base ingestion
+   cd apps/api
+   uv run python scripts/ingest_astrology_knowledge.py
+   ```
+   Note: This may take significant time depending on document size.
+
+6. **Validate restore**
+   ```bash
+   # Check collection exists and has vectors
+   curl "http://localhost:6333/collections/astrology_knowledge" | jq '.result.points_count'
+
+   # Test a sample search
+   curl -X POST "http://localhost:6333/collections/astrology_knowledge/points/search" \
+       -H "Content-Type: application/json" \
+       -d '{
+           "vector": [0.1, 0.2, 0.3, 0.4],
+           "limit": 1
+       }'
+   ```
+
+7. **Restart services**
+   ```bash
+   docker-compose start api celery_worker
+   ```
+
+8. **Verify AI interpretations work**
+   - Create a test chart in the application
+   - Request AI interpretation
+   - Verify results are contextually relevant
+
+**Notes:**
+- Qdrant data can be regenerated from source documents if needed
+- RAG functionality will be degraded until restore completes
+- Snapshots are stored alongside PostgreSQL backups
+
+**Expected Recovery Time:** 15-30 minutes (snapshot restore), 1-4 hours (regeneration)
+
+---
+
 ## Testing & Validation
 
 ### Automated Restore Tests
@@ -357,6 +450,8 @@ Run automated restore tests monthly to verify backup integrity:
 ```
 
 **What the test does:**
+
+**PostgreSQL:**
 1. Creates isolated test database
 2. Inserts test data
 3. Creates backup
@@ -365,12 +460,39 @@ Run automated restore tests monthly to verify backup integrity:
 6. Validates data integrity
 7. Cleans up test environment
 
+**Qdrant (if available):**
+1. Creates test collection with sample vectors
+2. Inserts test vectors with payloads
+3. Creates snapshot
+4. Modifies data (delete/add vectors)
+5. Restores from snapshot
+6. Validates restored vectors
+7. Cleans up test collection
+
 **Expected output:**
 ```
 ==========================================
   RESTORE TEST PASSED ✓
 ==========================================
 All tests completed successfully!
+
+Summary - PostgreSQL:
+  - Test database created ✓
+  - Test data inserted ✓
+  - Backup created ✓
+  - Data modified ✓
+  - Backup restored ✓
+  - Data validation passed ✓
+  - Cleanup completed ✓
+
+Summary - Qdrant:
+  - Test collection created ✓
+  - Test vectors inserted ✓
+  - Snapshot created ✓
+  - Data modified ✓
+  - Snapshot restored ✓
+  - Data validation passed ✓
+  - Cleanup completed ✓
 ```
 
 ### Manual Disaster Recovery Drill
@@ -397,6 +519,7 @@ Perform full DR drill quarterly (every 3 months):
 
 After any restore operation, verify:
 
+**PostgreSQL:**
 - [ ] Database is accessible
 - [ ] All tables exist and have data
 - [ ] User authentication works
@@ -406,6 +529,13 @@ After any restore operation, verify:
 - [ ] No errors in application logs
 - [ ] Audit logs are intact
 - [ ] Background jobs (Celery) are running
+
+**Qdrant:**
+- [ ] Qdrant healthcheck passes (`/healthz`)
+- [ ] Collections exist and have vectors
+- [ ] AI interpretations return relevant results
+- [ ] RAG queries complete without timeout
+- [ ] No Qdrant-related errors in logs
 
 ---
 
@@ -522,6 +652,7 @@ After completing recovery procedures:
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.1.0 | 2025-12-26 | DevOps Team | Added Qdrant backup/restore procedures and testing |
 | 1.0.0 | 2025-11-25 | DevOps Team | Initial disaster recovery plan |
 
 ---
@@ -535,6 +666,7 @@ After completing recovery procedures:
 - Qdrant Snapshots: https://qdrant.tech/documentation/concepts/snapshots/
 - Issue #7 (Backup Automation): Completed
 - Issue #87 (This document): Current
+- Issue #208 (Qdrant Testing): Completed
 
 ---
 

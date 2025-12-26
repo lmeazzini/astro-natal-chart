@@ -83,17 +83,27 @@ module "vpc" {
   enable_nat_gateway = var.enable_nat_gateway
 }
 
+module "rds" {
+  source = "../../modules/rds"
+
+  environment          = var.environment
+  instance_class       = var.db_instance_class
+  db_subnet_group_name = module.vpc.db_subnet_group_name
+  security_group_id    = module.vpc.rds_security_group_id
+  availability_zone    = var.availability_zone
+}
+
+module "elasticache" {
+  source = "../../modules/elasticache"
+
+  environment       = var.environment
+  node_type         = var.redis_node_type
+  subnet_group_name = module.vpc.elasticache_subnet_group_name
+  security_group_id = module.vpc.redis_security_group_id
+  availability_zone = var.availability_zone
+}
+
 # Upcoming modules:
-#
-# module "rds" {
-#   source = "../../modules/rds"
-#   # ... variables
-# }
-#
-# module "elasticache" {
-#   source = "../../modules/elasticache"
-#   # ... variables
-# }
 #
 # module "ecs" {
 #   source = "../../modules/ecs"

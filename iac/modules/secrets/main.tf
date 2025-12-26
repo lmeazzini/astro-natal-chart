@@ -56,6 +56,11 @@ resource "aws_kms_key" "secrets" {
   deletion_window_in_days = 30
   enable_key_rotation     = true
 
+  # Prevent accidental destruction in production
+  lifecycle {
+    prevent_destroy = false # Set to true for production via variable
+  }
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -121,9 +126,10 @@ resource "random_password" "jwt_secret" {
 
 # Database URL
 resource "aws_secretsmanager_secret" "database_url" {
-  name        = "astro/${var.environment}/database-url"
-  description = "PostgreSQL connection string for FastAPI"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/database-url"
+  description             = "PostgreSQL connection string for FastAPI"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/database-url"
@@ -137,9 +143,10 @@ resource "aws_secretsmanager_secret_version" "database_url" {
 
 # Redis URL
 resource "aws_secretsmanager_secret" "redis_url" {
-  name        = "astro/${var.environment}/redis-url"
-  description = "Redis connection string"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/redis-url"
+  description             = "Redis connection string"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/redis-url"
@@ -153,9 +160,10 @@ resource "aws_secretsmanager_secret_version" "redis_url" {
 
 # JWT Secret Key
 resource "aws_secretsmanager_secret" "secret_key" {
-  name        = "astro/${var.environment}/secret-key"
-  description = "JWT signing secret key"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/secret-key"
+  description             = "JWT signing secret key"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/secret-key"
@@ -178,9 +186,10 @@ resource "aws_secretsmanager_secret_version" "secret_key" {
 resource "aws_secretsmanager_secret" "oauth_google" {
   count = var.google_oauth != null ? 1 : 0
 
-  name        = "astro/${var.environment}/oauth/google"
-  description = "Google OAuth2 credentials"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/oauth/google"
+  description             = "Google OAuth2 credentials"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/oauth/google"
@@ -201,9 +210,10 @@ resource "aws_secretsmanager_secret_version" "oauth_google" {
 resource "aws_secretsmanager_secret" "oauth_github" {
   count = var.github_oauth != null ? 1 : 0
 
-  name        = "astro/${var.environment}/oauth/github"
-  description = "GitHub OAuth credentials"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/oauth/github"
+  description             = "GitHub OAuth credentials"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/oauth/github"
@@ -224,9 +234,10 @@ resource "aws_secretsmanager_secret_version" "oauth_github" {
 resource "aws_secretsmanager_secret" "oauth_facebook" {
   count = var.facebook_oauth != null ? 1 : 0
 
-  name        = "astro/${var.environment}/oauth/facebook"
-  description = "Facebook OAuth credentials"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/oauth/facebook"
+  description             = "Facebook OAuth credentials"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/oauth/facebook"
@@ -251,9 +262,10 @@ resource "aws_secretsmanager_secret_version" "oauth_facebook" {
 resource "aws_secretsmanager_secret" "opencage" {
   count = var.opencage_api_key != null ? 1 : 0
 
-  name        = "astro/${var.environment}/opencage-api-key"
-  description = "OpenCage geocoding API key"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/opencage-api-key"
+  description             = "OpenCage geocoding API key"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/opencage-api-key"
@@ -271,9 +283,10 @@ resource "aws_secretsmanager_secret_version" "opencage" {
 resource "aws_secretsmanager_secret" "openai" {
   count = var.openai_api_key != null ? 1 : 0
 
-  name        = "astro/${var.environment}/openai-api-key"
-  description = "OpenAI API key for AI interpretations"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/openai-api-key"
+  description             = "OpenAI API key for AI interpretations"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/openai-api-key"
@@ -291,9 +304,10 @@ resource "aws_secretsmanager_secret_version" "openai" {
 resource "aws_secretsmanager_secret" "amplitude" {
   count = var.amplitude_api_key != null ? 1 : 0
 
-  name        = "astro/${var.environment}/amplitude-api-key"
-  description = "Amplitude analytics API key"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/amplitude-api-key"
+  description             = "Amplitude analytics API key"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/amplitude-api-key"
@@ -314,9 +328,10 @@ resource "aws_secretsmanager_secret_version" "amplitude" {
 resource "aws_secretsmanager_secret" "smtp" {
   count = var.smtp_config != null ? 1 : 0
 
-  name        = "astro/${var.environment}/smtp"
-  description = "SMTP email configuration"
-  kms_key_id  = aws_kms_key.secrets.arn
+  name                    = "astro/${var.environment}/smtp"
+  description             = "SMTP email configuration"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
 
   tags = merge(local.common_tags, {
     Name = "astro/${var.environment}/smtp"

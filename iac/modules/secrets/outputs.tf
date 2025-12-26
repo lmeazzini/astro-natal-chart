@@ -109,8 +109,8 @@ output "core_secret_arns" {
 
 output "total_secrets_created" {
   description = "Total number of secrets created"
-  sensitive   = true
-  value = (
+  # Using nonsensitive() because this is just a count, not actual secret data
+  value = nonsensitive(
     3 + # Core secrets (database, redis, secret_key)
     (var.google_oauth != null ? 1 : 0) +
     (var.github_oauth != null ? 1 : 0) +
@@ -120,4 +120,24 @@ output "total_secrets_created" {
     (var.amplitude_api_key != null ? 1 : 0) +
     (var.smtp_config != null ? 1 : 0)
   )
+}
+
+# -----------------------------------------------------------------------------
+# All Secret ARNs (for IAM policies)
+# -----------------------------------------------------------------------------
+
+output "all_secret_arns" {
+  description = "List of all secret ARNs for IAM policies"
+  value = compact([
+    aws_secretsmanager_secret.database_url.arn,
+    aws_secretsmanager_secret.redis_url.arn,
+    aws_secretsmanager_secret.secret_key.arn,
+    try(aws_secretsmanager_secret.oauth_google[0].arn, ""),
+    try(aws_secretsmanager_secret.oauth_github[0].arn, ""),
+    try(aws_secretsmanager_secret.oauth_facebook[0].arn, ""),
+    try(aws_secretsmanager_secret.opencage[0].arn, ""),
+    try(aws_secretsmanager_secret.openai[0].arn, ""),
+    try(aws_secretsmanager_secret.amplitude[0].arn, ""),
+    try(aws_secretsmanager_secret.smtp[0].arn, ""),
+  ])
 }

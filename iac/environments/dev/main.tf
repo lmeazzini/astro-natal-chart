@@ -103,6 +103,16 @@ module "elasticache" {
   availability_zone = var.availability_zone
 }
 
+# -----------------------------------------------------------------------------
+# ECS and Secrets Modules
+# -----------------------------------------------------------------------------
+# NOTE: These modules have mutual dependencies that Terraform handles correctly:
+#   - ECS module creates IAM roles first
+#   - Secrets module uses role ARNs for KMS policy
+#   - ECS task definition references secret ARNs
+# Terraform's dependency graph resolves this automatically.
+# -----------------------------------------------------------------------------
+
 module "ecs" {
   source = "../../modules/ecs"
 

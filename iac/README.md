@@ -2,6 +2,21 @@
 
 Terraform configurations for deploying the Astro natal chart application to AWS.
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](./docs/GETTING_STARTED.md) | Step-by-step deployment guide |
+| [Architecture](./docs/ARCHITECTURE.md) | System architecture and diagrams |
+| [Modules](./docs/MODULES.md) | Terraform module reference |
+| [Environments](./docs/ENVIRONMENTS.md) | Environment configuration guide |
+| [Secrets](./docs/SECRETS.md) | Secrets management |
+| [Deployment](./docs/DEPLOYMENT.md) | Deployment procedures |
+| [Disaster Recovery](./docs/DISASTER_RECOVERY.md) | DR runbooks and procedures |
+| [Cost Optimization](./docs/COST_OPTIMIZATION.md) | Cost analysis and optimization |
+| [Troubleshooting](./docs/TROUBLESHOOTING.md) | Common issues and solutions |
+| [Monitoring](./docs/MONITORING.md) | CloudWatch metrics and alarms |
+
 ## Quick Start
 
 ```bash
@@ -123,23 +138,17 @@ The IAM user/role needs permissions for:
 
 ## Troubleshooting
 
-### "Error: No valid credential sources found"
+See [Troubleshooting Guide](./docs/TROUBLESHOOTING.md) for comprehensive solutions.
 
-AWS credentials not loaded. Run:
-```bash
-source scripts/init-backend.sh
-```
+### Common Issues
 
-### "Error: Backend configuration changed"
+| Error | Solution |
+|-------|----------|
+| No valid credential sources | `source scripts/init-backend.sh` |
+| Backend configuration changed | `terraform init -reconfigure` |
+| Resource already exists | `terraform import resource_type.name id` |
+| State lock held | `terraform force-unlock LOCK_ID` |
 
-Re-initialize with:
-```bash
-terraform init -reconfigure
-```
+---
 
-### "Error: Resource already exists"
-
-Import the existing resource:
-```bash
-terraform import aws_s3_bucket.example bucket-name
-```
+*Last updated: 2025-12-26*

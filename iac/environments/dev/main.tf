@@ -116,6 +116,32 @@ module "ecs" {
   cpu                   = var.ecs_cpu
   memory                = var.ecs_memory
   desired_count         = var.ecs_desired_count
+
+  # Secrets Manager integration
+  secret_arns = module.secrets.core_secret_arns
+  kms_key_arn = module.secrets.kms_key_arn
+}
+
+module "secrets" {
+  source = "../../modules/secrets"
+
+  environment = var.environment
+  aws_region  = var.aws_region
+
+  # Core secrets (from RDS and ElastiCache modules)
+  database_url = module.rds.connection_string
+  redis_url    = module.elasticache.redis_url
+
+  # ECS roles for KMS policy
+  ecs_task_role_arn      = module.ecs.task_role_arn
+  ecs_execution_role_arn = module.ecs.execution_role_arn
+
+  # Optional: OAuth and API keys can be added via variables later
+  # google_oauth = var.google_oauth
+  # github_oauth = var.github_oauth
+  # opencage_api_key = var.opencage_api_key
+  # openai_api_key = var.openai_api_key
+  # amplitude_api_key = var.amplitude_api_key
 }
 
 module "cloudfront" {
@@ -130,10 +156,3 @@ module "cloudfront" {
   force_destroy     = true # Allow bucket deletion for dev
   enable_versioning = true # Keep for rollback capability
 }
-
-# Upcoming modules:
-#
-# module "secrets" {
-#   source = "../../modules/secrets"
-#   # ... variables
-# }

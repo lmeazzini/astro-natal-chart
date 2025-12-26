@@ -196,6 +196,26 @@ variable "s3_bucket_arns" {
 }
 
 # -----------------------------------------------------------------------------
+# Secrets Manager Integration
+# -----------------------------------------------------------------------------
+
+variable "secret_arns" {
+  description = "Map of secret ARNs for ECS task environment variable injection"
+  type = object({
+    database_url = string
+    redis_url    = string
+    secret_key   = string
+  })
+  default = null
+}
+
+variable "kms_key_arn" {
+  description = "KMS key ARN used to encrypt secrets (for decrypt permissions)"
+  type        = string
+  default     = null
+}
+
+# -----------------------------------------------------------------------------
 # Tags
 # -----------------------------------------------------------------------------
 

@@ -56,7 +56,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Additional policy for Secrets Manager access (for future use)
+# Additional policy for Secrets Manager access
 resource "aws_iam_role_policy" "ecs_execution_secrets" {
   name = "${local.name_prefix}-ecs-execution-secrets"
   role = aws_iam_role.ecs_execution.id
@@ -72,6 +72,28 @@ resource "aws_iam_role_policy" "ecs_execution_secrets" {
         Resource = [
           "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:astro/${var.environment}/*"
         ]
+      }
+    ]
+  })
+}
+
+# KMS decrypt permissions for Secrets Manager (only when KMS key is provided)
+resource "aws_iam_role_policy" "ecs_execution_kms" {
+  count = var.kms_key_arn != null ? 1 : 0
+
+  name = "${local.name_prefix}-ecs-execution-kms"
+  role = aws_iam_role.ecs_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ]
+        Resource = var.kms_key_arn
       }
     ]
   })

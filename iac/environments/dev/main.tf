@@ -130,6 +130,9 @@ module "ecs" {
   # Secrets Manager integration
   secret_arns = module.secrets.core_secret_arns
   kms_key_arn = module.secrets.kms_key_arn
+
+  # S3 integration for PDF storage
+  s3_pdf_policy_arn = module.s3.pdf_access_policy_arn
 }
 
 module "secrets" {
@@ -152,6 +155,22 @@ module "secrets" {
   # opencage_api_key = var.opencage_api_key
   # openai_api_key = var.openai_api_key
   # amplitude_api_key = var.amplitude_api_key
+}
+
+module "s3" {
+  source = "../../modules/s3"
+
+  environment = var.environment
+  aws_region  = var.aws_region
+  kms_key_arn = module.secrets.kms_key_arn
+
+  # CORS origins for presigned URL downloads
+  allowed_origins = ["http://localhost:5173", "http://localhost:8000"]
+
+  # Dev settings
+  enable_logs_bucket = false
+  enable_versioning  = true
+  force_destroy      = true # Allow bucket deletion for dev
 }
 
 module "cloudfront" {

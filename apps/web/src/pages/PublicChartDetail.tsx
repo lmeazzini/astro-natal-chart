@@ -27,6 +27,7 @@ import type { LunarPhaseData } from '@/components/LunarPhase';
 import type { SolarPhaseData } from '@/components/SolarPhase';
 import type { LordOfNativityData } from '@/components/LordOfNativity';
 import type { TemperamentData } from '@/components/TemperamentDisplay';
+import type { MentalityData } from '@/components/MentalityCard';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { getSignSymbol } from '../utils/astro';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -43,6 +44,7 @@ import { LunarPhase } from '../components/LunarPhase';
 import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
+import { MentalityCard } from '../components/MentalityCard';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { InfoTooltip } from '../components/InfoTooltip';
@@ -68,6 +70,7 @@ interface PublicChartData {
   solar_phase?: SolarPhaseData;
   lord_of_nativity?: LordOfNativityData;
   temperament?: TemperamentData;
+  mentality?: MentalityData;
   arabic_parts?: ArabicParts;
   calculation_timestamp?: string;
 }
@@ -562,6 +565,18 @@ export function PublicChartDetailPage() {
                         {t('chartDetail.temperament', { defaultValue: 'Temperament Analysis' })}
                       </h3>
                       <TemperamentDisplay temperament={chartData.temperament} />
+                    </div>
+                  )}
+
+                  {/* Mentality (Issue #57) */}
+                  {chartData.mentality && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.sections.mentality', {
+                          defaultValue: 'Mentality Analysis',
+                        })}
+                      </h3>
+                      <MentalityCard mentality={chartData.mentality} />
                     </div>
                   )}
 

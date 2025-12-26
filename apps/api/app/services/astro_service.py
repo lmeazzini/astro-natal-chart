@@ -10,6 +10,7 @@ import swisseph as swe
 
 from app.astro.dignities import calculate_essential_dignities, find_lord_of_nativity, get_sign_ruler
 from app.astro.lunar_phase import calculate_lunar_phase
+from app.astro.mentality import calculate_mentality
 from app.astro.solar_phase import calculate_solar_phase
 from app.astro.temperament import calculate_temperament
 from app.schemas.chart import AspectData, HousePosition, PlanetPosition
@@ -963,6 +964,14 @@ def calculate_birth_chart(
         language=language,
     )
 
+    # Calculate Mentality (Issue #57)
+    mentality = calculate_mentality(
+        planets=planets_with_dignities,
+        houses=[h.model_dump() for h in houses],
+        aspects=[a.model_dump() for a in aspects],
+        language=language,
+    )
+
     # Calculate Arabic Parts (Lots)
     arabic_parts = calculate_arabic_parts(
         ascendant=ascendant,
@@ -988,6 +997,7 @@ def calculate_birth_chart(
         "solar_phase": solar_phase,
         "lord_of_nativity": lord_of_nativity,
         "temperament": temperament,
+        "mentality": mentality,
         "arabic_parts": arabic_parts,
         "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

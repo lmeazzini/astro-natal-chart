@@ -29,7 +29,12 @@ from app.schemas.chart import (
     PDFDownloadResponse,
     PDFDownloadURLResponse,
 )
-from app.services import chart_service
+from app.services.chart_service import (
+    ChartNotFoundError,
+    ChartService,
+    UnauthorizedAccessError,
+    get_chart_service,
+)
 from app.services.s3_service import s3_service
 from app.tasks.astro_tasks import generate_birth_chart_task
 from app.tasks.pdf_tasks import generate_chart_pdf_task
@@ -332,6 +337,7 @@ async def create_chart(
     chart_data: BirthChartCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> BirthChartRead:
     """
     Create a new birth chart with async processing.
@@ -352,6 +358,7 @@ async def create_chart(
         chart_data: Birth chart data
         current_user: Current authenticated user
         db: Database session
+        chart_service: Injected chart service
 
     Returns:
         Created birth chart with status='processing' (no chart_data yet)
@@ -359,8 +366,7 @@ async def create_chart(
     try:
         # Check chart limit for unverified users
         if not current_user.email_verified:
-            chart_repo = ChartRepository(db)
-            chart_count = await chart_repo.count_by_user(UUID(str(current_user.id)))
+            chart_count = await chart_service.count_user_charts(UUID(str(current_user.id)))
             if chart_count >= settings.UNVERIFIED_USER_CHART_LIMIT:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -372,7 +378,6 @@ async def create_chart(
 
         # Create initial chart record (no calculations yet)
         chart = await chart_service.create_birth_chart_async(
-            db=db,
             user_id=UUID(str(current_user.id)),
             chart_data=chart_data,
         )
@@ -426,7 +431,7 @@ async def list_charts(
     request: Request,
     response: Response,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
 ) -> BirthChartList:
@@ -434,8 +439,10 @@ async def list_charts(
     List all birth charts for current user.
 
     Args:
+        request: FastAPI request (for rate limiting)
+        response: FastAPI response
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
         page: Page number (starts at 1)
         page_size: Number of items per page
 
@@ -445,14 +452,12 @@ async def list_charts(
     skip = (page - 1) * page_size
 
     charts = await chart_service.get_user_charts(
-        db=db,
         user_id=UUID(str(current_user.id)),
         skip=skip,
         limit=page_size,
     )
 
     total = await chart_service.count_user_charts(
-        db=db,
         user_id=UUID(str(current_user.id)),
     )
 
@@ -480,7 +485,7 @@ async def get_chart_status(
     response: Response,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> ChartStatusResponse:
     """
     Get birth chart processing status.
@@ -493,14 +498,13 @@ async def get_chart_status(
     Args:
         chart_id: Birth chart UUID
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
 
     Returns:
         Chart status information (status, progress, error_message)
     """
     try:
         chart = await chart_service.get_chart_by_id(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
         )
@@ -511,12 +515,12 @@ async def get_chart_status(
             error_message=chart.error_message,
             task_id=chart.task_id,
         )
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -535,7 +539,7 @@ async def get_chart(
     response: Response,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
     lang: str = Query(
         DEFAULT_LANGUAGE,
         description="Language for chart data (en-US or pt-BR)",
@@ -551,7 +555,7 @@ async def get_chart(
     Args:
         chart_id: Birth chart UUID
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
         lang: Language code for translated content (default: en-US)
 
     Returns:
@@ -559,7 +563,6 @@ async def get_chart(
     """
     try:
         chart = await chart_service.get_chart_by_id(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
             is_admin=current_user.is_admin,
@@ -599,12 +602,12 @@ async def get_chart(
             updated_at=chart.updated_at,
             deleted_at=chart.deleted_at,
         )
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -624,7 +627,7 @@ async def update_chart(
     chart_id: UUID,
     update_data: BirthChartUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> BirthChartRead:
     """
     Update a birth chart.
@@ -633,25 +636,24 @@ async def update_chart(
         chart_id: Birth chart UUID
         update_data: Updated chart data
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
 
     Returns:
         Updated birth chart
     """
     try:
         chart = await chart_service.update_birth_chart(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
             update_data=update_data,
         )
         return chart  # type: ignore[return-value]
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -670,7 +672,7 @@ async def delete_chart(
     response: Response,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
     hard_delete: bool = Query(False, description="Permanently delete if true"),
 ) -> None:
     """
@@ -679,22 +681,21 @@ async def delete_chart(
     Args:
         chart_id: Birth chart UUID
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
         hard_delete: If true, permanently delete; otherwise soft delete
     """
     try:
         await chart_service.delete_birth_chart(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
             soft_delete=not hard_delete,
         )
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -719,6 +720,7 @@ async def generate_chart_pdf(
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> dict[str, str]:
     """
     Generate PDF report for a birth chart (async).
@@ -737,6 +739,7 @@ async def generate_chart_pdf(
         chart_id: Birth chart UUID
         current_user: Current authenticated user
         db: Database session
+        chart_service: Injected chart service
 
     Returns:
         Message with task status
@@ -751,7 +754,6 @@ async def generate_chart_pdf(
 
         # Verify chart exists and user has access
         chart = await chart_service.get_chart_by_id(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
         )
@@ -812,12 +814,12 @@ async def generate_chart_pdf(
 
     except HTTPException:
         raise
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -836,7 +838,7 @@ async def get_pdf_status(
     response: Response,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> PDFDownloadResponse:
     """
     Get PDF generation status and download URL for a birth chart.
@@ -854,7 +856,7 @@ async def get_pdf_status(
     Args:
         chart_id: Birth chart UUID
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
 
     Returns:
         PDF status with download URL and metadata
@@ -863,7 +865,6 @@ async def get_pdf_status(
 
     try:
         chart = await chart_service.get_chart_by_id(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
         )
@@ -914,12 +915,12 @@ async def get_pdf_status(
             message="PDF is ready for download.",
         )
 
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -937,7 +938,7 @@ async def download_chart_pdf(
     request: Request,
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
     response: Response,
 ) -> PDFDownloadURLResponse:
     """
@@ -951,7 +952,7 @@ async def download_chart_pdf(
     Args:
         chart_id: Birth chart UUID
         current_user: Current authenticated user
-        db: Database session
+        chart_service: Injected chart service
         response: FastAPI response object for setting headers
 
     Returns:
@@ -959,7 +960,6 @@ async def download_chart_pdf(
     """
     try:
         chart = await chart_service.get_chart_by_id(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
         )
@@ -1012,12 +1012,12 @@ async def download_chart_pdf(
             content_type="application/pdf",
         )
 
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",
@@ -1043,6 +1043,7 @@ async def recalculate_chart(
     chart_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> BirthChartRead:
     """
     Force recalculation of a birth chart.
@@ -1058,6 +1059,7 @@ async def recalculate_chart(
         chart_id: Birth chart UUID
         current_user: Current authenticated user
         db: Database session
+        chart_service: Injected chart service
 
     Returns:
         Updated birth chart with recalculated data
@@ -1065,7 +1067,6 @@ async def recalculate_chart(
     try:
         # Verify access and get the chart
         chart = await chart_service.get_chart_by_id(
-            db=db,
             chart_id=chart_id,
             user_id=UUID(str(current_user.id)),
             is_admin=current_user.is_admin,
@@ -1098,12 +1099,12 @@ async def recalculate_chart(
         logger.info(f"Dispatched recalculation task {task.id} for chart {chart_id}")
         return chart  # type: ignore[return-value]
 
-    except chart_service.ChartNotFoundError:
+    except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Birth chart not found",
         ) from None
-    except chart_service.UnauthorizedAccessError:
+    except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have access to this birth chart",

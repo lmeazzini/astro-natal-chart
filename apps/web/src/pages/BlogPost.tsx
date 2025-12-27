@@ -316,8 +316,13 @@ export function BlogPostPage() {
         {/* Header */}
         <header className="border-b bg-card">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <Link to="/" className="text-xl font-bold text-primary">
-              Real Astrology
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt="Real Astrology"
+                className="h-9 w-9 rounded-full object-cover border border-primary/10"
+              />
+              <span className="text-xl font-bold text-primary">Real Astrology</span>
             </Link>
             <div className="flex items-center gap-4">
               <LanguageSelector />

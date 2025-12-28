@@ -1,5 +1,5 @@
 """
-Portuguese (Brazil) translations for essential dignities.
+Portuguese (Brazil) translations for essential dignities and terms.
 """
 
 from typing import Any
@@ -38,5 +38,20 @@ translations: dict[str, Any] = {
         "face": "user",
         "detriment": "warning",
         "fall": "arrow-down",
+    },
+    "terms": {
+        "title": "Termos Planetários",
+        "system": "Sistema de Termos",
+        "egyptian": "Termos Egípcios",
+        "ptolemaic": "Termos Ptolemaicos",
+        "chaldean": "Termos Caldeus",
+        "dorothean": "Termos Doretianos",
+        "term_ruler": "Regente do Termo",
+        "in_own_term": "No Próprio Termo",
+        "planets_in_own_term": "Planetas no Próprio Termo",
+        "reference_table": "Tabela de Referência",
+        "degree_range": "Faixa de Graus",
+        "term_points": "+2 pontos de dignidade",
+        "description": "Os termos (limites) dividem cada signo do zodíaco em 5 segmentos desiguais, cada um regido por um dos cinco planetas visíveis (excluindo os luminares).",
     },
 }

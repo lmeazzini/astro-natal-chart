@@ -947,6 +947,36 @@
         "title": "Apenas para Fins Educacionais",
         "text": "Estes cálculos são apresentados apenas para fins históricos e educacionais. Eles não são cientificamente validados e nunca devem ser usados para previsões de saúde ou decisões médicas."
       }
+    },
+    "planetaryTerms": {
+      "title": "Termos Planetários",
+      "subtitle": "Sistema tradicional de dignidades por limites",
+      "description": "Os termos (limites) dividem cada signo do zodíaco em 5 segmentos desiguais, cada um regido por um dos cinco planetas visíveis (excluindo os luminares).",
+      "system": "Sistema de Termos",
+      "selectSystem": "Selecione o sistema",
+      "egyptian": "Egípcio",
+      "ptolemaic": "Ptolemaico",
+      "chaldean": "Caldeu",
+      "dorothean": "Doretiano",
+      "egyptianDesc": "Mais utilizado na astrologia helenística",
+      "ptolemaicDesc": "Sistema refinado de Ptolemeu do Tetrabiblos",
+      "chaldeanDesc": "Padrão regular de 8-7-6-5-4 graus",
+      "dorotheanDesc": "De Dorotheus de Sidon",
+      "termRuler": "Regente do Termo",
+      "inOwnTerm": "No Próprio Termo",
+      "planet": "Planeta",
+      "degrees": "Graus",
+      "ruler": "Regente",
+      "planetsInOwnTerm": "Planetas no Próprio Termo",
+      "termRulerFrequency": "Frequência de Regentes",
+      "referenceTable": "Tabela de Referência",
+      "showReferenceTable": "Mostrar Tabela de Referência",
+      "hideReferenceTable": "Ocultar Tabela de Referência",
+      "sign": "Signo",
+      "termPoints": "+2 pontos de dignidade",
+      "noTermData": "Dados de termos não disponíveis para este mapa.",
+      "aboutTerms": "Sobre os Termos",
+      "aboutTermsDesc": "Os termos (também chamados de 'limites') são uma das cinco dignidades essenciais na astrologia tradicional. Um planeta em seu próprio termo recebe +2 pontos de dignidade, representando uma forma menor, mas significativa, de dignidade essencial."
     }
   },
   "pages": {

@@ -1,5 +1,5 @@
 """
-English translations for essential dignities.
+English translations for essential dignities and terms.
 """
 
 from typing import Any
@@ -38,5 +38,20 @@ translations: dict[str, Any] = {
         "face": "user",
         "detriment": "warning",
         "fall": "arrow-down",
+    },
+    "terms": {
+        "title": "Planetary Terms",
+        "system": "Term System",
+        "egyptian": "Egyptian Terms",
+        "ptolemaic": "Ptolemaic Terms",
+        "chaldean": "Chaldean Terms",
+        "dorothean": "Dorothean Terms",
+        "term_ruler": "Term Ruler",
+        "in_own_term": "In Own Term",
+        "planets_in_own_term": "Planets in Own Term",
+        "reference_table": "Reference Table",
+        "degree_range": "Degree Range",
+        "term_points": "+2 dignity points",
+        "description": "Terms (bounds) divide each zodiac sign into 5 unequal segments, each ruled by one of the five visible planets (excluding luminaries).",
     },
 }

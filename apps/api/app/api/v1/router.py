@@ -22,6 +22,7 @@ from app.api.v1.endpoints import (
     public_charts,
     rag,
     seo,
+    terms,
     timezones,
     users,
 )
@@ -154,4 +155,10 @@ api_router.include_router(
 api_router.include_router(
     longevity.router,
     tags=["longevity"],
+)
+
+# Planetary Terms (Bounds) endpoints - essential dignities reference
+api_router.include_router(
+    terms.router,
+    tags=["terms"],
 )

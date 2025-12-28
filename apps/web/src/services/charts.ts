@@ -9,6 +9,7 @@ import type { LordOfNativityData } from '@/components/LordOfNativity';
 import type { TemperamentData } from '@/components/TemperamentDisplay';
 import type { MentalityData } from '@/components/MentalityCard';
 import type { LongevityData } from '@/types/longevity';
+import type { ChartTermsData, TermsTableData, TermSystem } from '@/types/terms';
 
 export interface BirthChartCreate {
   person_name: string;
@@ -259,5 +260,32 @@ export const chartsService = {
    */
   async recalculate(chartId: string, token: string): Promise<BirthChart> {
     return apiClient.post<BirthChart>(`/api/v1/charts/${chartId}/recalculate`, {}, token);
+  },
+
+  /**
+   * Get term rulers for all planets in a chart
+   * @param chartId - The chart ID
+   * @param token - Authentication token
+   * @param system - Term system to use (egyptian, ptolemaic, chaldean, dorothean)
+   */
+  async getChartTerms(
+    chartId: string,
+    token: string,
+    system: TermSystem = 'egyptian'
+  ): Promise<ChartTermsData> {
+    return apiClient.get<ChartTermsData>(`/api/v1/charts/${chartId}/terms?system=${system}`, token);
+  },
+};
+
+/**
+ * Terms reference service (no authentication required)
+ */
+export const termsService = {
+  /**
+   * Get the complete terms reference table for a system
+   * @param system - Term system to use (egyptian, ptolemaic, chaldean, dorothean)
+   */
+  async getTermsTable(system: TermSystem = 'egyptian'): Promise<TermsTableData> {
+    return apiClient.get<TermsTableData>(`/api/v1/dignities/terms/table?system=${system}`);
   },
 };

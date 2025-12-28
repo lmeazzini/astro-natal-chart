@@ -6,12 +6,13 @@ Hellenistic and Medieval astrology, including:
 - Rulership (Domicile)
 - Exaltation
 - Triplicity (by sect)
-- Term (Bounds) - Egyptian system
+- Term (Bounds) - Egyptian system (default, other systems available in terms.py)
 - Face (Decan)
 """
 
 from typing import Any
 
+from app.astro.terms import EGYPTIAN_TERMS
 from app.translations import DEFAULT_LANGUAGE, get_translation
 
 # Zodiac signs in order
@@ -97,94 +98,8 @@ SIGN_ELEMENTS = {
     "Pisces": "Water",
 }
 
-# Egyptian terms (bounds) - each planet rules specific degree ranges in each sign
-# Format: {sign: [(start_degree, end_degree, planet), ...]}
-EGYPTIAN_TERMS = {
-    "Aries": [
-        (0, 6, "Jupiter"),
-        (6, 14, "Venus"),
-        (14, 21, "Mercury"),
-        (21, 26, "Mars"),
-        (26, 30, "Saturn"),
-    ],
-    "Taurus": [
-        (0, 8, "Venus"),
-        (8, 15, "Mercury"),
-        (15, 22, "Jupiter"),
-        (22, 27, "Saturn"),
-        (27, 30, "Mars"),
-    ],
-    "Gemini": [
-        (0, 7, "Mercury"),
-        (7, 14, "Jupiter"),
-        (14, 21, "Venus"),
-        (21, 26, "Mars"),
-        (26, 30, "Saturn"),
-    ],
-    "Cancer": [
-        (0, 7, "Mars"),
-        (7, 13, "Venus"),
-        (13, 19, "Mercury"),
-        (19, 26, "Jupiter"),
-        (26, 30, "Saturn"),
-    ],
-    "Leo": [
-        (0, 6, "Jupiter"),
-        (6, 13, "Venus"),
-        (13, 19, "Mercury"),
-        (19, 25, "Saturn"),
-        (25, 30, "Mars"),
-    ],
-    "Virgo": [
-        (0, 7, "Mercury"),
-        (7, 13, "Venus"),
-        (13, 18, "Jupiter"),
-        (18, 24, "Mars"),
-        (24, 30, "Saturn"),
-    ],
-    "Libra": [
-        (0, 6, "Saturn"),
-        (6, 11, "Venus"),
-        (11, 19, "Jupiter"),
-        (19, 24, "Mercury"),
-        (24, 30, "Mars"),
-    ],
-    "Scorpio": [
-        (0, 6, "Mars"),
-        (6, 14, "Venus"),
-        (14, 21, "Mercury"),
-        (21, 27, "Jupiter"),
-        (27, 30, "Saturn"),
-    ],
-    "Sagittarius": [
-        (0, 8, "Jupiter"),
-        (8, 14, "Venus"),
-        (14, 19, "Mercury"),
-        (19, 25, "Saturn"),
-        (25, 30, "Mars"),
-    ],
-    "Capricorn": [
-        (0, 6, "Venus"),
-        (6, 12, "Mercury"),
-        (12, 19, "Jupiter"),
-        (19, 25, "Mars"),
-        (25, 30, "Saturn"),
-    ],
-    "Aquarius": [
-        (0, 6, "Saturn"),
-        (6, 12, "Mercury"),
-        (12, 20, "Venus"),
-        (20, 25, "Jupiter"),
-        (25, 30, "Mars"),
-    ],
-    "Pisces": [
-        (0, 8, "Venus"),
-        (8, 14, "Jupiter"),
-        (14, 20, "Mercury"),
-        (20, 26, "Mars"),
-        (26, 30, "Saturn"),
-    ],
-}
+# Egyptian terms are now imported from app.astro.terms
+# For other term systems (Ptolemaic, Chaldean, Dorothean), use app.astro.terms module directly
 
 # Faces (decans) - 10-degree divisions, ruled by planets in Chaldean order
 # Chaldean order: Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon (repeated)

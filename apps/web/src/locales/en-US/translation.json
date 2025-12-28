@@ -445,6 +445,7 @@
     },
     "lunarPhase": "Lunar Phase",
     "solarPhase": "Solar Phase",
+    "prenatalSyzygy": "Prenatal Syzygy",
     "interpretations": "AI Interpretations",
     "refreshInterpretations": "Refresh AI interpretations",
     "refreshAI": "Refresh AI",
@@ -906,6 +907,13 @@
       "phaseSigns": "Phase Signs",
       "interpretation": "Interpretation",
       "note": "The solar phase at birth is based on the Sun's sign and reveals the fundamental temperament and primary qualities of your personality according to traditional astrology."
+    },
+    "prenatalSyzygy": {
+      "position": "Position",
+      "house": "House",
+      "keywords": "Keywords",
+      "interpretation": "Interpretation",
+      "note": "The prenatal syzygy is the last New Moon or Full Moon before your birth, revealing the lunar cycle during conception and early development."
     },
     "longevity": {
       "noData": "Longevity data not available for this chart.",

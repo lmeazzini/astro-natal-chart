@@ -11,6 +11,7 @@ import swisseph as swe
 from app.astro.dignities import calculate_essential_dignities, find_lord_of_nativity, get_sign_ruler
 from app.astro.lunar_phase import calculate_lunar_phase
 from app.astro.mentality import calculate_mentality
+from app.astro.prenatal_syzygy import calculate_prenatal_syzygy
 from app.astro.solar_phase import calculate_solar_phase
 from app.astro.temperament import calculate_temperament
 from app.schemas.chart import AspectData, HousePosition, PlanetPosition
@@ -901,6 +902,15 @@ def calculate_birth_chart(
     # Calculate solar phase
     solar_phase = calculate_solar_phase(sun_sign, language)
 
+    # Calculate prenatal syzygy (last New Moon or Full Moon before birth)
+    prenatal_syzygy = calculate_prenatal_syzygy(
+        birth_jd=jd,
+        sun_longitude=sun_longitude,
+        moon_longitude=moon_longitude,
+        houses=[h.model_dump() for h in houses],
+        language=language,
+    )
+
     # Add essential dignities to each planet
     planets_with_dignities = []
     for planet in planets:
@@ -1011,6 +1021,7 @@ def calculate_birth_chart(
         "sect_analysis": sect_analysis,
         "lunar_phase": lunar_phase,
         "solar_phase": solar_phase,
+        "prenatal_syzygy": prenatal_syzygy,
         "lord_of_nativity": lord_of_nativity,
         "temperament": temperament,
         "mentality": mentality,

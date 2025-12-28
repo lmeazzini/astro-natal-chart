@@ -29,6 +29,7 @@ import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { GrowthSuggestions } from '../components/GrowthSuggestions';
 import { PlanetaryTerms } from '../components/PlanetaryTerms';
+import { PrenatalSyzygy } from '../components/PrenatalSyzygy';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load LongevityAnalysis for code splitting (premium feature)
@@ -925,6 +926,16 @@ export function ChartDetailPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Prenatal Syzygy */}
+                  {chart.chart_data.prenatal_syzygy && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.prenatalSyzygy', { defaultValue: 'Prenatal Syzygy' })}
+                      </h3>
+                      <PrenatalSyzygy prenatalSyzygy={chart.chart_data.prenatal_syzygy} />
+                    </div>
+                  )}
 
                   {/* Sect Analysis */}
                   {chart.chart_data.sect_analysis && (

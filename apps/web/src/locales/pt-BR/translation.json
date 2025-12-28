@@ -441,6 +441,7 @@
     },
     "lunarPhase": "Fase Lunar",
     "solarPhase": "Fase Solar",
+    "prenatalSyzygy": "Sizígia Pré-natal",
     "interpretations": "Interpretações com IA",
     "refreshInterpretations": "Atualizar interpretações com IA",
     "refreshAI": "Atualizar IA",
@@ -902,6 +903,13 @@
       "phaseSigns": "Signos da Fase",
       "interpretation": "Interpretação",
       "note": "A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional."
+    },
+    "prenatalSyzygy": {
+      "position": "Posição",
+      "house": "Casa",
+      "keywords": "Palavras-chave",
+      "interpretation": "Interpretação",
+      "note": "A sizígia pré-natal é a última Lua Nova ou Lua Cheia antes do seu nascimento, revelando o ciclo lunar durante a concepção e o desenvolvimento inicial."
     },
     "longevity": {
       "noData": "Dados de longevidade não disponíveis para este mapa.",

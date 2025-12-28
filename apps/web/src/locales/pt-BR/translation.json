@@ -361,7 +361,8 @@
       "aspects": "Aspectos",
       "arabicParts": "Partes Árabes",
       "interpretations": "Interpretações",
-      "growth": "Crescimento"
+      "growth": "Crescimento",
+      "longevity": "Longevidade"
     },
     "sections": {
       "chartWheel": "Roda do Mapa Natal",
@@ -901,6 +902,51 @@
       "phaseSigns": "Signos da Fase",
       "interpretation": "Interpretação",
       "note": "A fase solar no nascimento está baseada no signo do Sol e revela o temperamento fundamental e as qualidades primárias da sua personalidade segundo a astrologia tradicional."
+    },
+    "longevity": {
+      "noData": "Dados de longevidade não disponíveis para este mapa.",
+      "noHyleg": "Não encontrado",
+      "house": "Casa",
+      "years": "anos",
+      "dayChart": "Mapa Diurno",
+      "nightChart": "Mapa Noturno",
+      "hyleg": {
+        "title": "Hyleg (Doador da Vida)",
+        "subtitle": "O significador da força vital",
+        "qualification": "Qualificação",
+        "domicileLord": "Regente do Domicílio",
+        "aspectingPlanets": "Planetas em Aspecto",
+        "candidatesEvaluated": "Candidatos Avaliados",
+        "notFound": "Não foi possível determinar o Hyleg para este mapa."
+      },
+      "alcochoden": {
+        "title": "Alcochoden (Doador dos Anos)",
+        "subtitle": "O planeta que determina a longevidade",
+        "notFound": "Não foi possível determinar o Alcochoden.",
+        "planetaryYears": "Anos Planetários",
+        "minor": "Menor",
+        "middle": "Médio",
+        "major": "Maior",
+        "calculation": "Cálculo",
+        "baseYears": "Anos Base",
+        "totalYears": "Total",
+        "candidatesEvaluated": "Candidatos Avaliados",
+        "yearType": {
+          "minor": "Anos Menores",
+          "middle": "Anos Médios",
+          "major": "Anos Maiores"
+        }
+      },
+      "summary": {
+        "title": "Resumo da Análise",
+        "vitalForce": "Força Vital",
+        "yearsIndicator": "Indicador de Anos",
+        "notDetermined": "Não pôde ser determinado"
+      },
+      "disclaimer": {
+        "title": "Apenas para Fins Educacionais",
+        "text": "Estes cálculos são apresentados apenas para fins históricos e educacionais. Eles não são cientificamente validados e nunca devem ser usados para previsões de saúde ou decisões médicas."
+      }
     }
   },
   "pages": {

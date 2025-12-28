@@ -993,6 +993,22 @@ We use a simplified GitFlow with two main branches:
 3. **Hotfix in production?** → Create `hotfix/xxx` from `main` → PR to `main` AND `dev`
 4. **Release?** → PR from `dev` to `main` → Create tag and GitHub release
 
+### Implementation Workflow (IMPORTANT)
+
+**For every new feature or bug fix implementation, follow this workflow:**
+
+1. **Create a new branch from `dev`** - Never commit directly to `dev` or `main`
+2. **Write tests FIRST (Test-Driven Development)** - Implement tests before writing the actual code
+3. **Implement the feature/fix** - Make tests pass
+4. **Open a PR to `dev` branch** - Never merge directly
+
+**Test-Driven Development (TDD) Guidelines:**
+- Write unit tests first for calculation logic
+- Write API integration tests for endpoints
+- Run tests frequently during development: `uv run pytest tests/test_xxx -v`
+- Aim for high test coverage on new code
+- Tests should cover: happy path, edge cases, error handling, authentication/authorization
+
 ### Workflow Steps
 
 1. **Create feature branch from `dev`:**
@@ -1002,11 +1018,16 @@ We use a simplified GitFlow with two main branches:
    git checkout -b feature/my-feature
    ```
 
-2. Make changes with hot-reload active (both frontend and backend)
+2. **Write tests first (TDD)**:
+   - Create test file in appropriate `tests/` directory
+   - Write failing tests for expected behavior
+   - Run tests to confirm they fail: `uv run pytest tests/test_xxx -v`
 
-3. Run tests locally: `make test`
+3. Make changes with hot-reload active (both frontend and backend)
 
-4. **BEFORE COMMITTING: Verify CI checks pass locally**
+4. Run tests locally: `make test`
+
+5. **BEFORE COMMITTING: Verify CI checks pass locally**
    ```bash
    # Backend linting and type checking
    cd apps/api && uv run ruff check .
@@ -1024,17 +1045,17 @@ We use a simplified GitFlow with two main branches:
    ```
    **CRITICAL**: All these checks MUST pass before committing. The CI pipeline runs the same checks and will fail if any errors exist.
 
-5. Commit with Conventional Commits: `git commit -m "feat: add aspect calculation"`
+6. Commit with Conventional Commits: `git commit -m "feat: add aspect calculation"`
 
-6. Push and create PR **to `dev`** (CI will run automatically):
+7. Push and create PR **to `dev`** (CI will run automatically):
    ```bash
    git push origin feature/my-feature
    gh pr create --base dev --title "feat: add aspect calculation"
    ```
 
-7. Wait for CI to pass (all 3 jobs must be green: backend, frontend, build)
+8. Wait for CI to pass (all 3 jobs must be green: backend, frontend, build)
 
-8. After approval, merge to `dev`
+9. After approval, merge to `dev`
 
 ### Release Process (dev → main)
 

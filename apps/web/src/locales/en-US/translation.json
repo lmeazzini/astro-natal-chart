@@ -361,7 +361,8 @@
       "aspects": "Aspects",
       "arabicParts": "Arabic Parts",
       "interpretations": "Interpretations",
-      "growth": "Growth"
+      "growth": "Growth",
+      "longevity": "Longevity"
     },
     "sections": {
       "chartWheel": "Birth Chart Wheel",
@@ -905,6 +906,51 @@
       "phaseSigns": "Phase Signs",
       "interpretation": "Interpretation",
       "note": "The solar phase at birth is based on the Sun's sign and reveals the fundamental temperament and primary qualities of your personality according to traditional astrology."
+    },
+    "longevity": {
+      "noData": "Longevity data not available for this chart.",
+      "noHyleg": "Not found",
+      "house": "House",
+      "years": "years",
+      "dayChart": "Day Chart",
+      "nightChart": "Night Chart",
+      "hyleg": {
+        "title": "Hyleg (Giver of Life)",
+        "subtitle": "The vital force significator",
+        "qualification": "Qualification",
+        "domicileLord": "Domicile Lord",
+        "aspectingPlanets": "Aspecting Planets",
+        "candidatesEvaluated": "Candidates Evaluated",
+        "notFound": "No Hyleg could be determined for this chart."
+      },
+      "alcochoden": {
+        "title": "Alcochoden (Giver of Years)",
+        "subtitle": "The planet determining lifespan",
+        "notFound": "No Alcochoden could be determined.",
+        "planetaryYears": "Planetary Years",
+        "minor": "Minor",
+        "middle": "Middle",
+        "major": "Major",
+        "calculation": "Calculation",
+        "baseYears": "Base Years",
+        "totalYears": "Total",
+        "candidatesEvaluated": "Candidates Evaluated",
+        "yearType": {
+          "minor": "Minor Years",
+          "middle": "Middle Years",
+          "major": "Major Years"
+        }
+      },
+      "summary": {
+        "title": "Analysis Summary",
+        "vitalForce": "Vital Force",
+        "yearsIndicator": "Years Indicator",
+        "notDetermined": "Could not be determined"
+      },
+      "disclaimer": {
+        "title": "Educational Purpose Only",
+        "text": "These calculations are presented for historical and educational purposes only. They are not scientifically validated and should never be used for health predictions or medical decisions."
+      }
     }
   },
   "pages": {

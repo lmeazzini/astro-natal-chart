@@ -985,6 +985,22 @@ def calculate_birth_chart(
     # Calculate complete sect analysis with planet classifications
     sect_analysis = calculate_sect_analysis(planets_with_dignities, sect)
 
+    # Calculate Longevity Analysis (Hyleg + Alcochoden) - Issue #134, #135
+    from app.astro.longevity import calculate_longevity_analysis
+
+    longevity = calculate_longevity_analysis(
+        planets=planets_with_dignities,
+        houses=[h.model_dump() for h in houses],
+        aspects=[a.model_dump() for a in aspects],
+        ascendant=ascendant,
+        arabic_parts=arabic_parts,
+        sect=sect,
+        birth_jd=jd,
+        sun_longitude=sun_longitude,
+        method="ptolemaic",
+        language=language,
+    )
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -999,5 +1015,6 @@ def calculate_birth_chart(
         "temperament": temperament,
         "mentality": mentality,
         "arabic_parts": arabic_parts,
+        "longevity": longevity,
         "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

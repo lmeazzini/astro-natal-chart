@@ -977,7 +977,13 @@
       "noTermData": "Dados de termos não disponíveis para este mapa.",
       "aboutTerms": "Sobre os Termos",
       "aboutTermsDesc": "Os termos (também chamados de 'limites') são uma das cinco dignidades essenciais na astrologia tradicional. Um planeta em seu próprio termo recebe +2 pontos de dignidade, representando uma forma menor, mas significativa, de dignidade essencial.",
-      "termNumber": "Termo {{number}}"
+      "termNumber": "Termo {{number}}",
+      "errors": {
+        "authRequired": "Autenticação necessária para visualizar os dados de termos.",
+        "chartNotFound": "Mapa não encontrado.",
+        "networkError": "Não foi possível conectar. Verifique sua conexão.",
+        "noChartId": "ID do mapa não fornecido."
+      }
     }
   },
   "pages": {

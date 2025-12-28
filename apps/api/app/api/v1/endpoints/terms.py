@@ -43,12 +43,13 @@ from app.services.chart_service import (
     get_chart_service,
 )
 
-router = APIRouter(tags=["terms"])
+router = APIRouter(tags=["dignities"])
 
 
 @router.get(
     "/charts/{chart_id}/terms",
     response_model=ChartTermsResponse,
+    tags=["charts", "dignities"],
     summary="Get term rulers for all planets in a chart",
     description="""
 Get the term (bound) rulers for all planets in a birth chart.

@@ -5,7 +5,7 @@
  * (Egyptian, Ptolemaic, Chaldean, Dorothean).
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +34,8 @@ import {
 import { useAstroTranslation } from '@/hooks/useAstroTranslation';
 import { getToken } from '@/services/api';
 import { chartsService, termsService } from '@/services/charts';
-import { ScrollText, CheckCircle2 } from 'lucide-react';
+import { ScrollText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { ChartTermsData, TermsTableData, TermSystem, PlanetTermInfo } from '@/types/terms';
 
 // Re-export types
@@ -88,6 +89,23 @@ const signSymbols: Record<string, string> = {
 };
 
 // ============================================================================
+// Error Types
+// ============================================================================
+
+type ErrorType = 'auth' | 'notFound' | 'network' | 'noData' | 'unknown';
+
+interface TermsError {
+  type: ErrorType;
+  message: string;
+}
+
+// ============================================================================
+// Cache for terms table (static data)
+// ============================================================================
+
+const termsTableCache = new Map<TermSystem, TermsTableData>();
+
+// ============================================================================
 // Loading Skeleton
 // ============================================================================
 
@@ -126,39 +144,93 @@ export function PlanetaryTerms({ chartId, isLoading = false }: PlanetaryTermsPro
   const [tableData, setTableData] = useState<TermsTableData | null>(null);
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<TermsError | null>(null);
+
+  // Track if component is mounted to avoid state updates after unmount
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Fetch chart terms when system changes
   useEffect(() => {
+    // Helper to parse error type from API response
+    const parseError = (err: unknown): TermsError => {
+      if (err instanceof Error) {
+        const message = err.message.toLowerCase();
+        if (
+          message.includes('401') ||
+          message.includes('unauthorized') ||
+          message.includes('authentication')
+        ) {
+          return { type: 'auth', message: t('components.planetaryTerms.errors.authRequired') };
+        }
+        if (message.includes('404') || message.includes('not found')) {
+          return { type: 'notFound', message: t('components.planetaryTerms.errors.chartNotFound') };
+        }
+        if (message.includes('network') || message.includes('fetch')) {
+          return { type: 'network', message: t('components.planetaryTerms.errors.networkError') };
+        }
+      }
+      return { type: 'unknown', message: t('components.planetaryTerms.noTermData') };
+    };
+
     async function fetchTerms() {
       const token = getToken();
-      if (!token || !chartId) return;
+      if (!token) {
+        setError({ type: 'auth', message: t('components.planetaryTerms.errors.authRequired') });
+        return;
+      }
+      if (!chartId) {
+        setError({ type: 'noData', message: t('components.planetaryTerms.errors.noChartId') });
+        return;
+      }
 
       setLoading(true);
       setError(null);
 
       try {
         const data = await chartsService.getChartTerms(chartId, token, system);
-        setTermsData(data);
+        if (isMounted.current) {
+          setTermsData(data);
+        }
       } catch (err) {
         console.error('Failed to fetch terms:', err);
-        setError(t('components.planetaryTerms.noTermData'));
+        if (isMounted.current) {
+          setError(parseError(err));
+        }
       } finally {
-        setLoading(false);
+        if (isMounted.current) {
+          setLoading(false);
+        }
       }
     }
 
     fetchTerms();
   }, [chartId, system, t]);
 
-  // Fetch reference table when needed
+  // Fetch reference table when needed (with caching)
   useEffect(() => {
     async function fetchTable() {
       if (!showTable) return;
 
+      // Check cache first
+      const cached = termsTableCache.get(system);
+      if (cached) {
+        setTableData(cached);
+        return;
+      }
+
       try {
         const data = await termsService.getTermsTable(system);
-        setTableData(data);
+        if (isMounted.current) {
+          // Store in cache
+          termsTableCache.set(system, data);
+          setTableData(data);
+        }
       } catch (err) {
         console.error('Failed to fetch terms table:', err);
       }
@@ -182,9 +254,12 @@ export function PlanetaryTerms({ chartId, isLoading = false }: PlanetaryTermsPro
     return (
       <Card>
         <CardContent className="py-8">
-          <p className="text-center text-muted-foreground">
-            {error || t('components.planetaryTerms.noTermData')}
-          </p>
+          <Alert variant="destructive" className="max-w-md mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error?.message || t('components.planetaryTerms.noTermData')}
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -208,17 +283,41 @@ export function PlanetaryTerms({ chartId, isLoading = false }: PlanetaryTermsPro
 
             {/* System Selector */}
             <Select value={system} onValueChange={(v) => handleSystemChange(v as TermSystem)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder={t('components.planetaryTerms.selectSystem')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="egyptian">{t('components.planetaryTerms.egyptian')}</SelectItem>
-                <SelectItem value="ptolemaic">
-                  {t('components.planetaryTerms.ptolemaic')}
+                <SelectItem value="egyptian">
+                  <div className="flex flex-col">
+                    <span>{t('components.planetaryTerms.egyptian')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('components.planetaryTerms.egyptianDesc')}
+                    </span>
+                  </div>
                 </SelectItem>
-                <SelectItem value="chaldean">{t('components.planetaryTerms.chaldean')}</SelectItem>
+                <SelectItem value="ptolemaic">
+                  <div className="flex flex-col">
+                    <span>{t('components.planetaryTerms.ptolemaic')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('components.planetaryTerms.ptolemaicDesc')}
+                    </span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="chaldean">
+                  <div className="flex flex-col">
+                    <span>{t('components.planetaryTerms.chaldean')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('components.planetaryTerms.chaldeanDesc')}
+                    </span>
+                  </div>
+                </SelectItem>
                 <SelectItem value="dorothean">
-                  {t('components.planetaryTerms.dorothean')}
+                  <div className="flex flex-col">
+                    <span>{t('components.planetaryTerms.dorothean')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('components.planetaryTerms.dorotheanDesc')}
+                    </span>
+                  </div>
                 </SelectItem>
               </SelectContent>
             </Select>

@@ -10,6 +10,7 @@ import type { TemperamentData } from '@/components/TemperamentDisplay';
 import type { MentalityData } from '@/components/MentalityCard';
 import type { LongevityData } from '@/types/longevity';
 import type { ChartTermsData, TermsTableData, TermSystem } from '@/types/terms';
+import type { PrenatalSyzygyData } from '@/components/PrenatalSyzygy';
 
 export interface BirthChartCreate {
   person_name: string;
@@ -165,6 +166,7 @@ export interface BirthChart {
     mentality?: MentalityData;
     arabic_parts?: ArabicParts;
     longevity?: LongevityData;
+    prenatal_syzygy?: PrenatalSyzygyData;
     calculation_timestamp: string;
   } | null;
   visibility: string;

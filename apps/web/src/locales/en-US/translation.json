@@ -980,7 +980,8 @@
       "termPoints": "+2 dignity points",
       "noTermData": "No term data available for this chart.",
       "aboutTerms": "About Terms",
-      "aboutTermsDesc": "Terms (also called 'bounds') are one of the five essential dignities in traditional astrology. A planet in its own term receives +2 dignity points, representing a minor but significant form of essential dignity."
+      "aboutTermsDesc": "Terms (also called 'bounds') are one of the five essential dignities in traditional astrology. A planet in its own term receives +2 dignity points, representing a minor but significant form of essential dignity.",
+      "termNumber": "Term {{number}}"
     }
   },
   "pages": {
@@ -1736,6 +1737,7 @@
     "ctaButton": "Get Started"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "allRightsReserved": "All rights reserved."
   }
 }

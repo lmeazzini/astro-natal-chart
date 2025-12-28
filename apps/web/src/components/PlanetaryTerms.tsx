@@ -317,7 +317,7 @@ export function PlanetaryTerms({ chartId, isLoading = false }: PlanetaryTermsPro
                           </TableHead>
                           {[1, 2, 3, 4, 5].map((i) => (
                             <TableHead key={i} className="text-center min-w-[100px]">
-                              Term {i}
+                              {t('components.planetaryTerms.termNumber', { number: i })}
                             </TableHead>
                           ))}
                         </TableRow>

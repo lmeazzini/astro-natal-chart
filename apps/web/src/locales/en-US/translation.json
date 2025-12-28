@@ -951,6 +951,43 @@
         "title": "Educational Purpose Only",
         "text": "These calculations are presented for historical and educational purposes only. They are not scientifically validated and should never be used for health predictions or medical decisions."
       }
+    },
+    "planetaryTerms": {
+      "title": "Planetary Terms",
+      "subtitle": "Traditional bounds dignities system",
+      "description": "Terms (bounds) divide each zodiac sign into 5 unequal segments, each ruled by one of the five visible planets (excluding luminaries).",
+      "system": "Term System",
+      "selectSystem": "Select system",
+      "egyptian": "Egyptian",
+      "ptolemaic": "Ptolemaic",
+      "chaldean": "Chaldean",
+      "dorothean": "Dorothean",
+      "egyptianDesc": "Most widely used in Hellenistic astrology",
+      "ptolemaicDesc": "Ptolemy's refined system from Tetrabiblos",
+      "chaldeanDesc": "Regular 8-7-6-5-4 degree pattern",
+      "dorotheanDesc": "From Dorotheus of Sidon",
+      "termRuler": "Term Ruler",
+      "inOwnTerm": "In Own Term",
+      "planet": "Planet",
+      "degrees": "Degrees",
+      "ruler": "Ruler",
+      "planetsInOwnTerm": "Planets in Own Term",
+      "termRulerFrequency": "Term Ruler Frequency",
+      "referenceTable": "Reference Table",
+      "showReferenceTable": "Show Reference Table",
+      "hideReferenceTable": "Hide Reference Table",
+      "sign": "Sign",
+      "termPoints": "+2 dignity points",
+      "noTermData": "No term data available for this chart.",
+      "aboutTerms": "About Terms",
+      "aboutTermsDesc": "Terms (also called 'bounds') are one of the five essential dignities in traditional astrology. A planet in its own term receives +2 dignity points, representing a minor but significant form of essential dignity.",
+      "termNumber": "Term {{number}}",
+      "errors": {
+        "authRequired": "Authentication required to view term data.",
+        "chartNotFound": "Chart not found.",
+        "networkError": "Unable to connect. Please check your connection.",
+        "noChartId": "No chart ID provided."
+      }
     }
   },
   "pages": {
@@ -1706,6 +1743,7 @@
     "ctaButton": "Get Started"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "allRightsReserved": "All rights reserved."
   }
 }

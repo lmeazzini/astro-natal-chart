@@ -28,6 +28,7 @@ import { MentalityCard } from '../components/MentalityCard';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { GrowthSuggestions } from '../components/GrowthSuggestions';
+import { PlanetaryTerms } from '../components/PlanetaryTerms';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load LongevityAnalysis for code splitting (premium feature)
@@ -997,6 +998,13 @@ export function ChartDetailPage() {
                   />
                 </CardContent>
               </Card>
+            )}
+
+            {/* Planetary Terms (Essential Dignities) */}
+            {chart && id && (
+              <div className="mt-6">
+                <PlanetaryTerms chartId={id} isLoading={isLoading} />
+              </div>
             )}
           </TabsContent>
 

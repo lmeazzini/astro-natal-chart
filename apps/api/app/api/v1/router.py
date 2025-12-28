@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     github,
     growth,
     interpretations,
+    longevity,
     oauth,
     password_reset,
     privacy,
@@ -147,4 +148,10 @@ api_router.include_router(
 api_router.include_router(
     seo.router,
     tags=["seo"],
+)
+
+# Longevity analysis endpoints (Hyleg, Alcochoden) - premium feature
+api_router.include_router(
+    longevity.router,
+    tags=["longevity"],
 )

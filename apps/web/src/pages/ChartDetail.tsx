@@ -2,7 +2,7 @@
  * Chart Detail Page - complete birth chart visualization
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
@@ -28,6 +28,14 @@ import { MentalityCard } from '../components/MentalityCard';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { GrowthSuggestions } from '../components/GrowthSuggestions';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load LongevityAnalysis for code splitting (premium feature)
+const LongevityAnalysis = lazy(() =>
+  import('../components/LongevityAnalysis').then((module) => ({
+    default: module.LongevityAnalysis,
+  }))
+);
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
@@ -720,6 +728,9 @@ export function ChartDetailPage() {
             <TabsTrigger value="growth">
               {t('chartDetail.tabs.growth', { defaultValue: 'Growth' })}
             </TabsTrigger>
+            <TabsTrigger value="longevity">
+              {t('chartDetail.tabs.longevity', { defaultValue: 'Longevity' })}
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab Content: Visual */}
@@ -1217,6 +1228,24 @@ export function ChartDetailPage() {
             {id && (
               <GrowthSuggestions chartId={id} initialGrowth={interpretations?.growth ?? null} />
             )}
+          </TabsContent>
+
+          {/* Tab Content: Longevity (Premium) - Lazy loaded */}
+          <TabsContent value="longevity" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Skeleton className="h-80 w-full" />
+                    <Skeleton className="h-80 w-full" />
+                  </div>
+                </div>
+              }
+            >
+              <LongevityAnalysis longevity={chart.chart_data?.longevity ?? null} />
+            </Suspense>
           </TabsContent>
         </Tabs>
 

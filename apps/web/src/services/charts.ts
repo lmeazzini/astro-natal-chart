@@ -8,6 +8,7 @@ import type { SolarPhaseData } from '@/components/SolarPhase';
 import type { LordOfNativityData } from '@/components/LordOfNativity';
 import type { TemperamentData } from '@/components/TemperamentDisplay';
 import type { MentalityData } from '@/components/MentalityCard';
+import type { LongevityData } from '@/types/longevity';
 
 export interface BirthChartCreate {
   person_name: string;
@@ -162,6 +163,7 @@ export interface BirthChart {
     temperament?: TemperamentData;
     mentality?: MentalityData;
     arabic_parts?: ArabicParts;
+    longevity?: LongevityData;
     calculation_timestamp: string;
   } | null;
   visibility: string;

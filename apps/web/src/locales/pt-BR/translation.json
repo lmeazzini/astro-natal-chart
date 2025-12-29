@@ -25,7 +25,8 @@
     "login": "Entrar",
     "search": "Buscar",
     "refresh": "Atualizar",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "houseNumber": "Casa {{number}}"
   },
   "nav": {
     "home": "Início",
@@ -942,7 +943,9 @@
         "yearType": {
           "minor": "Anos Menores",
           "middle": "Anos Médios",
-          "major": "Anos Maiores"
+          "major": "Anos Maiores",
+          "undefined": "Desconhecido",
+          "null": "Desconhecido"
         }
       },
       "summary": {

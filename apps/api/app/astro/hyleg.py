@@ -167,6 +167,37 @@ def calculate_prenatal_syzygy(
     }
 
 
+def _translate_qualification_reason(reason: str, language: str) -> str:
+    """
+    Translate a qualification reason string.
+
+    Handles cases like:
+    - "no_aspects" → translated text
+    - "aspected_by_prorogatory:Saturn" → translated base + planet name
+
+    Args:
+        reason: The raw reason string (may contain :planet_name)
+        language: Language code for translation
+
+    Returns:
+        Translated reason string
+    """
+    from app.translations import get_translation
+
+    if ":" in reason:
+        # Split into base reason and planet name
+        base_reason, planet_name = reason.split(":", 1)
+        # Translate the base part
+        translated_base = get_translation(f"hyleg.qualification.{base_reason}", language)
+        # Append planet name (planet names could also be translated)
+        planet_translation = get_translation(f"planets.{planet_name}", language)
+        if planet_translation != f"planets.{planet_name}":
+            planet_name = planet_translation
+        return f"{translated_base} ({planet_name})"
+    else:
+        return get_translation(f"hyleg.qualification.{reason}", language)
+
+
 def is_in_hylegical_place(
     house: int,
     longitude: float,
@@ -331,22 +362,29 @@ def get_house_for_position(
     Returns:
         House number (1-12)
     """
-    # Sort cusps by house number
-    cusps = sorted(house_cusps, key=lambda h: h["number"])
+
+    # Sort cusps by house number (handle both "number" and "house" keys)
+    def get_house_num(h: dict) -> int:
+        return h.get("number", h.get("house", 0))
+
+    def get_cusp_lon(h: dict) -> float:
+        return h.get("cusp", h.get("longitude", 0.0))
+
+    cusps = sorted(house_cusps, key=get_house_num)
 
     for i, cusp in enumerate(cusps):
         next_cusp = cusps[(i + 1) % 12]
-        cusp_lon = cusp["cusp"]
-        next_cusp_lon = next_cusp["cusp"]
+        cusp_lon = get_cusp_lon(cusp)
+        next_cusp_lon = get_cusp_lon(next_cusp)
 
         # Handle wrap-around at 360°
         if next_cusp_lon < cusp_lon:
             # Cusp spans 0°
             if longitude >= cusp_lon or longitude < next_cusp_lon:
-                return cusp["number"]
+                return get_house_num(cusp)
         else:
             if cusp_lon <= longitude < next_cusp_lon:
-                return cusp["number"]
+                return get_house_num(cusp)
 
     return 1  # Default to 1st house
 
@@ -439,11 +477,7 @@ def calculate_hyleg(
                 "hyleg_house": house,
                 "is_day_chart": is_day_chart,
                 "method": method,
-                "qualification_reason": get_translation(
-                    f"hyleg.qualification.{reason.split(':')[0]}", language
-                )
-                if ":" not in reason
-                else reason,
+                "qualification_reason": _translate_qualification_reason(reason, language),
                 "hyleg_dignity": dignity_data,
                 "aspecting_planets": aspecting,
                 "domicile_lord": RULERSHIPS.get(sign),
@@ -489,22 +523,29 @@ def calculate_hyleg(
         return result
 
     # Step 4: Check Part of Fortune
-    if arabic_parts and len(arabic_parts) > 0:
-        fortune = arabic_parts[0]  # Part of Fortune is first
-        fortune_lon = fortune.get("longitude", 0)
-        fortune_sign_index = int(fortune_lon / 30)
-        fortune_sign = SIGNS[fortune_sign_index]
-        fortune_house = get_house_for_position(fortune_lon, houses)
+    if arabic_parts:
+        # Handle both dict format (from calculate_arabic_parts) and list format
+        if isinstance(arabic_parts, dict):
+            fortune = arabic_parts.get("fortune", {})
+        elif isinstance(arabic_parts, list) and len(arabic_parts) > 0:
+            fortune = arabic_parts[0]
+        else:
+            fortune = {}
+        fortune_lon = fortune.get("longitude", 0) if fortune else 0
+        if fortune_lon > 0:  # Only evaluate if we have valid fortune data
+            fortune_sign_index = int(fortune_lon / 30)
+            fortune_sign = SIGNS[fortune_sign_index]
+            fortune_house = get_house_for_position(fortune_lon, houses)
 
-        result = evaluate_candidate(
-            "Part of Fortune",
-            fortune_lon,
-            fortune_sign,
-            fortune_house,
-            is_point=True,
-        )
-        if result:
-            return result
+            result = evaluate_candidate(
+                "Part of Fortune",
+                fortune_lon,
+                fortune_sign,
+                fortune_house,
+                is_point=True,
+            )
+            if result:
+                return result
 
     # Step 5: Check Prenatal Syzygy
     sun = get_planet_by_name(planets, "Sun")

@@ -307,8 +307,8 @@ function AlcochodenDisplay({ alcochoden }: { alcochoden: AlcochodenData }) {
             variant="outline"
             className={`text-xs ${yearTypeColors[alcochoden.year_type || 'middle'] || ''}`}
           >
-            {t(`components.longevity.alcochoden.yearType.${alcochoden.year_type}`, {
-              defaultValue: alcochoden.year_type,
+            {t(`components.longevity.alcochoden.yearType.${alcochoden.year_type || 'undefined'}`, {
+              defaultValue: alcochoden.year_type || 'Unknown',
             })}
           </Badge>
         </div>

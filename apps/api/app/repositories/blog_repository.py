@@ -24,17 +24,35 @@ class BlogRepository(BaseRepository[BlogPost]):
         """Base query with author relationship loaded."""
         return select(BlogPost).options(selectinload(BlogPost.author))
 
-    async def get_by_slug(self, slug: str) -> BlogPost | None:
-        """Get a blog post by its URL slug."""
+    async def get_by_slug(self, slug: str, locale: str | None = None) -> BlogPost | None:
+        """Get a blog post by its URL slug and optional locale."""
         stmt = self._base_query().where(BlogPost.slug == slug)
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_published_by_slug(self, slug: str) -> BlogPost | None:
-        """Get a published blog post by its URL slug."""
+    async def get_published_by_slug(self, slug: str, locale: str | None = None) -> BlogPost | None:
+        """Get a published blog post by its URL slug and optional locale."""
         stmt = self._base_query().where(BlogPost.slug == slug, BlogPost.published_at.isnot(None))
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_translations(
+        self, translation_key: str, exclude_locale: str | None = None
+    ) -> list[BlogPost]:
+        """Get all language versions of a post by its translation key."""
+        if not translation_key:
+            return []
+        stmt = self._base_query().where(
+            BlogPost.translation_key == translation_key, BlogPost.published_at.isnot(None)
+        )
+        if exclude_locale:
+            stmt = stmt.where(BlogPost.locale != exclude_locale)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
 
     async def get_published(
         self,
@@ -42,6 +60,7 @@ class BlogRepository(BaseRepository[BlogPost]):
         page_size: int = 10,
         category: str | None = None,
         tag: str | None = None,
+        locale: str | None = None,
     ) -> tuple[list[BlogPost], int]:
         """
         Get paginated list of published blog posts.
@@ -51,6 +70,7 @@ class BlogRepository(BaseRepository[BlogPost]):
             page_size: Number of items per page
             category: Optional category filter
             tag: Optional tag filter
+            locale: Optional locale filter (pt-BR, en-US)
 
         Returns:
             Tuple of (list of posts, total count)
@@ -60,6 +80,9 @@ class BlogRepository(BaseRepository[BlogPost]):
         # Build query
         stmt = self._base_query().where(base_filter)
 
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
+
         if category:
             stmt = stmt.where(BlogPost.category == category)
 
@@ -68,6 +91,8 @@ class BlogRepository(BaseRepository[BlogPost]):
 
         # Get total count
         count_stmt = select(func.count(BlogPost.id)).where(base_filter)
+        if locale:
+            count_stmt = count_stmt.where(BlogPost.locale == locale)
         if category:
             count_stmt = count_stmt.where(BlogPost.category == category)
         if tag:
@@ -122,37 +147,49 @@ class BlogRepository(BaseRepository[BlogPost]):
         return posts, total
 
     async def get_by_category(
-        self, category: str, page: int = 1, page_size: int = 10
+        self, category: str, page: int = 1, page_size: int = 10, locale: str | None = None
     ) -> tuple[list[BlogPost], int]:
         """Get published posts by category."""
-        return await self.get_published(page=page, page_size=page_size, category=category)
+        return await self.get_published(
+            page=page, page_size=page_size, category=category, locale=locale
+        )
 
     async def get_by_tag(
-        self, tag: str, page: int = 1, page_size: int = 10
+        self, tag: str, page: int = 1, page_size: int = 10, locale: str | None = None
     ) -> tuple[list[BlogPost], int]:
         """Get published posts by tag."""
-        return await self.get_published(page=page, page_size=page_size, tag=tag)
+        return await self.get_published(page=page, page_size=page_size, tag=tag, locale=locale)
 
-    async def get_categories_with_count(self) -> list[tuple[str, int]]:
+    async def get_categories_with_count(self, locale: str | None = None) -> list[tuple[str, int]]:
         """Get all categories with their post counts (published only)."""
+        filters = [BlogPost.published_at.isnot(None)]
+        if locale:
+            filters.append(BlogPost.locale == locale)
+
         stmt = (
             select(BlogPost.category, func.count(BlogPost.id))
-            .where(BlogPost.published_at.isnot(None))
+            .where(*filters)
             .group_by(BlogPost.category)
             .order_by(func.count(BlogPost.id).desc())
         )
         result = await self.db.execute(stmt)
         return [(row[0], row[1]) for row in result.all()]
 
-    async def get_popular_tags(self, limit: int = 20) -> list[tuple[str, int]]:
+    async def get_popular_tags(
+        self, limit: int = 20, locale: str | None = None
+    ) -> list[tuple[str, int]]:
         """
         Get popular tags with their counts (published posts only).
 
         Uses PostgreSQL unnest to flatten the tags array.
         """
+        filters = [BlogPost.published_at.isnot(None)]
+        if locale:
+            filters.append(BlogPost.locale == locale)
+
         stmt = (
             select(func.unnest(BlogPost.tags).label("tag"), func.count().label("count"))
-            .where(BlogPost.published_at.isnot(None))
+            .where(*filters)
             .group_by("tag")
             .order_by(func.count().desc())
             .limit(limit)
@@ -160,14 +197,14 @@ class BlogRepository(BaseRepository[BlogPost]):
         result = await self.db.execute(stmt)
         return [(row[0], row[1]) for row in result.all()]
 
-    async def get_recent_published(self, limit: int = 5) -> list[BlogPost]:
+    async def get_recent_published(
+        self, limit: int = 5, locale: str | None = None
+    ) -> list[BlogPost]:
         """Get most recent published posts."""
-        stmt = (
-            self._base_query()
-            .where(BlogPost.published_at.isnot(None))
-            .order_by(BlogPost.published_at.desc())
-            .limit(limit)
-        )
+        stmt = self._base_query().where(BlogPost.published_at.isnot(None))
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
+        stmt = stmt.order_by(BlogPost.published_at.desc()).limit(limit)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
@@ -202,38 +239,43 @@ class BlogRepository(BaseRepository[BlogPost]):
             await self.db.refresh(post)
         return post
 
-    async def slug_exists(self, slug: str, exclude_id: UUID | None = None) -> bool:
-        """Check if a slug already exists."""
-        stmt = select(func.count(BlogPost.id)).where(BlogPost.slug == slug)
+    async def slug_exists(self, slug: str, locale: str, exclude_id: UUID | None = None) -> bool:
+        """Check if a slug already exists for the given locale."""
+        stmt = select(func.count(BlogPost.id)).where(
+            BlogPost.slug == slug, BlogPost.locale == locale
+        )
         if exclude_id:
             stmt = stmt.where(BlogPost.id != exclude_id)
         result = await self.db.execute(stmt)
         count = result.scalar() or 0
         return count > 0
 
-    async def get_total_published_count(self) -> int:
+    async def get_total_published_count(self, locale: str | None = None) -> int:
         """Get total count of published posts."""
         stmt = select(func.count(BlogPost.id)).where(BlogPost.published_at.isnot(None))
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
         result = await self.db.execute(stmt)
         return result.scalar() or 0
 
-    async def get_all_published_for_sitemap(self) -> list[Row[Any]]:
+    async def get_all_published_for_sitemap(self, locale: str | None = None) -> list[Row[Any]]:
         """Get all published posts for sitemap generation (minimal data)."""
-        stmt = (
-            select(BlogPost.slug, BlogPost.updated_at)
-            .where(BlogPost.published_at.isnot(None))
-            .order_by(BlogPost.published_at.desc())
+        stmt = select(BlogPost.slug, BlogPost.locale, BlogPost.updated_at).where(
+            BlogPost.published_at.isnot(None)
         )
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
+        stmt = stmt.order_by(BlogPost.published_at.desc())
         result = await self.db.execute(stmt)
         return list(result.all())
 
-    async def get_all_published_for_rss(self, limit: int = 20) -> list[BlogPost]:
+    async def get_all_published_for_rss(
+        self, limit: int = 20, locale: str | None = None
+    ) -> list[BlogPost]:
         """Get recent published posts for RSS feed."""
-        stmt = (
-            self._base_query()
-            .where(BlogPost.published_at.isnot(None))
-            .order_by(BlogPost.published_at.desc())
-            .limit(limit)
-        )
+        stmt = self._base_query().where(BlogPost.published_at.isnot(None))
+        if locale:
+            stmt = stmt.where(BlogPost.locale == locale)
+        stmt = stmt.order_by(BlogPost.published_at.desc()).limit(limit)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

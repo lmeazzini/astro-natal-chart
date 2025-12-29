@@ -10,18 +10,22 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // Import translation files
 import ptBRTranslation from '../locales/pt-BR/translation.json';
 import ptBRAstrology from '../locales/pt-BR/astrology.json';
+import ptBRBlog from '../locales/pt-BR/blog.json';
 import enUSTranslation from '../locales/en-US/translation.json';
 import enUSAstrology from '../locales/en-US/astrology.json';
+import enUSBlog from '../locales/en-US/blog.json';
 
 // Translation resources
 const resources = {
   'pt-BR': {
     translation: ptBRTranslation,
     astrology: ptBRAstrology,
+    blog: ptBRBlog,
   },
   'en-US': {
     translation: enUSTranslation,
     astrology: enUSAstrology,
+    blog: enUSBlog,
   },
 };
 
@@ -35,7 +39,7 @@ i18n
     resources,
     fallbackLng: 'pt-BR',
     defaultNS: 'translation',
-    ns: ['translation', 'astrology'],
+    ns: ['translation', 'astrology', 'blog'],
 
     // Language detection order
     detection: {

@@ -9,9 +9,17 @@ export interface AuthorInfo {
   full_name: string | null;
 }
 
+export interface TranslationInfo {
+  locale: string;
+  slug: string;
+  title: string;
+}
+
 export interface BlogPost {
   id: string;
   slug: string;
+  locale: string;
+  translation_key: string | null;
   title: string;
   subtitle: string | null;
   content: string;
@@ -29,11 +37,14 @@ export interface BlogPost {
   created_at: string;
   updated_at: string;
   author: AuthorInfo | null;
+  available_translations: TranslationInfo[] | null;
 }
 
 export interface BlogPostListItem {
   id: string;
   slug: string;
+  locale: string;
+  translation_key: string | null;
   title: string;
   subtitle: string | null;
   excerpt: string;
@@ -77,6 +88,7 @@ export interface GetPostsParams {
   page_size?: number;
   category?: string;
   tag?: string;
+  locale?: string;
 }
 
 /**
@@ -89,6 +101,7 @@ export async function getBlogPosts(params: GetPostsParams = {}): Promise<BlogPos
   if (params.page_size) searchParams.set('page_size', params.page_size.toString());
   if (params.category) searchParams.set('category', params.category);
   if (params.tag) searchParams.set('tag', params.tag);
+  if (params.locale) searchParams.set('locale', params.locale);
 
   const queryString = searchParams.toString();
   const url = queryString ? `/api/v1/blog/posts?${queryString}` : '/api/v1/blog/posts';
@@ -99,20 +112,36 @@ export async function getBlogPosts(params: GetPostsParams = {}): Promise<BlogPos
 /**
  * Get a single blog post by slug.
  */
-export async function getBlogPost(slug: string): Promise<BlogPost> {
-  return apiClient.get<BlogPost>(`/api/v1/blog/posts/${slug}`);
+export async function getBlogPost(slug: string, locale?: string): Promise<BlogPost> {
+  const searchParams = new URLSearchParams();
+  if (locale) searchParams.set('locale', locale);
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `/api/v1/blog/posts/${slug}?${queryString}`
+    : `/api/v1/blog/posts/${slug}`;
+  return apiClient.get<BlogPost>(url);
 }
 
 /**
  * Get blog metadata (categories, tags, total posts).
  */
-export async function getBlogMetadata(): Promise<BlogMetadata> {
-  return apiClient.get<BlogMetadata>('/api/v1/blog/metadata');
+export async function getBlogMetadata(locale?: string): Promise<BlogMetadata> {
+  const searchParams = new URLSearchParams();
+  if (locale) searchParams.set('locale', locale);
+  const queryString = searchParams.toString();
+  const url = queryString ? `/api/v1/blog/metadata?${queryString}` : '/api/v1/blog/metadata';
+  return apiClient.get<BlogMetadata>(url);
 }
 
 /**
  * Get recent blog posts.
  */
-export async function getRecentPosts(limit: number = 5): Promise<BlogPostListItem[]> {
-  return apiClient.get<BlogPostListItem[]>(`/api/v1/blog/recent?limit=${limit}`);
+export async function getRecentPosts(
+  limit: number = 5,
+  locale?: string
+): Promise<BlogPostListItem[]> {
+  const searchParams = new URLSearchParams();
+  searchParams.set('limit', limit.toString());
+  if (locale) searchParams.set('locale', locale);
+  return apiClient.get<BlogPostListItem[]>(`/api/v1/blog/recent?${searchParams.toString()}`);
 }

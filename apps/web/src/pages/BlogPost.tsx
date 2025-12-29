@@ -57,6 +57,9 @@ export function BlogPostPage() {
   const [sharing, setSharing] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
+  // Get current locale for API calls
+  const currentLocale = i18n.language;
+
   // Amplitude tracking refs
   const hasTrackedPageView = React.useRef(false);
   const hasTrackedReadCompletion = React.useRef(false);
@@ -76,7 +79,7 @@ export function BlogPostPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getBlogPost(postSlug);
+        const data = await getBlogPost(postSlug, currentLocale);
         setPost(data);
       } catch (err) {
         setError(t('blog.postNotFound'));
@@ -87,12 +90,12 @@ export function BlogPostPage() {
     }
 
     loadPost(slug);
-  }, [slug, t]);
+  }, [slug, t, currentLocale]);
 
   React.useEffect(() => {
     async function loadRecent() {
       try {
-        const data = await getRecentPosts(5);
+        const data = await getRecentPosts(5, currentLocale);
         setRecentPosts(data.filter((p) => p.slug !== slug));
       } catch (err) {
         console.error('Error loading recent posts:', err);
@@ -100,7 +103,27 @@ export function BlogPostPage() {
     }
 
     loadRecent();
-  }, [slug]);
+  }, [slug, currentLocale]);
+
+  // Helper to translate category/tag keys
+  const translateCategory = (key: string) => {
+    const translated = t(`blog:categories.${key}`, { defaultValue: '' });
+    return translated || key;
+  };
+
+  const translateTag = (key: string) => {
+    const translated = t(`blog:tags.${key}`, { defaultValue: '' });
+    return translated || key;
+  };
+
+  // Get language display name
+  const getLanguageName = (locale: string) => {
+    const names: Record<string, string> = {
+      'pt-BR': 'Português',
+      'en-US': 'English',
+    };
+    return names[locale] || locale;
+  };
 
   // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
   React.useEffect(() => {
@@ -384,9 +407,25 @@ export function BlogPostPage() {
                 {/* Category */}
                 <Link to={`/blog?category=${encodeURIComponent(post.category)}`}>
                   <Badge variant="outline" className="mb-4">
-                    {post.category}
+                    {translateCategory(post.category)}
                   </Badge>
                 </Link>
+
+                {/* Available translations */}
+                {post.available_translations && post.available_translations.length > 0 && (
+                  <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{t('blog:ui.also_available_in')}:</span>
+                    {post.available_translations.map((trans) => (
+                      <Link
+                        key={trans.locale}
+                        to={`/blog/${trans.slug}`}
+                        className="text-primary hover:underline"
+                      >
+                        {getLanguageName(trans.locale)}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
                 {/* Title */}
                 <h1 className="mb-4 text-4xl font-bold leading-tight text-foreground">
@@ -470,7 +509,7 @@ export function BlogPostPage() {
                               variant="secondary"
                               className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
                             >
-                              #{tag}
+                              #{translateTag(tag)}
                             </Badge>
                           </Link>
                         ))}

@@ -165,13 +165,15 @@ Quando afligido, Saturno pode indicar:
 - Hesíodo. *Teogonia*.
 """,
     "excerpt": "Descubra Saturno, o Senhor do Tempo: sua mitologia como Cronos, significados na astrologia tradicional, dignidades e o que representa na carta natal.",
-    "category": "Astros e Mitos",
-    "tags": ["planetas", "saturno", "mitologia", "cronos", "astrologia-tradicional", "malefico"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "saturn", "mythology", "traditional"],
     "seo_title": "Saturno na Astrologia - Cronos, o Senhor do Tempo",
     "seo_description": "Conheça Saturno: mitologia de Cronos, dignidades astrológicas, simbolismo e significados. Guia completo do Grande Maléfico na astrologia tradicional.",
     "seo_keywords": ["saturno", "cronos", "astrologia", "maléfico", "mitologia grega"],
     "is_featured": True,
     "read_time_minutes": 12,
+    "locale": "pt-BR",
+    "translation_key": "saturn-mythology",
 }
 
 JUPITER_PT = {
@@ -325,8 +327,10 @@ Quando afligido:
 - Homero. *Ilíada* e *Odisseia*.
 """,
     "excerpt": "Conheça Júpiter, o Grande Benéfico: mitologia de Zeus, rei dos deuses, significados na astrologia tradicional e como ele traz expansão e fortuna à carta natal.",
-    "category": "Astros e Mitos",
-    "tags": ["planetas", "jupiter", "mitologia", "zeus", "astrologia-tradicional", "benefico"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "jupiter", "mythology", "traditional"],
+    "locale": "pt-BR",
+    "translation_key": "jupiter-mythology",
     "seo_title": "Júpiter na Astrologia - Zeus, o Grande Benéfico",
     "seo_description": "Descubra Júpiter: mitologia de Zeus, dignidades astrológicas, simbolismo e significados. Guia completo do Grande Benéfico na astrologia tradicional.",
     "seo_keywords": ["jupiter", "zeus", "astrologia", "benéfico", "mitologia grega"],
@@ -480,13 +484,15 @@ Quando afligido:
 - Homero. *Ilíada*.
 """,
     "excerpt": "Descubra Marte, o Guerreiro Celestial: mitologia de Ares, deus da guerra, dignidades astrológicas e como ele representa coragem e ação na carta natal.",
-    "category": "Astros e Mitos",
-    "tags": ["planetas", "marte", "mitologia", "ares", "astrologia-tradicional", "malefico"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "mars", "mythology", "traditional"],
     "seo_title": "Marte na Astrologia - Ares, o Guerreiro Celestial",
     "seo_description": "Conheça Marte: mitologia de Ares, dignidades astrológicas, simbolismo e significados. Guia completo do Menor Maléfico na astrologia tradicional.",
     "seo_keywords": ["marte", "ares", "astrologia", "guerra", "mitologia grega"],
     "is_featured": False,
     "read_time_minutes": 10,
+    "locale": "pt-BR",
+    "translation_key": "mars-mythology",
 }
 
 SOL_PT = {
@@ -633,13 +639,15 @@ Quando afligido:
 - Ovídio. *Metamorfoses*.
 """,
     "excerpt": "Conheça o Sol na astrologia: mitologia de Apolo e Hélio, significado como luminar diurno e como ele representa sua essência e vitalidade na carta natal.",
-    "category": "Astros e Mitos",
-    "tags": ["planetas", "sol", "mitologia", "apolo", "helio", "astrologia-tradicional", "luminar"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "sun", "mythology", "traditional"],
     "seo_title": "O Sol na Astrologia - Apolo e Hélio, o Luminar Diurno",
     "seo_description": "Descubra o Sol: mitologia de Apolo, dignidades astrológicas, simbolismo e significados. Guia completo do Luminar Diurno na astrologia tradicional.",
     "seo_keywords": ["sol", "apolo", "helio", "astrologia", "luminar", "mitologia grega"],
     "is_featured": True,
     "read_time_minutes": 10,
+    "locale": "pt-BR",
+    "translation_key": "sun-mythology",
 }
 
 VENUS_PT = {
@@ -789,13 +797,15 @@ Quando afligida:
 - Hesíodo. *Teogonia*.
 """,
     "excerpt": "Descubra Vênus, a Estrela da Beleza: mitologia de Afrodite, deusa do amor, dignidades astrológicas e como ela representa amor e prazer na carta natal.",
-    "category": "Astros e Mitos",
-    "tags": ["planetas", "venus", "mitologia", "afrodite", "astrologia-tradicional", "benefico"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "venus", "mythology", "traditional"],
     "seo_title": "Vênus na Astrologia - Afrodite, a Deusa do Amor",
     "seo_description": "Conheça Vênus: mitologia de Afrodite, dignidades astrológicas, simbolismo e significados. Guia completo do Menor Benéfico na astrologia tradicional.",
     "seo_keywords": ["venus", "afrodite", "astrologia", "amor", "mitologia grega"],
     "is_featured": False,
     "read_time_minutes": 10,
+    "locale": "pt-BR",
+    "translation_key": "venus-mythology",
 }
 
 MERCURIO_PT = {
@@ -944,20 +954,15 @@ Quando afligido:
 - Hinos Homéricos.
 """,
     "excerpt": "Conheça Mercúrio, o Mensageiro dos Deuses: mitologia de Hermes, significado como planeta neutro e como ele representa mente e comunicação na carta natal.",
-    "category": "Astros e Mitos",
-    "tags": [
-        "planetas",
-        "mercurio",
-        "mitologia",
-        "hermes",
-        "astrologia-tradicional",
-        "comunicacao",
-    ],
+    "category": "stars_and_myths",
+    "tags": ["planets", "mercury", "mythology", "traditional"],
     "seo_title": "Mercúrio na Astrologia - Hermes, o Mensageiro",
     "seo_description": "Descubra Mercúrio: mitologia de Hermes, dignidades astrológicas, simbolismo e significados. Guia completo do planeta da mente e comunicação.",
     "seo_keywords": ["mercurio", "hermes", "astrologia", "comunicacao", "mitologia grega"],
     "is_featured": False,
     "read_time_minutes": 10,
+    "locale": "pt-BR",
+    "translation_key": "mercury-mythology",
 }
 
 LUA_PT = {
@@ -1118,21 +1123,15 @@ Quando afligida:
 - Hinos Homéricos.
 """,
     "excerpt": "Descubra a Lua na astrologia: mitologia de Ártemis e Selene, significado como luminar noturno e como ela representa emoções e o mundo interior na carta natal.",
-    "category": "Astros e Mitos",
-    "tags": [
-        "planetas",
-        "lua",
-        "mitologia",
-        "artemis",
-        "selene",
-        "astrologia-tradicional",
-        "luminar",
-    ],
+    "category": "stars_and_myths",
+    "tags": ["planets", "moon", "mythology", "traditional"],
     "seo_title": "A Lua na Astrologia - Ártemis e Selene, o Luminar Noturno",
     "seo_description": "Conheça a Lua: mitologia de Ártemis e Selene, dignidades astrológicas, fases lunares e significados. Guia completo do Luminar Noturno na astrologia.",
     "seo_keywords": ["lua", "artemis", "selene", "astrologia", "luminar", "mitologia grega"],
     "is_featured": True,
     "read_time_minutes": 11,
+    "locale": "pt-BR",
+    "translation_key": "moon-mythology",
 }
 
 # =============================================================================
@@ -1285,13 +1284,15 @@ When afflicted, Saturn can indicate:
 - Greek Mythology compilations.
 """,
     "excerpt": "Discover Saturn, the Lord of Time: its mythology as Cronus, meanings in traditional astrology, dignities, and what it represents in the natal chart.",
-    "category": "Stars and Myths",
-    "tags": ["planets", "saturn", "mythology", "cronus", "traditional-astrology", "malefic"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "saturn", "mythology", "traditional"],
     "seo_title": "Saturn in Astrology - Cronus, the Lord of Time",
     "seo_description": "Learn about Saturn: Cronus mythology, astrological dignities, symbolism and meanings. Complete guide to the Greater Malefic in traditional astrology.",
     "seo_keywords": ["saturn", "cronus", "astrology", "malefic", "greek mythology"],
     "is_featured": True,
     "read_time_minutes": 12,
+    "locale": "en-US",
+    "translation_key": "saturn-mythology",
 }
 
 JUPITER_EN = {
@@ -1444,13 +1445,15 @@ When afflicted:
 - Greek Mythology compilations.
 """,
     "excerpt": "Learn about Jupiter, the Greater Benefic: Zeus mythology, king of gods, traditional astrology meanings, and how it brings expansion and fortune to the natal chart.",
-    "category": "Stars and Myths",
-    "tags": ["planets", "jupiter", "mythology", "zeus", "traditional-astrology", "benefic"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "jupiter", "mythology", "traditional"],
     "seo_title": "Jupiter in Astrology - Zeus, the Greater Benefic",
     "seo_description": "Discover Jupiter: Zeus mythology, astrological dignities, symbolism and meanings. Complete guide to the Greater Benefic in traditional astrology.",
     "seo_keywords": ["jupiter", "zeus", "astrology", "benefic", "greek mythology"],
     "is_featured": True,
     "read_time_minutes": 11,
+    "locale": "en-US",
+    "translation_key": "jupiter-mythology",
 }
 
 MARS_EN = {
@@ -1598,11 +1601,13 @@ When afflicted:
 - Greek Mythology compilations.
 """,
     "excerpt": "Discover Mars, the Celestial Warrior: Ares mythology, god of war, astrological dignities and how it represents courage and action in the natal chart.",
-    "category": "Stars and Myths",
-    "tags": ["planets", "mars", "mythology", "ares", "traditional-astrology", "malefic"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "mars", "mythology", "traditional"],
     "seo_title": "Mars in Astrology - Ares, the Celestial Warrior",
     "seo_description": "Learn about Mars: Ares mythology, astrological dignities, symbolism and meanings. Complete guide to the Lesser Malefic in traditional astrology.",
     "seo_keywords": ["mars", "ares", "astrology", "war", "greek mythology"],
+    "locale": "en-US",
+    "translation_key": "mars-mythology",
     "is_featured": False,
     "read_time_minutes": 10,
 }
@@ -1750,21 +1755,15 @@ When afflicted:
 - Greek Mythology compilations.
 """,
     "excerpt": "Learn about the Sun in astrology: Apollo and Helios mythology, meaning as the diurnal luminary and how it represents your essence and vitality in the natal chart.",
-    "category": "Stars and Myths",
-    "tags": [
-        "planets",
-        "sun",
-        "mythology",
-        "apollo",
-        "helios",
-        "traditional-astrology",
-        "luminary",
-    ],
+    "category": "stars_and_myths",
+    "tags": ["planets", "sun", "mythology", "traditional"],
     "seo_title": "The Sun in Astrology - Apollo and Helios, the Diurnal Luminary",
     "seo_description": "Discover the Sun: Apollo mythology, astrological dignities, symbolism and meanings. Complete guide to the Diurnal Luminary in traditional astrology.",
     "seo_keywords": ["sun", "apollo", "helios", "astrology", "luminary", "greek mythology"],
     "is_featured": True,
     "read_time_minutes": 10,
+    "locale": "en-US",
+    "translation_key": "sun-mythology",
 }
 
 VENUS_EN = {
@@ -1913,11 +1912,13 @@ When afflicted:
 - Greek Mythology compilations.
 """,
     "excerpt": "Discover Venus, the Star of Beauty: Aphrodite mythology, goddess of love, astrological dignities and how it represents love and pleasure in the natal chart.",
-    "category": "Stars and Myths",
-    "tags": ["planets", "venus", "mythology", "aphrodite", "traditional-astrology", "benefic"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "venus", "mythology", "traditional"],
     "seo_title": "Venus in Astrology - Aphrodite, the Goddess of Love",
     "seo_description": "Learn about Venus: Aphrodite mythology, astrological dignities, symbolism and meanings. Complete guide to the Lesser Benefic in traditional astrology.",
     "seo_keywords": ["venus", "aphrodite", "astrology", "love", "greek mythology"],
+    "locale": "en-US",
+    "translation_key": "venus-mythology",
     "is_featured": False,
     "read_time_minutes": 10,
 }
@@ -2067,11 +2068,13 @@ When afflicted:
 - Greek Mythology compilations.
 """,
     "excerpt": "Learn about Mercury, the Messenger of the Gods: Hermes mythology, meaning as a neutral planet and how it represents mind and communication in the natal chart.",
-    "category": "Stars and Myths",
-    "tags": ["planets", "mercury", "mythology", "hermes", "traditional-astrology", "communication"],
+    "category": "stars_and_myths",
+    "tags": ["planets", "mercury", "mythology", "traditional"],
     "seo_title": "Mercury in Astrology - Hermes, the Messenger",
     "seo_description": "Discover Mercury: Hermes mythology, astrological dignities, symbolism and meanings. Complete guide to the planet of mind and communication.",
     "seo_keywords": ["mercury", "hermes", "astrology", "communication", "greek mythology"],
+    "locale": "en-US",
+    "translation_key": "mercury-mythology",
     "is_featured": False,
     "read_time_minutes": 10,
 }
@@ -2233,21 +2236,15 @@ When afflicted:
 - Greek Mythology compilations.
 """,
     "excerpt": "Discover the Moon in astrology: Artemis and Selene mythology, meaning as the nocturnal luminary and how it represents emotions and the inner world in the natal chart.",
-    "category": "Stars and Myths",
-    "tags": [
-        "planets",
-        "moon",
-        "mythology",
-        "artemis",
-        "selene",
-        "traditional-astrology",
-        "luminary",
-    ],
+    "category": "stars_and_myths",
+    "tags": ["planets", "moon", "mythology", "traditional"],
     "seo_title": "The Moon in Astrology - Artemis and Selene, the Nocturnal Luminary",
     "seo_description": "Learn about the Moon: Artemis and Selene mythology, astrological dignities, lunar phases and meanings. Complete guide to the Nocturnal Luminary in astrology.",
     "seo_keywords": ["moon", "artemis", "selene", "astrology", "luminary", "greek mythology"],
     "is_featured": True,
     "read_time_minutes": 11,
+    "locale": "en-US",
+    "translation_key": "moon-mythology",
 }
 
 # =============================================================================
@@ -2276,8 +2273,11 @@ ALL_POSTS = [
 
 async def seed_astros_e_mitos():
     """Create Astros e Mitos educational blog posts."""
+    import os
+
+    db_host = os.environ.get("DB_HOST", "db")
     conn = await asyncpg.connect(
-        host="localhost",
+        host=db_host,
         port=5432,
         user="astro",
         password="dev_password",
@@ -2289,14 +2289,16 @@ async def seed_astros_e_mitos():
         created_count = 0
 
         for post_data in ALL_POSTS:
-            # Check if post already exists
+            locale = post_data.get("locale", "pt-BR")
+            # Check if post already exists for this locale
             existing = await conn.fetchrow(
-                "SELECT id FROM blog_posts WHERE slug = $1",
+                "SELECT id FROM blog_posts WHERE slug = $1 AND locale = $2",
                 post_data["slug"],
+                locale,
             )
 
             if existing:
-                print(f"  Skipping (already exists): {post_data['slug']}")
+                print(f"  Skipping (already exists): {post_data['slug']} ({locale})")
                 continue
 
             post_id = uuid4()
@@ -2304,16 +2306,18 @@ async def seed_astros_e_mitos():
             await conn.execute(
                 """
                 INSERT INTO blog_posts (
-                    id, slug, title, subtitle, content, excerpt, category, tags,
-                    featured_image_url, seo_title, seo_description, seo_keywords,
+                    id, slug, locale, translation_key, title, subtitle, content, excerpt,
+                    category, tags, featured_image_url, seo_title, seo_description, seo_keywords,
                     published_at, is_featured, read_time_minutes, views_count,
                     created_at, updated_at
                 ) VALUES (
-                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
                 )
                 """,
                 post_id,
                 post_data["slug"],
+                locale,
+                post_data.get("translation_key"),
                 post_data["title"],
                 post_data.get("subtitle"),
                 post_data["content"],
@@ -2331,14 +2335,14 @@ async def seed_astros_e_mitos():
                 now,
                 now,
             )
-            print(f"  Created: {post_data['title']}")
+            print(f"  Created: {post_data['title']} ({locale})")
             created_count += 1
 
         print(f"\nSuccessfully created {created_count} blog posts!")
         print(f"Skipped {len(ALL_POSTS) - created_count} existing posts.")
         print("\nView posts at:")
-        print("  - Portuguese: http://localhost:5173/blog?category=Astros+e+Mitos")
-        print("  - English: http://localhost:5173/blog?category=Stars+and+Myths")
+        print("  - Portuguese: http://localhost:5173/blog?locale=pt-BR")
+        print("  - English: http://localhost:5173/blog?locale=en-US")
 
     finally:
         await conn.close()

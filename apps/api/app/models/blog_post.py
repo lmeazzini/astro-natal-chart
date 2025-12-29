@@ -20,6 +20,10 @@ class BlogPost(Base):
     """Blog post model for public content with SEO optimization."""
 
     __tablename__ = "blog_posts"
+    __table_args__ = (
+        # Composite unique constraint: slug must be unique per locale
+        {"info": {"unique_constraints": [("slug", "locale")]}},
+    )
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -29,11 +33,24 @@ class BlogPost(Base):
     )
 
     # URL-friendly slug (e.g., "introducao-casas-astrologicas")
+    # Note: Unique constraint is (slug, locale) - handled by migration
     slug: Mapped[str] = mapped_column(
         String(255),
-        unique=True,
         index=True,
         nullable=False,
+    )
+
+    # Internationalization support
+    locale: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="pt-BR",
+        index=True,
+    )
+    translation_key: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
     )
 
     # Content

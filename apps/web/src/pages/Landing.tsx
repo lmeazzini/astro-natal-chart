@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Star, Sun, Moon, Compass, Scroll, Target, ShieldCheck, ArrowRight } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -16,12 +16,21 @@ import heroBg from '@/assets/ancient_celestial_map_background.jpg';
 export function LandingPage() {
   const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
+  // Throttled scroll handler using requestAnimationFrame
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -50,7 +59,7 @@ export function LandingPage() {
               {t('landing.nav.blog')}
             </Link>
             <Link
-              to="/methodology"
+              to="/about/methodology"
               className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
             >
               {t('landing.nav.techniques')}
@@ -98,9 +107,9 @@ export function LandingPage() {
 
         <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl space-y-6 md:space-y-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.8, ease: 'easeOut' }}
           >
             <span className="inline-block py-1 px-3 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-medium tracking-widest uppercase mb-4 md:mb-6">
               {t('landing.hero.badge')}
@@ -178,10 +187,10 @@ export function LandingPage() {
             ].map((feature, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: shouldReduceMotion ? 0 : i * 0.1 }}
                 className="group p-8 rounded-xl bg-card border border-border hover:border-primary/20 hover:shadow-xl transition-all duration-300"
               >
                 <div className="w-12 h-12 rounded-full bg-secondary/30 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -255,9 +264,9 @@ export function LandingPage() {
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-primary/10" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-primary/10" />
 
-                  {/* Animated Planets */}
+                  {/* Animated Planets - respects reduced motion preference */}
                   <motion.div
-                    animate={{ rotate: 360 }}
+                    animate={shouldReduceMotion ? {} : { rotate: 360 }}
                     transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
                     className="absolute inset-0"
                   >
@@ -265,7 +274,7 @@ export function LandingPage() {
                   </motion.div>
 
                   <motion.div
-                    animate={{ rotate: -360 }}
+                    animate={shouldReduceMotion ? {} : { rotate: -360 }}
                     transition={{ duration: 45, repeat: Infinity, ease: 'linear' }}
                     className="absolute inset-8"
                   >

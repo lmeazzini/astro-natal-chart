@@ -18,8 +18,7 @@ import {
   UserUpdate,
   UserType,
 } from '../services/users';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { LanguageSelector } from '../components/LanguageSelector';
+import { NavActions } from '../components/NavActions';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -422,11 +421,7 @@ export function ProfilePage() {
             <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
-              <Link to="/blog">{t('landing.nav.blog')}</Link>
-            </Button>
-            <LanguageSelector />
-            <ThemeToggle />
+            <NavActions />
             <Button variant="ghost" onClick={() => navigate('/dashboard')}>
               ← {t('profile.backToDashboard', { defaultValue: 'Back to Dashboard' })}
             </Button>

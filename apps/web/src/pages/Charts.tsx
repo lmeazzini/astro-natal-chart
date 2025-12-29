@@ -8,8 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
 import { interpretationsService } from '../services/interpretations';
 import { getToken } from '../services/api';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { LanguageSelector } from '../components/LanguageSelector';
+import { NavActions } from '../components/NavActions';
 import { amplitudeService } from '../services/amplitude';
 import { useAmplitudePageView } from '../hooks/useAmplitudePageView';
 import { Button } from '@/components/ui/button';
@@ -175,11 +174,7 @@ export function ChartsPage() {
             <h1 className="text-h3 font-display text-foreground">{t('dashboard.title')}</h1>
           </Link>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
-              <Link to="/blog">{t('landing.nav.blog')}</Link>
-            </Button>
-            <LanguageSelector />
-            <ThemeToggle />
+            <NavActions />
             <Button asChild>
               <Link to="/charts/new">
                 <Plus className="mr-2 h-4 w-4" />

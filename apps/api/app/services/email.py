@@ -240,7 +240,7 @@ class EmailService:
         Returns:
             True se enviado com sucesso
         """
-        subject = "Recuperação de Senha - Astro App"
+        subject = "Recuperação de Senha - Real Astrology"
 
         html_body = f"""
         <!DOCTYPE html>
@@ -249,51 +249,52 @@ class EmailService:
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <img src="{settings.FRONTEND_URL}/logo.png" alt="Astro" style="width: 80px; height: 80px;" />
-            </div>
-            <div style="background-color: #f4f4f4; border-radius: 10px; padding: 30px;">
-                <h1 style="color: #4F46E5; margin-top: 0;">Recuperação de Senha</h1>
-
-                <p>Olá, <strong>{user_name}</strong>!</p>
-
-                <p>Recebemos uma solicitação para redefinir a senha da sua conta no Astro App.</p>
-
-                <p>Se você fez essa solicitação, clique no botão abaixo para criar uma nova senha:</p>
-
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{reset_url}"
-                       style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                        Redefinir Senha
-                    </a>
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #1a2035; background-color: #faf9f6; margin: 0; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(26, 31, 54, 0.08);">
+                <div style="background: #1a1f36; padding: 40px 24px; text-align: center;">
+                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">Recuperação de Senha</h1>
                 </div>
+                <div style="padding: 40px 32px;">
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Olá, <strong style="color: #1a1f36;">{user_name}</strong>!</p>
 
-                <p style="color: #666; font-size: 14px;">
-                    <strong>Atenção:</strong> Este link expira em <strong>{expires_hours} hora(s)</strong>.
-                </p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Recebemos uma solicitação para redefinir a senha da sua conta no Real Astrology.</p>
 
-                <p style="color: #666; font-size: 14px;">
-                    Se você não solicitou a redefinição de senha, ignore este email. Sua senha permanecerá inalterada.
-                </p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 24px;">Se você fez essa solicitação, clique no botão abaixo para criar uma nova senha:</p>
 
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                    <div style="text-align: center; margin: 32px 0;">
+                        <a href="{reset_url}"
+                           style="background-color: #d4a84b; color: #1a1f36; padding: 16px 32px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(212, 168, 75, 0.3);">
+                            Redefinir Senha
+                        </a>
+                    </div>
 
-                <p style="color: #999; font-size: 12px;">
-                    Se o botão não funcionar, copie e cole este link no seu navegador:<br>
-                    <a href="{reset_url}" style="color: #4F46E5; word-break: break-all;">{reset_url}</a>
-                </p>
+                    <p style="color: #606780; font-size: 14px; background: #faf9f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <strong style="color: #1a1f36;">Atenção:</strong> Este link expira em <strong>{expires_hours} hora(s)</strong>.
+                    </p>
 
-                <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                    © 2025 Astro App. Todos os direitos reservados.
-                </p>
+                    <p style="color: #606780; font-size: 14px; margin-top: 16px;">
+                        Se você não solicitou a redefinição de senha, ignore este email. Sua senha permanecerá inalterada.
+                    </p>
+
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 28px 0;">
+
+                    <p style="color: #606780; font-size: 12px;">
+                        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+                        <a href="{reset_url}" style="color: #d4a84b; word-break: break-all;">{reset_url}</a>
+                    </p>
+                </div>
+                <div style="background: #1a1f36; padding: 24px; text-align: center;">
+                    <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
+                        © 2025 Real Astrology. Todos os direitos reservados.
+                    </p>
+                </div>
             </div>
         </body>
         </html>
         """
 
         text_body = f"""
-        Recuperação de Senha - Astro App
+        Recuperação de Senha - Real Astrology
 
         Olá, {user_name}!
 
@@ -307,7 +308,7 @@ class EmailService:
         Se você não solicitou a redefinição de senha, ignore este email.
 
         ---
-        © 2025 Astro App
+        © 2025 Real Astrology
         """
 
         return await self.send_email(to_email, subject, html_body, text_body)
@@ -327,7 +328,7 @@ class EmailService:
         Returns:
             True se enviado com sucesso
         """
-        subject = "Senha Alterada com Sucesso - Astro App"
+        subject = "Senha Alterada com Sucesso - Real Astrology"
 
         html_body = f"""
         <!DOCTYPE html>
@@ -336,38 +337,45 @@ class EmailService:
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <img src="{settings.FRONTEND_URL}/logo.png" alt="Astro" style="width: 80px; height: 80px;" />
-            </div>
-            <div style="background-color: #f4f4f4; border-radius: 10px; padding: 30px;">
-                <h1 style="color: #10B981; margin-top: 0;">✓ Senha Alterada</h1>
-
-                <p>Olá, <strong>{user_name}</strong>!</p>
-
-                <p>Sua senha foi alterada com sucesso.</p>
-
-                <p style="color: #666; font-size: 14px;">
-                    Se você não fez essa alteração, entre em contato com nosso suporte imediatamente.
-                </p>
-
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{settings.FRONTEND_URL}/login"
-                       style="background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                        Fazer Login
-                    </a>
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #1a2035; background-color: #faf9f6; margin: 0; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(26, 31, 54, 0.08);">
+                <div style="background: #1a1f36; padding: 40px 24px; text-align: center;">
+                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">Senha Alterada</h1>
                 </div>
+                <div style="padding: 40px 32px;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <div style="width: 64px; height: 64px; background: #d4a84b; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <span style="color: #1a1f36; font-size: 32px;">&#10003;</span>
+                        </div>
+                    </div>
 
-                <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                    © 2025 Astro App. Todos os direitos reservados.
-                </p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Olá, <strong style="color: #1a1f36;">{user_name}</strong>!</p>
+
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Sua senha foi alterada com sucesso.</p>
+
+                    <p style="color: #606780; font-size: 14px; background: #faf9f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        Se você não fez essa alteração, entre em contato com nosso suporte imediatamente.
+                    </p>
+
+                    <div style="text-align: center; margin: 32px 0;">
+                        <a href="{settings.FRONTEND_URL}/login"
+                           style="background-color: #d4a84b; color: #1a1f36; padding: 16px 32px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(212, 168, 75, 0.3);">
+                            Fazer Login
+                        </a>
+                    </div>
+                </div>
+                <div style="background: #1a1f36; padding: 24px; text-align: center;">
+                    <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
+                        © 2025 Real Astrology. Todos os direitos reservados.
+                    </p>
+                </div>
             </div>
         </body>
         </html>
         """
 
         text_body = f"""
-        Senha Alterada com Sucesso - Astro App
+        Senha Alterada com Sucesso - Real Astrology
 
         Olá, {user_name}!
 
@@ -378,7 +386,7 @@ class EmailService:
         Acesse: {settings.FRONTEND_URL}/login
 
         ---
-        © 2025 Astro App
+        © 2025 Real Astrology
         """
 
         return await self.send_email(to_email, subject, html_body, text_body)
@@ -400,7 +408,7 @@ class EmailService:
         Returns:
             True se enviado com sucesso
         """
-        subject = "Verifique seu Email - Astro App"
+        subject = "Verifique seu Email - Real Astrology"
 
         html_body = f"""
         <!DOCTYPE html>
@@ -409,66 +417,67 @@ class EmailService:
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <img src="{settings.FRONTEND_URL}/logo.png" alt="Astro" style="width: 80px; height: 80px;" />
-            </div>
-            <div style="background-color: #f4f4f4; border-radius: 10px; padding: 30px;">
-                <h1 style="color: #4F46E5; margin-top: 0;">Bem-vindo ao Astro App!</h1>
-
-                <p>Olá, <strong>{user_name}</strong>!</p>
-
-                <p>Obrigado por se cadastrar no Astro App. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.</p>
-
-                <p>Clique no botão abaixo para verificar seu email:</p>
-
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{verification_url}"
-                       style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                        Verificar Email
-                    </a>
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #1a2035; background-color: #faf9f6; margin: 0; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(26, 31, 54, 0.08);">
+                <div style="background: #1a1f36; padding: 40px 24px; text-align: center;">
+                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">Bem-vindo ao Real Astrology!</h1>
                 </div>
+                <div style="padding: 40px 32px;">
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Olá, <strong style="color: #1a1f36;">{user_name}</strong>!</p>
 
-                <p style="color: #666; font-size: 14px;">
-                    <strong>Atenção:</strong> Este link expira em <strong>24 horas</strong>.
-                </p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Obrigado por se cadastrar no Real Astrology. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.</p>
 
-                <p style="color: #666; font-size: 14px;">
-                    Se você não criou uma conta no Astro App, ignore este email.
-                </p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 24px;">Clique no botão abaixo para verificar seu email:</p>
 
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                    <div style="text-align: center; margin: 32px 0;">
+                        <a href="{verification_url}"
+                           style="background-color: #d4a84b; color: #1a1f36; padding: 16px 32px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(212, 168, 75, 0.3);">
+                            Verificar Email
+                        </a>
+                    </div>
 
-                <p style="color: #999; font-size: 12px;">
-                    Se o botão não funcionar, copie e cole este link no seu navegador:<br>
-                    <a href="{verification_url}" style="color: #4F46E5; word-break: break-all;">{verification_url}</a>
-                </p>
+                    <p style="color: #606780; font-size: 14px; background: #faf9f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <strong style="color: #1a1f36;">Atenção:</strong> Este link expira em <strong>24 horas</strong>.
+                    </p>
 
-                <p style="color: #999; font-size: 12px; margin-top: 30px;">
-                    © 2025 Astro App. Todos os direitos reservados.<br>
-                    <a href="{settings.FRONTEND_URL}" style="color: #4F46E5;">realastrology.ai</a>
-                </p>
+                    <p style="color: #606780; font-size: 14px; margin-top: 16px;">
+                        Se você não criou uma conta no Real Astrology, ignore este email.
+                    </p>
+
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 28px 0;">
+
+                    <p style="color: #606780; font-size: 12px;">
+                        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+                        <a href="{verification_url}" style="color: #d4a84b; word-break: break-all;">{verification_url}</a>
+                    </p>
+                </div>
+                <div style="background: #1a1f36; padding: 24px; text-align: center;">
+                    <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
+                        © 2025 Real Astrology. Todos os direitos reservados.<br>
+                        <a href="{settings.FRONTEND_URL}" style="color: #d4a84b;">realastrology.ai</a>
+                    </p>
+                </div>
             </div>
         </body>
         </html>
         """
 
         text_body = f"""
-        Bem-vindo ao Astro App!
+        Bem-vindo ao Real Astrology!
 
         Olá, {user_name}!
 
-        Obrigado por se cadastrar no Astro App. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.
+        Obrigado por se cadastrar no Real Astrology. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.
 
         Para verificar seu email, acesse o link abaixo:
         {verification_url}
 
         Este link expira em 24 horas.
 
-        Se você não criou uma conta no Astro App, ignore este email.
+        Se você não criou uma conta no Real Astrology, ignore este email.
 
         ---
-        © 2025 Astro App
+        © 2025 Real Astrology
         realastrology.ai
         """
 

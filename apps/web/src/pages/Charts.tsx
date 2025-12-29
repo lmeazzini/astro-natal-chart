@@ -175,6 +175,9 @@ export function ChartsPage() {
             <h1 className="text-h3 font-display text-foreground">{t('dashboard.title')}</h1>
           </Link>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
+              <Link to="/blog">{t('landing.nav.blog')}</Link>
+            </Button>
             <LanguageSelector />
             <ThemeToggle />
             <Button asChild>

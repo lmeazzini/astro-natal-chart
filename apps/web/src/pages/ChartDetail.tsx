@@ -615,6 +615,9 @@ export function ChartDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
+                <Link to="/blog">{t('landing.nav.blog')}</Link>
+              </Button>
               <LanguageSelector />
               <ThemeToggle />
 

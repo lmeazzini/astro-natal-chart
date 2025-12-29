@@ -422,6 +422,9 @@ export function ProfilePage() {
             <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
           </Link>
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
+              <Link to="/blog">{t('landing.nav.blog')}</Link>
+            </Button>
             <LanguageSelector />
             <ThemeToggle />
             <Button variant="ghost" onClick={() => navigate('/dashboard')}>

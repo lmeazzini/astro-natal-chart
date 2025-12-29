@@ -109,7 +109,8 @@
       "passwordMinLength": "A senha deve ter no mínimo 8 caracteres",
       "features": {
         "unlimited": "Mapas astrais ilimitados",
-        "free": "Grátis para sempre"
+        "free": "Grátis para sempre",
+        "professional": "Interpretações profissionais com IA"
       },
       "passwordSpecialNumber": "Pelo menos um número ou caractere especial",
       "passwordCase": "Letras maiúsculas e minúsculas"
@@ -1545,16 +1546,90 @@
     "homeLabel": "Página Inicial",
     "login": "Entrar",
     "signup": "Criar Conta",
+    "nav": {
+      "blog": "Blog",
+      "techniques": "Técnicas",
+      "pricing": "Preços"
+    },
     "hero": {
+      "badge": "Redescubra a Sabedoria Antiga",
       "socialProof": "Mais de 1.000 mapas criados",
       "traditional": "Astrologia Tradicional",
-      "title": "Descubra Quem Você Realmente É",
-      "subtitle": "O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.",
-      "cta": "Criar Meu Mapa Grátis",
+      "title": "Astrologia Tradicional para o",
+      "titleHighlight": "Mundo Moderno",
+      "subtitle": "Nada de horóscopos genéricos. Revivemos técnicas de 2.000 anos para construir um mapa natal completo e historicamente fundamentado que revela seu verdadeiro temperamento e caminho de vida.",
+      "cta": "Descubra Seu Mapa",
+      "explore": "Explorar Técnicas",
       "viewExample": "Ver Exemplos de Mapas",
       "noCreditCard": "Sem cartão de crédito",
       "dataSecure": "Seus dados seguros (LGPD)",
       "twoMinutes": "Leva 2 minutos"
+    },
+    "features": {
+      "title": "Técnicas Ancestrais, Revividas",
+      "subtitle": "Vamos além dos simples \"Signos Solares\" para usar o arsenal completo da astrologia Helenística e Medieval.",
+      "dignities": {
+        "title": "Dignidades Essenciais",
+        "desc": "Compreendendo a verdadeira força e condição de um planeta baseada em sua posição zodiacal."
+      },
+      "sect": {
+        "title": "Secto (Dia/Noite)",
+        "desc": "A diferença entre nascer durante o dia ou a noite muda tudo."
+      },
+      "arabicParts": {
+        "title": "Partes Árabes",
+        "desc": "Pontos calculados como o \"Lote da Fortuna\" que revelam impulsionadores ocultos do destino."
+      },
+      "temperament": {
+        "title": "Temperamento",
+        "desc": "Seu equilíbrio elemental (Colérico, Sanguíneo, Melancólico, Fleumático)."
+      },
+      "classical": {
+        "title": "Raciocínio Clássico",
+        "desc": "Interpretação baseada em lógica derivada de Ptolomeu, Valens e Lilly."
+      },
+      "timing": {
+        "title": "Ciclos de Vida",
+        "desc": "Cronometragem precisa para ciclos de maturação e crescimento importantes da vida."
+      }
+    },
+    "notGuesswork": {
+      "title": "Não É Achismo.",
+      "subtitle": "Astronomia + Tradição.",
+      "step1": {
+        "title": "Precisão Astronômica",
+        "desc": "Usamos o Swiss Ephemeris para precisão de posicionamento planetário de nível NASA."
+      },
+      "step2": {
+        "title": "Contexto Histórico",
+        "desc": "Os significados são derivados de traduções de textos que vão do século I em Alexandria até o século XVII em Londres."
+      },
+      "step3": {
+        "title": "Sem Efeito Barnum",
+        "desc": "Evitamos declarações vagas que se aplicam a todos. Nossas interpretações são específicas, às vezes desafiadoras, mas sempre honestas."
+      },
+      "chart": {
+        "label": "Sol em Leão",
+        "dignity": "Domicílio"
+      }
+    },
+    "philosophy": {
+      "title": "A Filosofia do Destino",
+      "quote": "\"O homem sábio governa suas estrelas; o tolo obedece a elas.\"",
+      "map": {
+        "title": "Mapa, Não Território",
+        "desc": "Vemos o mapa natal não como uma sentença de prisão, mas como um boletim meteorológico para sua alma. Assim como um marinheiro usa um mapa para navegar os ventos, você usa seu mapa para navegar as correntes da vida. O mapa mostra a \"semente\" do seu potencial; como você a rega depende de você."
+      },
+      "character": {
+        "title": "Caráter é Destino",
+        "desc": "A astrologia tradicional ensina que eventos externos frequentemente espelham estados internos. Ao compreender seu temperamento, suas forças (dignidades) e seus desafios (debilidades), você ganha a capacidade de trabalhar com sua natureza ao invés de lutar contra ela."
+      }
+    },
+    "cta": {
+      "gdpr": "Conformidade LGPD e Privacidade",
+      "title": "Inicie Sua Jornada",
+      "subtitle": "Mais de 1.000 mapas criados. Sem cartão de crédito para gerar sua análise preliminar.",
+      "button": "Criar Mapa Grátis"
     },
     "pain": {
       "title": "Você Já Se Sentiu Assim?",

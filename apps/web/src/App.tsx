@@ -163,6 +163,9 @@ function DashboardPage() {
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
+              <Link to="/blog">{t('landing.nav.blog')}</Link>
+            </Button>
             <LanguageSelector />
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>

@@ -109,7 +109,8 @@
       "passwordMinLength": "Password must be at least 8 characters",
       "features": {
         "unlimited": "Unlimited birth charts",
-        "free": "Free forever"
+        "free": "Free forever",
+        "professional": "Professional AI interpretations"
       },
       "passwordSpecialNumber": "At least one number or special character",
       "passwordCase": "Upper and lowercase letters"
@@ -1526,16 +1527,90 @@
     "homeLabel": "Home",
     "login": "Login",
     "signup": "Sign Up",
+    "nav": {
+      "blog": "Blog",
+      "techniques": "Techniques",
+      "pricing": "Pricing"
+    },
     "hero": {
+      "badge": "Rediscover Ancient Wisdom",
       "socialProof": "Over 1,000 charts created",
       "traditional": "Traditional Astrology",
-      "title": "Discover Who You Really Are",
-      "subtitle": "Real Astrology uses ancient traditional astrology techniques to create a precise birth chart and deep interpretations about your personality, talents, and life path.",
-      "cta": "Create My Free Chart",
+      "title": "Traditional Astrology for the",
+      "titleHighlight": "Modern World",
+      "subtitle": "Not generic horoscopes. We revive 2,000-year-old techniques to build a complete, historically-grounded natal chart that reveals your true temperament and life path.",
+      "cta": "Discover Your Chart",
+      "explore": "Explore Techniques",
       "viewExample": "View Example Charts",
       "noCreditCard": "No credit card required",
       "dataSecure": "Your data is secure (GDPR)",
       "twoMinutes": "Takes 2 minutes"
+    },
+    "features": {
+      "title": "Ancient Techniques, Revived",
+      "subtitle": "We move beyond simple \"Sun Signs\" to use the full arsenal of Hellenistic and Medieval astrology.",
+      "dignities": {
+        "title": "Essential Dignities",
+        "desc": "Understanding a planet's true strength and condition based on its zodiacal position."
+      },
+      "sect": {
+        "title": "Sect (Day/Night)",
+        "desc": "The difference between being born during the day or night changes everything."
+      },
+      "arabicParts": {
+        "title": "Arabic Parts",
+        "desc": "Calculated points like the \"Part of Fortune\" that reveal hidden destiny drivers."
+      },
+      "temperament": {
+        "title": "Temperament",
+        "desc": "Your elemental balance (Choleric, Sanguine, Melancholic, Phlegmatic)."
+      },
+      "classical": {
+        "title": "Classical Reasoning",
+        "desc": "Logic-based interpretation derived from Ptolemy, Valens, and Lilly."
+      },
+      "timing": {
+        "title": "Life Cycles",
+        "desc": "Precise timing for major life maturation cycles and growth periods."
+      }
+    },
+    "notGuesswork": {
+      "title": "Not Guesswork.",
+      "subtitle": "Astronomy + Tradition.",
+      "step1": {
+        "title": "Astronomical Precision",
+        "desc": "We use the Swiss Ephemeris for NASA-grade planetary positioning accuracy."
+      },
+      "step2": {
+        "title": "Historical Context",
+        "desc": "Meanings are derived from translations of texts spanning from 1st century Alexandria to 17th century London."
+      },
+      "step3": {
+        "title": "No Barnum Effect",
+        "desc": "We avoid vague statements that apply to everyone. Our interpretations are specific, sometimes challenging, but always honest."
+      },
+      "chart": {
+        "label": "Sun in Leo",
+        "dignity": "Domicile"
+      }
+    },
+    "philosophy": {
+      "title": "The Philosophy of Fate",
+      "quote": "\"A wise man rules his stars; the fool obeys them.\"",
+      "map": {
+        "title": "Map, Not Territory",
+        "desc": "We view the natal chart not as a prison sentence, but as a weather report for your soul. Just as a sailor uses a map to navigate the winds, you use your chart to navigate life's currents. The chart shows the \"seed\" of your potential; how you water it is up to you."
+      },
+      "character": {
+        "title": "Character is Destiny",
+        "desc": "Traditional astrology teaches that external events often mirror internal states. By understanding your temperament, your strengths (dignities), and your challenges (debilities), you gain the agency to work with your nature rather than fighting against it."
+      }
+    },
+    "cta": {
+      "gdpr": "GDPR Compliant & Private",
+      "title": "Start Your Journey",
+      "subtitle": "Over 1,000 charts created. No credit card required to generate your preliminary analysis.",
+      "button": "Create Free Chart"
     },
     "pain": {
       "title": "Have You Ever Felt Like This?",

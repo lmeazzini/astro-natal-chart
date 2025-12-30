@@ -49,6 +49,8 @@
     "resultsCount": "{{count}} mapas encontrados",
     "noResults": "Nenhum mapa encontrado.",
     "views": "visualizações",
+    "highlights": "Destaques Astrológicos",
+    "notFound": "Mapa não encontrado",
     "ctaTitle": "Crie Seu Próprio Mapa Natal",
     "ctaTitleLoggedIn": "Crie Mais Mapas Natais",
     "ctaDescription": "Descubra os segredos do seu mapa astrológico com análise profissional e interpretações IA.",
@@ -364,7 +366,8 @@
       "arabicParts": "Partes Árabes",
       "interpretations": "Interpretações",
       "growth": "Crescimento",
-      "longevity": "Longevidade"
+      "longevity": "Longevidade",
+      "saturnReturn": "Retorno de Saturno"
     },
     "sections": {
       "chartWheel": "Roda do Mapa Natal",
@@ -577,8 +580,11 @@
     "planetList": {
       "sortBy": "Ordenar por:",
       "position": "Posição",
+      "sortByPosition": "Ordenar por posição no zodíaco",
       "house": "Casa",
+      "sortByHouse": "Ordenar por casa astrológica",
       "strength": "Força",
+      "sortByStrength": "Ordenar por força/dignidade",
       "hideInfo": "Esconder Info",
       "showInfo": "Mostrar Info",
       "essentialDignities": "Dignidades Essenciais",
@@ -1552,8 +1558,11 @@
     "signup": "Criar Conta",
     "nav": {
       "blog": "Blog",
+      "blogLabel": "Ir para o blog",
       "techniques": "Técnicas",
-      "pricing": "Preços"
+      "techniquesLabel": "Ver técnicas astrológicas",
+      "pricing": "Preços",
+      "pricingLabel": "Ver planos e preços"
     },
     "hero": {
       "badge": "Redescubra a Sabedoria Antiga",
@@ -1563,7 +1572,9 @@
       "titleHighlight": "Mundo Moderno",
       "subtitle": "Nada de horóscopos genéricos. Revivemos técnicas de 2.000 anos para construir um mapa natal completo e historicamente fundamentado que revela seu verdadeiro temperamento e caminho de vida.",
       "cta": "Descubra Seu Mapa",
+      "ctaLabel": "Criar seu mapa gratuito",
       "explore": "Explorar Técnicas",
+      "exploreLabel": "Explorar recursos e técnicas",
       "viewExample": "Ver Exemplos de Mapas",
       "noCreditCard": "Sem cartão de crédito",
       "dataSecure": "Seus dados seguros (LGPD)",
@@ -1633,7 +1644,8 @@
       "gdpr": "Conformidade LGPD e Privacidade",
       "title": "Inicie Sua Jornada",
       "subtitle": "Mais de 1.000 mapas criados. Sem cartão de crédito para gerar sua análise preliminar.",
-      "button": "Criar Mapa Grátis"
+      "button": "Criar Mapa Grátis",
+      "buttonLabel": "Criar seu mapa natal gratuito"
     },
     "pain": {
       "title": "Você Já Se Sentiu Assim?",
@@ -1771,10 +1783,12 @@
     "footer": {
       "tagline": "Astrologia Tradicional Para o Mundo Moderno",
       "legal": "Legal",
+      "legalNav": "Navegação para documentos legais",
       "terms": "Termos de Uso",
       "privacy": "Política de Privacidade",
       "cookies": "Política de Cookies",
       "access": "Acesso",
+      "accessNav": "Navegação de acesso à conta",
       "login": "Entrar",
       "register": "Criar Conta",
       "dashboard": "Meus Mapas",

@@ -2,7 +2,7 @@
  * Chart Detail Page - complete birth chart visualization
  */
 
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
@@ -15,10 +15,15 @@ import {
 } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
 import { getSaturnReturn, getSaturnReturnInterpretation } from '../services/saturn_return';
+import { getSolarReturn, getSolarReturnInterpretation } from '../services/solar_return';
 import type {
   SaturnReturnAnalysis as SaturnReturnAnalysisType,
   SaturnReturnInterpretation,
 } from '../types/saturn_return';
+import type {
+  SolarReturnResponse,
+  SolarReturnInterpretation as SolarReturnInterpretationType,
+} from '../types/solar_return';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
 import { ChartWheelAstro } from '../components/ChartWheelAstro';
@@ -48,6 +53,13 @@ const LongevityAnalysis = lazy(() =>
 const SaturnReturnAnalysis = lazy(() =>
   import('../components/SaturnReturnAnalysis').then((module) => ({
     default: module.SaturnReturnAnalysis,
+  }))
+);
+
+// Lazy load SolarReturnAnalysis for code splitting (premium feature)
+const SolarReturnAnalysis = lazy(() =>
+  import('../components/SolarReturnAnalysis').then((module) => ({
+    default: module.SolarReturnAnalysis,
   }))
 );
 import { InfoTooltip } from '../components/InfoTooltip';
@@ -97,6 +109,13 @@ export function ChartDetailPage() {
     useState<SaturnReturnInterpretation | null>(null);
   const [isLoadingSaturnReturn, setIsLoadingSaturnReturn] = useState(false);
   const [saturnReturnError, setSaturnReturnError] = useState<string | null>(null);
+
+  // Solar Return state (premium feature)
+  const [solarReturnData, setSolarReturnData] = useState<SolarReturnResponse | null>(null);
+  const [solarReturnInterpretation, setSolarReturnInterpretation] =
+    useState<SolarReturnInterpretationType | null>(null);
+  const [isLoadingSolarReturn, setIsLoadingSolarReturn] = useState(false);
+  const [solarReturnError, setSolarReturnError] = useState<string | null>(null);
 
   // Tab tracking for Amplitude
   const [currentTab, setCurrentTab] = useState('visual');
@@ -301,6 +320,11 @@ export function ChartDetailPage() {
     if (newTab === 'saturn-return' && !saturnReturnAnalysis && !isLoadingSaturnReturn) {
       loadSaturnReturn();
     }
+
+    // Load Solar Return data on demand when tab is selected
+    if (newTab === 'solar-return' && !solarReturnData && !isLoadingSolarReturn) {
+      loadSolarReturn();
+    }
   }
 
   // Regenerate interpretations (forces new generation, used for language change)
@@ -349,6 +373,55 @@ export function ChartDetailPage() {
       setIsLoadingSaturnReturn(false);
     }
   }
+
+  // Load Solar Return data (premium feature)
+  async function loadSolarReturn() {
+    if (!id || isLoadingSolarReturn) return;
+
+    try {
+      setIsLoadingSolarReturn(true);
+      setSolarReturnError(null);
+      const [data, interpretation] = await Promise.all([
+        getSolarReturn(id),
+        getSolarReturnInterpretation(id),
+      ]);
+      setSolarReturnData(data);
+      setSolarReturnInterpretation(interpretation);
+    } catch (err) {
+      console.error('Failed to load Solar Return:', err);
+      // Extract error message for display
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load Solar Return data';
+      setSolarReturnError(errorMessage);
+    } finally {
+      setIsLoadingSolarReturn(false);
+    }
+  }
+
+  // Handle Solar Return year change (memoized for performance)
+  const handleSolarReturnYearChange = useCallback(
+    (year: number) => {
+      if (!id) return;
+
+      setIsLoadingSolarReturn(true);
+      setSolarReturnError(null);
+
+      Promise.all([getSolarReturn(id, { year }), getSolarReturnInterpretation(id, { year })])
+        .then(([data, interpretation]) => {
+          setSolarReturnData(data);
+          setSolarReturnInterpretation(interpretation);
+        })
+        .catch((err) => {
+          console.error('Failed to load Solar Return:', err);
+          setSolarReturnError(
+            err instanceof Error ? err.message : 'Failed to load Solar Return data'
+          );
+        })
+        .finally(() => {
+          setIsLoadingSolarReturn(false);
+        });
+    },
+    [id]
+  );
 
   // Helper to extract content from interpretation item (handles both string and object formats)
   function extractContent(item: unknown): string {
@@ -782,6 +855,9 @@ export function ChartDetailPage() {
             </TabsTrigger>
             <TabsTrigger value="saturn-return">
               {t('chartDetail.tabs.saturnReturn', { defaultValue: 'Saturn Return' })}
+            </TabsTrigger>
+            <TabsTrigger value="solar-return">
+              {t('chartDetail.tabs.solarReturn', { defaultValue: 'Solar Return' })}
             </TabsTrigger>
           </TabsList>
 
@@ -1337,6 +1413,31 @@ export function ChartDetailPage() {
                 isLoading={isLoadingSaturnReturn}
                 error={saturnReturnError}
                 onRetry={loadSaturnReturn}
+              />
+            </Suspense>
+          </TabsContent>
+
+          {/* Tab Content: Solar Return (Premium) - Lazy loaded */}
+          <TabsContent value="solar-return" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                </div>
+              }
+            >
+              <SolarReturnAnalysis
+                solarReturn={solarReturnData}
+                interpretation={solarReturnInterpretation}
+                isLoading={isLoadingSolarReturn}
+                error={solarReturnError}
+                onRetry={loadSolarReturn}
+                onYearChange={handleSolarReturnYearChange}
               />
             </Suspense>
           </TabsContent>

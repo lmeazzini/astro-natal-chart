@@ -75,7 +75,7 @@ function SaturnReturnError({ error, onRetry }: { error: string; onRetry?: () => 
         <AlertCircle className="h-12 w-12 text-red-500" />
         <div className="text-center space-y-2">
           <h3 className="text-lg font-semibold text-foreground">
-            {t('astrology.saturnReturn.errorTitle', {
+            {t('astrology:saturnReturn.errorTitle', {
               defaultValue: 'Unable to load Saturn Return',
             })}
           </h3>
@@ -147,11 +147,11 @@ function ReturnDisplay({
   const getReturnLabel = (num: number) => {
     switch (num) {
       case 1:
-        return t('astrology.saturnReturn.firstReturn', { defaultValue: '1st Saturn Return' });
+        return t('astrology:saturnReturn.firstReturn', { defaultValue: '1st Saturn Return' });
       case 2:
-        return t('astrology.saturnReturn.secondReturn', { defaultValue: '2nd Saturn Return' });
+        return t('astrology:saturnReturn.secondReturn', { defaultValue: '2nd Saturn Return' });
       case 3:
-        return t('astrology.saturnReturn.thirdReturn', { defaultValue: '3rd Saturn Return' });
+        return t('astrology:saturnReturn.thirdReturn', { defaultValue: '3rd Saturn Return' });
       default:
         return `${num}th Saturn Return`;
     }
@@ -173,12 +173,12 @@ function ReturnDisplay({
           </div>
           {isCurrent && (
             <Badge className="bg-amber-500 text-white">
-              {t('astrology.saturnReturn.current', { defaultValue: 'Current' })}
+              {t('astrology:saturnReturn.current', { defaultValue: 'Current' })}
             </Badge>
           )}
           {isFuture && (
             <Badge variant="outline" className="border-blue-500 text-blue-600 dark:text-blue-400">
-              {t('astrology.saturnReturn.upcoming', { defaultValue: 'Upcoming' })}
+              {t('astrology:saturnReturn.upcoming', { defaultValue: 'Upcoming' })}
             </Badge>
           )}
         </CardTitle>
@@ -187,7 +187,7 @@ function ReturnDisplay({
         {/* Age */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('astrology.saturnReturn.ageAtReturn', { defaultValue: 'Age' })}
+            {t('astrology:saturnReturn.ageAtReturn', { defaultValue: 'Age' })}
           </span>
           <span className="font-semibold">{saturnReturn.age_at_return.toFixed(1)}</span>
         </div>
@@ -195,7 +195,7 @@ function ReturnDisplay({
         {/* Passes */}
         <div className="space-y-2">
           <span className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('astrology.saturnReturn.passes', { defaultValue: 'Passes' })}
+            {t('astrology:saturnReturn.passes', { defaultValue: 'Passes' })}
           </span>
           <div className="space-y-1">
             {saturnReturn.passes.map((pass, idx) => (
@@ -206,13 +206,13 @@ function ReturnDisplay({
 
         {/* Duration */}
         <div className="text-xs text-muted-foreground">
-          {t('astrology.saturnReturn.duration', { defaultValue: 'Duration' })}:{' '}
+          {t('astrology:saturnReturn.duration', { defaultValue: 'Duration' })}:{' '}
           {Math.round(
             (new Date(saturnReturn.end_date).getTime() -
               new Date(saturnReturn.start_date).getTime()) /
               (1000 * 60 * 60 * 24)
           )}{' '}
-          {t('astrology.saturnReturn.days', { defaultValue: 'days' })}
+          {t('astrology:saturnReturn.days', { defaultValue: 'days' })}
         </div>
       </CardContent>
     </Card>
@@ -233,7 +233,7 @@ function InterpretationDisplay({ interpretation }: { interpretation: SaturnRetur
         <CardTitle className="flex items-center gap-3">
           <Info className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           <span>
-            {t('astrology.saturnReturn.interpretation', { defaultValue: 'Interpretation' })}
+            {t('astrology:saturnReturn.interpretation', { defaultValue: 'Interpretation' })}
           </span>
         </CardTitle>
       </CardHeader>
@@ -250,7 +250,7 @@ function InterpretationDisplay({ interpretation }: { interpretation: SaturnRetur
         {/* General Interpretation */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('astrology.saturnReturn.generalMeaning', { defaultValue: 'General Meaning' })}
+            {t('astrology:saturnReturn.generalMeaning', { defaultValue: 'General Meaning' })}
           </p>
           <p className="text-sm leading-relaxed">{interpretation.general_interpretation}</p>
         </div>
@@ -260,7 +260,7 @@ function InterpretationDisplay({ interpretation }: { interpretation: SaturnRetur
         {/* Sign Interpretation */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('astrology.saturnReturn.inSign', { defaultValue: 'Saturn in' })}{' '}
+            {t('astrology:saturnReturn.inSign', { defaultValue: 'Saturn in' })}{' '}
             {getSignSymbol(interpretation.natal_saturn_sign)}{' '}
             {translateSign(interpretation.natal_saturn_sign)}
           </p>
@@ -272,7 +272,7 @@ function InterpretationDisplay({ interpretation }: { interpretation: SaturnRetur
         {/* House Interpretation */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {t('astrology.saturnReturn.inHouse', { defaultValue: 'Saturn in House' })}{' '}
+            {t('astrology:saturnReturn.inHouse', { defaultValue: 'Saturn in House' })}{' '}
             {interpretation.natal_saturn_house}
           </p>
           <p className="text-sm leading-relaxed">{interpretation.house_interpretation}</p>
@@ -284,7 +284,7 @@ function InterpretationDisplay({ interpretation }: { interpretation: SaturnRetur
             <Separator />
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                {t('astrology.saturnReturn.currentPhase', { defaultValue: 'Current Phase' })}
+                {t('astrology:saturnReturn.currentPhase', { defaultValue: 'Current Phase' })}
               </p>
               <p className="text-sm leading-relaxed">
                 {interpretation.current_phase_interpretation}
@@ -334,7 +334,7 @@ export function SaturnReturnAnalysis({
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">
-          {t('astrology.saturnReturn.noData', {
+          {t('astrology:saturnReturn.noData', {
             defaultValue: 'Saturn Return data not available for this chart.',
           })}
         </p>
@@ -352,10 +352,10 @@ export function SaturnReturnAnalysis({
               <span className="text-3xl">♄</span>
               <div className="flex-1">
                 <div className="text-lg font-semibold text-foreground">
-                  {t('astrology.saturnReturn.title', { defaultValue: 'Saturn Return' })}
+                  {t('astrology:saturnReturn.title', { defaultValue: 'Saturn Return' })}
                 </div>
                 <div className="text-xs text-muted-foreground font-normal mt-1">
-                  {t('astrology.saturnReturn.subtitle', {
+                  {t('astrology:saturnReturn.subtitle', {
                     defaultValue: 'Major life transit occurring every ~29.5 years',
                   })}
                 </div>
@@ -367,7 +367,7 @@ export function SaturnReturnAnalysis({
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                  {t('astrology.saturnReturn.natalSaturn', { defaultValue: 'Natal Saturn' })}
+                  {t('astrology:saturnReturn.natalSaturn', { defaultValue: 'Natal Saturn' })}
                 </p>
                 <p className="text-xl font-bold text-foreground">
                   {getSignSymbol(analysis.natal_saturn_sign)}{' '}
@@ -375,13 +375,13 @@ export function SaturnReturnAnalysis({
                   {analysis.natal_saturn_degree.toFixed(1)}°
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {t('astrology.saturnReturn.house', { defaultValue: 'House' })}{' '}
+                  {t('astrology:saturnReturn.house', { defaultValue: 'House' })}{' '}
                   {analysis.natal_saturn_house}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                  {t('astrology.saturnReturn.currentSaturn', { defaultValue: 'Current Saturn' })}
+                  {t('astrology:saturnReturn.currentSaturn', { defaultValue: 'Current Saturn' })}
                 </p>
                 <p className="text-lg font-semibold">
                   {getSignSymbol(analysis.current_saturn_sign)}{' '}
@@ -398,7 +398,7 @@ export function SaturnReturnAnalysis({
             <CardTitle className="flex items-center gap-3">
               <Clock className="h-5 w-5" />
               <span>
-                {t('astrology.saturnReturn.cycleProgress', { defaultValue: 'Cycle Progress' })}
+                {t('astrology:saturnReturn.cycleProgress', { defaultValue: 'Cycle Progress' })}
               </span>
             </CardTitle>
           </CardHeader>
@@ -406,7 +406,7 @@ export function SaturnReturnAnalysis({
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {t('astrology.saturnReturn.throughCycle', {
+                  {t('astrology:saturnReturn.throughCycle', {
                     defaultValue: 'Through current cycle',
                   })}
                 </span>
@@ -418,7 +418,7 @@ export function SaturnReturnAnalysis({
             {analysis.days_until_next_return && (
               <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
                 <span className="text-sm text-muted-foreground">
-                  {t('astrology.saturnReturn.daysUntilNext', {
+                  {t('astrology:saturnReturn.daysUntilNext', {
                     defaultValue: 'Days until next return',
                   })}
                 </span>
@@ -433,7 +433,7 @@ export function SaturnReturnAnalysis({
         {/* Saturn Returns Grid */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">
-            {t('astrology.saturnReturn.returns', { defaultValue: 'Saturn Returns' })}
+            {t('astrology:saturnReturn.returns', { defaultValue: 'Saturn Returns' })}
           </h3>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Current Return */}

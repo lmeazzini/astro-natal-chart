@@ -882,16 +882,21 @@ def calculate_birth_chart(
     # Calculate planet positions
     planets = calculate_planets(jd, house_cusps)
 
-    # Find Sun and Moon for sect, lunar phase and solar phase
+    # Find Sun, Moon and Saturn for various calculations
     sun_longitude = 0.0
     sun_sign = ""
     moon_longitude = 0.0
+    saturn_longitude = 0.0
+    saturn_house = 1
     for planet in planets:
         if planet.name == "Sun":
             sun_longitude = planet.longitude
             sun_sign = planet.sign
         elif planet.name == "Moon":
             moon_longitude = planet.longitude
+        elif planet.name == "Saturn":
+            saturn_longitude = planet.longitude
+            saturn_house = planet.house
 
     # Calculate sect (day/night chart)
     sect = calculate_sect(ascendant, sun_longitude)
@@ -1011,6 +1016,16 @@ def calculate_birth_chart(
         language=language,
     )
 
+    # Calculate Saturn Return Analysis
+    from app.astro.saturn_return import calculate_saturn_return_analysis
+
+    saturn_return = calculate_saturn_return_analysis(
+        birth_jd=jd,
+        natal_saturn_longitude=saturn_longitude,
+        natal_saturn_house=saturn_house,
+        language=language,
+    )
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -1027,5 +1042,6 @@ def calculate_birth_chart(
         "mentality": mentality,
         "arabic_parts": arabic_parts,
         "longevity": longevity,
+        "saturn_return": saturn_return,
         "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

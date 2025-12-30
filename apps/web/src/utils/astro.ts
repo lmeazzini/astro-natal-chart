@@ -153,14 +153,16 @@ export function polarToCartesian(
 /**
  * Get planet symbol with fallback
  */
-export function getPlanetSymbol(planetName: string): string {
+export function getPlanetSymbol(planetName: string | undefined | null): string {
+  if (!planetName) return '?';
   return PLANET_SYMBOLS[planetName] || planetName.charAt(0);
 }
 
 /**
  * Get sign symbol with fallback
  */
-export function getSignSymbol(signName: string): string {
+export function getSignSymbol(signName: string | undefined | null): string {
+  if (!signName) return '?';
   return SIGN_SYMBOLS[signName] || signName.slice(0, 3);
 }
 

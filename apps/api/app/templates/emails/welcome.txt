@@ -1,14 +1,14 @@
-Bem-vindo ao Real Astrology! ✨
+Bem-vindo ao Real Astrology!
 
 Olá, {{ user_name }}!
 
-É um prazer ter você conosco! Estamos muito felizes que você tenha escolhido o Real Astrology para explorar seu mapa natal.
+É um prazer ter você conosco. Estamos muito felizes que você tenha escolhido o Real Astrology para explorar seu mapa natal com técnicas tradicionais de astrologia.
 
-A astrologia tradicional é uma ferramenta poderosa de autoconhecimento, e estamos aqui para tornar essa jornada precisa, acessível e transformadora.
+Diferente dos horóscopos genéricos, usamos técnicas milenares de astrologia Helenística e Medieval para revelar seu verdadeiro temperamento e caminho de vida.
 
 ========================
 
-🌟 COMECE SUA JORNADA AGORA
+COMECE SUA JORNADA
 
 Crie seu primeiro mapa natal em menos de 2 minutos. Você vai precisar apenas de:
 
@@ -16,23 +16,23 @@ Crie seu primeiro mapa natal em menos de 2 minutos. Você vai precisar apenas de
 - Hora exata de nascimento (se souber)
 - Cidade onde nasceu
 
-👉 Criar Meu Primeiro Mapa: {{ dashboard_url }}/charts/new
+Criar Meu Primeiro Mapa: {{ dashboard_url }}/charts/new
 
 ========================
 
 O QUE VOCÊ PODE FAZER
 
-🪐 Cálculos Precisos
-   Posições planetárias calculadas com Swiss Ephemeris (precisão de arco-segundo)
+* Cálculos Precisos
+  Posições planetárias calculadas com Swiss Ephemeris (precisão de nível NASA)
 
-🎨 Visualização Profissional
-   Mapa natal interativo com todos os planetas, casas e aspectos
+* Dignidades Essenciais
+  Entenda a verdadeira força de cada planeta no seu mapa
 
-🤖 Interpretações com IA
-   Análises personalizadas geradas por inteligência artificial
+* Interpretações com IA
+  Análises personalizadas baseadas em textos clássicos
 
-📄 Relatórios em PDF
-   Exporte seu mapa completo em formato profissional
+* Temperamento
+  Descubra seu equilíbrio elemental (Colérico, Sanguíneo, Melancólico, Fleumático)
 
 ========================
 
@@ -43,7 +43,7 @@ Entre em contato: {{ support_email }}
 
 ========================
 
-Que sua jornada de autoconhecimento seja transformadora! ✨
+Que sua jornada de autoconhecimento seja transformadora!
 
 Com carinho,
 Equipe Real Astrology

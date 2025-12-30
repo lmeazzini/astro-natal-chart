@@ -1,58 +1,49 @@
 /**
- * Landing Page - B2C Conversion-focused homepage
- * Issue #159 - Professional B2C copywriting with AIDA/PAS formulas
- *
- * Structure:
- * 1. Hero (AIDA: Attention + Interest)
- * 2. Pain Points (PAS: Problem + Agitate)
- * 3. Solution (PAS: Solution)
- * 4. Benefits (not features)
- * 5. Why Traditional Astrology
- * 6. Social Proof (Testimonials)
- * 7. How It Works
- * 8. FAQ (Objections)
- * 9. Final CTA
+ * Landing Page - Midnight & Paper Design System
+ * Elegant, conversion-focused homepage with traditional astrology focus
  */
 
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Star, Sun, Moon, Compass, Scroll, Target, ShieldCheck, ArrowRight } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  Sparkles,
-  Heart,
-  Target,
-  Zap,
-  Compass,
-  Star,
-  Quote,
-  UserPlus,
-  Calendar,
-  Eye,
-  ArrowRight,
-  Check,
-  Shield,
-  CreditCard,
-  Clock,
-  Frown,
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import heroBg from '@/assets/ancient_celestial_map_background.jpg';
 
 export function LandingPage() {
   const { t } = useTranslation();
+  const [scrolled, setScrolled] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Throttled scroll handler using requestAnimationFrame
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-secondary/5">
-      {/* Header */}
-      <nav className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+    <div className="w-full overflow-x-hidden">
+      {/* Navigation - Sticky with border on scroll */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-primary/95 backdrop-blur-md border-b border-primary-foreground/20 shadow-lg'
+            : 'bg-transparent'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link
             to="/"
@@ -60,729 +51,422 @@ export function LandingPage() {
             aria-label={t('landing.homeLabel', { defaultValue: 'Home' })}
           >
             <img src="/logo.png" alt="Real Astrology" className="h-8 w-8" />
-            <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
+            <span className="text-xl font-serif font-medium text-primary-foreground">
+              Real Astrology
+            </span>
           </Link>
+          <div className="hidden md:flex items-center gap-6">
+            <Link
+              to="/blog"
+              className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              aria-label={t('landing.nav.blogLabel', { defaultValue: 'Go to blog' })}
+            >
+              {t('landing.nav.blog', { defaultValue: 'Blog' })}
+            </Link>
+            <Link
+              to="/about/methodology"
+              className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              aria-label={t('landing.nav.techniquesLabel', {
+                defaultValue: 'Learn about our techniques',
+              })}
+            >
+              {t('landing.nav.techniques', { defaultValue: 'Techniques' })}
+            </Link>
+            <Link
+              to="/pricing"
+              className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              aria-label={t('landing.nav.pricingLabel', { defaultValue: 'View pricing plans' })}
+            >
+              {t('landing.nav.pricing', { defaultValue: 'Pricing' })}
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <LanguageSelector />
             <ThemeToggle />
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/login">{t('landing.login', { defaultValue: 'Entrar' })}</Link>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <Link to="/login">{t('landing.login', { defaultValue: 'Login' })}</Link>
             </Button>
-            <Button asChild size="sm">
-              <Link to="/register">{t('landing.signup', { defaultValue: 'Criar Conta' })}</Link>
+            <Button
+              asChild
+              size="sm"
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              <Link to="/register">{t('landing.signup', { defaultValue: 'Sign Up' })}</Link>
             </Button>
           </div>
         </div>
       </nav>
 
-      {/* ============================================================ */}
-      {/* HERO SECTION - AIDA: Attention + Interest */}
-      {/* ============================================================ */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 relative">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Social Proof Badge */}
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-8">
-              <Star className="h-4 w-4 fill-primary" />
-              {t('landing.hero.socialProof', { defaultValue: 'Mais de 1.000 mapas criados' })}
-              <span className="text-muted-foreground">|</span>
-              <span>
-                {t('landing.hero.traditional', { defaultValue: 'Astrologia Tradicional' })}
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-primary text-primary-foreground">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={heroBg}
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            decoding="async"
+            className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/60 to-background" />
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl space-y-6 md:space-y-8">
+          <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.8, ease: 'easeOut' }}
+          >
+            <span className="inline-block py-1 px-3 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-medium tracking-widest uppercase mb-4 md:mb-6">
+              {t('landing.hero.badge', { defaultValue: 'Rediscover Ancient Wisdom' })}
+            </span>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-medium tracking-tight leading-[1.1] mb-6 text-balance">
+              {t('landing.hero.title', { defaultValue: 'Traditional Astrology for the' })}{' '}
+              <span className="italic text-secondary-foreground/90">
+                {t('landing.hero.titleHighlight', { defaultValue: 'Modern World' })}
               </span>
-            </div>
-
-            {/* Main Headline - Emotional, stops the scroll */}
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 font-display leading-tight">
-              {t('landing.hero.title', { defaultValue: 'Descubra Quem Você Realmente É' })}
-            </h2>
-
-            {/* Subheadline - Generates curiosity */}
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed mb-8 md:mb-10 text-balance">
               {t('landing.hero.subtitle', {
                 defaultValue:
-                  'O Real Astrology usa técnicas milenares de astrologia tradicional para criar um mapa natal preciso e interpretações profundas sobre sua personalidade, talentos e caminho de vida.',
+                  'Discover what traditional astrology reveals about your character, potential, and life path using techniques refined over millennia.',
               })}
             </p>
 
-            {/* Primary CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-              <Button asChild size="lg" className="group text-lg px-8">
-                <Link to="/register">
-                  {t('landing.hero.cta', { defaultValue: 'Criar Meu Mapa Grátis' })}
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link to="/charts/famous">
-                  {t('landing.hero.viewExample', { defaultValue: 'Ver Exemplos de Mapas' })}
-                </Link>
-              </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                to="/register"
+                className="w-full sm:w-auto px-8 py-4 bg-accent text-accent-foreground rounded-full font-medium text-lg transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
+                aria-label={t('landing.hero.ctaLabel', { defaultValue: 'Create your free chart' })}
+              >
+                {t('landing.hero.cta', { defaultValue: 'Create Your Chart' })}{' '}
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+              <a
+                href="#features"
+                className="w-full sm:w-auto px-8 py-4 bg-transparent border border-primary-foreground/20 text-primary-foreground rounded-full font-medium text-lg hover:bg-primary-foreground/5 transition-colors"
+                aria-label={t('landing.hero.exploreLabel', {
+                  defaultValue: 'Explore our features',
+                })}
+              >
+                {t('landing.hero.explore', { defaultValue: 'Explore Features' })}
+              </a>
             </div>
-
-            {/* Friction Reducers */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                {t('landing.hero.noCreditCard', { defaultValue: 'Sem cartão de crédito' })}
-              </span>
-              <span className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
-                {t('landing.hero.dataSecure', { defaultValue: 'Seus dados seguros (LGPD)' })}
-              </span>
-              <span className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                {t('landing.hero.twoMinutes', { defaultValue: 'Leva 2 minutos' })}
-              </span>
-            </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* PAIN POINTS SECTION - PAS: Problem + Agitate */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24 bg-card/50">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
-              {t('landing.pain.title', { defaultValue: 'Você Já Se Sentiu Assim?' })}
-            </h3>
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+            <h2 className="text-3xl md:text-4xl font-serif text-primary">
+              {t('landing.features.title', { defaultValue: 'What Makes Us Different' })}
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              {t('landing.features.subtitle', {
+                defaultValue: 'We combine ancient techniques with modern precision',
+              })}
+            </p>
           </div>
 
-          {/* Pain Points Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                key: 'purpose',
-                text: t('landing.pain.purpose', {
-                  defaultValue: '"Não sei qual é meu propósito de vida"',
+                icon: <Star className="w-6 h-6" aria-hidden="true" />,
+                title: t('landing.features.dignities.title', {
+                  defaultValue: 'Essential Dignities',
+                }),
+                desc: t('landing.features.dignities.desc', {
+                  defaultValue:
+                    'Understand planetary strength through domicile, exaltation, triplicity, term, and face.',
                 }),
               },
               {
-                key: 'talents',
-                text: t('landing.pain.talents', {
-                  defaultValue: '"Sinto que tenho talentos que não consigo expressar"',
+                icon: <Sun className="w-6 h-6" aria-hidden="true" />,
+                title: t('landing.features.sect.title', { defaultValue: 'Sect (Day/Night)' }),
+                desc: t('landing.features.sect.desc', {
+                  defaultValue:
+                    'Discover how the time of birth affects which planets work in your favor.',
                 }),
               },
               {
-                key: 'decisions',
-                text: t('landing.pain.decisions', {
-                  defaultValue: '"Tomo decisões e depois me arrependo"',
+                icon: <Compass className="w-6 h-6" aria-hidden="true" />,
+                title: t('landing.features.arabicParts.title', { defaultValue: 'Arabic Parts' }),
+                desc: t('landing.features.arabicParts.desc', {
+                  defaultValue:
+                    'Calculate the Lots of Fortune, Spirit, and other sensitive points.',
                 }),
               },
               {
-                key: 'patterns',
-                text: t('landing.pain.patterns', {
-                  defaultValue: '"Não entendo por que repito os mesmos padrões"',
+                icon: <Scroll className="w-6 h-6" aria-hidden="true" />,
+                title: t('landing.features.temperament.title', { defaultValue: 'Temperament' }),
+                desc: t('landing.features.temperament.desc', {
+                  defaultValue:
+                    'Assess the balance of hot, cold, wet, and dry qualities in your chart.',
                 }),
               },
               {
-                key: 'horoscopes',
-                text: t('landing.pain.horoscopes', {
-                  defaultValue: '"Horóscopos genéricos nunca fazem sentido pra mim"',
+                icon: <Target className="w-6 h-6" aria-hidden="true" />,
+                title: t('landing.features.classical.title', {
+                  defaultValue: 'Classical Reasoning',
+                }),
+                desc: t('landing.features.classical.desc', {
+                  defaultValue:
+                    'No guesswork—every interpretation is grounded in traditional doctrine.',
                 }),
               },
               {
-                key: 'selfknowledge',
-                text: t('landing.pain.selfknowledge', {
-                  defaultValue: '"Quero me conhecer melhor, mas não sei como"',
+                icon: <Moon className="w-6 h-6" aria-hidden="true" />,
+                title: t('landing.features.timing.title', { defaultValue: 'Life Cycles' }),
+                desc: t('landing.features.timing.desc', {
+                  defaultValue:
+                    'Understand major life transits like Saturn Return with precise timing.',
                 }),
               },
-            ].map((pain) => (
-              <div
-                key={pain.key}
-                className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border border-border/50"
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: shouldReduceMotion ? 0 : i * 0.1 }}
+                className="group p-8 rounded-xl bg-card border border-border hover:border-primary/20 hover:shadow-xl transition-all duration-300"
               >
-                <Frown className="h-6 w-6 text-muted-foreground/60 flex-shrink-0" />
-                <span className="text-muted-foreground italic">{pain.text}</span>
-              </div>
+                <div className="w-12 h-12 rounded-full bg-secondary/30 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-serif font-medium mb-3 text-primary">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
+              </motion.div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* Transition/Empathy */}
-          <div className="text-center">
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('landing.pain.transition', {
-                defaultValue:
-                  'Você não está sozinho. A maioria das pessoas passa a vida inteira sem realmente se conhecer. Mas não precisa ser assim.',
-              })}
-            </p>
+      {/* "Not Guesswork" Section */}
+      <section className="py-24 bg-muted/30 border-y border-border/50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <h2 className="text-4xl md:text-5xl font-serif text-primary leading-tight">
+                {t('landing.notGuesswork.title', { defaultValue: 'This is Not Guesswork.' })} <br />
+                <span className="text-muted-foreground italic">
+                  {t('landing.notGuesswork.subtitle', { defaultValue: 'This is Tradition.' })}
+                </span>
+              </h2>
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div
+                    className="mt-1 w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-serif font-bold"
+                    aria-hidden="true"
+                  >
+                    1
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-serif font-medium mb-2">
+                      {t('landing.notGuesswork.step1.title', {
+                        defaultValue: 'Enter Your Birth Data',
+                      })}
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {t('landing.notGuesswork.step1.desc', {
+                        defaultValue:
+                          'Date, time, and place of birth—the essential coordinates of your celestial map.',
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div
+                    className="mt-1 w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-serif font-bold"
+                    aria-hidden="true"
+                  >
+                    2
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-serif font-medium mb-2">
+                      {t('landing.notGuesswork.step2.title', {
+                        defaultValue: 'We Calculate Everything',
+                      })}
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {t('landing.notGuesswork.step2.desc', {
+                        defaultValue:
+                          'Swiss Ephemeris precision combined with traditional techniques.',
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div
+                    className="mt-1 w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-serif font-bold"
+                    aria-hidden="true"
+                  >
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-serif font-medium mb-2">
+                      {t('landing.notGuesswork.step3.title', {
+                        defaultValue: 'Discover Your Chart',
+                      })}
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {t('landing.notGuesswork.step3.desc', {
+                        defaultValue:
+                          'A complete analysis with dignities, sect, temperament, and more.',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full transform rotate-12" />
+              <div className="relative bg-card border border-border rounded-2xl p-8 shadow-2xl">
+                {/* Visual Abstract Chart Representation */}
+                <div className="aspect-square rounded-full border-2 border-dashed border-primary/20 relative flex items-center justify-center">
+                  <div className="absolute inset-4 rounded-full border border-primary/10" />
+                  <div className="absolute inset-12 rounded-full border border-primary/10" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-primary/10" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-primary/10" />
+
+                  {/* Animated Planets - respects reduced motion preference */}
+                  <motion.div
+                    animate={shouldReduceMotion ? {} : { rotate: 360 }}
+                    transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+                    className="absolute inset-0"
+                  >
+                    <div className="absolute top-8 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_hsl(var(--accent))]" />
+                  </motion.div>
+
+                  <motion.div
+                    animate={shouldReduceMotion ? {} : { rotate: -360 }}
+                    transition={{ duration: 45, repeat: Infinity, ease: 'linear' }}
+                    className="absolute inset-8"
+                  >
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-primary" />
+                  </motion.div>
+
+                  <div className="text-center space-y-1 z-10 bg-card/80 backdrop-blur px-4 py-2 rounded border border-border">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                      {t('landing.notGuesswork.chart.label', { defaultValue: 'Essential Dignity' })}
+                    </p>
+                    <p className="font-serif text-lg text-primary">
+                      {t('landing.notGuesswork.chart.dignity', { defaultValue: 'Sun in Domicile' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* SOLUTION SECTION - PAS: Solution */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <Badge variant="secondary" className="mb-4">
-              {t('landing.solution.badge', { defaultValue: 'A Solução' })}
-            </Badge>
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-6 font-display">
-              {t('landing.solution.title', {
-                defaultValue:
-                  'Real Astrology: Autoconhecimento Profundo Através da Astrologia Tradicional',
-              })}
-            </h3>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-4">
-              {t('landing.solution.description1', {
-                defaultValue:
-                  'Diferente de horóscopos genéricos baseados apenas no signo solar, o Real Astrology cria seu mapa natal completo usando as mesmas técnicas que astrólogos usam há mais de 2.000 anos.',
-              })}
-            </p>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              {t('landing.solution.description2', {
-                defaultValue:
-                  'Seu mapa é único como sua impressão digital — calculado para o momento e local exatos do seu nascimento.',
-              })}
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Philosophy Section */}
+      <section id="philosophy" className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center space-y-12">
+            <div className="space-y-6">
+              <h2 className="text-3xl md:text-5xl font-serif text-primary">
+                {t('landing.philosophy.title', { defaultValue: 'Our Philosophy' })}
+              </h2>
+              <p className="text-xl text-muted-foreground leading-relaxed font-light text-balance">
+                {t('landing.philosophy.quote', {
+                  defaultValue:
+                    'We believe that the wisdom of traditional astrology offers profound insights when applied with rigor and respect for its origins.',
+                })}
+              </p>
+            </div>
 
-      {/* ============================================================ */}
-      {/* BENEFITS SECTION - What You'll Discover (not features!) */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24 bg-muted/20">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
-              {t('landing.benefits.title', { defaultValue: 'O Que Você Vai Descobrir' })}
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Benefit 1: Your Essence */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Star className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">
-                  {t('landing.benefits.essence.title', { defaultValue: 'Sua Essência' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {t('landing.benefits.essence.description', {
-                    defaultValue:
-                      'Entenda sua personalidade profunda, além do signo solar. Descubra por que você é do jeito que é.',
-                  })}
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Benefit 2: Hidden Talents */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">
-                  {t('landing.benefits.talents.title', { defaultValue: 'Seus Talentos Ocultos' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {t('landing.benefits.talents.description', {
-                    defaultValue:
-                      'Identifique habilidades naturais que você talvez nem saiba que tem — e como desenvolvê-las.',
-                  })}
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Benefit 3: Relationship Patterns */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Heart className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">
-                  {t('landing.benefits.relationships.title', {
-                    defaultValue: 'Seus Padrões em Relacionamentos',
-                  })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {t('landing.benefits.relationships.description', {
-                    defaultValue:
-                      'Compreenda como você ama, o que busca em parceiros e como melhorar suas conexões.',
-                  })}
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Benefit 4: Your Purpose */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Target className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">
-                  {t('landing.benefits.purpose.title', { defaultValue: 'Seu Propósito' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {t('landing.benefits.purpose.description', {
-                    defaultValue:
-                      'Encontre pistas sobre sua vocação e o caminho que traz mais realização para sua vida.',
-                  })}
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Benefit 5: Your Challenges */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Zap className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">
-                  {t('landing.benefits.challenges.title', { defaultValue: 'Seus Desafios' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {t('landing.benefits.challenges.description', {
-                    defaultValue:
-                      'Conheça seus pontos de crescimento e transforme obstáculos em oportunidades.',
-                  })}
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            {/* Benefit 6: Your Current Moment */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Compass className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">
-                  {t('landing.benefits.moment.title', { defaultValue: 'Seu Momento Atual' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {t('landing.benefits.moment.description', {
-                    defaultValue:
-                      'Entenda as influências planetárias atuais e como elas estão impactando sua vida agora.',
-                  })}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* WHY TRADITIONAL ASTROLOGY */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
-              {t('landing.traditional.title', { defaultValue: 'Por Que "Real" Astrology?' })}
-            </h3>
-          </div>
-
-          <div className="prose prose-lg dark:prose-invert max-w-none text-center mb-8">
-            <p className="text-muted-foreground">
-              {t('landing.traditional.intro', {
-                defaultValue:
-                  'A astrologia que você vê em revistas e apps populares é uma versão simplificada criada no século XX.',
-              })}
-            </p>
-            <p className="text-muted-foreground">
-              {t('landing.traditional.description', {
-                defaultValue:
-                  'O Real Astrology resgata a astrologia tradicional — as mesmas técnicas usadas por civilizações antigas, refinadas por séculos de observação.',
-              })}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {[
-              {
-                title: t('landing.traditional.dignities.title', {
-                  defaultValue: 'Dignidades Essenciais',
-                }),
-                description: t('landing.traditional.dignities.description', {
-                  defaultValue: 'A força real de cada planeta no seu mapa',
-                }),
-              },
-              {
-                title: t('landing.traditional.sect.title', {
-                  defaultValue: 'Sect (Diurno/Noturno)',
-                }),
-                description: t('landing.traditional.sect.description', {
-                  defaultValue: 'Seu mapa é de dia ou de noite? Isso muda tudo',
-                }),
-              },
-              {
-                title: t('landing.traditional.arabicParts.title', {
-                  defaultValue: 'Partes Árabes',
-                }),
-                description: t('landing.traditional.arabicParts.description', {
-                  defaultValue: 'Pontos sensíveis que revelam áreas específicas da vida',
-                }),
-              },
-              {
-                title: t('landing.traditional.temperament.title', { defaultValue: 'Temperamento' }),
-                description: t('landing.traditional.temperament.description', {
-                  defaultValue: 'Seu equilíbrio dos 4 elementos segundo a tradição',
-                }),
-              },
-            ].map((item, index) => (
+            <div className="relative py-12">
+              {/* Decorative line */}
+              <div className="absolute top-1/2 left-0 right-0 h-px bg-border" aria-hidden="true" />
               <div
-                key={index}
-                className="flex items-start gap-3 p-4 bg-card rounded-lg border border-border"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-4"
+                aria-hidden="true"
               >
-                <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-foreground">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                </div>
+                <Star className="w-6 h-6 text-accent" />
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="text-center">
-            <p className="text-muted-foreground font-medium">
-              {t('landing.traditional.conclusion', {
-                defaultValue: 'Não é achismo. É astronomia + tradição + interpretação profunda.',
-              })}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* SOCIAL PROOF - Testimonials */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24 bg-card/50">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
-              {t('landing.testimonials.title', { defaultValue: 'O Que Nossos Usuários Dizem' })}
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Testimonial 1 */}
-            <Card className="border-0 shadow-lg">
-              <CardContent className="pt-6">
-                <Quote className="h-8 w-8 text-primary/30 mb-4" />
-                <p className="text-muted-foreground mb-6 italic">
-                  {t('landing.testimonials.t1.quote', {
+            <div className="grid md:grid-cols-2 gap-12 text-left">
+              <div className="space-y-4">
+                <h3 className="font-serif text-2xl text-primary">
+                  {t('landing.philosophy.map.title', { defaultValue: 'Map, Not Territory' })}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {t('landing.philosophy.map.desc', {
                     defaultValue:
-                      '"Eu sempre achei que era \'só\' uma canceriana sensível demais. Quando vi meu mapa completo, entendi que tenho Lua em Escorpião e Marte na Casa 1. Finalmente fez sentido por que sou tão intensa!"',
+                      'A birth chart is a symbolic map of potentials, not a deterministic script. It shows tendencies and themes, not fixed outcomes.',
                   })}
                 </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-semibold">M</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {t('landing.testimonials.t1.name', { defaultValue: 'Marina, 28 anos' })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('landing.testimonials.t1.location', { defaultValue: 'São Paulo' })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Testimonial 2 */}
-            <Card className="border-0 shadow-lg">
-              <CardContent className="pt-6">
-                <Quote className="h-8 w-8 text-primary/30 mb-4" />
-                <p className="text-muted-foreground mb-6 italic">
-                  {t('landing.testimonials.t2.quote', {
+              </div>
+              <div className="space-y-4">
+                <h3 className="font-serif text-2xl text-primary">
+                  {t('landing.philosophy.character.title', {
+                    defaultValue: 'Character is Destiny',
+                  })}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {t('landing.philosophy.character.desc', {
                     defaultValue:
-                      '"Fiz meu mapa em vários sites, mas nunca tinha visto análise de Sect e Dignidades. O Real Astrology me mostrou que Saturno no meu mapa é muito mais positivo do que eu pensava. Mudou minha perspectiva."',
+                      'Understanding your chart helps you understand yourself—and with self-knowledge comes the power to shape your path.',
                   })}
                 </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-semibold">C</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {t('landing.testimonials.t2.name', { defaultValue: 'Carlos, 35 anos' })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('landing.testimonials.t2.location', { defaultValue: 'Belo Horizonte' })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Testimonial 3 */}
-            <Card className="border-0 shadow-lg">
-              <CardContent className="pt-6">
-                <Quote className="h-8 w-8 text-primary/30 mb-4" />
-                <p className="text-muted-foreground mb-6 italic">
-                  {t('landing.testimonials.t3.quote', {
-                    defaultValue:
-                      '"As interpretações com IA são incríveis. Parece que alguém que me conhece há anos escreveu sobre mim. Recomendo para quem quer se conhecer de verdade."',
-                  })}
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-semibold">J</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {t('landing.testimonials.t3.name', { defaultValue: 'Juliana, 42 anos' })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('landing.testimonials.t3.location', { defaultValue: 'Porto Alegre' })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* HOW IT WORKS */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
-              {t('landing.howItWorks.title', { defaultValue: 'Criar Seu Mapa É Simples' })}
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Step 1 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <UserPlus className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-                  1
-                </span>
               </div>
-              <h4 className="font-semibold text-foreground mb-2">
-                {t('landing.howItWorks.step1.title', { defaultValue: 'Cadastre-se Grátis' })}
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step1.description', {
-                  defaultValue: 'Leva menos de 1 minuto',
-                })}
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <Calendar className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-                  2
-                </span>
-              </div>
-              <h4 className="font-semibold text-foreground mb-2">
-                {t('landing.howItWorks.step2.title', { defaultValue: 'Insira Seus Dados' })}
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step2.description', {
-                  defaultValue: 'Data, hora e local de nascimento',
-                })}
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <Sparkles className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-                  3
-                </span>
-              </div>
-              <h4 className="font-semibold text-foreground mb-2">
-                {t('landing.howItWorks.step3.title', { defaultValue: 'Receba Seu Mapa' })}
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step3.description', {
-                  defaultValue: 'Visualização profissional + interpretações',
-                })}
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <Eye className="h-8 w-8 text-primary" />
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-                  4
-                </span>
-              </div>
-              <h4 className="font-semibold text-foreground mb-2">
-                {t('landing.howItWorks.step4.title', { defaultValue: 'Explore e Descubra' })}
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {t('landing.howItWorks.step4.description', {
-                  defaultValue: 'Navegue e descubra cada aspecto de si mesmo',
-                })}
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* FAQ - Objections */}
-      {/* ============================================================ */}
-      <section className="py-16 lg:py-24 bg-muted/20">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-display">
-              {t('landing.faq.title', { defaultValue: 'Perguntas Frequentes' })}
-            </h3>
+      {/* Final CTA */}
+      <section className="py-24 bg-background text-center">
+        <div className="container mx-auto px-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-sm font-medium mb-8">
+            <ShieldCheck className="w-4 h-4" aria-hidden="true" />{' '}
+            {t('landing.cta.gdpr', { defaultValue: 'GDPR Compliant' })}
           </div>
-
-          <Accordion type="single" collapsible className="w-full space-y-4">
-            <AccordionItem value="item-1" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q1.question', {
-                  defaultValue: 'Precisa saber a hora exata de nascimento?',
-                })}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {t('landing.faq.q1.answer', {
-                  defaultValue:
-                    'A hora é importante para calcular o Ascendente e as Casas. Se não souber, você pode consultar sua certidão de nascimento ou usar uma hora aproximada (o mapa será menos preciso nessas áreas).',
-                })}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q2.question', {
-                  defaultValue: 'Qual a diferença para outros sites de mapa astral?',
-                })}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {t('landing.faq.q2.answer', {
-                  defaultValue:
-                    'O Real Astrology usa astrologia tradicional com técnicas como Dignidades Essenciais, Sect e Partes Árabes — que a maioria dos sites modernos ignora. Além disso, nossas interpretações são geradas por IA treinada em textos clássicos de astrologia.',
-                })}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q3.question', { defaultValue: 'É realmente grátis?' })}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {t('landing.faq.q3.answer', {
-                  defaultValue:
-                    'Sim! O mapa completo e interpretações básicas são gratuitos. Funcionalidades premium (como relatórios em PDF e análises avançadas) podem ter custo adicional no futuro, mas o essencial será sempre grátis.',
-                })}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-4" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q4.question', { defaultValue: 'Meus dados estão seguros?' })}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {t('landing.faq.q4.answer', {
-                  defaultValue:
-                    'Absolutamente. Seguimos a LGPD e nunca compartilhamos seus dados com terceiros. Você pode excluir sua conta a qualquer momento e todos os seus dados serão removidos.',
-                })}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-5" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-left hover:no-underline">
-                {t('landing.faq.q5.question', {
-                  defaultValue: 'As interpretações com IA substituem um astrólogo?',
-                })}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {t('landing.faq.q5.answer', {
-                  defaultValue:
-                    'As interpretações são um excelente ponto de partida para autoconhecimento, mas não substituem a análise de um astrólogo profissional para questões específicas ou complexas. Use como ferramenta de estudo e reflexão.',
-                })}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <h2 className="text-3xl md:text-5xl font-serif text-primary mb-6">
+            {t('landing.cta.title', { defaultValue: 'Ready to Discover Your Chart?' })}
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto mb-10">
+            {t('landing.cta.subtitle', {
+              defaultValue:
+                'Join thousands who have discovered what traditional astrology reveals about their lives.',
+            })}
+          </p>
+          <Link
+            to="/register"
+            className="inline-flex items-center justify-center px-10 py-4 bg-primary text-primary-foreground rounded-full font-medium text-lg transition-all hover:shadow-xl hover:-translate-y-1"
+            aria-label={t('landing.cta.buttonLabel', { defaultValue: 'Start your free account' })}
+          >
+            {t('landing.cta.button', { defaultValue: 'Get Started Free' })}
+          </Link>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* FINAL CTA */}
-      {/* ============================================================ */}
-      <section className="py-20 lg:py-32">
-        <div className="max-w-4xl mx-auto px-4">
-          <Card className="border-0 shadow-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 pointer-events-none" />
-            <CardContent className="p-12 text-center relative">
-              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 font-display">
-                {t('landing.finalCta.title', {
-                  defaultValue: 'Pronto Para Se Conhecer de Verdade?',
-                })}
-              </h3>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                {t('landing.finalCta.subtitle', {
-                  defaultValue:
-                    'Seu mapa natal está esperando. É gratuito, leva 2 minutos e pode mudar a forma como você se vê para sempre.',
-                })}
-              </p>
-              <Button asChild size="lg" className="text-lg px-8 group">
-                <Link to="/register">
-                  {t('landing.finalCta.button', {
-                    defaultValue: 'Criar Meu Mapa Agora — É Grátis',
-                  })}
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  {t('landing.finalCta.benefit1', { defaultValue: 'Sem cartão de crédito' })}
-                </span>
-                <span className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  {t('landing.finalCta.benefit2', { defaultValue: 'Seus dados seguros (LGPD)' })}
-                </span>
-                <span className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  {t('landing.finalCta.benefit3', { defaultValue: 'Cancele quando quiser' })}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* FOOTER */}
-      {/* ============================================================ */}
-      <footer className="bg-card border-t border-border py-12">
+      {/* Footer */}
+      <footer className="bg-card border-t border-border py-12" role="contentinfo">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img src="/logo.png" alt="Real Astrology" className="h-6 w-6" />
-                <span className="font-bold text-foreground">Real Astrology</span>
+                <span className="font-serif font-medium text-foreground">Real Astrology</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 {t('landing.footer.tagline', {
-                  defaultValue: 'Astrologia Tradicional Para o Mundo Moderno',
+                  defaultValue: 'Traditional astrology for the modern world.',
                 })}
               </p>
             </div>
@@ -790,57 +474,61 @@ export function LandingPage() {
               <h4 className="font-semibold text-foreground mb-4">
                 {t('landing.footer.legal', { defaultValue: 'Legal' })}
               </h4>
-              <div className="space-y-2">
-                <Link
-                  to="/terms"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('landing.footer.terms', { defaultValue: 'Termos de Uso' })}
-                </Link>
-                <Link
-                  to="/privacy"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('landing.footer.privacy', { defaultValue: 'Política de Privacidade' })}
-                </Link>
-                <Link
-                  to="/cookies"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('landing.footer.cookies', { defaultValue: 'Política de Cookies' })}
-                </Link>
-              </div>
+              <nav aria-label={t('landing.footer.legalNav', { defaultValue: 'Legal links' })}>
+                <div className="space-y-2">
+                  <Link
+                    to="/terms"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.terms', { defaultValue: 'Terms of Service' })}
+                  </Link>
+                  <Link
+                    to="/privacy"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.privacy', { defaultValue: 'Privacy Policy' })}
+                  </Link>
+                  <Link
+                    to="/cookies"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.cookies', { defaultValue: 'Cookie Policy' })}
+                  </Link>
+                </div>
+              </nav>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">
-                {t('landing.footer.access', { defaultValue: 'Acesso' })}
+                {t('landing.footer.access', { defaultValue: 'Access' })}
               </h4>
-              <div className="space-y-2">
-                <Link
-                  to="/login"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('landing.footer.login', { defaultValue: 'Entrar' })}
-                </Link>
-                <Link
-                  to="/register"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('landing.footer.register', { defaultValue: 'Criar Conta' })}
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('landing.footer.dashboard', { defaultValue: 'Dashboard' })}
-                </Link>
-              </div>
+              <nav aria-label={t('landing.footer.accessNav', { defaultValue: 'Account links' })}>
+                <div className="space-y-2">
+                  <Link
+                    to="/login"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.login', { defaultValue: 'Login' })}
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.footer.register', { defaultValue: 'Register' })}
+                  </Link>
+                  <Link
+                    to="/blog"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t('landing.nav.blog', { defaultValue: 'Blog' })}
+                  </Link>
+                </div>
+              </nav>
             </div>
           </div>
           <div className="pt-8 border-t border-border text-center">
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Real Astrology.{' '}
-              {t('landing.footer.madeWith', { defaultValue: 'Feito com ♄ e ♃ no Brasil.' })}
+              {t('footer.allRightsReserved', { defaultValue: 'All rights reserved.' })}
             </p>
           </div>
         </div>

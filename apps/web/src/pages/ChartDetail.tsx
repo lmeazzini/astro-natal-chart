@@ -42,8 +42,7 @@ import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { useAstroTranslation } from '../hooks/useAstroTranslation';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { LanguageSelector } from '../components/LanguageSelector';
+import { NavActions } from '../components/NavActions';
 import { EmailVerificationModal } from '../components/EmailVerificationModal';
 import { InterpretationLanguageNotice } from '../components/InterpretationLanguageNotice';
 import { useEmailVerification } from '../hooks/useEmailVerification';
@@ -615,8 +614,7 @@ export function ChartDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <LanguageSelector />
-              <ThemeToggle />
+              <NavActions />
 
               {/* PDF Export Button */}
               <Button

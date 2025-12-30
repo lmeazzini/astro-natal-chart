@@ -727,6 +727,37 @@ async def create_item(
 3. Use Tailwind for styling
 4. Use `cn()` utility from `@/utils/cn` for conditional classes
 5. For forms, use controlled inputs with useState (React Hook Form is available but not currently in use)
+6. **ALWAYS follow the Design Reference** (see below)
+
+### Design System — "Midnight & Paper"
+
+**CRITICAL**: Always follow the design system documented in `ux/DESIGN_REFERENCE.md` when creating or modifying UI components.
+
+**Quick Reference:**
+- **Light Mode**: Cream background (`--background: 40 20% 98%`), midnight blue text, gold accents
+- **Dark Mode**: Deep space blue background (`--background: 222 47% 8%`), warm cream text, gold primary
+- **Typography**: Serif (Playfair Display) for headings, Sans-serif (Inter) for body
+- **Spacing**: 8px base grid system
+- **Border Radius**: `rounded-full` for buttons, `rounded-2xl` for cards, `rounded-xl` for inputs
+
+**Before implementing any UI:**
+1. Read `ux/DESIGN_REFERENCE.md` for complete guidelines
+2. Use existing CSS variables from `apps/web/src/styles/globals.css`
+3. Follow the typography scale (`.text-h1` through `.text-data`)
+4. Use the defined color palette (never hardcode colors)
+5. Ensure WCAG AA contrast compliance
+6. Support `prefers-reduced-motion` for animations
+
+**Key CSS Variables:**
+```css
+/* Use these instead of hardcoded colors */
+--primary          /* Deep cosmic blue (light) / Gold (dark) */
+--accent           /* Gold highlight */
+--background       /* Cream (light) / Deep space (dark) */
+--foreground       /* Text color */
+--muted            /* Secondary backgrounds */
+--border           /* Subtle borders */
+```
 
 ### API Call Pattern
 
@@ -928,6 +959,7 @@ logger.bind(user_id=user.id).info("Chart created")
 ## Documentation References
 
 - **Technical Specification:** `PROJECT_SPEC.md` (50+ pages, comprehensive requirements)
+- **Design System:** `ux/DESIGN_REFERENCE.md` ("Midnight & Paper" theme, MUST follow for UI work)
 - **API Docs:** http://localhost:8000/docs (Swagger, auto-generated)
 - **Getting Started:** `README.md` (setup guide)
 - **OAuth Setup:** `docs/OAUTH_SETUP.md` (Google/GitHub/Facebook configuration)

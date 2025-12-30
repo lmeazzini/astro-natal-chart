@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getToken } from '@/services/api';
+import { amplitudeService } from '@/services/amplitude';
 import {
   interpretationsService,
   type GrowthSuggestionsData,
@@ -33,15 +34,35 @@ interface CollapsibleSectionProps {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  sectionType?: string;
 }
 
-function CollapsibleSection({ title, children, defaultOpen = true }: CollapsibleSectionProps) {
+function CollapsibleSection({
+  title,
+  children,
+  defaultOpen = true,
+  sectionType,
+}: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  function handleToggle() {
+    const newState = !isOpen;
+    setIsOpen(newState);
+
+    // Track section expansion
+    if (newState) {
+      amplitudeService.track('growth_section_expanded', {
+        section_name: title,
+        section_type: sectionType || 'unknown',
+        source: 'growth_suggestions',
+      });
+    }
+  }
 
   return (
     <div className="border-b border-border/50 last:border-b-0">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="w-full flex items-center justify-between py-3 text-left hover:bg-muted/30 transition-colors px-2 rounded-lg"
       >
         <span className="font-semibold text-foreground">{title}</span>
@@ -254,7 +275,7 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
           </CardHeader>
           <CardContent className="space-y-4">
             {suggestions.growth_points.map((point, index) => (
-              <CollapsibleSection key={index} title={point.area}>
+              <CollapsibleSection key={index} title={point.area} sectionType="growth_point">
                 <div className="space-y-4 mt-2">
                   <div className="flex items-start gap-2">
                     <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
@@ -307,7 +328,7 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
           </CardHeader>
           <CardContent className="space-y-4">
             {suggestions.challenges.map((challenge, index) => (
-              <CollapsibleSection key={index} title={challenge.name}>
+              <CollapsibleSection key={index} title={challenge.name} sectionType="challenge">
                 <div className="space-y-4 mt-2">
                   <div className="flex items-start gap-2">
                     <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
@@ -364,7 +385,7 @@ export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsP
           </CardHeader>
           <CardContent className="space-y-4">
             {suggestions.opportunities.map((opp, index) => (
-              <CollapsibleSection key={index} title={opp.talent}>
+              <CollapsibleSection key={index} title={opp.talent} sectionType="opportunity">
                 <div className="space-y-4 mt-2">
                   <div className="flex items-start gap-2">
                     <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">

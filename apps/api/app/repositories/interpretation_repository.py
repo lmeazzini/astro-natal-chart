@@ -151,20 +151,20 @@ class InterpretationRepository(BaseRepository[ChartInterpretation]):
             values["rag_sources"] = rag_sources
 
         # PostgreSQL INSERT ... ON CONFLICT DO UPDATE (atomic upsert)
-        stmt = insert(ChartInterpretation).values(**values)
-        stmt = stmt.on_conflict_do_update(
+        insert_stmt = insert(ChartInterpretation).values(**values)
+        upsert_stmt = insert_stmt.on_conflict_do_update(
             constraint="uq_chart_interpretation",  # Unique constraint name
             set_={
-                "content": stmt.excluded.content,
-                "openai_model": stmt.excluded.openai_model,
-                "prompt_version": stmt.excluded.prompt_version,
-                "rag_sources": stmt.excluded.rag_sources,
+                "content": insert_stmt.excluded.content,
+                "openai_model": insert_stmt.excluded.openai_model,
+                "prompt_version": insert_stmt.excluded.prompt_version,
+                "rag_sources": insert_stmt.excluded.rag_sources,
                 "updated_at": func.now(),
             },
         ).returning(ChartInterpretation)
 
-        result = await self.db.execute(stmt)
-        interpretation = result.scalar_one()
+        result = await self.db.execute(upsert_stmt)
+        interpretation: ChartInterpretation = result.scalar_one()
 
         logger.debug(
             f"Upserted interpretation: {interpretation_type}/{subject} for chart {chart_id}"

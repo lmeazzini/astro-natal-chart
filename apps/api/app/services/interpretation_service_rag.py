@@ -1145,18 +1145,24 @@ class InterpretationServiceRAG:
             generation_results = await asyncio.gather(*semaphore_tasks, return_exceptions=True)
 
             # Process results and prepare for database save
-            task_map = {(t[1], t[2]): (t[3], t[4]) for t in tasks}  # (category, key) -> (type, params)
+            task_map = {
+                (t[1], t[2]): (t[3], t[4]) for t in tasks
+            }  # (category, key) -> (type, params)
 
             for result in generation_results:
-                if isinstance(result, Exception):
+                if isinstance(result, BaseException):
                     logger.error(f"Task failed with exception: {result}")
                     continue
 
-                category, key, interpretation = result
+                # result is tuple[str, str, str | None] from _generate_with_semaphore
+                category, key, interpretation = result  # type: ignore[misc]
                 if not interpretation:
                     # Handle empty interpretation for houses
                     if category == "houses":
-                        params = task_map.get((category, key), ({},))[1]
+                        task_info: tuple[str | None, dict[str, str]] = task_map.get(
+                            (category, key), (None, {})
+                        )
+                        params = task_info[1] if task_info else {}
                         house_sign = params.get("house_sign", "")
                         interpretation = (
                             f"Casa {key} ({house_sign}): "
@@ -1180,9 +1186,7 @@ class InterpretationServiceRAG:
 
             for key, content in interpretations.items():
                 # Only save if this was a newly generated interpretation
-                was_generated = any(
-                    t[1] == category and t[2] == key for t in tasks
-                )
+                was_generated = any(t[1] == category and t[2] == key for t in tasks)
                 if was_generated and content:
                     try:
                         await self.repo.upsert_interpretation(

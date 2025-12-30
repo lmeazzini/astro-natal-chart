@@ -29,6 +29,7 @@ from app.core.config import settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
 from app.core.security import get_password_hash  # noqa: E402
 from app.main import app  # noqa: E402
+from app.models.blog_post import BlogPost  # noqa: E402
 from app.models.chart import AuditLog, BirthChart  # noqa: E402
 from app.models.enums import UserRole  # noqa: E402
 from app.models.user import OAuthAccount, User  # noqa: E402
@@ -89,6 +90,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:  # type: ignore[mi
     # Clean all tables at the start
     await session.execute(delete(AuditLog))
     await session.execute(delete(BirthChart))
+    await session.execute(delete(BlogPost))
     await session.execute(delete(OAuthAccount))
     await session.execute(delete(User))
     await session.commit()
@@ -426,3 +428,36 @@ async def auth_headers(test_user: User) -> dict[str, str]:
 
     access_token = create_access_token(data={"sub": str(test_user.id)})
     return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+async def test_user_with_oauth(db_session: AsyncSession, test_user: User) -> User:
+    """
+    Create a test user with an OAuth connection.
+
+    The user has both a password and a Google OAuth connection,
+    allowing them to disconnect OAuth without losing access.
+    """
+    oauth_account = OAuthAccount(
+        user_id=test_user.id,
+        provider="google",
+        provider_user_id="google_123456789",
+        created_at=datetime.now(UTC),
+    )
+    db_session.add(oauth_account)
+    await db_session.commit()
+    await db_session.refresh(test_user)
+    return test_user
+
+
+@pytest.fixture
+async def test_user_with_deletion_request(db_session: AsyncSession, test_user: User) -> User:
+    """
+    Create a test user with a pending account deletion request.
+
+    The user has deleted_at set to simulate a scheduled deletion.
+    """
+    test_user.deleted_at = datetime.now(UTC)
+    await db_session.commit()
+    await db_session.refresh(test_user)
+    return test_user

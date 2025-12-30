@@ -5,7 +5,12 @@ Uses SQLAlchemy 2.0 with async support.
 
 from collections.abc import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
@@ -66,7 +71,7 @@ async def close_db() -> None:
     await engine.dispose()
 
 
-def create_task_local_session() -> tuple[async_sessionmaker[AsyncSession], "create_async_engine"]:
+def create_task_local_session() -> tuple[async_sessionmaker[AsyncSession], AsyncEngine]:
     """
     Create a task-local async engine and session factory.
 

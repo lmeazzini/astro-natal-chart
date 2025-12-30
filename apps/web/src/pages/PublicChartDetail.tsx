@@ -6,8 +6,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { amplitudeService } from '../services/amplitude';
 import {
   getPublicChart,
   getCategoryLabel,
@@ -26,6 +27,7 @@ import type { LunarPhaseData } from '@/components/LunarPhase';
 import type { SolarPhaseData } from '@/components/SolarPhase';
 import type { LordOfNativityData } from '@/components/LordOfNativity';
 import type { TemperamentData } from '@/components/TemperamentDisplay';
+import type { MentalityData } from '@/components/MentalityCard';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { getSignSymbol } from '../utils/astro';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -42,6 +44,7 @@ import { LunarPhase } from '../components/LunarPhase';
 import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
+import { MentalityCard } from '../components/MentalityCard';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { InfoTooltip } from '../components/InfoTooltip';
@@ -67,6 +70,7 @@ interface PublicChartData {
   solar_phase?: SolarPhaseData;
   lord_of_nativity?: LordOfNativityData;
   temperament?: TemperamentData;
+  mentality?: MentalityData;
   arabic_parts?: ArabicParts;
   calculation_timestamp?: string;
 }
@@ -76,6 +80,7 @@ export function PublicChartDetailPage() {
   const { translateSign, translatePlanet } = useAstroTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [chart, setChart] = useState<PublicChartDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +89,14 @@ export function PublicChartDetailPage() {
 
   // Track the last language we loaded interpretations for (to avoid reload loops)
   const lastLoadedLanguageRef = useRef<string | null>(null);
+
+  // Amplitude tracking ref
+  const hasTrackedPageView = useRef(false);
+
+  // Reset tracking ref when slug changes (for SPA navigation between charts)
+  useEffect(() => {
+    hasTrackedPageView.current = false;
+  }, [slug]);
 
   const loadChart = useCallback(async () => {
     if (!slug) return;
@@ -116,6 +129,21 @@ export function PublicChartDetailPage() {
   useEffect(() => {
     loadChart();
   }, [loadChart]);
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  useEffect(() => {
+    if (!hasTrackedPageView.current && chart && !isLoading) {
+      amplitudeService.track('public_chart_detail_viewed', {
+        chart_slug: chart.slug,
+        person_name: chart.full_name,
+        ...(chart.category && { category: chart.category }),
+        source: searchParams.get('source') || 'direct',
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart, isLoading]); // Track once when chart loads
 
   // Load interpretations when chart is loaded
   useEffect(() => {
@@ -537,6 +565,18 @@ export function PublicChartDetailPage() {
                         {t('chartDetail.temperament', { defaultValue: 'Temperament Analysis' })}
                       </h3>
                       <TemperamentDisplay temperament={chartData.temperament} />
+                    </div>
+                  )}
+
+                  {/* Mentality (Issue #57) */}
+                  {chartData.mentality && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.sections.mentality', {
+                          defaultValue: 'Mentality Analysis',
+                        })}
+                      </h3>
+                      <MentalityCard mentality={chartData.mentality} />
                     </div>
                   )}
 

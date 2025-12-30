@@ -1,0 +1,53 @@
+{
+  "categories": {
+    "fundamentals": "Fundamentos",
+    "planets": "Planetas",
+    "tutorials": "Tutoriais",
+    "stars_and_myths": "Astros e Mitos",
+    "techniques": "Técnicas",
+    "houses": "Casas",
+    "aspects": "Aspectos",
+    "signs": "Signos"
+  },
+  "tags": {
+    "mythology": "Mitologia",
+    "planets": "Planetas",
+    "saturn": "Saturno",
+    "jupiter": "Júpiter",
+    "mars": "Marte",
+    "venus": "Vênus",
+    "mercury": "Mercúrio",
+    "sun": "Sol",
+    "moon": "Lua",
+    "houses": "Casas",
+    "natal_chart": "Mapa Natal",
+    "aspects": "Aspectos",
+    "traditional": "Astrologia Tradicional",
+    "beginners": "Iniciantes",
+    "intermediate": "Intermediário",
+    "advanced": "Avançado",
+    "dignities": "Dignidades",
+    "sect": "Seita",
+    "temperament": "Temperamento",
+    "astrology": "Astrologia",
+    "greek": "Grego",
+    "roman": "Romano"
+  },
+  "ui": {
+    "read_more": "Leia mais",
+    "published_on": "Publicado em",
+    "by_author": "por",
+    "minutes_read": "min de leitura",
+    "views": "visualizações",
+    "categories": "Categorias",
+    "popular_tags": "Tags Populares",
+    "related_posts": "Posts Relacionados",
+    "no_posts_found": "Nenhum post encontrado",
+    "load_more": "Carregar mais",
+    "also_available_in": "Também disponível em",
+    "all_posts": "Todos os Posts",
+    "featured": "Destaque",
+    "draft": "Rascunho",
+    "search_posts": "Buscar posts..."
+  }
+}

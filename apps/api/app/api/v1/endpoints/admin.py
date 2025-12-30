@@ -26,6 +26,7 @@ from app.schemas.admin import (
 from app.schemas.subscription import (
     SubscriptionCreate,
     SubscriptionExtend,
+    SubscriptionHistoryRead,
     SubscriptionRead,
     SubscriptionRevoke,
 )
@@ -413,3 +414,41 @@ async def list_subscriptions(
     subscriptions = await subscription_repo.get_all_active(skip=skip, limit=limit)
 
     return [SubscriptionRead.model_validate(sub) for sub in subscriptions]
+
+
+@router.get(
+    "/subscriptions/{user_id}/history",
+    response_model=list[SubscriptionHistoryRead],
+    summary="Get subscription history for a user",
+    description="**Admin only**. Returns paginated list of all subscription changes for a user.",
+    responses={
+        403: {"description": "Admin privileges required"},
+        404: {"description": "User not found"},
+    },
+)
+async def get_subscription_history(
+    user_id: UUID,
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Max records to return"),
+    admin_user: User = Depends(require_verified_admin),
+    db: AsyncSession = Depends(get_db),
+) -> list[SubscriptionHistoryRead]:
+    """
+    Get subscription history for a user (admin only).
+
+    Returns all subscription changes including grants, extensions, revocations,
+    and automatic expirations, ordered by most recent first.
+    """
+    # Verify user exists
+    user = await db.get(User, user_id)
+    if not user or user.deleted_at:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    history = await subscription_service.get_subscription_history(
+        db=db,
+        user_id=user_id,
+        skip=skip,
+        limit=limit,
+    )
+
+    return [SubscriptionHistoryRead.model_validate(h) for h in history]

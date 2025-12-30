@@ -1,0 +1,53 @@
+{
+  "categories": {
+    "fundamentals": "Fundamentals",
+    "planets": "Planets",
+    "tutorials": "Tutorials",
+    "stars_and_myths": "Stars and Myths",
+    "techniques": "Techniques",
+    "houses": "Houses",
+    "aspects": "Aspects",
+    "signs": "Signs"
+  },
+  "tags": {
+    "mythology": "Mythology",
+    "planets": "Planets",
+    "saturn": "Saturn",
+    "jupiter": "Jupiter",
+    "mars": "Mars",
+    "venus": "Venus",
+    "mercury": "Mercury",
+    "sun": "Sun",
+    "moon": "Moon",
+    "houses": "Houses",
+    "natal_chart": "Natal Chart",
+    "aspects": "Aspects",
+    "traditional": "Traditional Astrology",
+    "beginners": "Beginners",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "dignities": "Dignities",
+    "sect": "Sect",
+    "temperament": "Temperament",
+    "astrology": "Astrology",
+    "greek": "Greek",
+    "roman": "Roman"
+  },
+  "ui": {
+    "read_more": "Read more",
+    "published_on": "Published on",
+    "by_author": "by",
+    "minutes_read": "min read",
+    "views": "views",
+    "categories": "Categories",
+    "popular_tags": "Popular Tags",
+    "related_posts": "Related Posts",
+    "no_posts_found": "No posts found",
+    "load_more": "Load more",
+    "also_available_in": "Also available in",
+    "all_posts": "All Posts",
+    "featured": "Featured",
+    "draft": "Draft",
+    "search_posts": "Search posts..."
+  }
+}

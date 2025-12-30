@@ -16,7 +16,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import require_admin
 from app.core.i18n import SUPPORTED_LOCALES, normalize_locale
-from app.core.rate_limit import RateLimits, limiter
+from app.core.rate_limit import RateLimits, get_real_client_ip, limiter
 from app.models.public_chart import PublicChart
 from app.models.public_chart_interpretation import PublicChartInterpretation
 from app.models.user import User
@@ -31,6 +31,7 @@ from app.schemas.public_chart import (
 )
 from app.services.interpretation_service_rag import ARABIC_PARTS, InterpretationServiceRAG
 from app.services.public_chart_service import PublicChartService
+from app.services.view_dedup_service import should_increment_view
 from app.translations import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, get_translation
 
 router = APIRouter(prefix="/public-charts", tags=["public-charts"])
@@ -325,11 +326,16 @@ async def get_public_chart(
     - **lang**: Language for chart data translations (default: en-US)
 
     Returns full chart details including calculated chart data and interpretations.
-    Increments view count on each access.
+    Increments view count once per visitor per 30-minute window (deduplicated by IP).
     """
     service = PublicChartService(db)
+
+    # Check if view should be incremented (deduplication by IP)
+    client_ip = get_real_client_ip(request)
+    increment_views = should_increment_view(slug, client_ip)
+
     # Use get_chart_by_slug to get raw SQLAlchemy model (has i18n fields)
-    chart = await service.get_chart_by_slug(slug, increment_views=True)
+    chart = await service.get_chart_by_slug(slug, increment_views=increment_views)
 
     if not chart:
         raise HTTPException(
@@ -409,9 +415,9 @@ async def get_public_chart_interpretations(
     # Normalize language parameter
     language = normalize_locale(lang) if lang else "pt-BR"
 
-    # Get the public chart
+    # Get the public chart (don't increment views - only main endpoint does that)
     service = PublicChartService(db)
-    chart = await service.get_chart_by_slug(slug)
+    chart = await service.get_chart_by_slug(slug, increment_views=False)
 
     if not chart:
         raise HTTPException(

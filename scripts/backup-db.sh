@@ -3,7 +3,7 @@
 # Performs full PostgreSQL backup with compression and optional S3 upload
 # Also backs up Qdrant vector database snapshots
 # Author: Astro DevOps Team
-# Version: 1.2.0
+# Version: 1.3.0
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
@@ -230,26 +230,39 @@ create_backup_metadata() {
 
     unset PGPASSWORD
 
-    # Write metadata in JSON format
-    cat > "$metadata_file" <<EOF
-{
-  "backup_timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-  "backup_file": "$BACKUP_FILE",
-  "backup_size_bytes": $file_size,
-  "backup_size_human": "$file_size_human",
-  "database": {
-    "name": "$DB_NAME",
-    "host": "$DB_HOST",
-    "port": $DB_PORT,
-    "version": "$pg_version",
-    "size": "$db_size"
-  },
-  "retention_days": $RETENTION_DAYS,
-  "compression_level": $COMPRESSION_LEVEL,
-  "script_version": "1.2.0",
-  "hostname": "$(hostname 2>/dev/null || echo 'unknown')"
-}
-EOF
+    # Write metadata in JSON format using jq for safe escaping
+    # This prevents JSON injection from special characters in variables
+    jq -n \
+        --arg backup_timestamp "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        --arg backup_file "$BACKUP_FILE" \
+        --argjson backup_size_bytes "$file_size" \
+        --arg backup_size_human "$file_size_human" \
+        --arg db_name "$DB_NAME" \
+        --arg db_host "$DB_HOST" \
+        --argjson db_port "$DB_PORT" \
+        --arg db_version "$pg_version" \
+        --arg db_size "$db_size" \
+        --argjson retention_days "$RETENTION_DAYS" \
+        --argjson compression_level "$COMPRESSION_LEVEL" \
+        --arg script_version "1.3.0" \
+        --arg hostname "$(hostname 2>/dev/null || echo 'unknown')" \
+        '{
+          backup_timestamp: $backup_timestamp,
+          backup_file: $backup_file,
+          backup_size_bytes: $backup_size_bytes,
+          backup_size_human: $backup_size_human,
+          database: {
+            name: $db_name,
+            host: $db_host,
+            port: $db_port,
+            version: $db_version,
+            size: $db_size
+          },
+          retention_days: $retention_days,
+          compression_level: $compression_level,
+          script_version: $script_version,
+          hostname: $hostname
+        }' > "$metadata_file"
 
     if [ -f "$metadata_file" ]; then
         log "Backup metadata created: ${BACKUP_FILE}.meta ✓"
@@ -390,6 +403,11 @@ main() {
     # Check prerequisites
     if ! command -v pg_dump >/dev/null 2>&1; then
         error "pg_dump not found. Please install PostgreSQL client tools."
+        exit 1
+    fi
+
+    if ! command -v jq >/dev/null 2>&1; then
+        error "jq not found. Please install jq (apt-get install jq)."
         exit 1
     fi
 

@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import { Clock, Eye, Calendar, ChevronLeft, ChevronRight, Tag, FolderOpen } from 'lucide-react';
 
 function formatDate(dateString: string | null, locale: string): string {
@@ -36,11 +37,15 @@ export function BlogPage() {
   const [metadata, setMetadata] = React.useState<BlogMetadata | null>(null);
   const [totalPages, setTotalPages] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
+  const hasTrackedPageView = React.useRef(false);
 
   const category = searchParams.get('category') || undefined;
   const tag = searchParams.get('tag') || undefined;
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9;
+
+  // Get current locale for API calls
+  const currentLocale = i18n.language;
 
   const loadData = React.useCallback(async () => {
     setLoading(true);
@@ -50,6 +55,7 @@ export function BlogPage() {
         tag,
         page,
         page_size: pageSize,
+        locale: currentLocale,
       });
       setPosts(data.items);
       setTotalPages(data.total_pages);
@@ -58,23 +64,65 @@ export function BlogPage() {
     } finally {
       setLoading(false);
     }
-  }, [category, tag, page, pageSize]);
+  }, [category, tag, page, pageSize, currentLocale]);
 
   React.useEffect(() => {
     loadData();
   }, [loadData]);
 
-  React.useEffect(() => {
-    loadMetadata();
-  }, []);
-
-  async function loadMetadata() {
+  const loadMetadata = React.useCallback(async () => {
     try {
-      const data = await getBlogMetadata();
+      const data = await getBlogMetadata(currentLocale);
       setMetadata(data);
     } catch (error) {
       console.error('Error loading blog metadata:', error);
     }
+  }, [currentLocale]);
+
+  React.useEffect(() => {
+    loadMetadata();
+  }, [loadMetadata]);
+
+  // Helper to translate category/tag keys with dev logging for missing translations
+  const translateCategory = (key: string) => {
+    const translated = t(`blog:categories.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog category translation: blog:categories.${key}`);
+    }
+    return translated || key;
+  };
+
+  const translateTag = (key: string) => {
+    const translated = t(`blog:tags.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog tag translation: blog:tags.${key}`);
+    }
+    return translated || key;
+  };
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  React.useEffect(() => {
+    if (!hasTrackedPageView.current && !loading) {
+      amplitudeService.track('blog_viewed', {
+        source: searchParams.get('source') || 'direct',
+        post_count: posts.length,
+        ...(category && { category_filter: category }),
+        ...(tag && { tag_filter: tag }),
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]); // Track once when loading completes
+
+  // Track post clicks
+  function handlePostClick(post: BlogPostListItem) {
+    amplitudeService.track('blog_post_clicked', {
+      post_slug: post.slug,
+      post_title: post.title,
+      source: 'blog_list',
+      ...(user?.id && { user_id: user.id }),
+    });
   }
 
   function handleCategoryClick(cat: string | null) {
@@ -101,9 +149,9 @@ export function BlogPage() {
   }
 
   const pageTitle = category
-    ? `${t('blog.title')} - ${category}`
+    ? `${t('blog.title')} - ${translateCategory(category)}`
     : tag
-      ? `${t('blog.title')} - #${tag}`
+      ? `${t('blog.title')} - #${translateTag(tag)}`
       : t('blog.title');
 
   return (
@@ -121,8 +169,13 @@ export function BlogPage() {
         {/* Header */}
         <header className="border-b bg-card">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <Link to="/" className="text-xl font-bold text-primary">
-              Real Astrology
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt="Real Astrology"
+                className="h-9 w-9 rounded-full object-cover border border-primary/10"
+              />
+              <span className="text-xl font-bold text-primary">Real Astrology</span>
             </Link>
             <div className="flex items-center gap-4">
               <LanguageSelector />
@@ -158,7 +211,7 @@ export function BlogPage() {
               {category && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <FolderOpen className="h-3 w-3" />
-                  {category}
+                  {translateCategory(category)}
                   <button
                     onClick={() => handleCategoryClick(null)}
                     className="ml-1 hover:text-destructive"
@@ -171,7 +224,7 @@ export function BlogPage() {
               {tag && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Tag className="h-3 w-3" />
-                  {tag}
+                  {translateTag(tag)}
                   <button
                     onClick={() => setSearchParams(new URLSearchParams())}
                     className="ml-1 hover:text-destructive"
@@ -208,7 +261,11 @@ export function BlogPage() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {posts.map((post) => (
-                    <Link key={post.id} to={`/blog/${post.slug}`}>
+                    <Link
+                      key={post.id}
+                      to={`/blog/${post.slug}`}
+                      onClick={() => handlePostClick(post)}
+                    >
                       <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
                         {post.featured_image_url ? (
                           <img
@@ -223,7 +280,7 @@ export function BlogPage() {
                         )}
                         <CardContent className="p-4">
                           <Badge variant="outline" className="mb-2">
-                            {post.category}
+                            {translateCategory(post.category)}
                           </Badge>
                           <h2 className="mb-2 line-clamp-2 text-lg font-semibold text-foreground">
                             {post.title}
@@ -309,7 +366,7 @@ export function BlogPage() {
                                 : 'text-muted-foreground'
                             }`}
                           >
-                            <span>{cat.category}</span>
+                            <span>{translateCategory(cat.category)}</span>
                             <span>{cat.count}</span>
                           </button>
                         </li>
@@ -332,7 +389,7 @@ export function BlogPage() {
                           className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
                           onClick={() => handleTagClick(tagItem.tag)}
                         >
-                          #{tagItem.tag}
+                          #{translateTag(tagItem.tag)}
                         </Badge>
                       ))}
                     </div>

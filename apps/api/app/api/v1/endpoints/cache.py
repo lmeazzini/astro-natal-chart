@@ -56,7 +56,7 @@ async def _create_audit_log(
     db: AsyncSession,
     user: User,
     action: str,
-    details: dict | None = None,
+    extra_data: dict | None = None,
     ip_address: str | None = None,
 ) -> None:
     """Create audit log entry for cache operations."""
@@ -65,7 +65,7 @@ async def _create_audit_log(
         action=action,
         resource_type="interpretation_cache",
         ip_address=ip_address,
-        details=details,
+        extra_data=extra_data,
     )
     db.add(audit_log)
     await db.commit()
@@ -120,7 +120,7 @@ async def clear_expired_cache(
         db=db,
         user=current_user,
         action="cache_cleared_expired",
-        details={"ttl_days": ttl_days, "deleted_count": deleted},
+        extra_data={"ttl_days": ttl_days, "deleted_count": deleted},
         ip_address=_get_client_ip(request),
     )
 
@@ -154,7 +154,7 @@ async def clear_cache_by_prompt_version(
         db=db,
         user=current_user,
         action="cache_cleared_by_version",
-        details={"prompt_version": version, "deleted_count": deleted},
+        extra_data={"prompt_version": version, "deleted_count": deleted},
         ip_address=_get_client_ip(request),
     )
 
@@ -195,7 +195,7 @@ async def clear_all_cache(
         db=db,
         user=current_user,
         action="cache_cleared_all",
-        details={"deleted_count": deleted},
+        extra_data={"deleted_count": deleted},
         ip_address=_get_client_ip(request),
     )
 

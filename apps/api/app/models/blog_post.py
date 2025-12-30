@@ -20,6 +20,9 @@ class BlogPost(Base):
     """Blog post model for public content with SEO optimization."""
 
     __tablename__ = "blog_posts"
+    # Note: The composite unique constraint (slug, locale) is managed by Alembic migration
+    # See: alembic/versions/2025_12_29_1837-9d38e6334e7c_add_blog_i18n_support.py
+    # Constraint name: blog_posts_slug_locale_key
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -29,11 +32,24 @@ class BlogPost(Base):
     )
 
     # URL-friendly slug (e.g., "introducao-casas-astrologicas")
+    # Note: Unique constraint is (slug, locale) - handled by migration
     slug: Mapped[str] = mapped_column(
         String(255),
-        unique=True,
         index=True,
         nullable=False,
+    )
+
+    # Internationalization support
+    locale: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+        default="pt-BR",
+        index=True,
+    )
+    translation_key: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
     )
 
     # Content

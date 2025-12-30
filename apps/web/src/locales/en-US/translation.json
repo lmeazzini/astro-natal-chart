@@ -25,7 +25,8 @@
     "login": "Login",
     "search": "Search",
     "refresh": "Refresh",
-    "retry": "Try again"
+    "retry": "Try again",
+    "houseNumber": "House {{number}}"
   },
   "nav": {
     "home": "Home",
@@ -48,6 +49,8 @@
     "resultsCount": "{{count}} charts found",
     "noResults": "No charts found.",
     "views": "views",
+    "highlights": "Astrological Highlights",
+    "notFound": "Chart not found",
     "ctaTitle": "Create Your Own Birth Chart",
     "ctaTitleLoggedIn": "Create More Birth Charts",
     "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
@@ -109,7 +112,8 @@
       "passwordMinLength": "Password must be at least 8 characters",
       "features": {
         "unlimited": "Unlimited birth charts",
-        "free": "Free forever"
+        "free": "Free forever",
+        "professional": "Professional AI interpretations"
       },
       "passwordSpecialNumber": "At least one number or special character",
       "passwordCase": "Upper and lowercase letters"
@@ -361,11 +365,15 @@
       "aspects": "Aspects",
       "arabicParts": "Arabic Parts",
       "interpretations": "Interpretations",
-      "growth": "Growth"
+      "growth": "Growth",
+      "longevity": "Longevity",
+      "saturnReturn": "Saturn Return",
+      "solarReturn": "Solar Return"
     },
     "sections": {
       "chartWheel": "Birth Chart Wheel",
-      "temperament": "Temperament Calculation"
+      "temperament": "Temperament Calculation",
+      "mentality": "Mentality Analysis"
     },
     "temperament": "Temperament Analysis",
     "birthInfo": "Birth Information",
@@ -443,6 +451,7 @@
     },
     "lunarPhase": "Lunar Phase",
     "solarPhase": "Solar Phase",
+    "prenatalSyzygy": "Prenatal Syzygy",
     "interpretations": "AI Interpretations",
     "refreshInterpretations": "Refresh AI interpretations",
     "refreshAI": "Refresh AI",
@@ -576,8 +585,11 @@
     "planetList": {
       "sortBy": "Sort by:",
       "position": "Position",
+      "sortByPosition": "Sort by zodiac position",
       "house": "House",
+      "sortByHouse": "Sort by astrological house",
       "strength": "Strength",
+      "sortByStrength": "Sort by strength/dignity",
       "hideInfo": "Hide Info",
       "showInfo": "Show Info",
       "essentialDignities": "Essential Dignities",
@@ -814,6 +826,23 @@
       "weightNote": "Planetary factors (Ascendant Ruler and Lord of Nativity) have their weights adjusted by essential dignity: dignified planets (domicile, exaltation) contribute more, while debilitated planets (detriment, fall) contribute less.",
       "weightTooltip": "Weight based on planet dignity"
     },
+    "mentality": {
+      "title": "Mentality",
+      "subtitle": "Intellectual style based on Mercury analysis",
+      "mentalScores": "Mental Scores",
+      "strength": "Strength",
+      "speed": "Speed",
+      "depth": "Depth",
+      "versatility": "Versatility",
+      "mercuryAnalysis": "Mercury Analysis",
+      "mercuryIn": "Mercury in",
+      "house": "House",
+      "retrograde": "Retrograde",
+      "contributingFactors": "Contributing Factors",
+      "interpretation": "Interpretation",
+      "note": "Mentality differs from Temperament. While Temperament describes physical/emotional constitution, Mentality analyzes intellectual capacity, thinking style, and communication patterns based primarily on Mercury's position, dignities, and aspects.",
+      "scoreNote": "Scores range from: Strength (0-100), Speed (-15 to +20), Depth (0-25), Versatility (0-20). Positive speed indicates quick thinking; negative speed indicates reflective thinking."
+    },
     "lordOfNativity": {
       "title": "Lord of Nativity",
       "subtitle": "The dominant vital force of your natal chart",
@@ -887,6 +916,97 @@
       "phaseSigns": "Phase Signs",
       "interpretation": "Interpretation",
       "note": "The solar phase at birth is based on the Sun's sign and reveals the fundamental temperament and primary qualities of your personality according to traditional astrology."
+    },
+    "prenatalSyzygy": {
+      "position": "Position",
+      "house": "House",
+      "keywords": "Keywords",
+      "interpretation": "Interpretation",
+      "note": "The prenatal syzygy is the last New Moon or Full Moon before your birth, revealing the lunar cycle during conception and early development."
+    },
+    "longevity": {
+      "noData": "Longevity data not available for this chart.",
+      "noHyleg": "Not found",
+      "house": "House",
+      "years": "years",
+      "dayChart": "Day Chart",
+      "nightChart": "Night Chart",
+      "hyleg": {
+        "title": "Hyleg (Giver of Life)",
+        "subtitle": "The vital force significator",
+        "qualification": "Qualification",
+        "domicileLord": "Domicile Lord",
+        "aspectingPlanets": "Aspecting Planets",
+        "candidatesEvaluated": "Candidates Evaluated",
+        "notFound": "No Hyleg could be determined for this chart."
+      },
+      "alcochoden": {
+        "title": "Alcochoden (Giver of Years)",
+        "subtitle": "The planet determining lifespan",
+        "notFound": "No Alcochoden could be determined.",
+        "planetaryYears": "Planetary Years",
+        "minor": "Minor",
+        "middle": "Middle",
+        "major": "Major",
+        "calculation": "Calculation",
+        "baseYears": "Base Years",
+        "totalYears": "Total",
+        "candidatesEvaluated": "Candidates Evaluated",
+        "yearType": {
+          "minor": "Minor Years",
+          "middle": "Middle Years",
+          "major": "Major Years",
+          "undefined": "Unknown",
+          "null": "Unknown"
+        }
+      },
+      "summary": {
+        "title": "Analysis Summary",
+        "vitalForce": "Vital Force",
+        "yearsIndicator": "Years Indicator",
+        "notDetermined": "Could not be determined"
+      },
+      "disclaimer": {
+        "title": "Educational Purpose Only",
+        "text": "These calculations are presented for historical and educational purposes only. They are not scientifically validated and should never be used for health predictions or medical decisions."
+      }
+    },
+    "planetaryTerms": {
+      "title": "Planetary Terms",
+      "subtitle": "Traditional bounds dignities system",
+      "description": "Terms (bounds) divide each zodiac sign into 5 unequal segments, each ruled by one of the five visible planets (excluding luminaries).",
+      "system": "Term System",
+      "selectSystem": "Select system",
+      "egyptian": "Egyptian",
+      "ptolemaic": "Ptolemaic",
+      "chaldean": "Chaldean",
+      "dorothean": "Dorothean",
+      "egyptianDesc": "Most widely used in Hellenistic astrology",
+      "ptolemaicDesc": "Ptolemy's refined system from Tetrabiblos",
+      "chaldeanDesc": "Regular 8-7-6-5-4 degree pattern",
+      "dorotheanDesc": "From Dorotheus of Sidon",
+      "termRuler": "Term Ruler",
+      "inOwnTerm": "In Own Term",
+      "planet": "Planet",
+      "degrees": "Degrees",
+      "ruler": "Ruler",
+      "planetsInOwnTerm": "Planets in Own Term",
+      "termRulerFrequency": "Term Ruler Frequency",
+      "referenceTable": "Reference Table",
+      "showReferenceTable": "Show Reference Table",
+      "hideReferenceTable": "Hide Reference Table",
+      "sign": "Sign",
+      "termPoints": "+2 dignity points",
+      "noTermData": "No term data available for this chart.",
+      "aboutTerms": "About Terms",
+      "aboutTermsDesc": "Terms (also called 'bounds') are one of the five essential dignities in traditional astrology. A planet in its own term receives +2 dignity points, representing a minor but significant form of essential dignity.",
+      "termNumber": "Term {{number}}",
+      "errors": {
+        "authRequired": "Authentication required to view term data.",
+        "chartNotFound": "Chart not found.",
+        "networkError": "Unable to connect. Please check your connection.",
+        "noChartId": "No chart ID provided."
+      }
     }
   },
   "pages": {
@@ -1370,7 +1490,8 @@
       "horary": "Horary Astrology",
       "profections": "Profections",
       "firdaria": "Firdaria",
-      "solarReturn": "Solar Return"
+      "solarReturn": "Solar Return",
+      "longevity": "Longevity Analysis"
     }
   },
   "pricing": {
@@ -1417,16 +1538,96 @@
     "homeLabel": "Home",
     "login": "Login",
     "signup": "Sign Up",
+    "nav": {
+      "blog": "Blog",
+      "blogLabel": "Go to blog",
+      "techniques": "Techniques",
+      "techniquesLabel": "View astrological techniques",
+      "pricing": "Pricing",
+      "pricingLabel": "View pricing plans"
+    },
     "hero": {
+      "badge": "Rediscover Ancient Wisdom",
       "socialProof": "Over 1,000 charts created",
       "traditional": "Traditional Astrology",
-      "title": "Discover Who You Really Are",
-      "subtitle": "Real Astrology uses ancient traditional astrology techniques to create a precise birth chart and deep interpretations about your personality, talents, and life path.",
-      "cta": "Create My Free Chart",
+      "title": "Traditional Astrology for the",
+      "titleHighlight": "Modern World",
+      "subtitle": "Not generic horoscopes. We revive 2,000-year-old techniques to build a complete, historically-grounded natal chart that reveals your true temperament and life path.",
+      "cta": "Discover Your Chart",
+      "ctaLabel": "Create your free chart",
+      "explore": "Explore Techniques",
+      "exploreLabel": "Explore features and techniques",
       "viewExample": "View Example Charts",
       "noCreditCard": "No credit card required",
       "dataSecure": "Your data is secure (GDPR)",
       "twoMinutes": "Takes 2 minutes"
+    },
+    "features": {
+      "title": "Ancient Techniques, Revived",
+      "subtitle": "We move beyond simple \"Sun Signs\" to use the full arsenal of Hellenistic and Medieval astrology.",
+      "dignities": {
+        "title": "Essential Dignities",
+        "desc": "Understanding a planet's true strength and condition based on its zodiacal position."
+      },
+      "sect": {
+        "title": "Sect (Day/Night)",
+        "desc": "The difference between being born during the day or night changes everything."
+      },
+      "arabicParts": {
+        "title": "Arabic Parts",
+        "desc": "Calculated points like the \"Part of Fortune\" that reveal hidden destiny drivers."
+      },
+      "temperament": {
+        "title": "Temperament",
+        "desc": "Your elemental balance (Choleric, Sanguine, Melancholic, Phlegmatic)."
+      },
+      "classical": {
+        "title": "Classical Reasoning",
+        "desc": "Logic-based interpretation derived from Ptolemy, Valens, and Lilly."
+      },
+      "timing": {
+        "title": "Life Cycles",
+        "desc": "Precise timing for major life maturation cycles and growth periods."
+      }
+    },
+    "notGuesswork": {
+      "title": "Not Guesswork.",
+      "subtitle": "Astronomy + Tradition.",
+      "step1": {
+        "title": "Astronomical Precision",
+        "desc": "We use the Swiss Ephemeris for NASA-grade planetary positioning accuracy."
+      },
+      "step2": {
+        "title": "Historical Context",
+        "desc": "Meanings are derived from translations of texts spanning from 1st century Alexandria to 17th century London."
+      },
+      "step3": {
+        "title": "No Barnum Effect",
+        "desc": "We avoid vague statements that apply to everyone. Our interpretations are specific, sometimes challenging, but always honest."
+      },
+      "chart": {
+        "label": "Sun in Leo",
+        "dignity": "Domicile"
+      }
+    },
+    "philosophy": {
+      "title": "The Philosophy of Fate",
+      "quote": "\"A wise man rules his stars; the fool obeys them.\"",
+      "map": {
+        "title": "Map, Not Territory",
+        "desc": "We view the natal chart not as a prison sentence, but as a weather report for your soul. Just as a sailor uses a map to navigate the winds, you use your chart to navigate life's currents. The chart shows the \"seed\" of your potential; how you water it is up to you."
+      },
+      "character": {
+        "title": "Character is Destiny",
+        "desc": "Traditional astrology teaches that external events often mirror internal states. By understanding your temperament, your strengths (dignities), and your challenges (debilities), you gain the agency to work with your nature rather than fighting against it."
+      }
+    },
+    "cta": {
+      "gdpr": "GDPR Compliant & Private",
+      "title": "Start Your Journey",
+      "subtitle": "Over 1,000 charts created. No credit card required to generate your preliminary analysis.",
+      "button": "Create Free Chart",
+      "buttonLabel": "Create your free birth chart"
     },
     "pain": {
       "title": "Have You Ever Felt Like This?",
@@ -1564,10 +1765,12 @@
     "footer": {
       "tagline": "Traditional Astrology For the Modern World",
       "legal": "Legal",
+      "legalNav": "Legal documents navigation",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "cookies": "Cookie Policy",
       "access": "Access",
+      "accessNav": "Account access navigation",
       "login": "Login",
       "register": "Sign Up",
       "dashboard": "My Charts",
@@ -1642,6 +1845,7 @@
     "ctaButton": "Get Started"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "allRightsReserved": "All rights reserved."
   }
 }

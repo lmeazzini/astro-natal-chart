@@ -10,6 +10,8 @@ import swisseph as swe
 
 from app.astro.dignities import calculate_essential_dignities, find_lord_of_nativity, get_sign_ruler
 from app.astro.lunar_phase import calculate_lunar_phase
+from app.astro.mentality import calculate_mentality
+from app.astro.prenatal_syzygy import calculate_prenatal_syzygy
 from app.astro.solar_phase import calculate_solar_phase
 from app.astro.temperament import calculate_temperament
 from app.schemas.chart import AspectData, HousePosition, PlanetPosition
@@ -880,16 +882,21 @@ def calculate_birth_chart(
     # Calculate planet positions
     planets = calculate_planets(jd, house_cusps)
 
-    # Find Sun and Moon for sect, lunar phase and solar phase
+    # Find Sun, Moon and Saturn for various calculations
     sun_longitude = 0.0
     sun_sign = ""
     moon_longitude = 0.0
+    saturn_longitude = 0.0
+    saturn_house = 1
     for planet in planets:
         if planet.name == "Sun":
             sun_longitude = planet.longitude
             sun_sign = planet.sign
         elif planet.name == "Moon":
             moon_longitude = planet.longitude
+        elif planet.name == "Saturn":
+            saturn_longitude = planet.longitude
+            saturn_house = planet.house
 
     # Calculate sect (day/night chart)
     sect = calculate_sect(ascendant, sun_longitude)
@@ -899,6 +906,15 @@ def calculate_birth_chart(
 
     # Calculate solar phase
     solar_phase = calculate_solar_phase(sun_sign, language)
+
+    # Calculate prenatal syzygy (last New Moon or Full Moon before birth)
+    prenatal_syzygy = calculate_prenatal_syzygy(
+        birth_jd=jd,
+        sun_longitude=sun_longitude,
+        moon_longitude=moon_longitude,
+        houses=[h.model_dump() for h in houses],
+        language=language,
+    )
 
     # Add essential dignities to each planet
     planets_with_dignities = []
@@ -963,6 +979,14 @@ def calculate_birth_chart(
         language=language,
     )
 
+    # Calculate Mentality (Issue #57)
+    mentality = calculate_mentality(
+        planets=planets_with_dignities,
+        houses=[h.model_dump() for h in houses],
+        aspects=[a.model_dump() for a in aspects],
+        language=language,
+    )
+
     # Calculate Arabic Parts (Lots)
     arabic_parts = calculate_arabic_parts(
         ascendant=ascendant,
@@ -976,6 +1000,32 @@ def calculate_birth_chart(
     # Calculate complete sect analysis with planet classifications
     sect_analysis = calculate_sect_analysis(planets_with_dignities, sect)
 
+    # Calculate Longevity Analysis (Hyleg + Alcochoden) - Issue #134, #135
+    from app.astro.longevity import calculate_longevity_analysis
+
+    longevity = calculate_longevity_analysis(
+        planets=planets_with_dignities,
+        houses=[h.model_dump() for h in houses],
+        aspects=[a.model_dump() for a in aspects],
+        ascendant=ascendant,
+        arabic_parts=arabic_parts,
+        sect=sect,
+        birth_jd=jd,
+        sun_longitude=sun_longitude,
+        method="ptolemaic",
+        language=language,
+    )
+
+    # Calculate Saturn Return Analysis
+    from app.astro.saturn_return import calculate_saturn_return_analysis
+
+    saturn_return = calculate_saturn_return_analysis(
+        birth_jd=jd,
+        natal_saturn_longitude=saturn_longitude,
+        natal_saturn_house=saturn_house,
+        language=language,
+    )
+
     return {
         "planets": planets_with_dignities,
         "houses": [h.model_dump() for h in houses],
@@ -986,8 +1036,12 @@ def calculate_birth_chart(
         "sect_analysis": sect_analysis,
         "lunar_phase": lunar_phase,
         "solar_phase": solar_phase,
+        "prenatal_syzygy": prenatal_syzygy,
         "lord_of_nativity": lord_of_nativity,
         "temperament": temperament,
+        "mentality": mentality,
         "arabic_parts": arabic_parts,
+        "longevity": longevity,
+        "saturn_return": saturn_return,
         "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

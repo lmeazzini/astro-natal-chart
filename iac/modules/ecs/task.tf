@@ -1,0 +1,101 @@
+# =============================================================================
+# ECS Module - Task Definition
+# =============================================================================
+# Task definition for the FastAPI application container.
+# Configured for Fargate Spot with 2-minute stop timeout.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Task Definition
+# -----------------------------------------------------------------------------
+
+resource "aws_ecs_task_definition" "api" {
+  family                   = "${local.name_prefix}-api"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.cpu
+  memory                   = var.memory
+  execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+
+  container_definitions = jsonencode([
+    {
+      name  = "api"
+      image = var.container_image
+
+      # Graceful shutdown for Spot interruptions (2 minutes)
+      stopTimeout = 120
+
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = var.container_port
+          hostPort      = var.container_port
+          protocol      = "tcp"
+        }
+      ]
+
+      # Environment variables (basic config)
+      environment = [
+        {
+          name  = "ENVIRONMENT"
+          value = var.environment
+        },
+        {
+          name  = "PORT"
+          value = tostring(var.container_port)
+        }
+      ]
+
+      # Secrets from Secrets Manager (injected from secrets module)
+      secrets = var.secret_arns != null ? [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = var.secret_arns.database_url
+        },
+        {
+          name      = "SECRET_KEY"
+          valueFrom = var.secret_arns.secret_key
+        },
+        {
+          name      = "REDIS_URL"
+          valueFrom = var.secret_arns.redis_url
+        }
+      ] : []
+
+      # CloudWatch Logs
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "api"
+        }
+      }
+
+      # Container health check
+      # Using wget for nginx:alpine compatibility (curl not available)
+      # For FastAPI, replace with: curl -f http://localhost:${var.container_port}${var.health_check_path}
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:${var.container_port}/ || exit 1"
+        ]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+    }
+  ])
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-api-task"
+  })
+}

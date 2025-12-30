@@ -1,0 +1,10 @@
+# Placeholder for Terraform modules
+# Modules will be added in subsequent issues:
+# - #240: VPC module
+# - #241: RDS module
+# - #242: ElastiCache module
+# - #243: ECS module
+# - #244: CloudFront module
+# - #245: Secrets Manager module
+# - #246: S3 module
+# - #247: Route53/ACM module

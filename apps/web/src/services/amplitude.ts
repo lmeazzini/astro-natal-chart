@@ -3,18 +3,33 @@
  *
  * This service provides a simple wrapper around the Amplitude Browser SDK
  * for tracking user events and product analytics.
+ *
+ * Features:
+ * - Event tracking with properties
+ * - User identification and properties
+ * - Session Replay for debugging and UX analysis
  */
 
 import * as amplitude from '@amplitude/analytics-browser';
+import { sessionReplayPlugin } from '@amplitude/plugin-session-replay-browser';
 
 const AMPLITUDE_API_KEY = import.meta.env.VITE_AMPLITUDE_API_KEY || '';
 const AMPLITUDE_ENABLED = import.meta.env.VITE_AMPLITUDE_ENABLED === 'true';
+const SESSION_REPLAY_SAMPLE_RATE = parseFloat(
+  import.meta.env.VITE_SESSION_REPLAY_SAMPLE_RATE || '1'
+);
 
 class AmplitudeService {
   private initialized = false;
 
   constructor() {
     if (AMPLITUDE_ENABLED && AMPLITUDE_API_KEY) {
+      // Add Session Replay plugin before initialization
+      const sessionReplay = sessionReplayPlugin({
+        sampleRate: SESSION_REPLAY_SAMPLE_RATE,
+      });
+      amplitude.add(sessionReplay);
+
       amplitude.init(AMPLITUDE_API_KEY, {
         defaultTracking: {
           sessions: true,
@@ -24,7 +39,9 @@ class AmplitudeService {
         },
       });
       this.initialized = true;
-      console.log('[Amplitude] Analytics initialized');
+      console.log(
+        `[Amplitude] Analytics initialized with Session Replay (sample rate: ${SESSION_REPLAY_SAMPLE_RATE})`
+      );
     } else {
       console.log('[Amplitude] Analytics disabled');
     }

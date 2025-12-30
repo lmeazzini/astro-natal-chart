@@ -6,12 +6,49 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import SubscriptionStatus, UserRole
+from app.models.enums import SubscriptionChangeType, SubscriptionStatus, UserRole
 from app.models.subscription import Subscription
+from app.models.subscription_history import SubscriptionHistory
 from app.models.user import User
 from app.repositories.audit_repository import AuditRepository
+from app.repositories.subscription_history_repository import SubscriptionHistoryRepository
 from app.repositories.subscription_repository import SubscriptionRepository
 from app.repositories.user_repository import UserRepository
+from app.services.amplitude_service import amplitude_service
+
+
+async def _create_history_record(
+    db: AsyncSession,
+    subscription: Subscription,
+    change_type: SubscriptionChangeType,
+    changed_by_user_id: UUID | None = None,
+    change_reason: str | None = None,
+) -> SubscriptionHistory:
+    """
+    Create an immutable history record for a subscription change.
+
+    Args:
+        db: Database session
+        subscription: The subscription being changed
+        change_type: Type of change (granted, extended, revoked, expired)
+        changed_by_user_id: Admin user who made the change (None if system auto-expired)
+        change_reason: Optional reason for the change
+
+    Returns:
+        Created history record
+    """
+    history_repo = SubscriptionHistoryRepository(db)
+    history = SubscriptionHistory(
+        subscription_id=subscription.id,
+        user_id=subscription.user_id,
+        status=subscription.status,
+        started_at=subscription.started_at,
+        expires_at=subscription.expires_at,
+        change_type=change_type.value,
+        changed_by_user_id=changed_by_user_id,
+        change_reason=change_reason,
+    )
+    return await history_repo.create(history)
 
 
 async def grant_premium_subscription(
@@ -87,9 +124,31 @@ async def grant_premium_subscription(
         },
     )
 
+    # Create subscription history record
+    await _create_history_record(
+        db=db,
+        subscription=subscription,
+        change_type=SubscriptionChangeType.GRANTED,
+        changed_by_user_id=admin_user.id,
+    )
+
     # Commit everything atomically
     await db.commit()
     await db.refresh(subscription)
+
+    # Track with Amplitude
+    grant_properties: dict[str, str | int | float | bool | list[str]] = {
+        "is_lifetime": days is None,
+        "granted_by_admin_id": str(admin_user.id),
+        "source": "admin_panel",
+    }
+    if days is not None:
+        grant_properties["days"] = days
+    amplitude_service.track(
+        event_type="subscription_granted",
+        user_id=str(user_id),
+        event_properties=grant_properties,
+    )
 
     logger.bind(user_id=user_id, admin_id=admin_user.id).info(
         f"Premium subscription {action}",
@@ -129,6 +188,10 @@ async def revoke_premium_subscription(
     if not subscription:
         raise ValueError(f"Subscription not found for user {user_id}")
 
+    # Capture state before revocation for tracking
+    was_active = subscription.status == SubscriptionStatus.ACTIVE.value
+    days_remaining = subscription.days_remaining
+
     # Update subscription status
     subscription.status = SubscriptionStatus.CANCELLED.value
     subscription.updated_at = datetime.now(UTC)
@@ -152,8 +215,30 @@ async def revoke_premium_subscription(
         },
     )
 
+    # Create subscription history record
+    await _create_history_record(
+        db=db,
+        subscription=subscription,
+        change_type=SubscriptionChangeType.REVOKED,
+        changed_by_user_id=admin_user.id,
+    )
+
     # Commit everything atomically
     await db.commit()
+
+    # Track with Amplitude
+    revoke_properties: dict[str, str | int | float | bool | list[str]] = {
+        "was_active": was_active,
+        "revoked_by_admin_id": str(admin_user.id),
+        "source": "admin_panel",
+    }
+    if days_remaining is not None:
+        revoke_properties["days_remaining"] = days_remaining
+    amplitude_service.track(
+        event_type="subscription_revoked",
+        user_id=str(user_id),
+        event_properties=revoke_properties,
+    )
 
     logger.bind(user_id=user_id, admin_id=admin_user.id).info("Premium subscription revoked")
 
@@ -232,9 +317,29 @@ async def extend_premium_subscription(
         },
     )
 
+    # Create subscription history record
+    await _create_history_record(
+        db=db,
+        subscription=subscription,
+        change_type=SubscriptionChangeType.EXTENDED,
+        changed_by_user_id=admin_user.id,
+    )
+
     # Commit everything atomically
     await db.commit()
     await db.refresh(subscription)
+
+    # Track with Amplitude
+    amplitude_service.track(
+        event_type="subscription_extended",
+        user_id=str(user_id),
+        event_properties={
+            "extend_days": extend_days,
+            "previous_expires_at": old_expires_at.isoformat(),
+            "new_expires_at": new_expires_at.isoformat(),
+            "source": "admin_panel",
+        },
+    )
 
     logger.bind(user_id=user_id, admin_id=admin_user.id).info(
         f"Premium subscription extended by {extend_days} days",
@@ -308,6 +413,26 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
             },
         )
 
+        # Create subscription history record (system auto-expired, no changed_by_user_id)
+        await _create_history_record(
+            db=db,
+            subscription=subscription,
+            change_type=SubscriptionChangeType.EXPIRED,
+            changed_by_user_id=None,  # System auto-expired
+        )
+
+        # Track with Amplitude
+        expire_properties: dict[str, str | int | float | bool | list[str]] = {
+            "source": "system_auto_expire",
+        }
+        if subscription.expires_at:
+            expire_properties["expired_at"] = subscription.expires_at.isoformat()
+        amplitude_service.track(
+            event_type="subscription_expired",
+            user_id=str(subscription.user_id),
+            event_properties=expire_properties,
+        )
+
         count += 1
 
     # Commit all changes atomically
@@ -317,3 +442,25 @@ async def check_and_expire_subscriptions(db: AsyncSession) -> int:
         logger.info(f"Expired {count} subscriptions")
 
     return count
+
+
+async def get_subscription_history(
+    db: AsyncSession,
+    user_id: UUID,
+    skip: int = 0,
+    limit: int = 50,
+) -> list[SubscriptionHistory]:
+    """
+    Get subscription history for a user.
+
+    Args:
+        db: Database session
+        user_id: User ID to get history for
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
+
+    Returns:
+        List of subscription history records, ordered by created_at descending
+    """
+    history_repo = SubscriptionHistoryRepository(db)
+    return await history_repo.get_by_user_id(user_id, skip=skip, limit=limit)

@@ -11,6 +11,7 @@ from app.models.public_chart import PublicChart
 from app.models.public_chart_interpretation import PublicChartInterpretation
 from app.models.search_index import SearchIndex
 from app.models.subscription import Subscription
+from app.models.subscription_history import SubscriptionHistory
 from app.models.user import OAuthAccount, User
 from app.models.user_consent import UserConsent
 from app.models.vector_document import VectorDocument
@@ -30,4 +31,5 @@ __all__ = [
     "PublicChartInterpretation",
     "BlogPost",
     "Subscription",
+    "SubscriptionHistory",
 ]

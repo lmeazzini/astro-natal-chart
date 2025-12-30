@@ -36,3 +36,21 @@ class SubscriptionStatus(str, Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+class SubscriptionChangeType(str, Enum):
+    """Types of subscription changes for history tracking.
+
+    - GRANTED: New subscription granted or existing reactivated
+    - EXTENDED: Subscription duration extended
+    - REVOKED: Subscription manually revoked by admin
+    - EXPIRED: Subscription automatically expired by system
+    """
+
+    GRANTED = "granted"
+    EXTENDED = "extended"
+    REVOKED = "revoked"
+    EXPIRED = "expired"
+
+    def __str__(self) -> str:
+        return self.value

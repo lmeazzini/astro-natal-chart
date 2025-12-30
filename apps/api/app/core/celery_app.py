@@ -33,6 +33,9 @@ celery_app.conf.update(
     task_soft_time_limit=25 * 60,  # 25 minutes soft limit
     worker_prefetch_multiplier=1,  # One task at a time for heavy tasks
     worker_max_tasks_per_child=1000,  # Restart worker after 1000 tasks
+    # Result cleanup configuration (Phase 3 - Issue #233)
+    result_expires=86400,  # 24 hours - auto-cleanup task results from Redis
+    task_reject_on_worker_lost=True,  # Reject tasks if worker dies unexpectedly
 )
 
 # Periodic tasks schedule (Beat)

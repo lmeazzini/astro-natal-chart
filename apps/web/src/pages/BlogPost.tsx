@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import ReactMarkdown from 'react-markdown';
@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import {
   Clock,
   Eye,
@@ -47,6 +48,7 @@ export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [post, setPost] = React.useState<BlogPost | null>(null);
   const [recentPosts, setRecentPosts] = React.useState<BlogPostListItem[]>([]);
@@ -55,6 +57,21 @@ export function BlogPostPage() {
   const [sharing, setSharing] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
+  // Get current locale for API calls
+  const currentLocale = i18n.language;
+
+  // Amplitude tracking refs
+  const hasTrackedPageView = React.useRef(false);
+  const hasTrackedReadCompletion = React.useRef(false);
+  const pageLoadTime = React.useRef(Date.now());
+
+  // Reset tracking refs when slug changes (for SPA navigation between posts)
+  React.useEffect(() => {
+    hasTrackedPageView.current = false;
+    hasTrackedReadCompletion.current = false;
+    pageLoadTime.current = Date.now();
+  }, [slug]);
+
   React.useEffect(() => {
     if (!slug) return;
 
@@ -62,7 +79,7 @@ export function BlogPostPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getBlogPost(postSlug);
+        const data = await getBlogPost(postSlug, currentLocale);
         setPost(data);
       } catch (err) {
         setError(t('blog.postNotFound'));
@@ -73,12 +90,12 @@ export function BlogPostPage() {
     }
 
     loadPost(slug);
-  }, [slug, t]);
+  }, [slug, t, currentLocale]);
 
   React.useEffect(() => {
     async function loadRecent() {
       try {
-        const data = await getRecentPosts(5);
+        const data = await getRecentPosts(5, currentLocale);
         setRecentPosts(data.filter((p) => p.slug !== slug));
       } catch (err) {
         console.error('Error loading recent posts:', err);
@@ -86,7 +103,84 @@ export function BlogPostPage() {
     }
 
     loadRecent();
-  }, [slug]);
+  }, [slug, currentLocale]);
+
+  // Helper to translate category/tag keys with dev logging for missing translations
+  const translateCategory = (key: string) => {
+    const translated = t(`blog:categories.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog category translation: blog:categories.${key}`);
+    }
+    return translated || key;
+  };
+
+  const translateTag = (key: string) => {
+    const translated = t(`blog:tags.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog tag translation: blog:tags.${key}`);
+    }
+    return translated || key;
+  };
+
+  // Get language display name
+  const getLanguageName = (locale: string) => {
+    const names: Record<string, string> = {
+      'pt-BR': 'Português',
+      'en-US': 'English',
+    };
+    return names[locale] || locale;
+  };
+
+  // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
+  React.useEffect(() => {
+    if (!hasTrackedPageView.current && post && !loading) {
+      amplitudeService.track('blog_post_viewed', {
+        post_slug: post.slug,
+        post_title: post.title,
+        reading_time: post.read_time_minutes,
+        source: searchParams.get('source') || 'direct',
+        ...(user?.id && { user_id: user.id }),
+      });
+      hasTrackedPageView.current = true;
+      pageLoadTime.current = Date.now(); // Reset page load time when post loads
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, loading]); // Track once when post loads
+
+  // Track read completion with Intersection Observer
+  React.useEffect(() => {
+    if (!post || hasTrackedReadCompletion.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedReadCompletion.current) {
+            const timeOnPage = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+            amplitudeService.track('blog_post_read_completed', {
+              post_slug: post.slug,
+              estimated_read_percentage: 80,
+              time_on_page_seconds: timeOnPage,
+              ...(user?.id && { user_id: user.id }),
+            });
+            hasTrackedReadCompletion.current = true;
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      const endMarker = document.getElementById('blog-post-end-marker');
+      if (endMarker) observer.observe(endMarker);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [post, user?.id]);
 
   async function handleShare() {
     if (sharing) return;
@@ -251,8 +345,13 @@ export function BlogPostPage() {
         {/* Header */}
         <header className="border-b bg-card">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <Link to="/" className="text-xl font-bold text-primary">
-              Real Astrology
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt="Real Astrology"
+                className="h-9 w-9 rounded-full object-cover border border-primary/10"
+              />
+              <span className="text-xl font-bold text-primary">Real Astrology</span>
             </Link>
             <div className="flex items-center gap-4">
               <LanguageSelector />
@@ -314,9 +413,25 @@ export function BlogPostPage() {
                 {/* Category */}
                 <Link to={`/blog?category=${encodeURIComponent(post.category)}`}>
                   <Badge variant="outline" className="mb-4">
-                    {post.category}
+                    {translateCategory(post.category)}
                   </Badge>
                 </Link>
+
+                {/* Available translations */}
+                {post.available_translations && post.available_translations.length > 0 && (
+                  <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{t('blog:ui.also_available_in')}:</span>
+                    {post.available_translations.map((trans) => (
+                      <Link
+                        key={trans.locale}
+                        to={`/blog/${trans.slug}`}
+                        className="text-primary hover:underline"
+                      >
+                        {getLanguageName(trans.locale)}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
                 {/* Title */}
                 <h1 className="mb-4 text-4xl font-bold leading-tight text-foreground">
@@ -385,6 +500,9 @@ export function BlogPostPage() {
                   </ReactMarkdown>
                 </div>
 
+                {/* Invisible marker for read completion tracking */}
+                <div id="blog-post-end-marker" aria-hidden="true" />
+
                 {/* Tags */}
                 {post.tags.length > 0 && (
                   <div className="mt-8 border-t pt-6">
@@ -397,7 +515,7 @@ export function BlogPostPage() {
                               variant="secondary"
                               className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
                             >
-                              #{tag}
+                              #{translateTag(tag)}
                             </Badge>
                           </Link>
                         ))}

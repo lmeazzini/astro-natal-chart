@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPlanetSymbol, getSignSymbol, formatDMS } from '../utils/astro';
 import { useAstroTranslation } from '../hooks/useAstroTranslation';
+import { amplitudeService } from '../services/amplitude';
 import {
   Dignities,
   getDignityBadge,
@@ -298,7 +299,16 @@ export function PlanetList({
                   layout
                   layoutId={planet.name}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="border-b transition-colors hover:bg-muted/50"
+                  className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+                  onClick={() => {
+                    amplitudeService.track('planet_row_clicked', {
+                      planet_name: planet.name,
+                      sign: planet.sign,
+                      house: planet.house,
+                      retrograde: planet.retrograde,
+                      source: 'planet_list',
+                    });
+                  }}
                 >
                   {/* Planet Name with Symbol */}
                   <TableCell>

@@ -31,9 +31,9 @@ import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
 import { ThemeProvider } from './components/theme-provider';
-import { ThemeToggle } from './components/ThemeToggle';
-import { LanguageSelector } from './components/LanguageSelector';
+import { NavActions } from './components/NavActions';
 import { chartsService } from './services/charts';
+import { amplitudeService } from './services/amplitude';
 
 // shadcn/ui components (used by DashboardPage)
 import { Button } from '@/components/ui/button';
@@ -95,6 +95,17 @@ function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
   const [chartCount, setChartCount] = React.useState<number>(0);
   const [loadingCharts, setLoadingCharts] = React.useState(true);
+  const hasTrackedPageView = React.useRef(false);
+
+  // Track dashboard page view
+  React.useEffect(() => {
+    if (user && !hasTrackedPageView.current) {
+      hasTrackedPageView.current = true;
+      amplitudeService.track('dashboard_viewed', {
+        source: 'dashboard_page',
+      });
+    }
+  }, [user]);
 
   React.useEffect(() => {
     if (user) {
@@ -114,6 +125,13 @@ function DashboardPage() {
     } finally {
       setLoadingCharts(false);
     }
+  }
+
+  function trackFeatureCardClick(featureName: string) {
+    amplitudeService.track('feature_card_clicked', {
+      feature_name: featureName,
+      source: 'dashboard_page',
+    });
   }
 
   if (isLoading) {
@@ -144,8 +162,7 @@ function DashboardPage() {
             <h1 className="text-2xl font-bold text-foreground">Real Astrology</h1>
           </Link>
           <div className="flex items-center gap-4">
-            <LanguageSelector />
-            <ThemeToggle />
+            <NavActions />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/profile">{t('nav.profile')}</Link>
             </Button>
@@ -225,7 +242,9 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Button className="w-full" asChild>
-                <Link to="/charts/new">{t('dashboardPage.newChartButton')}</Link>
+                <Link to="/charts/new" onClick={() => trackFeatureCardClick('create_chart')}>
+                  {t('dashboardPage.newChartButton')}
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -238,7 +257,9 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Button variant="secondary" className="w-full" asChild>
-                <Link to="/charts">{t('dashboardPage.viewMyCharts')}</Link>
+                <Link to="/charts" onClick={() => trackFeatureCardClick('my_charts')}>
+                  {t('dashboardPage.viewMyCharts')}
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -250,7 +271,9 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/public-charts">{t('dashboardPage.viewFamousCharts')}</Link>
+                <Link to="/public-charts" onClick={() => trackFeatureCardClick('famous_charts')}>
+                  {t('dashboardPage.viewFamousCharts')}
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -267,7 +290,7 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/rag-documents">
+                <Link to="/rag-documents" onClick={() => trackFeatureCardClick('rag_documents')}>
                   {t('dashboardPage.viewRagDocuments', 'View Documents')}
                 </Link>
               </Button>

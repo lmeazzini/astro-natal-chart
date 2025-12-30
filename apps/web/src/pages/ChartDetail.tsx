@@ -2,7 +2,7 @@
  * Chart Detail Page - complete birth chart visualization
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { chartsService, BirthChart } from '../services/charts';
@@ -14,6 +14,16 @@ import {
   RAGSourceInfo,
 } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
+import { getSaturnReturn, getSaturnReturnInterpretation } from '../services/saturn_return';
+import { getSolarReturn, getSolarReturnInterpretation } from '../services/solar_return';
+import type {
+  SaturnReturnAnalysis as SaturnReturnAnalysisType,
+  SaturnReturnInterpretation,
+} from '../types/saturn_return';
+import type {
+  SolarReturnResponse,
+  SolarReturnInterpretation as SolarReturnInterpretationType,
+} from '../types/solar_return';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
 import { ChartWheelAstro } from '../components/ChartWheelAstro';
@@ -24,15 +34,39 @@ import { LunarPhase } from '../components/LunarPhase';
 import { SolarPhase } from '../components/SolarPhase';
 import { LordOfNativity } from '../components/LordOfNativity';
 import { TemperamentDisplay } from '../components/TemperamentDisplay';
+import { MentalityCard } from '../components/MentalityCard';
 import { ArabicPartsTable } from '../components/ArabicPartsTable';
 import { SectAnalysis } from '../components/SectAnalysis';
 import { GrowthSuggestions } from '../components/GrowthSuggestions';
+import { PlanetaryTerms } from '../components/PlanetaryTerms';
+import { PrenatalSyzygy } from '../components/PrenatalSyzygy';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load LongevityAnalysis for code splitting (premium feature)
+const LongevityAnalysis = lazy(() =>
+  import('../components/LongevityAnalysis').then((module) => ({
+    default: module.LongevityAnalysis,
+  }))
+);
+
+// Lazy load SaturnReturnAnalysis for code splitting (premium feature)
+const SaturnReturnAnalysis = lazy(() =>
+  import('../components/SaturnReturnAnalysis').then((module) => ({
+    default: module.SaturnReturnAnalysis,
+  }))
+);
+
+// Lazy load SolarReturnAnalysis for code splitting (premium feature)
+const SolarReturnAnalysis = lazy(() =>
+  import('../components/SolarReturnAnalysis').then((module) => ({
+    default: module.SolarReturnAnalysis,
+  }))
+);
 import { InfoTooltip } from '../components/InfoTooltip';
 import { getSignSymbol } from '../utils/astro';
 import { formatBirthDateTime } from '@/utils/datetime';
 import { useAstroTranslation } from '../hooks/useAstroTranslation';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { LanguageSelector } from '../components/LanguageSelector';
+import { NavActions } from '../components/NavActions';
 import { EmailVerificationModal } from '../components/EmailVerificationModal';
 import { InterpretationLanguageNotice } from '../components/InterpretationLanguageNotice';
 import { useEmailVerification } from '../hooks/useEmailVerification';
@@ -66,6 +100,25 @@ export function ChartDetailPage() {
 
   // Interpretations loading state
   const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
+
+  // Saturn Return state (premium feature)
+  const [saturnReturnAnalysis, setSaturnReturnAnalysis] = useState<SaturnReturnAnalysisType | null>(
+    null
+  );
+  const [saturnReturnInterpretation, setSaturnReturnInterpretation] =
+    useState<SaturnReturnInterpretation | null>(null);
+  const [isLoadingSaturnReturn, setIsLoadingSaturnReturn] = useState(false);
+  const [saturnReturnError, setSaturnReturnError] = useState<string | null>(null);
+
+  // Solar Return state (premium feature)
+  const [solarReturnData, setSolarReturnData] = useState<SolarReturnResponse | null>(null);
+  const [solarReturnInterpretation, setSolarReturnInterpretation] =
+    useState<SolarReturnInterpretationType | null>(null);
+  const [isLoadingSolarReturn, setIsLoadingSolarReturn] = useState(false);
+  const [solarReturnError, setSolarReturnError] = useState<string | null>(null);
+
+  // Tab tracking for Amplitude
+  const [currentTab, setCurrentTab] = useState('visual');
 
   // Track the last language we loaded interpretations for (to avoid reload loops)
   const lastLoadedLanguageRef = useRef<string | null>(null);
@@ -253,6 +306,27 @@ export function ChartDetailPage() {
     }
   }
 
+  // Track tab changes for Amplitude
+  function handleTabChange(newTab: string) {
+    amplitudeService.track('interpretation_tab_changed', {
+      tab_name: newTab,
+      previous_tab: currentTab,
+      chart_id: id || '',
+      source: 'chart_detail_page',
+    });
+    setCurrentTab(newTab);
+
+    // Load Saturn Return data on demand when tab is selected
+    if (newTab === 'saturn-return' && !saturnReturnAnalysis && !isLoadingSaturnReturn) {
+      loadSaturnReturn();
+    }
+
+    // Load Solar Return data on demand when tab is selected
+    if (newTab === 'solar-return' && !solarReturnData && !isLoadingSolarReturn) {
+      loadSolarReturn();
+    }
+  }
+
   // Regenerate interpretations (forces new generation, used for language change)
   async function handleRegenerateInterpretations() {
     if (!isEmailVerified) {
@@ -276,6 +350,78 @@ export function ChartDetailPage() {
       setIsLoadingInterpretations(false);
     }
   }
+
+  // Load Saturn Return data (premium feature)
+  async function loadSaturnReturn() {
+    if (!id || isLoadingSaturnReturn) return;
+
+    try {
+      setIsLoadingSaturnReturn(true);
+      setSaturnReturnError(null);
+      const [analysis, interpretation] = await Promise.all([
+        getSaturnReturn(id),
+        getSaturnReturnInterpretation(id),
+      ]);
+      setSaturnReturnAnalysis(analysis);
+      setSaturnReturnInterpretation(interpretation);
+    } catch (err) {
+      console.error('Failed to load Saturn Return:', err);
+      // Extract error message for display
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load Saturn Return data';
+      setSaturnReturnError(errorMessage);
+    } finally {
+      setIsLoadingSaturnReturn(false);
+    }
+  }
+
+  // Load Solar Return data (premium feature)
+  async function loadSolarReturn() {
+    if (!id || isLoadingSolarReturn) return;
+
+    try {
+      setIsLoadingSolarReturn(true);
+      setSolarReturnError(null);
+      const [data, interpretation] = await Promise.all([
+        getSolarReturn(id),
+        getSolarReturnInterpretation(id),
+      ]);
+      setSolarReturnData(data);
+      setSolarReturnInterpretation(interpretation);
+    } catch (err) {
+      console.error('Failed to load Solar Return:', err);
+      // Extract error message for display
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load Solar Return data';
+      setSolarReturnError(errorMessage);
+    } finally {
+      setIsLoadingSolarReturn(false);
+    }
+  }
+
+  // Handle Solar Return year change (memoized for performance)
+  const handleSolarReturnYearChange = useCallback(
+    (year: number) => {
+      if (!id) return;
+
+      setIsLoadingSolarReturn(true);
+      setSolarReturnError(null);
+
+      Promise.all([getSolarReturn(id, { year }), getSolarReturnInterpretation(id, { year })])
+        .then(([data, interpretation]) => {
+          setSolarReturnData(data);
+          setSolarReturnInterpretation(interpretation);
+        })
+        .catch((err) => {
+          console.error('Failed to load Solar Return:', err);
+          setSolarReturnError(
+            err instanceof Error ? err.message : 'Failed to load Solar Return data'
+          );
+        })
+        .finally(() => {
+          setIsLoadingSolarReturn(false);
+        });
+    },
+    [id]
+  );
 
   // Helper to extract content from interpretation item (handles both string and object formats)
   function extractContent(item: unknown): string {
@@ -590,8 +736,7 @@ export function ChartDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <LanguageSelector />
-              <ThemeToggle />
+              <NavActions />
 
               {/* PDF Export Button */}
               <Button
@@ -685,7 +830,7 @@ export function ChartDetailPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="visual" className="w-full">
+        <Tabs defaultValue="visual" className="w-full" onValueChange={handleTabChange}>
           <TabsList className="w-full justify-start mb-6">
             <TabsTrigger value="visual">{t('chartDetail.tabs.visual')}</TabsTrigger>
             <TabsTrigger value="planets">
@@ -704,6 +849,15 @@ export function ChartDetailPage() {
             </TabsTrigger>
             <TabsTrigger value="growth">
               {t('chartDetail.tabs.growth', { defaultValue: 'Growth' })}
+            </TabsTrigger>
+            <TabsTrigger value="longevity">
+              {t('chartDetail.tabs.longevity', { defaultValue: 'Longevity' })}
+            </TabsTrigger>
+            <TabsTrigger value="saturn-return">
+              {t('chartDetail.tabs.saturnReturn', { defaultValue: 'Saturn Return' })}
+            </TabsTrigger>
+            <TabsTrigger value="solar-return">
+              {t('chartDetail.tabs.solarReturn', { defaultValue: 'Solar Return' })}
             </TabsTrigger>
           </TabsList>
 
@@ -860,6 +1014,18 @@ export function ChartDetailPage() {
                     </div>
                   )}
 
+                  {/* Mentality (Issue #57) */}
+                  {chart.chart_data.mentality && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.sections.mentality', {
+                          defaultValue: 'Análise de Mentalidade',
+                        })}
+                      </h3>
+                      <MentalityCard mentality={chart.chart_data.mentality} />
+                    </div>
+                  )}
+
                   {/* Lord of Nativity */}
                   {chart.chart_data.lord_of_nativity && (
                     <div>
@@ -886,6 +1052,16 @@ export function ChartDetailPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Prenatal Syzygy */}
+                  {chart.chart_data.prenatal_syzygy && (
+                    <div>
+                      <h3 className="text-h4 font-display mb-4">
+                        {t('chartDetail.prenatalSyzygy', { defaultValue: 'Prenatal Syzygy' })}
+                      </h3>
+                      <PrenatalSyzygy prenatalSyzygy={chart.chart_data.prenatal_syzygy} />
+                    </div>
+                  )}
 
                   {/* Sect Analysis */}
                   {chart.chart_data.sect_analysis && (
@@ -959,6 +1135,13 @@ export function ChartDetailPage() {
                   />
                 </CardContent>
               </Card>
+            )}
+
+            {/* Planetary Terms (Essential Dignities) */}
+            {chart && id && (
+              <div className="mt-6">
+                <PlanetaryTerms chartId={id} isLoading={isLoading} />
+              </div>
             )}
           </TabsContent>
 
@@ -1190,6 +1373,73 @@ export function ChartDetailPage() {
             {id && (
               <GrowthSuggestions chartId={id} initialGrowth={interpretations?.growth ?? null} />
             )}
+          </TabsContent>
+
+          {/* Tab Content: Longevity (Premium) - Lazy loaded */}
+          <TabsContent value="longevity" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Skeleton className="h-80 w-full" />
+                    <Skeleton className="h-80 w-full" />
+                  </div>
+                </div>
+              }
+            >
+              <LongevityAnalysis longevity={chart.chart_data?.longevity ?? null} />
+            </Suspense>
+          </TabsContent>
+
+          {/* Tab Content: Saturn Return (Premium) - Lazy loaded */}
+          <TabsContent value="saturn-return" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                </div>
+              }
+            >
+              <SaturnReturnAnalysis
+                analysis={saturnReturnAnalysis}
+                interpretation={saturnReturnInterpretation}
+                isLoading={isLoadingSaturnReturn}
+                error={saturnReturnError}
+                onRetry={loadSaturnReturn}
+              />
+            </Suspense>
+          </TabsContent>
+
+          {/* Tab Content: Solar Return (Premium) - Lazy loaded */}
+          <TabsContent value="solar-return" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                </div>
+              }
+            >
+              <SolarReturnAnalysis
+                solarReturn={solarReturnData}
+                interpretation={solarReturnInterpretation}
+                isLoading={isLoadingSolarReturn}
+                error={solarReturnError}
+                onRetry={loadSolarReturn}
+                onYearChange={handleSolarReturnYearChange}
+              />
+            </Suspense>
           </TabsContent>
         </Tabs>
 

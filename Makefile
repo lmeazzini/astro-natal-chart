@@ -1,4 +1,4 @@
-.PHONY: help install dev build test clean docker-up docker-down docker-logs migrate
+.PHONY: help install dev build test clean docker-up docker-down docker-logs migrate migrate-status migrate-check
 
 # Colors for output
 GREEN := \033[0;32m
@@ -74,6 +74,17 @@ migrate-create: ## Create a new migration
 migrate-down: ## Rollback last migration
 	@echo "${GREEN}Rolling back migration...${NC}"
 	cd apps/api && alembic downgrade -1
+
+migrate-status: ## Show current migration state
+	@echo "${GREEN}Migration Status:${NC}"
+	@echo "Current revision:"
+	@docker compose exec api uv run alembic current
+	@echo "\nRecent history:"
+	@docker compose exec api uv run alembic history -v | head -20
+
+migrate-check: ## Verify migration health (run before production deploy)
+	@echo "${GREEN}Running migration health check...${NC}"
+	./scripts/check-migrations.sh
 
 db-reset: ## Reset database (WARNING: destroys all data)
 	@echo "${YELLOW}WARNING: This will destroy all database data!${NC}"

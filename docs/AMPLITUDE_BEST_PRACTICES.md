@@ -1,8 +1,8 @@
 # Amplitude Analytics - Best Practices Manual
 
-> 📊 **Version**: 1.0.0
+> 📊 **Version**: 2.0.0
 > 📅 **Last Updated**: 2025-01-26
-> 🔗 **Related Issues**: #83 (Initial Setup), #217 (This Manual), #218 (Comprehensive Tracking)
+> 🔗 **Related Issues**: #83 (Initial Setup), #217-#223 (Implementation Phases)
 
 ---
 
@@ -28,8 +28,10 @@ Amplitude Analytics is integrated into the Real Astrology application to track u
 **Integration Status**:
 - ✅ Backend: `apps/api/app/services/amplitude_service.py`
 - ✅ Frontend: `apps/web/src/services/amplitude.ts`
-- ✅ Currently Tracking: Authentication flows (login, registration)
-- 🚧 Planned: Full application coverage (see Issue #218)
+- ✅ **Session Replay**: `@amplitude/plugin-session-replay-browser` (100% sample rate)
+- ✅ **Fully Implemented**: ~75 events across 9 categories
+- ✅ **Coverage**: Authentication, Charts, Session, Navigation, Premium, Content, Errors, Profile, Password Reset, Email Verification
+- ✅ **Session Tracking**: Handled automatically by Amplitude SDK (`defaultTracking.sessions: true`)
 
 **Key Principles**:
 1. **Consistency**: Use standardized naming and property formats
@@ -354,6 +356,34 @@ const handleCreateChart = () => {
 };
 ```
 
+### Session Replay Integration
+
+**Status**: ✅ Implemented
+
+Amplitude Session Replay captures user sessions for debugging and UX analysis.
+
+**Configuration**:
+```bash
+# apps/web/.env
+VITE_SESSION_REPLAY_SAMPLE_RATE=1  # 0.0 to 1.0 (default: 1.0 = 100%)
+```
+
+**How It Works**:
+1. Session Replay plugin is added before Amplitude initialization
+2. All user interactions are recorded (clicks, scrolls, form inputs)
+3. Recordings are viewable in Amplitude's Session Replay dashboard
+4. Sample rate controls percentage of sessions recorded (1.0 = 100%)
+
+**Privacy Considerations**:
+- Session Replay automatically masks sensitive inputs (passwords, credit cards)
+- Email fields and other PII are masked by default
+- Review recordings to ensure no sensitive data is exposed
+
+**Accessing Recordings**:
+1. Go to Amplitude Dashboard → Session Replay
+2. Filter by user_id, event, or time range
+3. Watch recordings to debug issues or analyze UX
+
 ### Backend Implementation
 
 **Location**: `apps/api/app/services/amplitude_service.py`
@@ -539,15 +569,511 @@ amplitudeService.track('user_logged_in', {
 });
 ```
 
-### Planned Events (Issue #218)
+### Authentication Events (Issues #218, #219)
 
-See [Issue #218](https://github.com/lmeazzini/astro-natal-chart/issues/218) for comprehensive list of planned events across all user flows.
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `user_registered` | Backend: `auth.py`, `oauth.py`<br>Frontend: `AuthContext.tsx` | `method`, `accept_terms`, `source` | User completes registration |
+| `user_logged_in` | Backend: `auth.py`, `oauth.py`<br>Frontend: `AuthContext.tsx` | `method`, `source` | User logs in successfully |
+| `oauth_login_initiated` | Frontend: `Login.tsx`, `Register.tsx` | `provider`, `source` | User clicks OAuth button |
+| `oauth_login_completed` | Frontend: `OAuthCallback.tsx` | `provider`, `source` | OAuth login succeeds |
+| `oauth_login_failed` | Frontend: `OAuthCallback.tsx`<br>Backend: `oauth.py` | `provider`, `error_type`, `error_message`, `source` | OAuth login fails |
+| `oauth_connection_added` | Backend: `oauth.py` | `provider`, `source` | OAuth linked to existing account |
+| `login_form_submitted` | Frontend: `Login.tsx` | `source` | User submits login form |
+| `login_failed` | Frontend: `Login.tsx` | `error_type`, `error_message`, `source` | Login attempt fails |
+| `registration_form_submitted` | Frontend: `Register.tsx` | `accept_terms`, `source` | User submits registration form |
+| `registration_failed` | Frontend: `Register.tsx` | `error_type`, `error_message`, `source` | Registration attempt fails |
 
-**Priority Events to Implement Next**:
-1. OAuth login tracking (`oauth_login_initiated`, `oauth_login_completed`)
-2. Email verification flow (`email_verification_sent`, `email_verification_completed`)
-3. Chart creation funnel (`chart_creation_started`, `chart_created`)
-4. Password reset flow (`password_reset_requested`, `password_reset_completed`)
+**Event Details**:
+
+#### `oauth_login_initiated`
+**Description**: User clicks an OAuth provider button to start authentication.
+
+**Properties**:
+- `provider` (string): OAuth provider (`"google"`, `"github"`, `"facebook"`)
+- `source` (string): Page where initiated (`"login"`, `"register"`)
+
+**Example**:
+```typescript
+amplitudeService.track('oauth_login_initiated', {
+  provider: 'google',
+  source: 'login',
+});
+```
+
+#### `login_form_submitted`
+**Description**: User submits the email/password login form (tracks funnel before success/failure).
+
+**Properties**:
+- `source` (string): Always `"login_page"`
+
+**Example**:
+```typescript
+amplitudeService.track('login_form_submitted', {
+  source: 'login_page',
+});
+```
+
+#### `login_failed`
+**Description**: Email/password login attempt failed.
+
+**Properties**:
+- `error_type` (string): Type of error (`"invalid_credentials"`, `"network_error"`)
+- `error_message` (string): Error message (truncated, max 100 chars)
+- `source` (string): Always `"login_page"`
+
+### Email Verification Events (Issue #219)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `email_verification_attempted` | Frontend: `VerifyEmailPage.tsx` | `source` | User accesses verification link |
+| `email_verified` | Frontend: `VerifyEmailPage.tsx`<br>Backend: `auth.py` | `method`, `source` | Email verification succeeds |
+| `email_verification_failed` | Frontend: `VerifyEmailPage.tsx`<br>Backend: `auth.py` | `error_type`, `error_message`, `source` | Email verification fails |
+| `verification_email_resent` | Backend: `auth.py` | `source` | User requests new verification email |
+| `verification_email_resend_failed` | Backend: `auth.py` | `error_type`, `error_message`, `source` | Resend verification fails |
+
+**Event Details**:
+
+#### `email_verification_attempted`
+**Description**: User clicks the email verification link and lands on the verification page.
+
+**Properties**:
+- `source` (string): Always `"email_link"`
+
+**Example**:
+```typescript
+amplitudeService.track('email_verification_attempted', {
+  source: 'email_link',
+});
+```
+
+#### `email_verified`
+**Description**: Email verification completed successfully.
+
+**Properties**:
+- `method` (string): Verification method (`"email_link"`)
+- `source` (string): Source of the event (`"verify_page"`, `"api"`)
+
+#### `verification_email_resent`
+**Description**: User successfully requested a new verification email.
+
+**Properties**:
+- `source` (string): Always `"api"`
+
+### Password Reset Events (Issue #219)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `password_reset_requested` | Frontend: `ForgotPassword.tsx` | `source` | User submits forgot password form |
+| `password_reset_email_sent` | Frontend: `ForgotPassword.tsx`<br>Backend: `password_reset.py` | `method`, `source` | Reset email sent successfully |
+| `password_reset_link_accessed` | Frontend: `ResetPassword.tsx` | `source` | User clicks reset link in email |
+| `password_reset_form_submitted` | Frontend: `ResetPassword.tsx` | `source` | User submits new password |
+| `password_reset_completed` | Frontend: `ResetPassword.tsx`<br>Backend: `password_reset.py` | `method`, `source` | Password successfully reset |
+| `password_reset_failed` | Frontend: `ResetPassword.tsx`, `ForgotPassword.tsx`<br>Backend: `password_reset.py` | `error_type`, `error_message`, `source` | Password reset fails at any stage |
+
+**Event Details**:
+
+#### `password_reset_requested`
+**Description**: User initiates password reset by submitting their email.
+
+**Properties**:
+- `source` (string): Always `"forgot_password_page"`
+
+**Example**:
+```typescript
+amplitudeService.track('password_reset_requested', {
+  source: 'forgot_password_page',
+});
+```
+
+#### `password_reset_completed`
+**Description**: User successfully sets a new password.
+
+**Properties**:
+- `method` (string): Reset method (`"email_link"`)
+- `source` (string): Source of the event (`"reset_page"`, `"api"`)
+
+### Chart Events (Issues #218, #219)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `chart_list_viewed` | Frontend: `Charts.tsx` | `chart_count`, `source` | User views charts list page |
+| `chart_detail_viewed` | Frontend: `ChartDetail.tsx` | `chart_id`, `has_interpretation`, `source` | User views a chart |
+| `chart_creation_started` | Frontend: `NewChart.tsx` | `source` | User navigates to create chart page |
+| `chart_location_searched` | Frontend: `NewChart.tsx` | `query`, `results_count` | User searches for birth location |
+| `chart_location_selected` | Frontend: `NewChart.tsx` | `location_type`, `has_timezone` | User selects a location |
+| `chart_creation_submitted` | Frontend: `NewChart.tsx` | `house_system`, `has_name`, `source` | User submits chart creation form |
+| `chart_created` | Frontend: `NewChart.tsx` | `chart_id`, `house_system`, `has_name`, `source` | Chart created successfully |
+| `chart_creation_failed` | Frontend: `NewChart.tsx` | `error_type`, `error_message`, `source` | Chart creation fails |
+| `chart_deleted` | Frontend: `Charts.tsx` | `chart_id`, `source` | User deletes a chart |
+| `chart_deletion_cancelled` | Frontend: `Charts.tsx` | `chart_id`, `source` | User cancels chart deletion |
+| `interpretation_generation_started` | Frontend: `ChartDetail.tsx` | `chart_id`, `source` | User requests AI interpretation |
+| `interpretation_generated` | Frontend: `ChartDetail.tsx` | `chart_id`, `generation_time_ms`, `source` | AI interpretation completed |
+| `interpretation_generation_failed` | Frontend: `ChartDetail.tsx` | `chart_id`, `error_type`, `error_message`, `source` | AI interpretation fails |
+
+**Event Details**:
+
+#### `chart_list_viewed`
+**Description**: User views their charts list page.
+
+**Properties**:
+- `chart_count` (number): Number of charts user has
+- `source` (string): Always `"charts_page"`
+
+**Example**:
+```typescript
+amplitudeService.track('chart_list_viewed', {
+  chart_count: 5,
+  source: 'charts_page',
+});
+```
+
+#### `chart_location_searched`
+**Description**: User searches for a birth location during chart creation.
+
+**Properties**:
+- `query` (string): Search query (truncated to 50 chars)
+- `results_count` (number): Number of results returned
+
+#### `chart_created`
+**Description**: Birth chart created successfully.
+
+**Properties**:
+- `chart_id` (string): UUID of the created chart
+- `house_system` (string): House system used (`"placidus"`, `"koch"`, etc.)
+- `has_name` (boolean): Whether person's name was provided
+- `source` (string): Always `"new_chart_page"`
+
+#### `interpretation_generated`
+**Description**: AI interpretation generated successfully.
+
+**Properties**:
+- `chart_id` (string): UUID of the chart
+- `generation_time_ms` (number): Time taken in milliseconds
+- `source` (string): Always `"chart_detail_page"`
+
+### Profile/Account Events (Issue #219)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `profile_viewed` | Frontend: `Profile.tsx` | `source` | User views profile page |
+| `profile_updated` | Backend: `users.py` | `fields_changed`, `source` | User updates profile info |
+| `profile_password_changed` | Backend: `users.py` | `source` | User changes password |
+| `profile_password_change_failed` | Backend: `users.py` | `error_type`, `source` | Password change fails |
+| `oauth_connection_removed` | Backend: `users.py` | `provider`, `source` | User disconnects OAuth provider |
+| `account_deletion_requested` | Backend: `users.py`, `privacy.py` | `has_charts`, `chart_count`, `source` | User requests account deletion |
+| `account_deletion_cancelled` | Backend: `privacy.py` | `source` | User cancels pending deletion |
+| `account_deleted` | Backend: `privacy.py` | `had_charts`, `chart_count`, `source` | Account hard deleted (30 days later) |
+
+**Event Details**:
+
+#### `profile_viewed`
+**Description**: User views their profile settings page.
+
+**Properties**:
+- `source` (string): Always `"profile_page"`
+
+#### `profile_updated`
+**Description**: User updates their profile information.
+
+**Properties**:
+- `fields_changed` (string[]): List of updated fields (`["full_name", "timezone"]`)
+- `source` (string): Always `"api"`
+
+**Example**:
+```python
+amplitude_service.track(
+    event_type="profile_updated",
+    user_id=str(user.id),
+    event_properties={
+        "fields_changed": ["full_name", "timezone"],
+        "source": "api",
+    },
+)
+```
+
+#### `account_deletion_requested`
+**Description**: User initiates account deletion (soft delete, 30-day retention).
+
+**Properties**:
+- `has_charts` (boolean): Whether user has any charts
+- `chart_count` (number): Number of charts to be deleted
+- `source` (string): Source of request (`"profile_page"`, `"privacy_page"`)
+
+#### `account_deleted`
+**Description**: Account permanently deleted after 30-day retention period.
+
+**Properties**:
+- `had_charts` (boolean): Whether user had charts
+- `chart_count` (number): Number of charts deleted
+- `source` (string): Always `"celery_cleanup_task"`
+
+### System Events
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `page_viewed` | Frontend: `useAmplitudePageView.ts` | `page_path`, `page_title`, `source` | User navigates to any page |
+
+**Event Details**:
+
+#### `page_viewed`
+**Description**: Generic page view event for navigation tracking.
+
+**Properties**:
+- `page_path` (string): Current page path (e.g., `/charts`, `/profile`)
+- `page_title` (string): Page title or identifier
+- `source` (string): Navigation source if applicable
+
+**Usage**:
+```typescript
+import { useAmplitudePageView } from '@/hooks/useAmplitudePageView';
+
+function MyPage() {
+  useAmplitudePageView('My Page Title');
+  return <div>...</div>;
+}
+```
+
+### Premium/Subscription Events (Issue #220)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `pricing_page_viewed` | Frontend: `Pricing.tsx` | `source`, `user_tier` | User views pricing page |
+| `pricing_plan_clicked` | Frontend: `Pricing.tsx` | `plan_name`, `current_tier`, `billing_cycle`, `source` | User clicks plan button |
+| `premium_feature_blocked` | Frontend: `PremiumFeatureGate.tsx` | `feature_name`, `source` | Free user hits premium gate |
+| `premium_upsell_clicked` | Frontend: `PremiumUpsell.tsx` | `feature_name`, `source` | User clicks upgrade link |
+| `subscription_granted` | Backend: `subscription_service.py` | `days`, `is_lifetime`, `granted_by_admin_id`, `source` | Admin grants premium |
+| `subscription_extended` | Backend: `subscription_service.py` | `extend_days`, `previous_expires_at`, `new_expires_at`, `source` | Admin extends subscription |
+| `subscription_revoked` | Backend: `subscription_service.py` | `was_active`, `days_remaining`, `revoked_by_admin_id`, `source` | Admin revokes subscription |
+| `subscription_expired` | Backend: `subscription_service.py` | `expired_at`, `source` | System auto-expires subscription |
+
+**Event Details**:
+
+#### `pricing_page_viewed`
+**Description**: User views the pricing/plans page.
+
+**Properties**:
+- `source` (string): Where user came from (`"direct"`, `"navbar"`, `"upsell"`, `"feature_gate"`)
+- `user_tier` (string): User's current tier (`"anonymous"`, `"free"`, `"premium"`, `"admin"`)
+
+**Example**:
+```typescript
+amplitudeService.track('pricing_page_viewed', {
+  source: 'upsell',
+  user_tier: 'free',
+});
+```
+
+#### `premium_feature_blocked`
+**Description**: Free user attempts to access a premium-only feature.
+
+**Properties**:
+- `feature_name` (string): Feature attempted (`"horary"`, `"profections"`, `"firdaria"`, `"solar_returns"`)
+- `source` (string): Page path where blocked
+
+**Example**:
+```typescript
+amplitudeService.track('premium_feature_blocked', {
+  feature_name: 'horary',
+  source: '/chart/123',
+});
+```
+
+#### `subscription_granted`
+**Description**: Admin grants premium subscription to a user.
+
+**Properties**:
+- `days` (number | null): Days granted (null = lifetime)
+- `is_lifetime` (boolean): Whether lifetime subscription
+- `granted_by_admin_id` (string): Admin UUID
+- `source` (string): `"admin_panel"`
+
+**Example**:
+```python
+amplitude_service.track(
+    event_type="subscription_granted",
+    user_id=str(user_id),
+    event_properties={
+        "days": 30,
+        "is_lifetime": False,
+        "granted_by_admin_id": str(admin_user.id),
+        "source": "admin_panel",
+    },
+)
+```
+
+### Content & Engagement Events (Issue #221)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `blog_viewed` | Frontend: `Blog.tsx` | `source`, `post_count`, `category_filter`, `tag_filter` | User views blog list |
+| `blog_post_clicked` | Frontend: `Blog.tsx` | `post_slug`, `post_title`, `source` | User clicks blog post card |
+| `blog_post_viewed` | Frontend: `BlogPost.tsx` | `post_slug`, `post_title`, `reading_time`, `source` | User views blog post detail |
+| `blog_post_read_completed` | Frontend: `BlogPost.tsx` | `post_slug`, `estimated_read_percentage`, `time_on_page_seconds` | User scrolls to 80%+ of article |
+| `public_charts_viewed` | Frontend: `PublicCharts.tsx` | `source`, `chart_count`, `category_filter` | User views famous charts gallery |
+| `public_chart_searched` | Frontend: `PublicCharts.tsx` | `query`, `results_count` | User searches famous charts |
+| `public_chart_clicked` | Frontend: `PublicCharts.tsx` | `chart_slug`, `person_name`, `category` | User clicks famous chart card |
+| `public_chart_detail_viewed` | Frontend: `PublicChartDetail.tsx` | `chart_slug`, `person_name`, `category`, `source` | User views famous chart detail |
+| `rag_documents_viewed` | Frontend: `RagDocuments.tsx` | `source`, `document_count`, `filter_type` | User views RAG documents list |
+| `rag_document_clicked` | Frontend: `RagDocuments.tsx` | `document_id`, `document_type`, `title` | User clicks RAG document card |
+
+**Event Details**:
+
+#### `blog_post_read_completed`
+**Description**: User has scrolled to approximately 80% of the blog post content, indicating they've likely read most of the article.
+
+**Properties**:
+- `post_slug` (string): Blog post identifier
+- `estimated_read_percentage` (number): Always 80 (threshold for tracking)
+- `time_on_page_seconds` (number): Time spent on page before completion
+
+**Implementation**:
+Uses Intersection Observer API for performance-efficient scroll tracking:
+```typescript
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const timeOnPage = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+        amplitudeService.track('blog_post_read_completed', {
+          post_slug: post.slug,
+          estimated_read_percentage: 80,
+          time_on_page_seconds: timeOnPage,
+        });
+      }
+    });
+  },
+  { threshold: 0.5 }
+);
+```
+
+#### `public_chart_searched`
+**Description**: User searches for famous/public charts in the gallery.
+
+**Properties**:
+- `query` (string): Search query text
+- `results_count` (number): Number of results returned
+
+**Example**:
+```typescript
+amplitudeService.track('public_chart_searched', {
+  query: 'einstein',
+  results_count: 3,
+});
+```
+
+### Error & Performance Monitoring Events (Issue #222)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `error_occurred` | Frontend: `ErrorBoundary.tsx`, `main.tsx` | `error_type`, `error_message`, `page_path`, `component_name`, `stack_trace_snippet`, `source` | React error boundary catch or global error handler |
+| `api_request_failed` | Frontend: `api.ts` | `endpoint`, `method`, `status_code`, `error_message`, `source` | API call fails (non-401) |
+| `slow_performance_detected` | Frontend: `usePerformanceMonitoring.ts` | `page_path`, `load_time_ms`, `threshold_ms`, `resource_type`, `source` | Page load exceeds 3 seconds |
+| `rate_limit_hit` | Frontend: `api.ts` | `endpoint`, `limit_type`, `retry_after_seconds`, `source` | User receives 429 response |
+| `feature_unavailable` | Various | `feature_name`, `error_message`, `source` | Feature/service temporarily down |
+
+**Event Details**:
+
+#### `error_occurred`
+**Description**: Captures JavaScript runtime errors for monitoring application stability.
+
+**Properties**:
+- `error_type` (string): Type of error (`runtime`, `network`, `validation`)
+- `error_message` (string): Sanitized error message (PII removed)
+- `page_path` (string): Current page path
+- `component_name` (string): React component where error occurred
+- `stack_trace_snippet` (string): First 200 chars of stack trace (sanitized)
+- `source` (string): Error source (`error_boundary`, `global_handler`, `unhandled_rejection`)
+
+**Implementation**:
+```typescript
+// ErrorBoundary.tsx
+componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  amplitudeService.track('error_occurred', {
+    error_type: 'runtime',
+    error_message: sanitizeErrorMessage(error.message),
+    page_path: window.location.pathname,
+    component_name: extractComponentName(errorInfo.componentStack),
+    stack_trace_snippet: sanitizeStackTrace(error.stack),
+    source: 'error_boundary',
+  });
+}
+```
+
+#### `api_request_failed`
+**Description**: Tracks API failures for monitoring backend health and user experience issues.
+
+**Properties**:
+- `endpoint` (string): API endpoint path
+- `method` (string): HTTP method (GET, POST, PUT, DELETE)
+- `status_code` (number): HTTP status code
+- `error_message` (string): Sanitized error message
+- `source` (string): Always `api_client`
+
+**Example**:
+```typescript
+amplitudeService.track('api_request_failed', {
+  endpoint: '/api/v1/charts',
+  method: 'POST',
+  status_code: 500,
+  error_message: 'Internal server error',
+  source: 'api_client',
+});
+```
+
+#### `rate_limit_hit`
+**Description**: Tracks when users hit rate limits to identify abuse or capacity issues.
+
+**Properties**:
+- `endpoint` (string): Rate-limited endpoint
+- `limit_type` (string): Type of limit (`login`, `register`, `password_reset`, `geocoding`, `api`)
+- `retry_after_seconds` (number): Seconds until retry allowed
+- `source` (string): Always `api_client`
+
+#### `slow_performance_detected`
+**Description**: Tracks slow page loads to identify performance bottlenecks.
+
+**Properties**:
+- `page_path` (string): Page that loaded slowly
+- `load_time_ms` (number): Actual load time in milliseconds
+- `threshold_ms` (number): Threshold that was exceeded (default: 3000)
+- `resource_type` (string): Type of resource (`page`)
+- `source` (string): Page identifier
+
+**Usage**:
+```typescript
+// In any page component
+import { usePerformanceMonitoring } from '@/hooks';
+
+function Dashboard() {
+  usePerformanceMonitoring('dashboard');
+  return <div>...</div>;
+}
+```
+
+**PII Sanitization**:
+All error messages are sanitized before tracking:
+- Emails → `[EMAIL]`
+- Bearer tokens → `Bearer [TOKEN]`
+- JWT tokens → `[JWT_TOKEN]`
+- Passwords → `password=[REDACTED]`
+- UUIDs → `[UUID]`
+- API keys → `[API_KEY]`
+
+### Implementation Status
+
+All planned events from Issue #218 have been implemented across Issues #219-#222:
+
+| Phase | Issue | Status | Events |
+|-------|-------|--------|--------|
+| Phase 1 | #83 | ✅ Complete | `user_registered`, `user_logged_in` |
+| Phase 2 | #219 | ✅ Complete | Authentication, Charts, Profile, Email Verification, Password Reset |
+| Phase 3 | #220 | ✅ Complete | Premium/Subscription events |
+| Phase 4 | #221 | ✅ Complete | Content & Engagement events |
+| Phase 5 | #222 | ✅ Complete | Error & Performance monitoring |
+| Phase 6 | #223 | ✅ Complete | Documentation & Event Catalog |
+
+**Total Events Tracked**: ~70 events across 8 categories
 
 ---
 
@@ -1294,11 +1820,22 @@ Before adding a new event, complete this checklist:
 
 ## Changelog
 
+**Version 2.0.0** (2025-01-26):
+- Complete event catalog with ~70 events
+- Added Authentication Events section (10 events)
+- Added Email Verification Events section (5 events)
+- Added Password Reset Events section (6 events)
+- Added Chart Events section (13 events)
+- Added Profile/Account Events section (8 events)
+- Added System Events section (1 event)
+- Updated Implementation Status to show all phases complete
+- Created companion CSV catalog (`AMPLITUDE_EVENT_CATALOG.csv`)
+
 **Version 1.0.0** (2025-01-26):
 - Initial manual created
 - Documented event naming conventions
 - Documented property guidelines
-- Created event catalog with current events
+- Created event catalog with basic events
 - Added comprehensive code examples
 - Added testing and debugging section
 - Added privacy and compliance section
@@ -1321,4 +1858,4 @@ To update this manual:
 
 **Last Updated**: 2025-01-26
 **Maintainer**: Development Team
-**Version**: 1.0.0
+**Version**: 2.0.0

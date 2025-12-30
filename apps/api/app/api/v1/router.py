@@ -15,12 +15,16 @@ from app.api.v1.endpoints import (
     github,
     growth,
     interpretations,
+    longevity,
     oauth,
     password_reset,
     privacy,
     public_charts,
     rag,
+    saturn_return,
     seo,
+    solar_return,
+    terms,
     timezones,
     users,
 )
@@ -147,4 +151,28 @@ api_router.include_router(
 api_router.include_router(
     seo.router,
     tags=["seo"],
+)
+
+# Longevity analysis endpoints (Hyleg, Alcochoden) - premium feature
+api_router.include_router(
+    longevity.router,
+    tags=["longevity"],
+)
+
+# Planetary Terms (Bounds) endpoints - essential dignities reference
+api_router.include_router(
+    terms.router,
+    tags=["terms"],
+)
+
+# Saturn Return analysis endpoints - premium feature
+api_router.include_router(
+    saturn_return.router,
+    tags=["saturn-return"],
+)
+
+# Solar Return analysis endpoints - premium feature
+api_router.include_router(
+    solar_return.router,
+    tags=["solar-return"],
 )

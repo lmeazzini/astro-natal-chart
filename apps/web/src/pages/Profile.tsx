@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { amplitudeService } from '../services/amplitude';
 import {
   userService,
   UserStats,
@@ -17,8 +18,7 @@ import {
   UserUpdate,
   UserType,
 } from '../services/users';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { LanguageSelector } from '../components/LanguageSelector';
+import { NavActions } from '../components/NavActions';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -228,6 +228,11 @@ export function ProfilePage() {
     }
   }, [user, activeTab]);
 
+  // Track profile page view
+  useEffect(() => {
+    amplitudeService.track('profile_viewed', { source: 'profile_page' });
+  }, []);
+
   async function loadSecurityData() {
     const token = localStorage.getItem('astro_access_token');
     if (!token) return;
@@ -276,6 +281,7 @@ export function ProfilePage() {
 
       setUser(updatedUser);
       setProfileSuccess(t('profile.success'));
+      // Note: profile_updated event is tracked by backend API
 
       setTimeout(() => setProfileSuccess(''), 5000);
     } catch (error) {
@@ -306,9 +312,11 @@ export function ProfilePage() {
 
       setPasswordSuccess(t('profile.passwordSuccess'));
       passwordForm.reset();
+      // Note: profile_password_changed event is tracked by backend API
 
       setTimeout(() => setPasswordSuccess(''), 5000);
     } catch (error) {
+      // Note: profile_password_change_failed event is tracked by backend API
       setPasswordError(error instanceof Error ? error.message : t('profile.passwordError'));
     } finally {
       setPasswordLoading(false);
@@ -352,6 +360,8 @@ export function ProfilePage() {
       if (!token) return;
 
       await userService.deleteAccount(token);
+      // Note: account_deletion_requested event is tracked by backend API
+
       logout();
       navigate('/');
     } catch (error) {
@@ -367,6 +377,7 @@ export function ProfilePage() {
     try {
       await userService.disconnectOAuth(provider, token);
       setOAuthConnections(oauthConnections.filter((conn) => conn.provider !== provider));
+      // Note: oauth_connection_removed event is tracked by backend API
     } catch (error) {
       alert(t('profile.security.disconnectError', { defaultValue: 'Error disconnecting OAuth' }));
     }
@@ -410,8 +421,7 @@ export function ProfilePage() {
             <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
           </Link>
           <div className="flex items-center gap-3">
-            <LanguageSelector />
-            <ThemeToggle />
+            <NavActions />
             <Button variant="ghost" onClick={() => navigate('/dashboard')}>
               ← {t('profile.backToDashboard', { defaultValue: 'Back to Dashboard' })}
             </Button>

@@ -23,8 +23,18 @@ output "vpc_cidr_block" {
 # -----------------------------------------------------------------------------
 
 output "public_subnet_id" {
-  description = "ID of the public subnet"
+  description = "ID of the primary public subnet"
   value       = aws_subnet.public.id
+}
+
+output "public_subnet_id_secondary" {
+  description = "ID of the secondary public subnet"
+  value       = aws_subnet.public_secondary.id
+}
+
+output "public_subnet_ids" {
+  description = "List of all public subnet IDs (for ALB)"
+  value       = [aws_subnet.public.id, aws_subnet.public_secondary.id]
 }
 
 output "private_subnet_id" {

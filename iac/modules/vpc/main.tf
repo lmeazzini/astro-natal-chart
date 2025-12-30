@@ -67,7 +67,7 @@ resource "aws_internet_gateway" "main" {
 # Subnets
 # -----------------------------------------------------------------------------
 
-# Public Subnet - For ALB and NAT Gateway
+# Public Subnet - For ALB and NAT Gateway (Primary AZ)
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidr
@@ -76,6 +76,19 @@ resource "aws_subnet" "public" {
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-public-subnet"
+    Tier = "public"
+  })
+}
+
+# Public Subnet Secondary - Required by ALB (Secondary AZ)
+resource "aws_subnet" "public_secondary" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidr_secondary
+  availability_zone       = var.availability_zone_secondary
+  map_public_ip_on_launch = true
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-public-subnet-secondary"
     Tier = "public"
   })
 }
@@ -93,7 +106,7 @@ resource "aws_subnet" "private" {
   })
 }
 
-# Database Subnet - For RDS and ElastiCache
+# Database Subnet - For RDS and ElastiCache (Primary AZ)
 resource "aws_subnet" "database" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.database_subnet_cidr
@@ -102,6 +115,19 @@ resource "aws_subnet" "database" {
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-database-subnet"
+    Tier = "database"
+  })
+}
+
+# Database Subnet Secondary - Required by RDS for subnet group (Secondary AZ)
+resource "aws_subnet" "database_secondary" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.database_subnet_cidr_secondary
+  availability_zone       = var.availability_zone_secondary
+  map_public_ip_on_launch = false
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-database-subnet-secondary"
     Tier = "database"
   })
 }
@@ -126,6 +152,11 @@ resource "aws_route_table" "public" {
 
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_secondary" {
+  subnet_id      = aws_subnet.public_secondary.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -157,17 +188,21 @@ resource "aws_route_table_association" "database" {
   route_table_id = aws_route_table.database.id
 }
 
+resource "aws_route_table_association" "database_secondary" {
+  subnet_id      = aws_subnet.database_secondary.id
+  route_table_id = aws_route_table.database.id
+}
+
 # -----------------------------------------------------------------------------
 # DB Subnet Group (for RDS)
 # -----------------------------------------------------------------------------
-# Note: RDS requires at least 2 subnets in different AZs for Multi-AZ.
-# Since we're using single AZ, we create a subnet group with just one subnet.
-# For production, consider adding a second AZ.
+# Note: RDS requires at least 2 subnets in different AZs.
+# We use the primary AZ for actual resources but include secondary for compliance.
 
 resource "aws_db_subnet_group" "main" {
   name        = "${local.name_prefix}-db-subnet-group"
   description = "Database subnet group for ${var.environment}"
-  subnet_ids  = [aws_subnet.database.id]
+  subnet_ids  = [aws_subnet.database.id, aws_subnet.database_secondary.id]
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-db-subnet-group"

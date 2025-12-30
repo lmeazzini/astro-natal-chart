@@ -122,7 +122,7 @@ resource "aws_s3_bucket" "backups" {
 
   tags = merge(local.common_tags, {
     Name    = "${local.name_prefix}-backups"
-    Purpose = "Database backups (PostgreSQL, Qdrant)"
+    Purpose = "Database backups"
   })
 
   # Prevent accidental deletion in production

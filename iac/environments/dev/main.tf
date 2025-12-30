@@ -119,7 +119,7 @@ module "ecs" {
   environment           = var.environment
   aws_region            = var.aws_region
   vpc_id                = module.vpc.vpc_id
-  public_subnet_id      = module.vpc.public_subnet_id
+  public_subnet_ids     = module.vpc.public_subnet_ids
   private_subnet_id     = module.vpc.private_subnet_id
   alb_security_group_id = module.vpc.alb_security_group_id
   ecs_security_group_id = module.vpc.ecs_security_group_id

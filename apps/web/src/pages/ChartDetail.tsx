@@ -14,6 +14,11 @@ import {
   RAGSourceInfo,
 } from '../services/interpretations';
 import { generateChartPDF, getPDFStatus, downloadChartPDF } from '../services/pdf';
+import { getSaturnReturn, getSaturnReturnInterpretation } from '../services/saturn_return';
+import type {
+  SaturnReturnAnalysis as SaturnReturnAnalysisType,
+  SaturnReturnInterpretation,
+} from '../types/saturn_return';
 import { getToken } from '../services/api';
 import type { PDFStatus } from '../types/pdf';
 import { ChartWheelAstro } from '../components/ChartWheelAstro';
@@ -36,6 +41,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 const LongevityAnalysis = lazy(() =>
   import('../components/LongevityAnalysis').then((module) => ({
     default: module.LongevityAnalysis,
+  }))
+);
+
+// Lazy load SaturnReturnAnalysis for code splitting (premium feature)
+const SaturnReturnAnalysis = lazy(() =>
+  import('../components/SaturnReturnAnalysis').then((module) => ({
+    default: module.SaturnReturnAnalysis,
   }))
 );
 import { InfoTooltip } from '../components/InfoTooltip';
@@ -76,6 +88,14 @@ export function ChartDetailPage() {
 
   // Interpretations loading state
   const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
+
+  // Saturn Return state (premium feature)
+  const [saturnReturnAnalysis, setSaturnReturnAnalysis] = useState<SaturnReturnAnalysisType | null>(
+    null
+  );
+  const [saturnReturnInterpretation, setSaturnReturnInterpretation] =
+    useState<SaturnReturnInterpretation | null>(null);
+  const [isLoadingSaturnReturn, setIsLoadingSaturnReturn] = useState(false);
 
   // Tab tracking for Amplitude
   const [currentTab, setCurrentTab] = useState('visual');
@@ -275,6 +295,11 @@ export function ChartDetailPage() {
       source: 'chart_detail_page',
     });
     setCurrentTab(newTab);
+
+    // Load Saturn Return data on demand when tab is selected
+    if (newTab === 'saturn-return' && !saturnReturnAnalysis && !isLoadingSaturnReturn) {
+      loadSaturnReturn();
+    }
   }
 
   // Regenerate interpretations (forces new generation, used for language change)
@@ -298,6 +323,26 @@ export function ChartDetailPage() {
       console.error('Failed to regenerate interpretations:', err);
     } finally {
       setIsLoadingInterpretations(false);
+    }
+  }
+
+  // Load Saturn Return data (premium feature)
+  async function loadSaturnReturn() {
+    if (!id || isLoadingSaturnReturn) return;
+
+    try {
+      setIsLoadingSaturnReturn(true);
+      const [analysis, interpretation] = await Promise.all([
+        getSaturnReturn(id),
+        getSaturnReturnInterpretation(id),
+      ]);
+      setSaturnReturnAnalysis(analysis);
+      setSaturnReturnInterpretation(interpretation);
+    } catch (err) {
+      // Silently fail - Saturn Return is a premium feature
+      console.error('Failed to load Saturn Return:', err);
+    } finally {
+      setIsLoadingSaturnReturn(false);
     }
   }
 
@@ -730,6 +775,9 @@ export function ChartDetailPage() {
             </TabsTrigger>
             <TabsTrigger value="longevity">
               {t('chartDetail.tabs.longevity', { defaultValue: 'Longevity' })}
+            </TabsTrigger>
+            <TabsTrigger value="saturn-return">
+              {t('chartDetail.tabs.saturnReturn', { defaultValue: 'Saturn Return' })}
             </TabsTrigger>
           </TabsList>
 
@@ -1262,6 +1310,28 @@ export function ChartDetailPage() {
               }
             >
               <LongevityAnalysis longevity={chart.chart_data?.longevity ?? null} />
+            </Suspense>
+          </TabsContent>
+
+          {/* Tab Content: Saturn Return (Premium) - Lazy loaded */}
+          <TabsContent value="saturn-return" className="mt-0">
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                </div>
+              }
+            >
+              <SaturnReturnAnalysis
+                analysis={saturnReturnAnalysis}
+                interpretation={saturnReturnInterpretation}
+                isLoading={isLoadingSaturnReturn}
+              />
             </Suspense>
           </TabsContent>
         </Tabs>

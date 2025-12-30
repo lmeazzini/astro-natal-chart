@@ -215,5 +215,31 @@
     "latitude": "Latitude",
     "speed": "Velocidade",
     "position": "Posição"
+  },
+  "saturnReturn": {
+    "title": "Retorno de Saturno",
+    "subtitle": "Grande trânsito de vida ocorrendo a cada ~29,5 anos",
+    "noData": "Dados do Retorno de Saturno não disponíveis para este mapa.",
+    "natalSaturn": "Saturno Natal",
+    "currentSaturn": "Saturno Atual",
+    "house": "Casa",
+    "cycleProgress": "Progresso do Ciclo",
+    "throughCycle": "Através do ciclo atual",
+    "daysUntilNext": "Dias até o próximo retorno",
+    "returns": "Retornos de Saturno",
+    "firstReturn": "1º Retorno de Saturno",
+    "secondReturn": "2º Retorno de Saturno",
+    "thirdReturn": "3º Retorno de Saturno",
+    "current": "Atual",
+    "upcoming": "Próximo",
+    "ageAtReturn": "Idade",
+    "passes": "Passagens",
+    "days": "dias",
+    "duration": "Duração",
+    "interpretation": "Interpretação",
+    "generalMeaning": "Significado Geral",
+    "inSign": "Saturno em",
+    "inHouse": "Saturno na Casa",
+    "currentPhase": "Fase Atual"
   }
 }

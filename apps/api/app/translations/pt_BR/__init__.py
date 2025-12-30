@@ -10,6 +10,7 @@ from app.translations.pt_BR.longevity import translations as longevity
 from app.translations.pt_BR.mentality import translations as mentality
 from app.translations.pt_BR.phases import translations as phases
 from app.translations.pt_BR.prenatal_syzygy import translations as prenatal_syzygy
+from app.translations.pt_BR.saturn_return import translations as saturn_return
 from app.translations.pt_BR.temperament import translations as temperament
 
 # Merge all translation modules into a single dictionary
@@ -21,3 +22,4 @@ translations.update(dignities)
 translations.update(mentality)
 translations.update(longevity)
 translations.update(prenatal_syzygy)
+translations.update(saturn_return)

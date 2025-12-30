@@ -215,5 +215,31 @@
     "latitude": "Latitude",
     "speed": "Speed",
     "position": "Position"
+  },
+  "saturnReturn": {
+    "title": "Saturn Return",
+    "subtitle": "Major life transit occurring every ~29.5 years",
+    "noData": "Saturn Return data not available for this chart.",
+    "natalSaturn": "Natal Saturn",
+    "currentSaturn": "Current Saturn",
+    "house": "House",
+    "cycleProgress": "Cycle Progress",
+    "throughCycle": "Through current cycle",
+    "daysUntilNext": "Days until next return",
+    "returns": "Saturn Returns",
+    "firstReturn": "1st Saturn Return",
+    "secondReturn": "2nd Saturn Return",
+    "thirdReturn": "3rd Saturn Return",
+    "current": "Current",
+    "upcoming": "Upcoming",
+    "ageAtReturn": "Age",
+    "passes": "Passes",
+    "days": "days",
+    "duration": "Duration",
+    "interpretation": "Interpretation",
+    "generalMeaning": "General Meaning",
+    "inSign": "Saturn in",
+    "inHouse": "Saturn in House",
+    "currentPhase": "Current Phase"
   }
 }

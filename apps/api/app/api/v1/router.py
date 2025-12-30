@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     privacy,
     public_charts,
     rag,
+    saturn_return,
     seo,
     terms,
     timezones,
@@ -161,4 +162,10 @@ api_router.include_router(
 api_router.include_router(
     terms.router,
     tags=["terms"],
+)
+
+# Saturn Return analysis endpoints - premium feature
+api_router.include_router(
+    saturn_return.router,
+    tags=["saturn-return"],
 )

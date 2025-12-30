@@ -367,7 +367,8 @@
       "interpretations": "Interpretations",
       "growth": "Growth",
       "longevity": "Longevity",
-      "saturnReturn": "Saturn Return"
+      "saturnReturn": "Saturn Return",
+      "solarReturn": "Solar Return"
     },
     "sections": {
       "chartWheel": "Birth Chart Wheel",

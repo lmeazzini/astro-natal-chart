@@ -3,6 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * "Midnight & Paper" Design System
+   * ================================
+   *
+   * IMPORTANT: Primary and Accent colors swap roles between light/dark modes
+   * to maintain optimal contrast and visual hierarchy.
+   *
+   * Light Mode: Primary = Deep Blue (buttons), Accent = Gold (highlights)
+   * Dark Mode:  Primary = Gold (buttons), Accent = Deep Blue (highlights)
+   *
+   * This is intentional to ensure CTAs remain prominent in both themes.
+   * See: ux/DESIGN_REFERENCE.md for full documentation.
+   */
   :root {
     /* "Midnight & Paper" Theme - Light Mode */
     /* Background: Deep Cream/Paper */
@@ -18,7 +31,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary: Deep Cosmic Blue */
+    /* Primary: Deep Cosmic Blue (main CTA color in light mode) */
     --primary: 222 47% 15%;
     --primary-foreground: 43 74% 85%; /* Soft Gold text */
 
@@ -30,7 +43,7 @@
     --muted: 220 20% 94%;
     --muted-foreground: 220 20% 40%;
 
-    /* Accent: Gold Highlight */
+    /* Accent: Gold Highlight (secondary actions in light mode) */
     --accent: 43 74% 66%;
     --accent-foreground: 222 47% 11%;
 
@@ -55,6 +68,7 @@
 
   .dark {
     /* "Deep Cosmos" Theme - Dark Mode */
+    /* NOTE: Primary and Accent swap roles here for optimal contrast */
     --background: 222 47% 8%;
     --foreground: 43 20% 90%;
 
@@ -64,7 +78,8 @@
     --popover: 222 47% 10%;
     --popover-foreground: 43 20% 90%;
 
-    --primary: 43 74% 66%; /* Gold */
+    /* Primary: Gold (main CTA color in dark mode) */
+    --primary: 43 74% 66%;
     --primary-foreground: 222 47% 10%;
 
     --secondary: 222 30% 20%;
@@ -73,6 +88,7 @@
     --muted: 222 30% 15%;
     --muted-foreground: 222 20% 65%;
 
+    /* Accent: Deep Blue (secondary actions in dark mode) */
     --accent: 222 30% 20%;
     --accent-foreground: 43 74% 66%;
 

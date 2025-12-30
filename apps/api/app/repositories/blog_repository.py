@@ -54,6 +54,16 @@ class BlogRepository(BaseRepository[BlogPost]):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
+    async def get_by_translation_key_and_locale(
+        self, translation_key: str, locale: str
+    ) -> BlogPost | None:
+        """Get a blog post by its translation key and locale (for uniqueness validation)."""
+        stmt = self._base_query().where(
+            BlogPost.translation_key == translation_key, BlogPost.locale == locale
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_published(
         self,
         page: int = 1,

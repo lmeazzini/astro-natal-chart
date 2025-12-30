@@ -4,6 +4,18 @@ Revision ID: 9d38e6334e7c
 Revises: a1b2c3d4e5f6
 Create Date: 2025-12-29 18:37:18.885524
 
+This migration adds internationalization (i18n) support to blog posts:
+- locale: Language code (pt-BR or en-US)
+- translation_key: Groups posts that are translations of each other
+
+Default locale is pt-BR because:
+1. The application was originally developed for Brazilian Portuguese users
+2. All existing blog posts in the database are in Portuguese
+3. The primary target audience is Portuguese-speaking
+
+To add support for additional locales, update:
+- apps/api/app/api/deps.py (SUPPORTED_LOCALES, LOCALE_PATTERN)
+- apps/web/src/locales/ (add new language files)
 """
 
 from collections.abc import Sequence

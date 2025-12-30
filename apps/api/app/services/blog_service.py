@@ -156,6 +156,17 @@ class BlogService:
         self, data: BlogPostCreate, author_id: UUID | None = None
     ) -> BlogPostRead:
         """Create a new blog post."""
+        # Validate translation_key uniqueness per locale
+        if data.translation_key:
+            existing = await self.repo.get_by_translation_key_and_locale(
+                data.translation_key, data.locale
+            )
+            if existing:
+                raise ValueError(
+                    f"A post with translation_key '{data.translation_key}' "
+                    f"already exists for locale '{data.locale}'"
+                )
+
         # Generate slug if not provided
         slug = data.slug or BlogPost.generate_slug(data.title)
 

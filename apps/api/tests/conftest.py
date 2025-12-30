@@ -29,6 +29,7 @@ from app.core.config import settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
 from app.core.security import get_password_hash  # noqa: E402
 from app.main import app  # noqa: E402
+from app.models.blog_post import BlogPost  # noqa: E402
 from app.models.chart import AuditLog, BirthChart  # noqa: E402
 from app.models.enums import UserRole  # noqa: E402
 from app.models.user import OAuthAccount, User  # noqa: E402
@@ -89,6 +90,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:  # type: ignore[mi
     # Clean all tables at the start
     await session.execute(delete(AuditLog))
     await session.execute(delete(BirthChart))
+    await session.execute(delete(BlogPost))
     await session.execute(delete(OAuthAccount))
     await session.execute(delete(User))
     await session.commit()

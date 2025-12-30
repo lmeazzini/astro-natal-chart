@@ -20,10 +20,9 @@ class BlogPost(Base):
     """Blog post model for public content with SEO optimization."""
 
     __tablename__ = "blog_posts"
-    __table_args__ = (
-        # Composite unique constraint: slug must be unique per locale
-        {"info": {"unique_constraints": [("slug", "locale")]}},
-    )
+    # Note: The composite unique constraint (slug, locale) is managed by Alembic migration
+    # See: alembic/versions/2025_12_29_1837-9d38e6334e7c_add_blog_i18n_support.py
+    # Constraint name: blog_posts_slug_locale_key
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),

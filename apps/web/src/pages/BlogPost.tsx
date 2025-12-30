@@ -105,14 +105,20 @@ export function BlogPostPage() {
     loadRecent();
   }, [slug, currentLocale]);
 
-  // Helper to translate category/tag keys
+  // Helper to translate category/tag keys with dev logging for missing translations
   const translateCategory = (key: string) => {
     const translated = t(`blog:categories.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog category translation: blog:categories.${key}`);
+    }
     return translated || key;
   };
 
   const translateTag = (key: string) => {
     const translated = t(`blog:tags.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog tag translation: blog:tags.${key}`);
+    }
     return translated || key;
   };
 

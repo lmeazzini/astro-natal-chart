@@ -5,6 +5,7 @@ Public blog endpoints for SEO-optimized content.
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import LocaleQuery
 from app.core.database import get_db
 from app.schemas.blog import (
     BlogMetadata,
@@ -23,7 +24,7 @@ async def list_posts(
     page_size: int = Query(10, ge=1, le=50, description="Items per page"),
     category: str | None = Query(None, description="Filter by category (translation key)"),
     tag: str | None = Query(None, description="Filter by tag (translation key)"),
-    locale: str | None = Query(None, pattern="^(pt-BR|en-US)$", description="Filter by locale"),
+    locale: LocaleQuery = None,
     db: AsyncSession = Depends(get_db),
 ) -> BlogPostListResponse:
     """
@@ -41,7 +42,7 @@ async def list_posts(
 @router.get("/posts/{slug}", response_model=BlogPostRead)
 async def get_post(
     slug: str,
-    locale: str | None = Query(None, pattern="^(pt-BR|en-US)$", description="Specify locale"),
+    locale: LocaleQuery = None,
     db: AsyncSession = Depends(get_db),
 ) -> BlogPostRead:
     """
@@ -63,7 +64,7 @@ async def get_post(
 
 @router.get("/metadata", response_model=BlogMetadata)
 async def get_blog_metadata(
-    locale: str | None = Query(None, pattern="^(pt-BR|en-US)$", description="Filter by locale"),
+    locale: LocaleQuery = None,
     db: AsyncSession = Depends(get_db),
 ) -> BlogMetadata:
     """
@@ -80,7 +81,7 @@ async def get_blog_metadata(
 @router.get("/recent", response_model=list[BlogPostListItem])
 async def get_recent_posts(
     limit: int = Query(5, ge=1, le=20, description="Number of posts to return"),
-    locale: str | None = Query(None, pattern="^(pt-BR|en-US)$", description="Filter by locale"),
+    locale: LocaleQuery = None,
     db: AsyncSession = Depends(get_db),
 ) -> list[BlogPostListItem]:
     """

@@ -27,6 +27,8 @@ class BlogPostCreate(BlogPostBase):
     """Schema for creating a blog post."""
 
     slug: str | None = Field(None, max_length=255)
+    locale: str = Field(default="pt-BR", pattern="^(pt-BR|en-US)$")
+    translation_key: str | None = Field(None, max_length=100)
     published: bool = False
     is_featured: bool = False
 
@@ -44,6 +46,8 @@ class BlogPostUpdate(BaseModel):
     seo_title: str | None = Field(None, max_length=70)
     seo_description: str | None = Field(None, max_length=160)
     seo_keywords: list[str] | None = None
+    locale: str | None = Field(None, pattern="^(pt-BR|en-US)$")
+    translation_key: str | None = Field(None, max_length=100)
     published: bool | None = None
     is_featured: bool | None = None
 
@@ -57,6 +61,14 @@ class AuthorInfo(BaseModel):
     full_name: str | None = None
 
 
+class TranslationInfo(BaseModel):
+    """Information about an available translation."""
+
+    locale: str
+    slug: str
+    title: str
+
+
 class BlogPostRead(BaseModel):
     """Schema for reading a blog post (public view)."""
 
@@ -64,6 +76,8 @@ class BlogPostRead(BaseModel):
 
     id: UUID
     slug: str
+    locale: str
+    translation_key: str | None
     title: str
     subtitle: str | None
     content: str
@@ -81,6 +95,7 @@ class BlogPostRead(BaseModel):
     created_at: datetime
     updated_at: datetime
     author: AuthorInfo | None = None
+    available_translations: list[TranslationInfo] | None = None
 
     @property
     def effective_seo_title(self) -> str:
@@ -100,6 +115,8 @@ class BlogPostListItem(BaseModel):
 
     id: UUID
     slug: str
+    locale: str
+    translation_key: str | None
     title: str
     subtitle: str | None
     excerpt: str

@@ -16,8 +16,12 @@ import asyncpg
 async def seed_blog_posts():
     """Create sample blog posts in the database."""
     # Connect directly to PostgreSQL
+    # Use environment variable or default to "db" for Docker, "localhost" for local
+    import os
+
+    db_host = os.environ.get("DB_HOST", "db")
     conn = await asyncpg.connect(
-        host="localhost",
+        host=db_host,
         port=5432,
         user="astro",
         password="dev_password",

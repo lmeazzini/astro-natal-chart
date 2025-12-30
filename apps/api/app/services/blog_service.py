@@ -21,14 +21,22 @@ from app.schemas.blog import (
     BlogPostRead,
     BlogPostUpdate,
     BlogTagCount,
+    TranslationInfo,
 )
 
 # Redis connection pool (singleton)
 _redis_pool: aioredis.ConnectionPool | None = None
 
 # Cache settings
-BLOG_METADATA_CACHE_KEY = "blog:metadata"
+BLOG_METADATA_CACHE_KEY_PREFIX = "blog:metadata"
 BLOG_METADATA_CACHE_TTL = 300  # 5 minutes
+
+
+def _get_metadata_cache_key(locale: str | None) -> str:
+    """Get cache key for blog metadata by locale."""
+    if locale:
+        return f"{BLOG_METADATA_CACHE_KEY_PREFIX}:{locale}"
+    return f"{BLOG_METADATA_CACHE_KEY_PREFIX}:all"
 
 
 def _get_redis_pool() -> aioredis.ConnectionPool:
@@ -57,10 +65,11 @@ class BlogService:
         page_size: int = 10,
         category: str | None = None,
         tag: str | None = None,
+        locale: str | None = None,
     ) -> BlogPostListResponse:
         """Get paginated list of published posts."""
         posts, total = await self.repo.get_published(
-            page=page, page_size=page_size, category=category, tag=tag
+            page=page, page_size=page_size, category=category, tag=tag, locale=locale
         )
 
         total_pages = (total + page_size - 1) // page_size
@@ -73,24 +82,47 @@ class BlogService:
             total_pages=total_pages,
         )
 
-    async def get_post_by_slug(self, slug: str) -> BlogPostRead | None:
+    async def get_post_by_slug(self, slug: str, locale: str | None = None) -> BlogPostRead | None:
         """Get a published post by slug and increment views."""
-        post = await self.repo.get_published_by_slug(slug)
+        post = await self.repo.get_published_by_slug(slug, locale=locale)
         if post:
             post_id = post.id  # type: ignore[assignment]
             await self.repo.increment_views(post_id)
             # Refetch post with relationships after increment_views commits
-            post = await self.repo.get_published_by_slug(slug)
+            post = await self.repo.get_published_by_slug(slug, locale=locale)
             if post:
-                return BlogPostRead.model_validate(post)
+                post_read = BlogPostRead.model_validate(post)
+                # Fetch available translations
+                post_read.available_translations = await self._get_translations(
+                    post.translation_key, exclude_locale=post.locale
+                )
+                return post_read
         return None
 
-    async def get_post_by_slug_admin(self, slug: str) -> BlogPostRead | None:
+    async def get_post_by_slug_admin(
+        self, slug: str, locale: str | None = None
+    ) -> BlogPostRead | None:
         """Get any post by slug (admin view, no view increment)."""
-        post = await self.repo.get_by_slug(slug)
+        post = await self.repo.get_by_slug(slug, locale=locale)
         if post:
-            return BlogPostRead.model_validate(post)
+            post_read = BlogPostRead.model_validate(post)
+            # Fetch available translations
+            post_read.available_translations = await self._get_translations(
+                post.translation_key, exclude_locale=post.locale
+            )
+            return post_read
         return None
+
+    async def _get_translations(
+        self, translation_key: str | None, exclude_locale: str | None = None
+    ) -> list[TranslationInfo]:
+        """Get available translations for a post."""
+        if not translation_key:
+            return []
+        translations = await self.repo.get_translations(
+            translation_key, exclude_locale=exclude_locale
+        )
+        return [TranslationInfo(locale=t.locale, slug=t.slug, title=t.title) for t in translations]
 
     async def get_post_by_id(self, post_id: UUID) -> BlogPostRead | None:
         """Get a post by ID (admin view)."""
@@ -124,13 +156,24 @@ class BlogService:
         self, data: BlogPostCreate, author_id: UUID | None = None
     ) -> BlogPostRead:
         """Create a new blog post."""
+        # Validate translation_key uniqueness per locale
+        if data.translation_key:
+            existing = await self.repo.get_by_translation_key_and_locale(
+                data.translation_key, data.locale
+            )
+            if existing:
+                raise ValueError(
+                    f"A post with translation_key '{data.translation_key}' "
+                    f"already exists for locale '{data.locale}'"
+                )
+
         # Generate slug if not provided
         slug = data.slug or BlogPost.generate_slug(data.title)
 
-        # Ensure slug is unique
+        # Ensure slug is unique for this locale
         counter = 1
         original_slug = slug
-        while await self.repo.slug_exists(slug):
+        while await self.repo.slug_exists(slug, locale=data.locale):
             slug = f"{original_slug}-{counter}"
             counter += 1
 
@@ -139,6 +182,8 @@ class BlogService:
 
         post = BlogPost(
             slug=slug,
+            locale=data.locale,
+            translation_key=data.translation_key,
             title=data.title,
             subtitle=data.subtitle,
             content=data.content,
@@ -233,24 +278,26 @@ class BlogService:
             return BlogPostRead.model_validate(post)
         return None
 
-    async def get_blog_metadata(self) -> BlogMetadata:
+    async def get_blog_metadata(self, locale: str | None = None) -> BlogMetadata:
         """Get blog metadata (categories, tags, total posts) with caching."""
+        cache_key = _get_metadata_cache_key(locale)
+
         # Try to get from Redis cache
         try:
             redis_client = aioredis.Redis(connection_pool=_get_redis_pool())
-            cached_data = await redis_client.get(BLOG_METADATA_CACHE_KEY)
+            cached_data = await redis_client.get(cache_key)
             if cached_data:
-                logger.debug("Blog metadata cache hit")
+                logger.debug(f"Blog metadata cache hit for locale={locale}")
                 data = json.loads(cached_data)
                 return BlogMetadata(**data)
         except Exception as e:
             logger.warning(f"Redis cache read failed: {e}")
 
         # Cache miss - fetch from database
-        logger.debug("Blog metadata cache miss, fetching from database")
-        categories_data = await self.repo.get_categories_with_count()
-        tags_data = await self.repo.get_popular_tags(limit=20)
-        total = await self.repo.get_total_published_count()
+        logger.debug(f"Blog metadata cache miss for locale={locale}, fetching from database")
+        categories_data = await self.repo.get_categories_with_count(locale=locale)
+        tags_data = await self.repo.get_popular_tags(limit=20, locale=locale)
+        total = await self.repo.get_total_published_count(locale=locale)
 
         metadata = BlogMetadata(
             categories=[
@@ -264,26 +311,35 @@ class BlogService:
         try:
             redis_client = aioredis.Redis(connection_pool=_get_redis_pool())
             await redis_client.setex(
-                BLOG_METADATA_CACHE_KEY,
+                cache_key,
                 BLOG_METADATA_CACHE_TTL,
                 metadata.model_dump_json(),
             )
-            logger.debug("Blog metadata cached successfully")
+            logger.debug(f"Blog metadata cached successfully for locale={locale}")
         except Exception as e:
             logger.warning(f"Redis cache write failed: {e}")
 
         return metadata
 
     async def invalidate_metadata_cache(self) -> None:
-        """Invalidate the blog metadata cache."""
+        """Invalidate all blog metadata caches (all locales)."""
         try:
             redis_client = aioredis.Redis(connection_pool=_get_redis_pool())
-            await redis_client.delete(BLOG_METADATA_CACHE_KEY)
-            logger.debug("Blog metadata cache invalidated")
+            # Delete all locale-specific caches
+            keys_to_delete = [
+                _get_metadata_cache_key(None),  # "all" cache
+                _get_metadata_cache_key("pt-BR"),
+                _get_metadata_cache_key("en-US"),
+            ]
+            for key in keys_to_delete:
+                await redis_client.delete(key)
+            logger.debug("Blog metadata caches invalidated")
         except Exception as e:
             logger.warning(f"Redis cache invalidation failed: {e}")
 
-    async def get_recent_posts(self, limit: int = 5) -> list[BlogPostListItem]:
+    async def get_recent_posts(
+        self, limit: int = 5, locale: str | None = None
+    ) -> list[BlogPostListItem]:
         """Get recent published posts."""
-        posts = await self.repo.get_recent_published(limit=limit)
+        posts = await self.repo.get_recent_published(limit=limit, locale=locale)
         return [BlogPostListItem.model_validate(post) for post in posts]

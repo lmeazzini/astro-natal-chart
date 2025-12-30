@@ -44,6 +44,9 @@ export function BlogPage() {
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9;
 
+  // Get current locale for API calls
+  const currentLocale = i18n.language;
+
   const loadData = React.useCallback(async () => {
     setLoading(true);
     try {
@@ -52,6 +55,7 @@ export function BlogPage() {
         tag,
         page,
         page_size: pageSize,
+        locale: currentLocale,
       });
       setPosts(data.items);
       setTotalPages(data.total_pages);
@@ -60,24 +64,41 @@ export function BlogPage() {
     } finally {
       setLoading(false);
     }
-  }, [category, tag, page, pageSize]);
+  }, [category, tag, page, pageSize, currentLocale]);
 
   React.useEffect(() => {
     loadData();
   }, [loadData]);
 
-  React.useEffect(() => {
-    loadMetadata();
-  }, []);
-
-  async function loadMetadata() {
+  const loadMetadata = React.useCallback(async () => {
     try {
-      const data = await getBlogMetadata();
+      const data = await getBlogMetadata(currentLocale);
       setMetadata(data);
     } catch (error) {
       console.error('Error loading blog metadata:', error);
     }
-  }
+  }, [currentLocale]);
+
+  React.useEffect(() => {
+    loadMetadata();
+  }, [loadMetadata]);
+
+  // Helper to translate category/tag keys with dev logging for missing translations
+  const translateCategory = (key: string) => {
+    const translated = t(`blog:categories.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog category translation: blog:categories.${key}`);
+    }
+    return translated || key;
+  };
+
+  const translateTag = (key: string) => {
+    const translated = t(`blog:tags.${key}`, { defaultValue: '' });
+    if (!translated && import.meta.env.DEV) {
+      console.warn(`[i18n] Missing blog tag translation: blog:tags.${key}`);
+    }
+    return translated || key;
+  };
 
   // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
   React.useEffect(() => {
@@ -128,9 +149,9 @@ export function BlogPage() {
   }
 
   const pageTitle = category
-    ? `${t('blog.title')} - ${category}`
+    ? `${t('blog.title')} - ${translateCategory(category)}`
     : tag
-      ? `${t('blog.title')} - #${tag}`
+      ? `${t('blog.title')} - #${translateTag(tag)}`
       : t('blog.title');
 
   return (
@@ -190,7 +211,7 @@ export function BlogPage() {
               {category && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <FolderOpen className="h-3 w-3" />
-                  {category}
+                  {translateCategory(category)}
                   <button
                     onClick={() => handleCategoryClick(null)}
                     className="ml-1 hover:text-destructive"
@@ -203,7 +224,7 @@ export function BlogPage() {
               {tag && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Tag className="h-3 w-3" />
-                  {tag}
+                  {translateTag(tag)}
                   <button
                     onClick={() => setSearchParams(new URLSearchParams())}
                     className="ml-1 hover:text-destructive"
@@ -259,7 +280,7 @@ export function BlogPage() {
                         )}
                         <CardContent className="p-4">
                           <Badge variant="outline" className="mb-2">
-                            {post.category}
+                            {translateCategory(post.category)}
                           </Badge>
                           <h2 className="mb-2 line-clamp-2 text-lg font-semibold text-foreground">
                             {post.title}
@@ -345,7 +366,7 @@ export function BlogPage() {
                                 : 'text-muted-foreground'
                             }`}
                           >
-                            <span>{cat.category}</span>
+                            <span>{translateCategory(cat.category)}</span>
                             <span>{cat.count}</span>
                           </button>
                         </li>
@@ -368,7 +389,7 @@ export function BlogPage() {
                           className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
                           onClick={() => handleTagClick(tagItem.tag)}
                         >
-                          #{tagItem.tag}
+                          #{translateTag(tagItem.tag)}
                         </Badge>
                       ))}
                     </div>

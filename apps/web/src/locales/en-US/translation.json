@@ -25,7 +25,8 @@
     "login": "Login",
     "search": "Search",
     "refresh": "Refresh",
-    "retry": "Try again"
+    "retry": "Try again",
+    "houseNumber": "House {{number}}"
   },
   "nav": {
     "home": "Home",
@@ -946,7 +947,9 @@
         "yearType": {
           "minor": "Minor Years",
           "middle": "Middle Years",
-          "major": "Major Years"
+          "major": "Major Years",
+          "undefined": "Unknown",
+          "null": "Unknown"
         }
       },
       "summary": {

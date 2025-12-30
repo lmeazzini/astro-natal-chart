@@ -20,7 +20,11 @@
     "North Node": "Nodo Norte",
     "SouthNode": "Nodo Sul",
     "South Node": "Nodo Sul",
-    "Chiron": "Quíron"
+    "Chiron": "Quíron",
+    "Ascendant": "Ascendente",
+    "Part of Fortune": "Lote da Fortuna",
+    "Prenatal Syzygy (New Moon)": "Sizígia Pré-natal (Lua Nova)",
+    "Prenatal Syzygy (Full Moon)": "Sizígia Pré-natal (Lua Cheia)"
   },
   "signs": {
     "Aries": "Áries",
@@ -34,7 +38,19 @@
     "Sagittarius": "Sagitário",
     "Capricorn": "Capricórnio",
     "Aquarius": "Aquário",
-    "Pisces": "Peixes"
+    "Pisces": "Peixes",
+    "aries": "Áries",
+    "taurus": "Touro",
+    "gemini": "Gêmeos",
+    "cancer": "Câncer",
+    "leo": "Leão",
+    "virgo": "Virgem",
+    "libra": "Libra",
+    "scorpio": "Escorpião",
+    "sagittarius": "Sagitário",
+    "capricorn": "Capricórnio",
+    "aquarius": "Aquário",
+    "pisces": "Peixes"
   },
   "houses": {
     "house": "Casa",

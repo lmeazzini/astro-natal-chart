@@ -130,5 +130,7 @@ translations: dict[str, Any] = {
     "common": {
         "yes": "Sim",
         "no": "Não",
+        # Duplicated from astrology.py - needed because dict.update() overwrites keys
+        "planet_in_sign": "{planet} em {sign}",
     },
 }

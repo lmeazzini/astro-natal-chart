@@ -147,7 +147,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: astro-api
+          container-name: api
           image: ${{ needs.build-backend.outputs.image }}
 
       - name: Deploy to ECS
@@ -239,7 +239,7 @@ jobs:
           timeout 300 aws ecs execute-command \
             --cluster ${{ env.ECS_CLUSTER }} \
             --task ${{ steps.get-task.outputs.task_arn }} \
-            --container astro-api \
+            --container api \
             --command "alembic upgrade head" || {
               echo "Migration command failed or timed out"
               exit 1

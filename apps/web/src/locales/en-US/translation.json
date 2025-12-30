@@ -49,6 +49,8 @@
     "resultsCount": "{{count}} charts found",
     "noResults": "No charts found.",
     "views": "views",
+    "highlights": "Astrological Highlights",
+    "notFound": "Chart not found",
     "ctaTitle": "Create Your Own Birth Chart",
     "ctaTitleLoggedIn": "Create More Birth Charts",
     "ctaDescription": "Discover the secrets of your astrological chart with professional analysis and AI interpretations.",
@@ -364,7 +366,8 @@
       "arabicParts": "Arabic Parts",
       "interpretations": "Interpretations",
       "growth": "Growth",
-      "longevity": "Longevity"
+      "longevity": "Longevity",
+      "saturnReturn": "Saturn Return"
     },
     "sections": {
       "chartWheel": "Birth Chart Wheel",
@@ -581,8 +584,11 @@
     "planetList": {
       "sortBy": "Sort by:",
       "position": "Position",
+      "sortByPosition": "Sort by zodiac position",
       "house": "House",
+      "sortByHouse": "Sort by astrological house",
       "strength": "Strength",
+      "sortByStrength": "Sort by strength/dignity",
       "hideInfo": "Hide Info",
       "showInfo": "Show Info",
       "essentialDignities": "Essential Dignities",
@@ -1533,8 +1539,11 @@
     "signup": "Sign Up",
     "nav": {
       "blog": "Blog",
+      "blogLabel": "Go to blog",
       "techniques": "Techniques",
-      "pricing": "Pricing"
+      "techniquesLabel": "View astrological techniques",
+      "pricing": "Pricing",
+      "pricingLabel": "View pricing plans"
     },
     "hero": {
       "badge": "Rediscover Ancient Wisdom",
@@ -1544,7 +1553,9 @@
       "titleHighlight": "Modern World",
       "subtitle": "Not generic horoscopes. We revive 2,000-year-old techniques to build a complete, historically-grounded natal chart that reveals your true temperament and life path.",
       "cta": "Discover Your Chart",
+      "ctaLabel": "Create your free chart",
       "explore": "Explore Techniques",
+      "exploreLabel": "Explore features and techniques",
       "viewExample": "View Example Charts",
       "noCreditCard": "No credit card required",
       "dataSecure": "Your data is secure (GDPR)",
@@ -1614,7 +1625,8 @@
       "gdpr": "GDPR Compliant & Private",
       "title": "Start Your Journey",
       "subtitle": "Over 1,000 charts created. No credit card required to generate your preliminary analysis.",
-      "button": "Create Free Chart"
+      "button": "Create Free Chart",
+      "buttonLabel": "Create your free birth chart"
     },
     "pain": {
       "title": "Have You Ever Felt Like This?",
@@ -1752,10 +1764,12 @@
     "footer": {
       "tagline": "Traditional Astrology For the Modern World",
       "legal": "Legal",
+      "legalNav": "Legal documents navigation",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "cookies": "Cookie Policy",
       "access": "Access",
+      "accessNav": "Account access navigation",
       "login": "Login",
       "register": "Sign Up",
       "dashboard": "My Charts",

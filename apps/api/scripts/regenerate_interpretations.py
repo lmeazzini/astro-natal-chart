@@ -65,6 +65,9 @@ async def regenerate_all_interpretations():
                     chart_data=chart.chart_data,
                 )
 
+                # Commit the generated interpretations
+                await db.commit()
+
                 # Count new interpretations
                 count_result = await db.execute(
                     text("SELECT COUNT(*) FROM chart_interpretations WHERE chart_id = :chart_id"),

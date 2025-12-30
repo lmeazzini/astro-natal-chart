@@ -11,6 +11,7 @@ from app.translations.pt_BR.mentality import translations as mentality
 from app.translations.pt_BR.phases import translations as phases
 from app.translations.pt_BR.prenatal_syzygy import translations as prenatal_syzygy
 from app.translations.pt_BR.saturn_return import translations as saturn_return
+from app.translations.pt_BR.solar_return import translations as solar_return
 from app.translations.pt_BR.temperament import translations as temperament
 
 # Merge all translation modules into a single dictionary
@@ -23,3 +24,4 @@ translations.update(mentality)
 translations.update(longevity)
 translations.update(prenatal_syzygy)
 translations.update(saturn_return)
+translations.update(solar_return)

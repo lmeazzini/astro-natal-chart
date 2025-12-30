@@ -31,6 +31,7 @@ SATURN = swe.SATURN
 SEARCH_WINDOW_DAYS = 200  # ±200 days around estimated return
 PRECISION_DEGREES = 0.001  # Precision for binary search (0.001°)
 MAX_ITERATIONS = 100  # Maximum iterations for binary search
+MIN_PASS_SEPARATION_DAYS = 30  # Minimum days between passes to avoid duplicates
 
 # Signs in order
 SIGNS = [
@@ -265,11 +266,11 @@ def find_saturn_return_passes(
             if exact_jd:
                 exact_lon, _, is_retro = get_saturn_position(exact_jd)
 
-                # Avoid duplicate passes (within 30 days of each other)
+                # Avoid duplicate passes (within MIN_PASS_SEPARATION_DAYS of each other)
                 is_duplicate = False
                 for existing_pass in passes:
                     existing_jd = datetime_to_jd(existing_pass.date)
-                    if abs(exact_jd - existing_jd) < 30:
+                    if abs(exact_jd - existing_jd) < MIN_PASS_SEPARATION_DAYS:
                         is_duplicate = True
                         break
 

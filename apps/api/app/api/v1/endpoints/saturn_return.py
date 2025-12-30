@@ -8,7 +8,7 @@ astrological interpretations by sign and house.
 PREMIUM FEATURE: These endpoints require premium or admin access.
 """
 
-from datetime import UTC
+from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from app.astro.saturn_return import (
     calculate_saturn_return_analysis,
     get_saturn_return_interpretation,
+    get_sign_from_longitude,
 )
 from app.core.context import get_locale
 from app.core.dependencies import require_premium
@@ -243,8 +244,6 @@ async def get_saturn_return_interp(
         # Determine phase based on passes
         passes = current_return.get("passes", [])
         if passes:
-            from datetime import datetime
-
             now = datetime.now(UTC)
             # Check which phase we're in
             for i, p in enumerate(passes):
@@ -265,8 +264,6 @@ async def get_saturn_return_interp(
         current_phase = "approaching"
 
     # Get natal Saturn sign from longitude
-    from app.astro.saturn_return import get_sign_from_longitude
-
     natal_saturn_sign = get_sign_from_longitude(natal_saturn_longitude)
 
     # Get interpretation

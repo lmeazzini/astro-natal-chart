@@ -8,12 +8,21 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getSignSymbol } from '@/utils/astro';
 import { useAstroTranslation } from '@/hooks/useAstroTranslation';
-import { Clock, CalendarDays, ArrowRight, RotateCcw, Info } from 'lucide-react';
+import {
+  Clock,
+  CalendarDays,
+  ArrowRight,
+  RotateCcw,
+  Info,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
 import { PremiumFeatureGate } from './PremiumFeatureGate';
 
 import type {
@@ -27,6 +36,8 @@ interface SaturnReturnAnalysisProps {
   analysis: SaturnReturnAnalysisType | null;
   interpretation: SaturnReturnInterpretation | null;
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 // ============================================================================
@@ -48,6 +59,36 @@ function SaturnReturnSkeleton() {
         <Skeleton className="h-64 w-full" />
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// Error Display Component
+// ============================================================================
+
+function SaturnReturnError({ error, onRetry }: { error: string; onRetry?: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <Card className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20">
+      <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <div className="text-center space-y-2">
+          <h3 className="text-lg font-semibold text-foreground">
+            {t('astrology.saturnReturn.errorTitle', {
+              defaultValue: 'Unable to load Saturn Return',
+            })}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-md">{error}</p>
+        </div>
+        {onRetry && (
+          <Button variant="outline" onClick={onRetry} className="mt-4">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t('common.retry', { defaultValue: 'Try Again' })}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -264,6 +305,8 @@ export function SaturnReturnAnalysis({
   analysis,
   interpretation,
   isLoading = false,
+  error = null,
+  onRetry,
 }: SaturnReturnAnalysisProps) {
   const { t, i18n } = useTranslation();
   const { translateSign } = useAstroTranslation();
@@ -274,6 +317,15 @@ export function SaturnReturnAnalysis({
     return (
       <PremiumFeatureGate feature="saturn-return">
         <SaturnReturnSkeleton />
+      </PremiumFeatureGate>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <PremiumFeatureGate feature="saturn-return">
+        <SaturnReturnError error={error} onRetry={onRetry} />
       </PremiumFeatureGate>
     );
   }

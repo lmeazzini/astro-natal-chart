@@ -96,6 +96,7 @@ export function ChartDetailPage() {
   const [saturnReturnInterpretation, setSaturnReturnInterpretation] =
     useState<SaturnReturnInterpretation | null>(null);
   const [isLoadingSaturnReturn, setIsLoadingSaturnReturn] = useState(false);
+  const [saturnReturnError, setSaturnReturnError] = useState<string | null>(null);
 
   // Tab tracking for Amplitude
   const [currentTab, setCurrentTab] = useState('visual');
@@ -332,6 +333,7 @@ export function ChartDetailPage() {
 
     try {
       setIsLoadingSaturnReturn(true);
+      setSaturnReturnError(null);
       const [analysis, interpretation] = await Promise.all([
         getSaturnReturn(id),
         getSaturnReturnInterpretation(id),
@@ -339,8 +341,10 @@ export function ChartDetailPage() {
       setSaturnReturnAnalysis(analysis);
       setSaturnReturnInterpretation(interpretation);
     } catch (err) {
-      // Silently fail - Saturn Return is a premium feature
       console.error('Failed to load Saturn Return:', err);
+      // Extract error message for display
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load Saturn Return data';
+      setSaturnReturnError(errorMessage);
     } finally {
       setIsLoadingSaturnReturn(false);
     }
@@ -1331,6 +1335,8 @@ export function ChartDetailPage() {
                 analysis={saturnReturnAnalysis}
                 interpretation={saturnReturnInterpretation}
                 isLoading={isLoadingSaturnReturn}
+                error={saturnReturnError}
+                onRetry={loadSaturnReturn}
               />
             </Suspense>
           </TabsContent>

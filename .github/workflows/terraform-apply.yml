@@ -1,7 +1,7 @@
 # =============================================================================
 # Terraform Apply Workflow
 # =============================================================================
-# Applies Terraform changes when IaC code is merged to main or dev.
+# Applies Terraform changes when IaC code is merged to main.
 # Requires manual approval via GitHub environment protection rules.
 # =============================================================================
 
@@ -9,7 +9,7 @@ name: Terraform Apply
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
     paths:
       - 'iac/**'
 
@@ -17,16 +17,16 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to apply (dev)'
+        description: 'Environment to apply'
         required: true
-        default: 'dev'
+        default: 'prod'
         type: choice
         options:
-          - dev
+          - prod
 
 env:
   TF_VERSION: "1.10.3"
-  AWS_REGION: us-east-1
+  AWS_REGION: us-east-2
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -44,10 +44,9 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "environment=dev" >> $GITHUB_OUTPUT
           else
-            echo "environment=dev" >> $GITHUB_OUTPUT
+            # main branch deploys to prod
+            echo "environment=prod" >> $GITHUB_OUTPUT
           fi
 
   # ---------------------------------------------------------------------------

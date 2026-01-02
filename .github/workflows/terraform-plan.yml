@@ -16,7 +16,7 @@ on:
 
 env:
   TF_VERSION: "1.10.3"
-  AWS_REGION: us-east-1
+  AWS_REGION: us-east-2
 
 jobs:
   plan:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [dev]
+        environment: [prod]
       fail-fast: false
 
     permissions:

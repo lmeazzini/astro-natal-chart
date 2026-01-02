@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CreditsProvider } from './contexts/CreditsContext';
 import { MotionProvider } from './providers/MotionProvider';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
@@ -27,6 +28,7 @@ import { RagDocumentsPage } from './pages/RagDocuments';
 import { PricingPage } from './pages/Pricing';
 import { BlogPage } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
+import { SubscriptionSuccessPage } from './pages/SubscriptionSuccess';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
@@ -47,42 +49,45 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <MotionProvider>
           <AuthProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/charts" element={<ChartsPage />} />
-                <Route path="/charts/new" element={<NewChartPage />} />
-                <Route path="/charts/:id" element={<ChartDetailPage />} />
-                <Route path="/charts/:id/edit" element={<EditChartPage />} />
-                {/* Legal Pages */}
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/cookies" element={<CookiesPage />} />
-                <Route path="/consent" element={<ConsentPage />} />
-                {/* About Pages */}
-                <Route path="/about/methodology" element={<MethodologyPage />} />
-                {/* Public Charts */}
-                <Route path="/public-charts" element={<PublicChartsPage />} />
-                <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
-                {/* RAG Knowledge Base */}
-                <Route path="/rag-documents" element={<RagDocumentsPage />} />
-                {/* Pricing */}
-                <Route path="/pricing" element={<PricingPage />} />
-                {/* Blog */}
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/blog/:slug" element={<BlogPostPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-              <CookieBanner />
-            </BrowserRouter>
+            <CreditsProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+                  <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/charts" element={<ChartsPage />} />
+                  <Route path="/charts/new" element={<NewChartPage />} />
+                  <Route path="/charts/:id" element={<ChartDetailPage />} />
+                  <Route path="/charts/:id/edit" element={<EditChartPage />} />
+                  {/* Legal Pages */}
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/cookies" element={<CookiesPage />} />
+                  <Route path="/consent" element={<ConsentPage />} />
+                  {/* About Pages */}
+                  <Route path="/about/methodology" element={<MethodologyPage />} />
+                  {/* Public Charts */}
+                  <Route path="/public-charts" element={<PublicChartsPage />} />
+                  <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
+                  {/* RAG Knowledge Base */}
+                  <Route path="/rag-documents" element={<RagDocumentsPage />} />
+                  {/* Pricing */}
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+                  {/* Blog */}
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/blog/:slug" element={<BlogPostPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                <CookieBanner />
+              </BrowserRouter>
+            </CreditsProvider>
           </AuthProvider>
         </MotionProvider>
       </ThemeProvider>

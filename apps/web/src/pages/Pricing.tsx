@@ -1,11 +1,8 @@
 /**
- * Pricing Page - Placeholder for subscription plans
- *
- * This is a placeholder page for the premium subscription system.
- * The actual payment integration will be implemented in a future issue.
+ * Pricing Page - Subscription plans with Stripe checkout
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -21,9 +18,20 @@ import { Badge } from '@/components/ui/badge';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useCredits } from '@/contexts/CreditsContext';
 import { amplitudeService } from '@/services/amplitude';
-import { Check, Crown, Sparkles, Star, Zap, ArrowLeft } from 'lucide-react';
+import { redirectToCheckout, redirectToPortal } from '@/services/stripe';
+import {
+  Check,
+  Crown,
+  Sparkles,
+  Star,
+  Zap,
+  ArrowLeft,
+  Loader2,
+  Infinity,
+  Settings,
+} from 'lucide-react';
 
 interface PlanFeature {
   text: string;
@@ -36,26 +44,31 @@ interface Plan {
   description: string;
   price: string;
   period: string;
+  credits: string;
   features: PlanFeature[];
   highlighted?: boolean;
   badge?: string;
   ctaText: string;
   disabled?: boolean;
+  planType?: 'starter' | 'pro' | 'unlimited';
 }
 
 export function PricingPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { isPremium, isAdmin, role } = usePermissions();
+  const { credits } = useCredits();
   const [searchParams] = useSearchParams();
   const hasTrackedPageView = useRef(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const currentPlan = credits?.plan_type || 'free';
 
   // Track page view on mount (with ref guard to prevent StrictMode double-tracking)
   useEffect(() => {
     if (!hasTrackedPageView.current) {
       amplitudeService.track('pricing_page_viewed', {
         source: searchParams.get('source') || 'direct',
-        user_tier: role || 'anonymous',
+        current_plan: currentPlan,
         ...(user?.id && { user_id: user.id }),
       });
       hasTrackedPageView.current = true;
@@ -63,16 +76,42 @@ export function PricingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Track once on mount only
 
-  // Track plan button clicks (skip if button is disabled)
-  const handlePlanClick = (planName: string, isDisabled?: boolean) => {
-    if (isDisabled) return; // Don't track clicks on disabled buttons
+  // Handle plan selection
+  const handlePlanClick = async (plan: Plan) => {
+    if (plan.disabled || !plan.planType) return;
+
     amplitudeService.track('pricing_plan_clicked', {
-      plan_name: planName,
-      current_tier: role || 'anonymous',
-      billing_cycle: 'monthly',
+      plan_name: plan.id,
+      plan_type: plan.planType,
+      current_plan: currentPlan,
       source: 'pricing_page',
       ...(user?.id && { user_id: user.id }),
     });
+
+    if (!user) {
+      // Not logged in - redirect to register
+      window.location.href = `/register?plan=${plan.planType}`;
+      return;
+    }
+
+    setLoadingPlan(plan.id);
+    try {
+      await redirectToCheckout(plan.planType);
+    } catch (error) {
+      console.error('Failed to create checkout session:', error);
+      setLoadingPlan(null);
+    }
+  };
+
+  // Handle manage subscription
+  const handleManageSubscription = async () => {
+    setLoadingPlan('manage');
+    try {
+      await redirectToPortal();
+    } catch (error) {
+      console.error('Failed to create portal session:', error);
+      setLoadingPlan(null);
+    }
   };
 
   const plans: Plan[] = [
@@ -82,96 +121,89 @@ export function PricingPage() {
       description: t('pricing.plans.free.description', {
         defaultValue: 'Para começar sua jornada astrológica',
       }),
-      price: t('pricing.plans.free.price', { defaultValue: 'R$ 0' }),
-      period: t('pricing.plans.free.period', { defaultValue: '/mês' }),
+      price: 'R$ 0',
+      period: '/mês',
+      credits: '10 créditos',
       features: [
-        {
-          text: t('pricing.features.natalCharts', { defaultValue: 'Mapas natais ilimitados' }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.basicInterpretations', {
-            defaultValue: 'Interpretações básicas',
-          }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.chartVisualization', {
-            defaultValue: 'Visualização de mapa SVG',
-          }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.horary', { defaultValue: 'Astrologia Horária' }),
-          included: false,
-        },
-        {
-          text: t('pricing.features.profections', { defaultValue: 'Profecções' }),
-          included: false,
-        },
-        { text: t('pricing.features.firdaria', { defaultValue: 'Firdária' }), included: false },
-        {
-          text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }),
-          included: false,
-        },
-        {
-          text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }),
-          included: false,
-        },
+        { text: 'Mapas natais ilimitados', included: true },
+        { text: '10 créditos/mês', included: true },
+        { text: 'Visualização de mapa SVG', included: true },
+        { text: 'Interpretações básicas', included: true },
+        { text: 'Interpretações avançadas com IA', included: false },
+        { text: 'Relatório PDF', included: false },
+        { text: 'Suporte prioritário', included: false },
       ],
-      ctaText: !user
-        ? t('pricing.getStartedFree', { defaultValue: 'Começar Grátis' })
-        : role === 'free'
-          ? t('pricing.currentPlan', { defaultValue: 'Plano Atual' })
-          : t('pricing.downgrade', { defaultValue: 'Fazer Downgrade' }),
-      disabled: role === 'free',
+      ctaText: currentPlan === 'free' ? 'Plano Atual' : 'Selecionar',
+      disabled: currentPlan === 'free',
     },
     {
-      id: 'premium',
-      name: t('pricing.plans.premium.name', { defaultValue: 'Premium' }),
-      description: t('pricing.plans.premium.description', {
-        defaultValue: 'Para astrólogos sérios que buscam profundidade',
+      id: 'starter',
+      name: t('pricing.plans.starter.name', { defaultValue: 'Iniciante' }),
+      description: t('pricing.plans.starter.description', {
+        defaultValue: 'Para quem quer explorar mais',
       }),
-      price: t('pricing.plans.premium.price', { defaultValue: 'R$ 29,90' }),
-      period: t('pricing.plans.premium.period', { defaultValue: '/mês' }),
+      price: 'R$ 19,90',
+      period: '/mês',
+      credits: '50 créditos',
       features: [
-        {
-          text: t('pricing.features.natalCharts', { defaultValue: 'Mapas natais ilimitados' }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.advancedInterpretations', {
-            defaultValue: 'Interpretações avançadas com IA',
-          }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.chartVisualization', {
-            defaultValue: 'Visualização de mapa SVG',
-          }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.horary', { defaultValue: 'Astrologia Horária' }),
-          included: true,
-        },
-        { text: t('pricing.features.profections', { defaultValue: 'Profecções' }), included: true },
-        { text: t('pricing.features.firdaria', { defaultValue: 'Firdária' }), included: true },
-        {
-          text: t('pricing.features.solarReturn', { defaultValue: 'Revolução Solar' }),
-          included: true,
-        },
-        {
-          text: t('pricing.features.prioritySupport', { defaultValue: 'Suporte prioritário' }),
-          included: true,
-        },
+        { text: 'Mapas natais ilimitados', included: true },
+        { text: '50 créditos/mês', included: true },
+        { text: 'Visualização de mapa SVG', included: true },
+        { text: 'Interpretações avançadas com IA', included: true },
+        { text: 'Revolução Solar', included: true },
+        { text: 'Relatório PDF', included: true },
+        { text: 'Suporte por email', included: true },
+      ],
+      ctaText: currentPlan === 'starter' ? 'Plano Atual' : 'Assinar',
+      disabled: currentPlan === 'starter',
+      planType: 'starter',
+    },
+    {
+      id: 'pro',
+      name: t('pricing.plans.pro.name', { defaultValue: 'Profissional' }),
+      description: t('pricing.plans.pro.description', {
+        defaultValue: 'Para astrólogos sérios',
+      }),
+      price: 'R$ 49,90',
+      period: '/mês',
+      credits: '200 créditos',
+      features: [
+        { text: 'Mapas natais ilimitados', included: true },
+        { text: '200 créditos/mês', included: true },
+        { text: 'Todas as features do Iniciante', included: true },
+        { text: 'Retorno de Saturno', included: true },
+        { text: 'Análise de Longevidade', included: true },
+        { text: 'Profecções (em breve)', included: true },
+        { text: 'Suporte prioritário', included: true },
       ],
       highlighted: true,
-      badge: t('pricing.recommended', { defaultValue: 'Recomendado' }),
-      ctaText: isPremium
-        ? t('pricing.currentPlan', { defaultValue: 'Plano Atual' })
-        : t('pricing.subscribe', { defaultValue: 'Assinar Premium' }),
-      disabled: isPremium,
+      badge: 'Recomendado',
+      ctaText: currentPlan === 'pro' ? 'Plano Atual' : 'Assinar',
+      disabled: currentPlan === 'pro',
+      planType: 'pro',
+    },
+    {
+      id: 'unlimited',
+      name: t('pricing.plans.unlimited.name', { defaultValue: 'Ilimitado' }),
+      description: t('pricing.plans.unlimited.description', {
+        defaultValue: 'Sem limites, sem preocupações',
+      }),
+      price: 'R$ 99,90',
+      period: '/mês',
+      credits: 'Ilimitado',
+      features: [
+        { text: 'Mapas natais ilimitados', included: true },
+        { text: 'Créditos ilimitados', included: true },
+        { text: 'Todas as features do Pro', included: true },
+        { text: 'Acesso antecipado a novidades', included: true },
+        { text: 'Suporte VIP', included: true },
+        { text: 'Consultas de desconto', included: true },
+        { text: 'Badge exclusivo', included: true },
+      ],
+      badge: 'Premium',
+      ctaText: currentPlan === 'unlimited' ? 'Plano Atual' : 'Assinar',
+      disabled: currentPlan === 'unlimited',
+      planType: 'unlimited',
     },
   ];
 
@@ -217,7 +249,7 @@ export function PricingPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="py-12 lg:py-20">
+      <section className="py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Crown className="h-4 w-4" />
@@ -228,36 +260,50 @@ export function PricingPage() {
             {t('pricing.title', { defaultValue: 'Escolha o plano ideal para você' })}
           </h2>
 
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-12">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
             {t('pricing.subtitle', {
               defaultValue:
-                'Desbloqueie todo o potencial da astrologia tradicional com nossos planos Premium.',
+                'Desbloqueie todo o potencial da astrologia tradicional com nossos planos.',
             })}
           </p>
 
           {/* Current Plan Indicator */}
           {user && (
-            <div className="mb-8 inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg">
-              <Star className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">
-                {t('pricing.yourPlan', { defaultValue: 'Seu plano atual:' })}
-              </span>
-              <Badge variant={isPremium ? 'default' : 'secondary'}>
-                {isAdmin
-                  ? 'Admin'
-                  : isPremium
-                    ? 'Premium'
-                    : t('pricing.plans.free.name', { defaultValue: 'Gratuito' })}
-              </Badge>
+            <div className="mb-8 inline-flex items-center gap-4 bg-muted/50 px-4 py-2 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Seu plano:</span>
+                <Badge variant={currentPlan !== 'free' ? 'default' : 'secondary'}>
+                  {currentPlan === 'free' && 'Gratuito'}
+                  {currentPlan === 'starter' && 'Iniciante'}
+                  {currentPlan === 'pro' && 'Profissional'}
+                  {currentPlan === 'unlimited' && 'Ilimitado'}
+                </Badge>
+              </div>
+              {credits && currentPlan !== 'free' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleManageSubscription}
+                  disabled={loadingPlan === 'manage'}
+                >
+                  {loadingPlan === 'manage' ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Settings className="h-4 w-4 mr-2" />
+                  )}
+                  Gerenciar assinatura
+                </Button>
+              )}
             </div>
           )}
 
           {/* Plans Grid */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {plans.map((plan) => (
               <Card
                 key={plan.id}
-                className={`relative ${
+                className={`relative flex flex-col ${
                   plan.highlighted ? 'border-primary shadow-lg shadow-primary/10' : 'border-border'
                 }`}
               >
@@ -271,31 +317,42 @@ export function PricingPage() {
                 )}
 
                 <CardHeader className="text-center pb-2">
-                  <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-                    {plan.id === 'premium' && <Crown className="h-6 w-6 text-amber-500" />}
+                  <CardTitle className="flex items-center justify-center gap-2 text-xl">
+                    {plan.id === 'unlimited' && <Crown className="h-5 w-5 text-amber-500" />}
                     {plan.name}
                   </CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
+                  <CardDescription className="text-sm">{plan.description}</CardDescription>
                 </CardHeader>
 
-                <CardContent className="text-center">
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                <CardContent className="text-center flex-1">
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-muted-foreground text-sm">{plan.period}</span>
                   </div>
 
-                  <ul className="space-y-3 text-left">
+                  <div className="mb-4 flex items-center justify-center gap-1 text-primary font-medium">
+                    {plan.credits === 'Ilimitado' ? (
+                      <>
+                        <Infinity className="h-4 w-4" />
+                        <span>Ilimitado</span>
+                      </>
+                    ) : (
+                      <span>{plan.credits}</span>
+                    )}
+                  </div>
+
+                  <ul className="space-y-2 text-left text-sm">
                     {plan.features.map((feature, index) => (
                       <li
                         key={index}
-                        className={`flex items-center gap-2 text-sm ${
+                        className={`flex items-start gap-2 ${
                           feature.included
                             ? 'text-foreground'
                             : 'text-muted-foreground line-through'
                         }`}
                       >
                         <Check
-                          className={`h-4 w-4 flex-shrink-0 ${
+                          className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
                             feature.included ? 'text-green-500' : 'text-muted-foreground/50'
                           }`}
                         />
@@ -305,20 +362,21 @@ export function PricingPage() {
                   </ul>
                 </CardContent>
 
-                <CardFooter>
-                  {/* Non-authenticated users clicking free plan go to register */}
-                  {!user && plan.id === 'free' ? (
-                    <Button
-                      asChild
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => handlePlanClick(plan.id, plan.disabled)}
-                    >
-                      <Link to="/register">
-                        <Zap className="h-4 w-4 mr-2" />
+                <CardFooter className="pt-4">
+                  {plan.id === 'free' ? (
+                    !user ? (
+                      <Button asChild className="w-full" variant="outline">
+                        <Link to="/register">
+                          <Zap className="h-4 w-4 mr-2" />
+                          Começar Grátis
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button className="w-full" variant="outline" disabled>
+                        <Check className="h-4 w-4 mr-2" />
                         {plan.ctaText}
-                      </Link>
-                    </Button>
+                      </Button>
+                    )
                   ) : (
                     <Button
                       className={`w-full ${
@@ -327,10 +385,15 @@ export function PricingPage() {
                           : ''
                       }`}
                       variant={plan.highlighted ? 'default' : 'outline'}
-                      disabled={plan.disabled}
-                      onClick={() => handlePlanClick(plan.id, plan.disabled)}
+                      disabled={plan.disabled || loadingPlan === plan.id}
+                      onClick={() => handlePlanClick(plan)}
                     >
-                      {plan.disabled ? (
+                      {loadingPlan === plan.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Processando...
+                        </>
+                      ) : plan.disabled ? (
                         <>
                           <Check className="h-4 w-4 mr-2" />
                           {plan.ctaText}
@@ -348,17 +411,35 @@ export function PricingPage() {
             ))}
           </div>
 
-          {/* Coming Soon Notice */}
-          <div className="mt-12 p-6 bg-muted/30 rounded-xl max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {t('pricing.comingSoon.title', { defaultValue: 'Em breve!' })}
+          {/* FAQ / Info Section */}
+          <div className="mt-12 p-6 bg-muted/30 rounded-xl max-w-3xl mx-auto text-left">
+            <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
+              Perguntas Frequentes
             </h3>
-            <p className="text-muted-foreground">
-              {t('pricing.comingSoon.description', {
-                defaultValue:
-                  'O sistema de assinaturas está em desenvolvimento. Enquanto isso, aproveite as funcionalidades gratuitas e fique atento para novidades!',
-              })}
-            </p>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="font-medium text-foreground">O que são créditos?</p>
+                <p className="text-muted-foreground">
+                  Créditos são usados para acessar funcionalidades premium como interpretações com
+                  IA, relatórios PDF e análises avançadas. Cada funcionalidade consome uma
+                  quantidade específica de créditos.
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Os créditos acumulam?</p>
+                <p className="text-muted-foreground">
+                  Não, os créditos são renovados mensalmente e não acumulam para o próximo mês.
+                  Aproveite todos os seus créditos a cada ciclo!
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Posso cancelar a qualquer momento?</p>
+                <p className="text-muted-foreground">
+                  Sim! Você pode cancelar sua assinatura a qualquer momento. Você continuará com
+                  acesso até o final do período já pago.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -15,6 +15,7 @@ celery_app = Celery(
     include=[
         "app.tasks.astro_tasks",
         "app.tasks.cache_tasks",
+        "app.tasks.credit_tasks",
         "app.tasks.pdf_tasks",
         "app.tasks.privacy",
         "app.tasks.subscription_tasks",
@@ -49,6 +50,11 @@ celery_app.conf.beat_schedule = {
     "check-and-expire-subscriptions-daily": {
         "task": "subscriptions.check_and_expire",
         "schedule": crontab(hour=2, minute=0),  # 2 AM daily
+    },
+    # Reset credits for users whose period has expired (before subscription check)
+    "reset-monthly-credits-daily": {
+        "task": "credits.monthly_reset",
+        "schedule": crontab(hour=1, minute=0),  # 1 AM daily
     },
     # Limpar tokens de reset de senha expirados (24h+)
     "cleanup-expired-password-reset-tokens-daily": {

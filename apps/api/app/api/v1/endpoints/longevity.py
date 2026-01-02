@@ -11,15 +11,18 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.astro.alcochoden import calculate_alcochoden
 from app.astro.hyleg import calculate_hyleg
 from app.astro.longevity import calculate_longevity_analysis
 from app.core.context import get_locale
-from app.core.dependencies import require_premium
+from app.core.dependencies import get_db, require_credits
 from app.core.rate_limit import RateLimits, limiter
+from app.models.enums import FeatureType
 from app.models.user import User
 from app.schemas.longevity import AlcochodenResponse, HylegResponse, LongevityResponse
+from app.services import credit_service
 from app.services.chart_service import (
     ChartNotFoundError,
     ChartService,
@@ -65,8 +68,9 @@ async def get_hyleg(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(require_credits(FeatureType.LONGEVITY.value))],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     method: str = Query(
         "ptolemaic",
         pattern="^(ptolemaic)$",
@@ -174,8 +178,9 @@ async def get_alcochoden(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(require_credits(FeatureType.LONGEVITY.value))],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AlcochodenResponse:
     """Get Alcochoden calculation for a chart."""
     try:
@@ -283,14 +288,14 @@ This endpoint provides the full traditional astrology longevity analysis:
 - **Alcochoden (Giver of Years)**: The planet determining lifespan
 - **Summary**: Overall assessment of vital force and potential years
 
-**Premium Feature**: This endpoint requires premium or admin access.
+**Credits Required**: This endpoint requires 2 credits (first calculation only).
 
 **Educational Disclaimer**: These calculations are presented for historical and educational
 purposes only. They are not scientifically validated and should never be used for health
 predictions or medical decisions.
 """,
     responses={
-        403: {"description": "Premium access required"},
+        402: {"description": "Insufficient credits"},
         404: {"description": "Chart not found or not owned by user"},
     },
 )
@@ -299,8 +304,9 @@ async def get_longevity(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(require_credits(FeatureType.LONGEVITY.value))],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     method: str = Query(
         "ptolemaic",
         pattern="^(ptolemaic)$",
@@ -337,11 +343,11 @@ async def get_longevity(
             detail="Chart data not available for this locale",
         )
 
-    # Check if longevity data is already calculated
+    # Check if longevity data is already calculated (no credits consumed for cached)
     if "longevity" in chart_data and chart_data["longevity"]:
         return LongevityResponse(**chart_data["longevity"])
 
-    # Calculate on-the-fly
+    # Calculate on-the-fly - credits will be consumed below
     planets = chart_data.get("planets", [])
     houses = chart_data.get("houses", [])
     aspects = chart_data.get("aspects", [])
@@ -384,5 +390,14 @@ async def get_longevity(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to calculate longevity analysis",
         )
+
+    # Consume credits after successful calculation
+    await credit_service.consume_credits(
+        db=db,
+        user_id=current_user.id,
+        feature_type=FeatureType.LONGEVITY.value,
+        resource_id=chart_id,
+        description=f"Longevity analysis for chart {chart_id}",
+    )
 
     return LongevityResponse(**longevity)

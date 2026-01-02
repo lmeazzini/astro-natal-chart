@@ -65,6 +65,7 @@ dependencies = [
     "python-docx>=1.2.0",
     "pypdf2>=3.0.1",
     "amplitude-analytics>=1.2.1",
+    "stripe>=14.1.0",
 ]
 
 [build-system]

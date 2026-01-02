@@ -1,6 +1,7 @@
 """Stripe webhook event handlers."""
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 import stripe
@@ -70,11 +71,13 @@ async def handle_checkout_session_completed(
 
     Creates or updates subscription when a checkout is completed.
     """
-    session = event.data.object
-    user_id_str = session.metadata.get("user_id")
+    session: dict[str, Any] = event.data.object  # type: ignore[assignment]
+    metadata = session.get("metadata", {})
+    user_id_str = metadata.get("user_id") if metadata else None
+    session_id = session.get("id", "unknown")
 
     if not user_id_str:
-        logger.error(f"checkout.session.completed missing user_id in metadata: {session.id}")
+        logger.error(f"checkout.session.completed missing user_id in metadata: {session_id}")
         return
 
     user_id = UUID(user_id_str)
@@ -88,7 +91,8 @@ async def handle_checkout_session_completed(
         return
 
     # Get subscription from Stripe
-    stripe_subscription = stripe.Subscription.retrieve(session.subscription)
+    session_subscription_id = session.get("subscription")
+    stripe_subscription = stripe.Subscription.retrieve(session_subscription_id)
     price_id = stripe_subscription["items"]["data"][0]["price"]["id"]
     plan_type = stripe_service.get_plan_for_price_id(price_id)
 
@@ -96,19 +100,33 @@ async def handle_checkout_session_completed(
     subscription = await subscription_repo.get_by_user_id(user_id)
     now = datetime.now(UTC)
 
+    # Extract period dates from subscription items (Stripe API 2025+)
+    subscription_item = stripe_subscription["items"]["data"][0]
+    period_start = datetime.fromtimestamp(
+        subscription_item.get(
+            "current_period_start", stripe_subscription.get("start_date", now.timestamp())
+        ),
+        tz=UTC,
+    )
+    period_end = datetime.fromtimestamp(
+        subscription_item.get(
+            "current_period_end", stripe_subscription.get("start_date", now.timestamp()) + 2592000
+        ),
+        tz=UTC,
+    )
+
+    stripe_sub_id = stripe_subscription.get("id") or stripe_subscription.id
+    session_customer = session.get("customer")
+
     if subscription:
         # Update existing subscription
         subscription.status = SubscriptionStatus.ACTIVE.value
         subscription.plan_type = plan_type
-        subscription.stripe_customer_id = session.customer
-        subscription.stripe_subscription_id = stripe_subscription.id
+        subscription.stripe_customer_id = session_customer
+        subscription.stripe_subscription_id = stripe_sub_id
         subscription.stripe_price_id = price_id
-        subscription.current_period_start = datetime.fromtimestamp(
-            stripe_subscription.current_period_start, tz=UTC
-        )
-        subscription.current_period_end = datetime.fromtimestamp(
-            stripe_subscription.current_period_end, tz=UTC
-        )
+        subscription.current_period_start = period_start
+        subscription.current_period_end = period_end
         subscription.cancel_at_period_end = False
         subscription.updated_at = now
     else:
@@ -117,16 +135,12 @@ async def handle_checkout_session_completed(
             user_id=user_id,
             status=SubscriptionStatus.ACTIVE.value,
             plan_type=plan_type,
-            stripe_customer_id=session.customer,
-            stripe_subscription_id=stripe_subscription.id,
+            stripe_customer_id=session_customer,
+            stripe_subscription_id=stripe_sub_id,
             stripe_price_id=price_id,
             started_at=now,
-            current_period_start=datetime.fromtimestamp(
-                stripe_subscription.current_period_start, tz=UTC
-            ),
-            current_period_end=datetime.fromtimestamp(
-                stripe_subscription.current_period_end, tz=UTC
-            ),
+            current_period_start=period_start,
+            current_period_end=period_end,
         )
         subscription = await subscription_repo.create(subscription)
 
@@ -143,7 +157,7 @@ async def handle_checkout_session_completed(
         resource_type="subscription",
         resource_id=subscription.id,
         extra_data={
-            "stripe_subscription_id": stripe_subscription.id,
+            "stripe_subscription_id": stripe_sub_id,
             "plan_type": plan_type,
             "source": "stripe_checkout",
         },
@@ -162,7 +176,7 @@ async def handle_checkout_session_completed(
         user_id=str(user_id),
         event_properties={
             "plan_type": plan_type,
-            "stripe_subscription_id": stripe_subscription.id,
+            "stripe_subscription_id": stripe_sub_id,
             "source": "stripe_checkout",
         },
     )
@@ -179,31 +193,45 @@ async def handle_subscription_updated(
 
     Updates subscription status, dates, and handles plan changes.
     """
-    stripe_subscription = event.data.object
+    stripe_subscription: dict[str, Any] = event.data.object  # type: ignore[assignment]
     subscription_repo = SubscriptionRepository(db)
 
-    subscription = await subscription_repo.get_by_stripe_subscription_id(stripe_subscription.id)
+    stripe_sub_id = stripe_subscription.get("id", "")
+    subscription = await subscription_repo.get_by_stripe_subscription_id(stripe_sub_id)
     if not subscription:
-        logger.warning(f"Subscription not found for Stripe ID: {stripe_subscription.id}")
+        logger.warning(f"Subscription not found for Stripe ID: {stripe_sub_id}")
         return
 
     # Get price and plan type
-    price_id = stripe_subscription["items"]["data"][0]["price"]["id"]
+    items_data = stripe_subscription.get("items", {}).get("data", [])
+    subscription_item = items_data[0] if items_data else {}
+    price_id = subscription_item.get("price", {}).get("id", "")
     new_plan_type = stripe_service.get_plan_for_price_id(price_id)
     old_plan_type = subscription.plan_type
+    now = datetime.now(UTC)
+
+    # Extract period dates from subscription items (Stripe API 2025+)
+    period_start = datetime.fromtimestamp(
+        subscription_item.get(
+            "current_period_start", stripe_subscription.get("start_date", now.timestamp())
+        ),
+        tz=UTC,
+    )
+    period_end = datetime.fromtimestamp(
+        subscription_item.get(
+            "current_period_end", stripe_subscription.get("start_date", now.timestamp()) + 2592000
+        ),
+        tz=UTC,
+    )
 
     # Update subscription
     subscription.status = SubscriptionStatus.ACTIVE.value
     subscription.stripe_price_id = price_id
     subscription.plan_type = new_plan_type
-    subscription.current_period_start = datetime.fromtimestamp(
-        stripe_subscription.current_period_start, tz=UTC
-    )
-    subscription.current_period_end = datetime.fromtimestamp(
-        stripe_subscription.current_period_end, tz=UTC
-    )
-    subscription.cancel_at_period_end = stripe_subscription.cancel_at_period_end
-    subscription.updated_at = datetime.now(UTC)
+    subscription.current_period_start = period_start
+    subscription.current_period_end = period_end
+    subscription.cancel_at_period_end = stripe_subscription.get("cancel_at_period_end", False)
+    subscription.updated_at = now
 
     # If plan changed, update credits
     if old_plan_type != new_plan_type:
@@ -231,7 +259,7 @@ async def handle_subscription_updated(
             },
         )
 
-    logger.info(f"Subscription updated: {stripe_subscription.id}")
+    logger.info(f"Subscription updated: {stripe_sub_id}")
 
 
 async def handle_subscription_deleted(
@@ -243,14 +271,15 @@ async def handle_subscription_deleted(
 
     Cancels subscription and downgrades user to free tier.
     """
-    stripe_subscription = event.data.object
+    stripe_subscription: dict[str, Any] = event.data.object  # type: ignore[assignment]
     subscription_repo = SubscriptionRepository(db)
     user_repo = UserRepository(db)
     audit_repo = AuditRepository(db)
 
-    subscription = await subscription_repo.get_by_stripe_subscription_id(stripe_subscription.id)
+    stripe_sub_id = stripe_subscription.get("id", "")
+    subscription = await subscription_repo.get_by_stripe_subscription_id(stripe_sub_id)
     if not subscription:
-        logger.warning(f"Subscription not found for deletion: {stripe_subscription.id}")
+        logger.warning(f"Subscription not found for deletion: {stripe_sub_id}")
         return
 
     # Update subscription status
@@ -272,7 +301,7 @@ async def handle_subscription_deleted(
         resource_type="subscription",
         resource_id=subscription.id,
         extra_data={
-            "stripe_subscription_id": stripe_subscription.id,
+            "stripe_subscription_id": stripe_sub_id,
             "source": "stripe_webhook",
         },
     )
@@ -289,12 +318,12 @@ async def handle_subscription_deleted(
         event_type="subscription_cancelled",
         user_id=str(subscription.user_id),
         event_properties={
-            "stripe_subscription_id": stripe_subscription.id,
+            "stripe_subscription_id": stripe_sub_id,
             "source": "stripe_webhook",
         },
     )
 
-    logger.info(f"Subscription cancelled: {stripe_subscription.id}")
+    logger.info(f"Subscription cancelled: {stripe_sub_id}")
 
 
 async def handle_invoice_payment_succeeded(
@@ -306,64 +335,67 @@ async def handle_invoice_payment_succeeded(
 
     Records payment and resets credits for the new billing period.
     """
-    invoice = event.data.object
+    invoice: dict[str, Any] = event.data.object  # type: ignore[assignment]
 
     # Skip if no subscription (one-time payment)
-    if not invoice.subscription:
+    invoice_subscription = invoice.get("subscription")
+    if not invoice_subscription:
         return
 
     subscription_repo = SubscriptionRepository(db)
     payment_repo = PaymentRepository(db)
 
-    subscription = await subscription_repo.get_by_stripe_subscription_id(invoice.subscription)
+    subscription = await subscription_repo.get_by_stripe_subscription_id(invoice_subscription)
     if not subscription:
-        logger.warning(f"Subscription not found for invoice: {invoice.subscription}")
+        logger.warning(f"Subscription not found for invoice: {invoice_subscription}")
         return
 
     # Check if payment already recorded (idempotency)
-    existing_payment = await payment_repo.get_by_stripe_invoice(invoice.id)
+    invoice_id = invoice.get("id", "")
+    existing_payment = await payment_repo.get_by_stripe_invoice(invoice_id)
     if existing_payment:
-        logger.info(f"Payment already recorded for invoice: {invoice.id}")
+        logger.info(f"Payment already recorded for invoice: {invoice_id}")
         return
 
     # Record payment
     payment = Payment(
         user_id=subscription.user_id,
         subscription_id=subscription.id,
-        stripe_invoice_id=invoice.id,
-        stripe_payment_intent_id=invoice.payment_intent,
-        amount=invoice.amount_paid,
-        currency=invoice.currency,
+        stripe_invoice_id=invoice_id,
+        stripe_payment_intent_id=invoice.get("payment_intent"),
+        amount=invoice.get("amount_paid", 0),
+        currency=invoice.get("currency", "brl"),
         status="succeeded",
-        receipt_url=invoice.hosted_invoice_url,
+        receipt_url=invoice.get("hosted_invoice_url"),
         description=f"Subscription payment - {subscription.plan_type}",
     )
     await payment_repo.create(payment)
 
     # Reset credits for new billing period (monthly renewal)
     # Only reset if this is a renewal (not the first payment)
-    if invoice.billing_reason == "subscription_cycle":
+    if invoice.get("billing_reason") == "subscription_cycle":
         from app.services.credit_service import reset_monthly_credits
 
         await reset_monthly_credits(db, subscription.user_id)
 
     await db.commit()
 
+    amount_paid = invoice.get("amount_paid", 0)
+    currency = invoice.get("currency", "brl")
+
     # Track with Amplitude
     amplitude_service.track(
         event_type="payment_succeeded",
         user_id=str(subscription.user_id),
         event_properties={
-            "amount": invoice.amount_paid,
-            "currency": invoice.currency,
+            "amount": amount_paid,
+            "currency": currency,
             "plan_type": subscription.plan_type,
             "source": "stripe_webhook",
         },
     )
 
-    logger.info(
-        f"Payment recorded for user {subscription.user_id}: {invoice.amount_paid} {invoice.currency}"
-    )
+    logger.info(f"Payment recorded for user {subscription.user_id}: {amount_paid} {currency}")
 
 
 async def handle_invoice_payment_failed(
@@ -375,26 +407,32 @@ async def handle_invoice_payment_failed(
 
     Records failed payment and can trigger notifications.
     """
-    invoice = event.data.object
+    invoice: dict[str, Any] = event.data.object  # type: ignore[assignment]
 
-    if not invoice.subscription:
+    invoice_subscription = invoice.get("subscription")
+    if not invoice_subscription:
         return
 
     subscription_repo = SubscriptionRepository(db)
     payment_repo = PaymentRepository(db)
 
-    subscription = await subscription_repo.get_by_stripe_subscription_id(invoice.subscription)
+    subscription = await subscription_repo.get_by_stripe_subscription_id(invoice_subscription)
     if not subscription:
         return
+
+    invoice_id = invoice.get("id", "")
+    amount_due = invoice.get("amount_due", 0)
+    currency = invoice.get("currency", "brl")
+    attempt_count = invoice.get("attempt_count", 1)
 
     # Record failed payment
     payment = Payment(
         user_id=subscription.user_id,
         subscription_id=subscription.id,
-        stripe_invoice_id=invoice.id,
-        stripe_payment_intent_id=invoice.payment_intent,
-        amount=invoice.amount_due,
-        currency=invoice.currency,
+        stripe_invoice_id=invoice_id,
+        stripe_payment_intent_id=invoice.get("payment_intent"),
+        amount=amount_due,
+        currency=currency,
         status="failed",
         description=f"Failed payment - {subscription.plan_type}",
     )
@@ -407,15 +445,15 @@ async def handle_invoice_payment_failed(
         event_type="payment_failed",
         user_id=str(subscription.user_id),
         event_properties={
-            "amount": invoice.amount_due,
-            "currency": invoice.currency,
+            "amount": amount_due,
+            "currency": currency,
             "plan_type": subscription.plan_type,
-            "attempt_count": invoice.attempt_count,
+            "attempt_count": attempt_count,
             "source": "stripe_webhook",
         },
     )
 
-    logger.warning(f"Payment failed for user {subscription.user_id}: {invoice.id}")
+    logger.warning(f"Payment failed for user {subscription.user_id}: {invoice_id}")
 
     # TODO: Send email notification to user about failed payment
 

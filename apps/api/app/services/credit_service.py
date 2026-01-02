@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from loguru import logger
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.credit_config import (
@@ -252,7 +253,11 @@ async def consume_credits(
     description: str | None = None,
 ) -> CreditTransaction:
     """
-    Consume credits for a feature.
+    Consume credits for a feature using atomic database operations.
+
+    This function uses an atomic UPDATE with a WHERE clause to prevent race conditions.
+    If two concurrent requests try to consume credits, only one will succeed if the
+    balance would go negative.
 
     Args:
         db: Database session
@@ -287,9 +292,31 @@ async def consume_credits(
         await transaction_repo.create(transaction)
         return transaction
 
-    # Check if user has enough credits
     required = get_feature_cost(feature_type)
-    if user_credit.credits_balance < required:
+    now = datetime.now(UTC)
+
+    # Atomic UPDATE: Only succeeds if balance >= required
+    # This prevents race conditions where concurrent requests could overdraw
+    stmt = (
+        update(UserCredit)
+        .where(
+            UserCredit.user_id == user_id,
+            UserCredit.credits_balance >= required,
+        )
+        .values(
+            credits_balance=UserCredit.credits_balance - required,
+            updated_at=now,
+        )
+        .returning(UserCredit.credits_balance)
+    )
+
+    result = await db.execute(stmt)
+    new_balance_row = result.scalar_one_or_none()
+
+    # If no row was updated, either user doesn't exist or insufficient credits
+    if new_balance_row is None:
+        # Refresh to get current balance for error message
+        await db.refresh(user_credit)
         amplitude_service.track(
             event_type="insufficient_credits",
             user_id=str(user_id),
@@ -306,13 +333,9 @@ async def consume_credits(
             feature_type=feature_type,
         )
 
-    # Debit credits
-    now = datetime.now(UTC)
-    new_balance = user_credit.credits_balance - required
+    new_balance = new_balance_row
 
-    user_credit.credits_balance = new_balance
-    user_credit.updated_at = now
-
+    # Create transaction record
     transaction = CreditTransaction(
         user_id=user_id,
         transaction_type=TransactionType.DEBIT.value,
@@ -324,9 +347,8 @@ async def consume_credits(
         created_at=now,
     )
 
-    await db.commit()
-    await db.refresh(user_credit)
     await transaction_repo.create(transaction)
+    await db.commit()
 
     # Track with Amplitude
     amplitude_service.track(

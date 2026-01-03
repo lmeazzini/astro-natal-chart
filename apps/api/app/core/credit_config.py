@@ -22,7 +22,8 @@ FEATURE_CREDIT_COSTS: dict[str, int] = {
     FeatureType.SYNASTRY.value: 2,
     FeatureType.SOLAR_RETURN.value: 2,
     FeatureType.SATURN_RETURN.value: 2,
-    FeatureType.LONGEVITY.value: 2,
+    FeatureType.LONGEVITY.value: 3,  # Updated: complex calculation
+    FeatureType.GROWTH.value: 2,  # New: growth suggestions
     FeatureType.PROFECTIONS.value: 1,
     FeatureType.TRANSITS.value: 1,
 }

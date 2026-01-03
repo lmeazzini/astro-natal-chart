@@ -577,3 +577,116 @@ async def get_usage_breakdown(
         start_date=user_credit.period_start,
         end_date=user_credit.period_end,
     )
+
+
+async def get_unlocked_features_for_chart(
+    db: AsyncSession,
+    user_id: UUID,
+    chart_id: UUID,
+) -> dict:
+    """
+    Get features that have been unlocked (paid) for a specific chart.
+
+    Args:
+        db: Database session
+        user_id: User UUID
+        chart_id: Chart UUID
+
+    Returns:
+        Dictionary with:
+        - unlocked_features: list of feature types that are unlocked
+        - unlocked_solar_return_years: list of years for Solar Return
+    """
+    import re
+
+    transaction_repo = CreditTransactionRepository(db)
+
+    # Get all unlocked features for this chart
+    unlocked_features = await transaction_repo.get_unlocked_features_for_chart(
+        user_id=user_id,
+        chart_id=chart_id,
+    )
+
+    # Get Solar Return transactions to extract years
+    sr_transactions = await transaction_repo.get_solar_return_transactions_for_chart(
+        user_id=user_id,
+        chart_id=chart_id,
+    )
+
+    # Extract years from descriptions like "Solar Return 2024 for chart Name"
+    unlocked_years: list[int] = []
+    year_pattern = re.compile(r"Solar Return (\d{4})")
+    for tx in sr_transactions:
+        if tx.description:
+            match = year_pattern.search(tx.description)
+            if match:
+                year = int(match.group(1))
+                if year not in unlocked_years:
+                    unlocked_years.append(year)
+
+    return {
+        "unlocked_features": unlocked_features,
+        "unlocked_solar_return_years": sorted(unlocked_years),
+    }
+
+
+async def has_feature_unlocked(
+    db: AsyncSession,
+    user_id: UUID,
+    chart_id: UUID,
+    feature_type: str,
+) -> bool:
+    """
+    Check if a feature has been unlocked (paid) for a specific chart.
+
+    Args:
+        db: Database session
+        user_id: User UUID
+        chart_id: Chart UUID
+        feature_type: Feature type to check
+
+    Returns:
+        True if feature was previously paid for, False otherwise
+    """
+    transaction_repo = CreditTransactionRepository(db)
+    return await transaction_repo.has_feature_unlocked(
+        user_id=user_id,
+        chart_id=chart_id,
+        feature_type=feature_type,
+    )
+
+
+async def has_solar_return_year_unlocked(
+    db: AsyncSession,
+    user_id: UUID,
+    chart_id: UUID,
+    year: int,
+) -> bool:
+    """
+    Check if a specific Solar Return year has been unlocked for a chart.
+
+    Args:
+        db: Database session
+        user_id: User UUID
+        chart_id: Chart UUID
+        year: Year to check
+
+    Returns:
+        True if Solar Return for this year was previously paid for
+    """
+    import re
+
+    transaction_repo = CreditTransactionRepository(db)
+    sr_transactions = await transaction_repo.get_solar_return_transactions_for_chart(
+        user_id=user_id,
+        chart_id=chart_id,
+    )
+
+    year_pattern = re.compile(r"Solar Return (\d{4})")
+    for tx in sr_transactions:
+        if tx.description:
+            match = year_pattern.search(tx.description)
+            if match and int(match.group(1)) == year:
+                return True
+
+    return False

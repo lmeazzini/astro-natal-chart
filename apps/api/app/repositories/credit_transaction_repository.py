@@ -156,3 +156,94 @@ class CreditTransactionRepository(BaseRepository[CreditTransaction]):
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_unlocked_features_for_chart(
+        self,
+        user_id: UUID,
+        chart_id: UUID,
+    ) -> list[str]:
+        """
+        Get distinct feature types that have been paid for a specific chart.
+
+        Args:
+            user_id: User UUID
+            chart_id: Chart UUID (stored as resource_id)
+
+        Returns:
+            List of unique feature_type strings that were unlocked
+        """
+        from app.models.enums import TransactionType
+
+        stmt = (
+            select(CreditTransaction.feature_type)
+            .where(
+                CreditTransaction.user_id == user_id,
+                CreditTransaction.resource_id == chart_id,
+                CreditTransaction.transaction_type == TransactionType.DEBIT.value,
+                CreditTransaction.feature_type.isnot(None),
+            )
+            .distinct()
+        )
+        result = await self.db.execute(stmt)
+        return [row[0] for row in result.all()]
+
+    async def get_solar_return_transactions_for_chart(
+        self,
+        user_id: UUID,
+        chart_id: UUID,
+    ) -> list[CreditTransaction]:
+        """
+        Get Solar Return transactions for a specific chart.
+
+        Used to extract which years have been paid for.
+
+        Args:
+            user_id: User UUID
+            chart_id: Chart UUID
+
+        Returns:
+            List of Solar Return transactions
+        """
+        from app.models.enums import FeatureType, TransactionType
+
+        stmt = (
+            select(CreditTransaction)
+            .where(
+                CreditTransaction.user_id == user_id,
+                CreditTransaction.resource_id == chart_id,
+                CreditTransaction.transaction_type == TransactionType.DEBIT.value,
+                CreditTransaction.feature_type == FeatureType.SOLAR_RETURN.value,
+            )
+            .order_by(CreditTransaction.created_at.desc())
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def has_feature_unlocked(
+        self,
+        user_id: UUID,
+        chart_id: UUID,
+        feature_type: str,
+    ) -> bool:
+        """
+        Check if a feature has been unlocked (paid) for a specific chart.
+
+        Args:
+            user_id: User UUID
+            chart_id: Chart UUID
+            feature_type: Feature type to check
+
+        Returns:
+            True if feature was previously paid for, False otherwise
+        """
+        from app.models.enums import TransactionType
+
+        stmt = select(func.count()).where(
+            CreditTransaction.user_id == user_id,
+            CreditTransaction.resource_id == chart_id,
+            CreditTransaction.transaction_type == TransactionType.DEBIT.value,
+            CreditTransaction.feature_type == feature_type,
+        )
+        result = await self.db.execute(stmt)
+        count = result.scalar_one()
+        return count > 0

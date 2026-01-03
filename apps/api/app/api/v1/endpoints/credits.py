@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.credit_config import FEATURE_CREDIT_COSTS, PLAN_CREDIT_LIMITS
@@ -15,10 +15,12 @@ from app.schemas.credit import (
     CreditsInfoResponse,
     CreditTransactionRead,
     CreditUsageResponse,
+    UnlockedFeaturesResponse,
     UpgradePlanRequest,
     UserCreditResponse,
 )
 from app.services import credit_service
+from app.services.chart_service import ChartNotFoundError, ChartService, get_chart_service
 
 router = APIRouter(prefix="/credits")
 
@@ -126,6 +128,54 @@ async def get_credits_info() -> CreditsInfoResponse:
     return CreditsInfoResponse(
         plans=PLAN_CREDIT_LIMITS,
         feature_costs=feature_costs,
+    )
+
+
+@router.get(
+    "/charts/{chart_id}/unlocked-features",
+    response_model=UnlockedFeaturesResponse,
+    summary="Get unlocked features for a chart",
+    description="""
+Get the list of premium features that have been unlocked (paid) for a specific chart.
+
+This endpoint returns:
+- **unlocked_features**: List of feature types (longevity, saturn_return, growth, solar_return)
+  that have been unlocked for this chart
+- **unlocked_solar_return_years**: List of years for which Solar Return has been unlocked
+  (Solar Return is charged per year)
+
+Use this to determine whether to show the premium feature card or load the data directly.
+""",
+    responses={
+        404: {"description": "Chart not found or not owned by user"},
+    },
+)
+async def get_unlocked_features(
+    chart_id: UUID,
+    current_user: User = Depends(get_current_user),
+    chart_service: ChartService = Depends(get_chart_service),
+    db: AsyncSession = Depends(get_db),
+) -> UnlockedFeaturesResponse:
+    """Get unlocked features for a specific chart."""
+    # Verify chart ownership
+    try:
+        await chart_service.get_chart_by_id(chart_id, current_user.id)
+    except ChartNotFoundError as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chart not found",
+        ) from err
+
+    # Get unlocked features
+    result = await credit_service.get_unlocked_features_for_chart(
+        db=db,
+        user_id=current_user.id,
+        chart_id=chart_id,
+    )
+
+    return UnlockedFeaturesResponse(
+        unlocked_features=result["unlocked_features"],
+        unlocked_solar_return_years=result["unlocked_solar_return_years"],
     )
 
 

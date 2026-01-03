@@ -93,3 +93,18 @@ class CreditsInfoResponse(BaseModel):
         ...,
         description="Credit costs per feature",
     )
+
+
+class UnlockedFeaturesResponse(BaseModel):
+    """Response for unlocked features for a chart."""
+
+    unlocked_features: list[str] = Field(
+        ...,
+        description="List of feature types that have been unlocked (paid) for this chart",
+        examples=[["longevity", "saturn_return", "growth"]],
+    )
+    unlocked_solar_return_years: list[int] = Field(
+        ...,
+        description="List of years for which Solar Return has been unlocked",
+        examples=[[2024, 2025]],
+    )

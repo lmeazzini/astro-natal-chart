@@ -125,6 +125,7 @@ class FeatureType(str, Enum):
     SOLAR_RETURN = "solar_return"
     SATURN_RETURN = "saturn_return"
     LONGEVITY = "longevity"
+    GROWTH = "growth"
     PROFECTIONS = "profections"
     TRANSITS = "transits"
 

@@ -52,6 +52,11 @@ export interface CreditsInfoResponse {
   feature_costs: CreditCostInfo[];
 }
 
+export interface UnlockedFeaturesResponse {
+  unlocked_features: string[];
+  unlocked_solar_return_years: number[];
+}
+
 // Error type for insufficient credits
 export interface InsufficientCreditsError {
   error: 'insufficient_credits';
@@ -90,6 +95,18 @@ export async function getCreditUsage(): Promise<CreditUsageResponse> {
  */
 export async function getCreditsInfo(): Promise<CreditsInfoResponse> {
   return apiClient.get<CreditsInfoResponse>('/api/v1/credits/info');
+}
+
+/**
+ * Get unlocked features for a specific chart
+ *
+ * Returns the list of premium features that have been paid for on this chart,
+ * and the specific years of Solar Return that have been unlocked.
+ */
+export async function getUnlockedFeatures(chartId: string): Promise<UnlockedFeaturesResponse> {
+  return apiClient.get<UnlockedFeaturesResponse>(
+    `/api/v1/credits/charts/${chartId}/unlocked-features`
+  );
 }
 
 /**

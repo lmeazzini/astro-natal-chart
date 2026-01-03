@@ -181,6 +181,19 @@ class Settings(BaseSettings):
     AMPLITUDE_API_KEY: str | None = None
     AMPLITUDE_ENABLED: bool = False
 
+    # Stripe Payment Integration
+    STRIPE_SECRET_KEY: str | None = None
+    STRIPE_PUBLISHABLE_KEY: str | None = None
+    STRIPE_WEBHOOK_SECRET: str | None = None
+    STRIPE_PRICE_STARTER: str | None = None  # Stripe Price ID for Starter plan
+    STRIPE_PRICE_PRO: str | None = None  # Stripe Price ID for Pro plan
+    STRIPE_PRICE_UNLIMITED: str | None = None  # Stripe Price ID for Unlimited plan
+
+    @property
+    def stripe_enabled(self) -> bool:
+        """Check if Stripe is properly configured."""
+        return bool(self.STRIPE_SECRET_KEY and self.STRIPE_WEBHOOK_SECRET)
+
     @property
     def database_url_sync(self) -> str:
         """Get synchronous database URL for Alembic."""

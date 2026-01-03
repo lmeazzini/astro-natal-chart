@@ -25,6 +25,7 @@ import type {
   SolarReturnInterpretation as SolarReturnInterpretationType,
 } from '../types/solar_return';
 import { getToken } from '../services/api';
+import { getUnlockedFeatures, UnlockedFeaturesResponse } from '../services/credits';
 import type { PDFStatus } from '../types/pdf';
 import { ChartWheelAstro } from '../components/ChartWheelAstro';
 import { PlanetList } from '../components/PlanetList';
@@ -40,7 +41,10 @@ import { SectAnalysis } from '../components/SectAnalysis';
 import { GrowthSuggestions } from '../components/GrowthSuggestions';
 import { PlanetaryTerms } from '../components/PlanetaryTerms';
 import { PrenatalSyzygy } from '../components/PrenatalSyzygy';
+import { PremiumFeatureCard } from '../components/PremiumFeatureCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getLongevityAnalysis } from '../services/longevity';
+import type { LongevityData } from '../types/longevity';
 
 // Lazy load LongevityAnalysis for code splitting (premium feature)
 const LongevityAnalysis = lazy(() =>
@@ -101,6 +105,11 @@ export function ChartDetailPage() {
   // Interpretations loading state
   const [isLoadingInterpretations, setIsLoadingInterpretations] = useState(false);
 
+  // Longevity state (premium feature)
+  const [longevityData, setLongevityData] = useState<LongevityData | null>(null);
+  const [isLoadingLongevity, setIsLoadingLongevity] = useState(false);
+  const [longevityError, setLongevityError] = useState<string | null>(null);
+
   // Saturn Return state (premium feature)
   const [saturnReturnAnalysis, setSaturnReturnAnalysis] = useState<SaturnReturnAnalysisType | null>(
     null
@@ -116,6 +125,9 @@ export function ChartDetailPage() {
     useState<SolarReturnInterpretationType | null>(null);
   const [isLoadingSolarReturn, setIsLoadingSolarReturn] = useState(false);
   const [solarReturnError, setSolarReturnError] = useState<string | null>(null);
+
+  // Unlocked features state (track which premium features have been paid for)
+  const [unlockedFeatures, setUnlockedFeatures] = useState<UnlockedFeaturesResponse | null>(null);
 
   // Tab tracking for Amplitude
   const [currentTab, setCurrentTab] = useState('visual');
@@ -167,6 +179,45 @@ export function ChartDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i18n.language]);
 
+  // Auto-load unlocked premium features that don't have cached data
+  useEffect(() => {
+    if (!unlockedFeatures || !chart) return;
+
+    const { unlocked_features, unlocked_solar_return_years } = unlockedFeatures;
+
+    // Auto-load longevity if unlocked and not cached
+    if (
+      unlocked_features.includes('longevity') &&
+      !chart.chart_data?.longevity &&
+      !longevityData &&
+      !isLoadingLongevity
+    ) {
+      loadLongevity();
+    }
+
+    // Auto-load saturn return if unlocked and not cached
+    if (
+      unlocked_features.includes('saturn_return') &&
+      !chart.chart_data?.saturn_return &&
+      !saturnReturnAnalysis &&
+      !isLoadingSaturnReturn
+    ) {
+      loadSaturnReturn();
+    }
+
+    // Auto-load solar return for unlocked years (check current year)
+    const currentYear = new Date().getFullYear();
+    if (
+      unlocked_solar_return_years.includes(currentYear) &&
+      !chart.chart_data?.solar_returns &&
+      !solarReturnData &&
+      !isLoadingSolarReturn
+    ) {
+      loadSolarReturn();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unlockedFeatures, chart]);
+
   // Polling effect for processing charts
   // Note: i18n.language is intentionally not in deps to avoid restarting the poll on language change
   useEffect(() => {
@@ -212,8 +263,16 @@ export function ChartDetailPage() {
         return;
       }
 
-      const chartData = await chartsService.getById(id, token, i18n.language);
+      // Load chart data and unlocked features in parallel
+      const [chartData, unlockedData] = await Promise.all([
+        chartsService.getById(id, token, i18n.language),
+        getUnlockedFeatures(id).catch(() => null), // Don't fail if this errors
+      ]);
+
       setChart(chartData);
+      if (unlockedData) {
+        setUnlockedFeatures(unlockedData);
+      }
 
       // Track chart detail viewed
       amplitudeService.track('chart_detail_viewed', {
@@ -315,16 +374,8 @@ export function ChartDetailPage() {
       source: 'chart_detail_page',
     });
     setCurrentTab(newTab);
-
-    // Load Saturn Return data on demand when tab is selected
-    if (newTab === 'saturn-return' && !saturnReturnAnalysis && !isLoadingSaturnReturn) {
-      loadSaturnReturn();
-    }
-
-    // Load Solar Return data on demand when tab is selected
-    if (newTab === 'solar-return' && !solarReturnData && !isLoadingSolarReturn) {
-      loadSolarReturn();
-    }
+    // Premium features (Saturn Return, Solar Return, Longevity) are now loaded
+    // on-demand via PremiumFeatureCard when user clicks "Generate"
   }
 
   // Regenerate interpretations (forces new generation, used for language change)
@@ -348,6 +399,24 @@ export function ChartDetailPage() {
       console.error('Failed to regenerate interpretations:', err);
     } finally {
       setIsLoadingInterpretations(false);
+    }
+  }
+
+  // Load Longevity data (premium feature)
+  async function loadLongevity() {
+    if (!id || isLoadingLongevity) return;
+
+    try {
+      setIsLoadingLongevity(true);
+      setLongevityError(null);
+      const data = await getLongevityAnalysis(id);
+      setLongevityData(data);
+    } catch (err) {
+      console.error('Failed to load Longevity:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load Longevity data';
+      setLongevityError(errorMessage);
+    } finally {
+      setIsLoadingLongevity(false);
     }
   }
 
@@ -1371,56 +1440,151 @@ export function ChartDetailPage() {
           {/* Tab Content: Growth */}
           <TabsContent value="growth" className="mt-0">
             {id && (
-              <GrowthSuggestions chartId={id} initialGrowth={interpretations?.growth ?? null} />
+              <GrowthSuggestions
+                chartId={id}
+                initialGrowth={interpretations?.growth ?? null}
+                cachedSuggestions={chart.chart_data?.growth_suggestions ?? null}
+              />
             )}
           </TabsContent>
 
           {/* Tab Content: Longevity (Premium) - Lazy loaded */}
           <TabsContent value="longevity" className="mt-0">
-            <Suspense
-              fallback={
-                <div className="space-y-6">
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-32 w-full" />
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <Skeleton className="h-80 w-full" />
-                    <Skeleton className="h-80 w-full" />
+            {chart.chart_data?.longevity || longevityData ? (
+              <Suspense
+                fallback={
+                  <div className="space-y-6">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Skeleton className="h-80 w-full" />
+                      <Skeleton className="h-80 w-full" />
+                    </div>
                   </div>
+                }
+              >
+                <LongevityAnalysis
+                  longevity={longevityData ?? chart.chart_data?.longevity ?? null}
+                />
+              </Suspense>
+            ) : unlockedFeatures?.unlocked_features?.includes('longevity') || isLoadingLongevity ? (
+              // Feature is unlocked but not cached - show loading state
+              <div className="space-y-6">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-32 w-full" />
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Skeleton className="h-80 w-full" />
+                  <Skeleton className="h-80 w-full" />
                 </div>
-              }
-            >
-              <LongevityAnalysis longevity={chart.chart_data?.longevity ?? null} />
-            </Suspense>
+              </div>
+            ) : (
+              <PremiumFeatureCard
+                feature="longevity"
+                title={t('longevity.title', 'Longevity Analysis')}
+                description={t(
+                  'longevity.description',
+                  'Calculate life expectancy based on traditional astrological techniques including Hyleg, Alcochoden, and house analysis.'
+                )}
+                credits={3}
+                onGenerate={loadLongevity}
+                isLoading={isLoadingLongevity}
+                error={longevityError}
+                onClearError={() => setLongevityError(null)}
+              />
+            )}
           </TabsContent>
 
           {/* Tab Content: Saturn Return (Premium) - Lazy loaded */}
           <TabsContent value="saturn-return" className="mt-0">
-            <Suspense
-              fallback={
-                <div className="space-y-6">
-                  <Skeleton className="h-32 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <Skeleton className="h-64 w-full" />
-                    <Skeleton className="h-64 w-full" />
+            {saturnReturnAnalysis || chart.chart_data?.saturn_return ? (
+              <Suspense
+                fallback={
+                  <div className="space-y-6">
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Skeleton className="h-64 w-full" />
+                      <Skeleton className="h-64 w-full" />
+                    </div>
                   </div>
+                }
+              >
+                <SaturnReturnAnalysis
+                  analysis={saturnReturnAnalysis ?? chart.chart_data?.saturn_return ?? null}
+                  interpretation={saturnReturnInterpretation}
+                  isLoading={isLoadingSaturnReturn}
+                  error={saturnReturnError}
+                  onRetry={loadSaturnReturn}
+                />
+              </Suspense>
+            ) : unlockedFeatures?.unlocked_features?.includes('saturn_return') ||
+              isLoadingSaturnReturn ? (
+              // Feature is unlocked but not cached - show loading state
+              <div className="space-y-6">
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Skeleton className="h-64 w-full" />
+                  <Skeleton className="h-64 w-full" />
                 </div>
-              }
-            >
-              <SaturnReturnAnalysis
-                analysis={saturnReturnAnalysis}
-                interpretation={saturnReturnInterpretation}
+              </div>
+            ) : (
+              <PremiumFeatureCard
+                feature="saturn_return"
+                title={t('saturnReturn.title', 'Saturn Return')}
+                description={t(
+                  'saturnReturn.description',
+                  'Calculate your Saturn Return cycles and discover the timing of major life transitions.'
+                )}
+                credits={2}
+                onGenerate={loadSaturnReturn}
                 isLoading={isLoadingSaturnReturn}
                 error={saturnReturnError}
-                onRetry={loadSaturnReturn}
+                onClearError={() => setSaturnReturnError(null)}
               />
-            </Suspense>
+            )}
           </TabsContent>
 
           {/* Tab Content: Solar Return (Premium) - Lazy loaded */}
           <TabsContent value="solar-return" className="mt-0">
-            <Suspense
-              fallback={
+            {(() => {
+              // Check for cached solar returns (stored as object with year_lat_lon keys)
+              const cachedSolarReturns = chart.chart_data?.solar_returns;
+              const cachedSolarReturn = cachedSolarReturns
+                ? (Object.values(cachedSolarReturns)[0] as SolarReturnResponse | undefined)
+                : undefined;
+              const hasSolarReturn = solarReturnData || cachedSolarReturn;
+
+              // Check if current year is unlocked
+              const currentYear = new Date().getFullYear();
+              const isCurrentYearUnlocked =
+                unlockedFeatures?.unlocked_solar_return_years?.includes(currentYear);
+
+              return hasSolarReturn ? (
+                <Suspense
+                  fallback={
+                    <div className="space-y-6">
+                      <Skeleton className="h-32 w-full" />
+                      <Skeleton className="h-24 w-full" />
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-64 w-full" />
+                      </div>
+                    </div>
+                  }
+                >
+                  <SolarReturnAnalysis
+                    solarReturn={solarReturnData ?? cachedSolarReturn!}
+                    interpretation={solarReturnInterpretation}
+                    isLoading={isLoadingSolarReturn}
+                    error={solarReturnError}
+                    onRetry={loadSolarReturn}
+                    onYearChange={handleSolarReturnYearChange}
+                    unlockedYears={unlockedFeatures?.unlocked_solar_return_years}
+                  />
+                </Suspense>
+              ) : isCurrentYearUnlocked || isLoadingSolarReturn ? (
+                // Current year is unlocked but not cached - show loading state
                 <div className="space-y-6">
                   <Skeleton className="h-32 w-full" />
                   <Skeleton className="h-24 w-full" />
@@ -1429,17 +1593,22 @@ export function ChartDetailPage() {
                     <Skeleton className="h-64 w-full" />
                   </div>
                 </div>
-              }
-            >
-              <SolarReturnAnalysis
-                solarReturn={solarReturnData}
-                interpretation={solarReturnInterpretation}
-                isLoading={isLoadingSolarReturn}
-                error={solarReturnError}
-                onRetry={loadSolarReturn}
-                onYearChange={handleSolarReturnYearChange}
-              />
-            </Suspense>
+              ) : (
+                <PremiumFeatureCard
+                  feature="solar_return"
+                  title={t('solarReturn.title', 'Solar Return')}
+                  description={t(
+                    'solarReturn.description',
+                    'Calculate your Solar Return chart for any year and discover the themes that will influence your life.'
+                  )}
+                  credits={2}
+                  onGenerate={loadSolarReturn}
+                  isLoading={isLoadingSolarReturn}
+                  error={solarReturnError}
+                  onClearError={() => setSolarReturnError(null)}
+                />
+              );
+            })()}
           </TabsContent>
         </Tabs>
 

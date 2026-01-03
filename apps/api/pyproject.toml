@@ -65,6 +65,7 @@ dependencies = [
     "python-docx>=1.2.0",
     "pypdf2>=3.0.1",
     "amplitude-analytics>=1.2.1",
+    "stripe>=14.1.0",
 ]
 
 [build-system]
@@ -118,10 +119,13 @@ python-version = "3.13"
 unresolved-import = "ignore"
 # Ignore missing arguments for pydantic-settings (loaded from env vars)
 missing-argument = "ignore"
-# Downgrade to warnings (many false positives with SQLAlchemy/Pydantic types)
-invalid-argument-type = "warn"
-invalid-assignment = "warn"
-unsupported-operator = "warn"
+# Ignore SQLAlchemy/Pydantic type mismatches (false positives with mapped columns)
+# SQLAlchemy's Mapped[UUID] is recognized as sqlalchemy.sql.sqltypes.UUID[Unknown]
+# instead of uuid.UUID, causing ~100+ false positive warnings
+invalid-argument-type = "ignore"
+invalid-assignment = "ignore"
+unsupported-operator = "ignore"
+possibly-missing-attribute = "ignore"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

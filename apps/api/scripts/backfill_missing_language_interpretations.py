@@ -285,8 +285,7 @@ async def main(
         for i, (chart, missing_langs) in enumerate(charts_to_process, 1):
             try:
                 logger.info(
-                    f"[{i}/{len(charts_to_process)}] Processing {chart.person_name} "
-                    f"({chart.id})..."
+                    f"[{i}/{len(charts_to_process)}] Processing {chart.person_name} ({chart.id})..."
                 )
 
                 results = await backfill_chart_interpretations(

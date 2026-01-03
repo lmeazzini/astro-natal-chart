@@ -15,9 +15,14 @@ from app.core.config import settings
 from app.core.database import Base
 from app.models.blog_post import BlogPost  # noqa: F401
 from app.models.chart import AuditLog, BirthChart  # noqa: F401
+from app.models.credit_transaction import CreditTransaction  # noqa: F401
 from app.models.interpretation import ChartInterpretation  # noqa: F401
 from app.models.interpretation_cache import InterpretationCache  # noqa: F401
+from app.models.payment import Payment  # noqa: F401
+from app.models.subscription import Subscription  # noqa: F401
 from app.models.user import OAuthAccount, User  # noqa: F401
+from app.models.user_credit import UserCredit  # noqa: F401
+from app.models.webhook_event import WebhookEvent  # noqa: F401
 
 # Alembic Config object
 config = context.config

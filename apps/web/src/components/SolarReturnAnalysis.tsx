@@ -46,6 +46,8 @@ interface SolarReturnAnalysisProps {
   onRetry?: () => void;
   onYearChange?: (year: number) => void;
   currentYear?: number;
+  /** Years that have been unlocked (paid for) - used to indicate which years don't cost credits */
+  unlockedYears?: number[];
 }
 
 // ============================================================================
@@ -283,6 +285,7 @@ export function SolarReturnAnalysis({
   onRetry,
   onYearChange,
   currentYear,
+  unlockedYears: _unlockedYears,
 }: SolarReturnAnalysisProps) {
   const { t, i18n } = useTranslation();
   const { translateSign } = useAstroTranslation();

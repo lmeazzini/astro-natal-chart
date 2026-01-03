@@ -24,6 +24,22 @@ class SubscriptionRepository(BaseRepository[Subscription]):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_by_stripe_subscription_id(
+        self, stripe_subscription_id: str
+    ) -> Subscription | None:
+        """Get subscription by Stripe subscription ID."""
+        stmt = select(Subscription).where(
+            Subscription.stripe_subscription_id == stripe_subscription_id
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_by_stripe_customer_id(self, stripe_customer_id: str) -> Subscription | None:
+        """Get subscription by Stripe customer ID."""
+        stmt = select(Subscription).where(Subscription.stripe_customer_id == stripe_customer_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_all_active(self, skip: int = 0, limit: int = 100) -> list[Subscription]:
         """Get all active subscriptions."""
         stmt = (

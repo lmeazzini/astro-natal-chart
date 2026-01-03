@@ -384,10 +384,10 @@ async def generate_chart_interpretations(
     clear: bool = False,
 ) -> dict[str, int]:
     """Generate all interpretations for a single chart."""
-    logger.info(f"\n{'='*60}")
+    logger.info(f"\n{'=' * 60}")
     logger.info(f"Chart: {chart.full_name} ({chart.slug})")
     logger.info(f"Language: {language}")
-    logger.info(f"{'='*60}")
+    logger.info(f"{'=' * 60}")
 
     # Clear existing interpretations if requested
     if clear:
@@ -454,15 +454,15 @@ async def main(
         logger.error("OPENAI_API_KEY not configured - cannot generate interpretations!")
         return
 
-    logger.info(f"\n{'='*60}")
+    logger.info(f"\n{'=' * 60}")
     logger.info("PUBLIC CHARTS INTERPRETATIONS GENERATOR")
-    logger.info(f"{'='*60}")
+    logger.info(f"{'=' * 60}")
     logger.info(f"Languages: {', '.join(languages)}")
     logger.info(f"Clear existing: {clear}")
     logger.info(f"Skip completed: {skip_completed}")
     if chart_slug:
         logger.info(f"Specific chart: {chart_slug}")
-    logger.info(f"{'='*60}\n")
+    logger.info(f"{'=' * 60}\n")
 
     async with AsyncSessionLocal() as db:
         try:
@@ -553,9 +553,9 @@ async def main(
                         fail_count += len(languages)
 
             # Final summary
-            logger.info(f"\n{'='*60}")
+            logger.info(f"\n{'=' * 60}")
             logger.info("GENERATION COMPLETE")
-            logger.info(f"{'='*60}")
+            logger.info(f"{'=' * 60}")
             logger.info(f"Charts processed: {len(charts)}")
             logger.info(f"Languages: {len(languages)}")
             logger.info(f"✓ Success: {success_count}/{len(charts) * len(languages)}")
@@ -564,7 +564,7 @@ async def main(
             logger.info("\nInterpretations by type:")
             for key, value in sorted(total_counts.items()):
                 logger.info(f"  • {key}: {value}")
-            logger.info(f"{'='*60}\n")
+            logger.info(f"{'=' * 60}\n")
 
         except Exception as e:
             logger.error(f"Fatal error: {e}")

@@ -25,7 +25,9 @@ class UserType(str, Enum):
 
 if TYPE_CHECKING:
     from app.models.chart import BirthChart
+    from app.models.payment import Payment
     from app.models.subscription import Subscription
+    from app.models.user_credit import UserCredit
 
 
 class User(Base):
@@ -125,6 +127,17 @@ class User(Base):
         "Subscription",
         back_populates="user",
         uselist=False,
+        cascade="all, delete-orphan",
+    )
+    credits: Mapped["UserCredit | None"] = relationship(  # noqa: F821
+        "UserCredit",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    payments: Mapped[list["Payment"]] = relationship(  # noqa: F821
+        "Payment",
+        back_populates="user",
         cascade="all, delete-orphan",
     )
 

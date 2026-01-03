@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     blog,
     cache,
     charts,
+    credits,
     geocoding,
     github,
     growth,
@@ -24,6 +25,7 @@ from app.api.v1.endpoints import (
     saturn_return,
     seo,
     solar_return,
+    stripe,
     terms,
     timezones,
     users,
@@ -175,4 +177,22 @@ api_router.include_router(
 api_router.include_router(
     solar_return.router,
     tags=["solar-return"],
+)
+
+# Credits system endpoints
+api_router.include_router(
+    credits.router,
+    tags=["credits"],
+)
+
+# Credits admin endpoints (admin only)
+api_router.include_router(
+    credits.admin_router,
+    tags=["admin-credits"],
+)
+
+# Stripe payment endpoints
+api_router.include_router(
+    stripe.router,
+    tags=["payments"],
 )

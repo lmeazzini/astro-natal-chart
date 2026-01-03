@@ -1,22 +1,31 @@
 # Multi-stage Dockerfile for FastAPI backend with UV
 
-FROM python:3.13-slim as base
+# Stage 1: System dependencies with LaTeX (cached separately)
+FROM python:3.13-slim as system-deps
+
+# Install LaTeX packages first (rarely changes, ~500MB, should be cached)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    texlive-latex-base \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-lang-portuguese \
+    && rm -rf /var/lib/apt/lists/*
+
+# Stage 2: Base image with all system dependencies
+FROM system-deps as base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    UV_LINK_MODE=copy \
+    UV_HTTP_TIMEOUT=120
 
-# Install system dependencies and UV
-RUN apt-get update && apt-get install -y \
+# Install build dependencies and UV
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     curl \
-    texlive-latex-base \
-    texlive-latex-extra \
-    texlive-fonts-recommended \
-    texlive-lang-portuguese \
     libcairo2-dev \
     libpango1.0-dev \
     && rm -rf /var/lib/apt/lists/* \

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CreditsProvider } from './contexts/CreditsContext';
 import { MotionProvider } from './providers/MotionProvider';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
@@ -27,11 +28,13 @@ import { RagDocumentsPage } from './pages/RagDocuments';
 import { PricingPage } from './pages/Pricing';
 import { BlogPage } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
+import { SubscriptionSuccessPage } from './pages/SubscriptionSuccess';
 import { CookieBanner } from './components/CookieBanner';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
 import { ThemeProvider } from './components/theme-provider';
 import { NavActions } from './components/NavActions';
+import { CreditBalance } from './components/CreditBalance';
 import { chartsService } from './services/charts';
 import { amplitudeService } from './services/amplitude';
 
@@ -47,42 +50,45 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <MotionProvider>
           <AuthProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/charts" element={<ChartsPage />} />
-                <Route path="/charts/new" element={<NewChartPage />} />
-                <Route path="/charts/:id" element={<ChartDetailPage />} />
-                <Route path="/charts/:id/edit" element={<EditChartPage />} />
-                {/* Legal Pages */}
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/cookies" element={<CookiesPage />} />
-                <Route path="/consent" element={<ConsentPage />} />
-                {/* About Pages */}
-                <Route path="/about/methodology" element={<MethodologyPage />} />
-                {/* Public Charts */}
-                <Route path="/public-charts" element={<PublicChartsPage />} />
-                <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
-                {/* RAG Knowledge Base */}
-                <Route path="/rag-documents" element={<RagDocumentsPage />} />
-                {/* Pricing */}
-                <Route path="/pricing" element={<PricingPage />} />
-                {/* Blog */}
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/blog/:slug" element={<BlogPostPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-              <CookieBanner />
-            </BrowserRouter>
+            <CreditsProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+                  <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/charts" element={<ChartsPage />} />
+                  <Route path="/charts/new" element={<NewChartPage />} />
+                  <Route path="/charts/:id" element={<ChartDetailPage />} />
+                  <Route path="/charts/:id/edit" element={<EditChartPage />} />
+                  {/* Legal Pages */}
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/cookies" element={<CookiesPage />} />
+                  <Route path="/consent" element={<ConsentPage />} />
+                  {/* About Pages */}
+                  <Route path="/about/methodology" element={<MethodologyPage />} />
+                  {/* Public Charts */}
+                  <Route path="/public-charts" element={<PublicChartsPage />} />
+                  <Route path="/public-charts/:slug" element={<PublicChartDetailPage />} />
+                  {/* RAG Knowledge Base */}
+                  <Route path="/rag-documents" element={<RagDocumentsPage />} />
+                  {/* Pricing */}
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+                  {/* Blog */}
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/blog/:slug" element={<BlogPostPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                <CookieBanner />
+              </BrowserRouter>
+            </CreditsProvider>
           </AuthProvider>
         </MotionProvider>
       </ThemeProvider>
@@ -193,25 +199,22 @@ function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboardPage.myCharts')}</CardTitle>
+              <CardDescription>{t('dashboardPage.myChartsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loadingCharts ? (
-                <>
-                  <Skeleton className="h-9 w-20 mb-2" />
-                  <Skeleton className="h-4 w-32" />
-                </>
+                <Skeleton className="h-9 w-32 mb-2" />
               ) : (
-                <>
-                  <p className="text-3xl font-bold text-primary">{chartCount}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {chartCount === 0
-                      ? t('dashboardPage.noChartsYet')
-                      : chartCount === 1
-                        ? t('dashboardPage.oneChartSaved')
-                        : t('dashboardPage.chartsCount', { count: chartCount })}
-                  </p>
-                </>
+                <p className="text-3xl font-bold text-primary">
+                  {chartCount}{' '}
+                  {chartCount === 1 ? t('dashboardPage.chart') : t('dashboardPage.charts')}
+                </p>
               )}
+              <Button variant="secondary" className="w-full mt-4" asChild>
+                <Link to="/charts" onClick={() => trackFeatureCardClick('my_charts')}>
+                  {t('dashboardPage.viewMyCharts')}
+                </Link>
+              </Button>
             </CardContent>
           </Card>
 
@@ -232,6 +235,11 @@ function DashboardPage() {
                   <Badge variant="secondary">{t('dashboardPage.notVerified')}</Badge>
                 )}
               </div>
+              <Button variant="outline" className="w-full mt-2" asChild>
+                <Link to="/pricing" onClick={() => trackFeatureCardClick('credits_management')}>
+                  {t('dashboardPage.manageCredits')}
+                </Link>
+              </Button>
             </CardContent>
           </Card>
 
@@ -250,19 +258,6 @@ function DashboardPage() {
           </Card>
 
           {/* Row 2: Navigation */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('dashboardPage.myChartsCard')}</CardTitle>
-              <CardDescription>{t('dashboardPage.myChartsDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="secondary" className="w-full" asChild>
-                <Link to="/charts" onClick={() => trackFeatureCardClick('my_charts')}>
-                  {t('dashboardPage.viewMyCharts')}
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader>
@@ -292,6 +287,26 @@ function DashboardPage() {
               <Button variant="outline" className="w-full" asChild>
                 <Link to="/rag-documents" onClick={() => trackFeatureCardClick('rag_documents')}>
                   {t('dashboardPage.viewRagDocuments', 'View Documents')}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('dashboardPage.credits', 'Credits')}</CardTitle>
+              <CardDescription>
+                {t(
+                  'dashboardPage.creditsDescription',
+                  'Your available credits for premium features'
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CreditBalance showPlan={true} />
+              <Button variant="outline" className="w-full mt-4" asChild>
+                <Link to="/pricing" onClick={() => trackFeatureCardClick('credits')}>
+                  {t('dashboardPage.buyCredits', 'Buy More Credits')}
                 </Link>
               </Button>
             </CardContent>

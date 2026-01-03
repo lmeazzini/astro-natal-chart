@@ -107,7 +107,9 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
                 # Secondary languages are deferred to background task for faster UX
                 chart.progress = 40
                 await db.commit()
-                logger.info(f"Generating primary language ({PRIMARY_LANGUAGE}) interpretations for {chart_id}")
+                logger.info(
+                    f"Generating primary language ({PRIMARY_LANGUAGE}) interpretations for {chart_id}"
+                )
 
                 # Generate RAG-enhanced interpretations for primary language only
                 # Use same session factory for consistency
@@ -125,7 +127,9 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
                 await db.commit()
 
                 # Step 3.5: Generate growth interpretations for primary language only
-                logger.info(f"Generating primary language ({PRIMARY_LANGUAGE}) growth interpretations for {chart_id}")
+                logger.info(
+                    f"Generating primary language ({PRIMARY_LANGUAGE}) growth interpretations for {chart_id}"
+                )
                 from app.services.personal_growth_service import PersonalGrowthService
 
                 async with TaskSessionLocal() as growth_db:
@@ -140,9 +144,13 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
                 await db.commit()
 
                 # Step 3.6: Queue secondary languages for background processing
-                secondary_languages = [lang for lang in SUPPORTED_LANGUAGES if lang != PRIMARY_LANGUAGE]
+                secondary_languages = [
+                    lang for lang in SUPPORTED_LANGUAGES if lang != PRIMARY_LANGUAGE
+                ]
                 for language in secondary_languages:
-                    logger.info(f"Queueing secondary language ({language}) interpretations for {chart_id}")
+                    logger.info(
+                        f"Queueing secondary language ({language}) interpretations for {chart_id}"
+                    )
                     generate_secondary_language_task.delay(chart_id, language)
 
                 # Step 4: Mark as completed
@@ -162,7 +170,9 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
                     chart.error_message = str(e)[:500]  # Truncate long error messages
                     await db.commit()
                 except Exception as commit_error:
-                    logger.warning(f"Failed to commit error status for chart {chart_id}: {commit_error}")
+                    logger.warning(
+                        f"Failed to commit error status for chart {chart_id}: {commit_error}"
+                    )
                     try:
                         await db.rollback()
                     except Exception:
@@ -176,9 +186,7 @@ async def _generate_birth_chart_async(task_id: str, chart_id: str) -> dict[str, 
 
 
 @celery_app.task(bind=True, name="astro.generate_secondary_language", max_retries=3)
-def generate_secondary_language_task(
-    self: "Task", chart_id: str, language: str
-) -> dict[str, str]:
+def generate_secondary_language_task(self: "Task", chart_id: str, language: str) -> dict[str, str]:
     """
     Generate interpretations for a secondary language in background.
 
@@ -225,11 +233,15 @@ async def _generate_secondary_language_async(chart_id: str, language: str) -> di
                 return {"status": "failed", "message": "Chart not found"}
 
             if not chart.chart_data:
-                logger.error(f"Chart {chart_id} has no chart_data for secondary language generation")
+                logger.error(
+                    f"Chart {chart_id} has no chart_data for secondary language generation"
+                )
                 return {"status": "failed", "message": "Chart data not available"}
 
             try:
-                logger.info(f"Starting secondary language ({language}) generation for chart {chart_id}")
+                logger.info(
+                    f"Starting secondary language ({language}) generation for chart {chart_id}"
+                )
 
                 # Generate RAG-enhanced interpretations for secondary language
                 async with TaskSessionLocal() as rag_db:

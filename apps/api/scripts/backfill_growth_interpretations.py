@@ -209,8 +209,7 @@ async def backfill_chart_growth(
         return results
 
     logger.info(
-        f"Generating growth for {languages_to_generate} on chart {chart.id} "
-        f"({chart.person_name})"
+        f"Generating growth for {languages_to_generate} on chart {chart.id} ({chart.person_name})"
     )
 
     for language in languages_to_generate:

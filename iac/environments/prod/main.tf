@@ -76,10 +76,16 @@ data "aws_region" "current" {}
 module "vpc" {
   source = "../../modules/vpc"
 
-  environment        = var.environment
-  vpc_cidr           = var.vpc_cidr
-  availability_zone  = var.availability_zone
-  enable_nat_gateway = var.enable_nat_gateway
+  environment                    = var.environment
+  vpc_cidr                       = var.vpc_cidr
+  availability_zone              = var.availability_zone
+  availability_zone_secondary    = var.availability_zone_secondary
+  public_subnet_cidr             = var.public_subnet_cidr
+  public_subnet_cidr_secondary   = var.public_subnet_cidr_secondary
+  private_subnet_cidr            = var.private_subnet_cidr
+  database_subnet_cidr           = var.database_subnet_cidr
+  database_subnet_cidr_secondary = var.database_subnet_cidr_secondary
+  enable_nat_gateway             = var.enable_nat_gateway
 }
 
 module "rds" {

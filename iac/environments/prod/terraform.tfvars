@@ -9,9 +9,15 @@ environment = "prod"
 # VPC Configuration
 # -----------------------------------------------------------------------------
 
-vpc_cidr           = "10.1.0.0/16"
-availability_zone  = "us-east-2a"
-enable_nat_gateway = true
+vpc_cidr                       = "10.1.0.0/16"
+availability_zone              = "us-east-2a"
+availability_zone_secondary    = "us-east-2b"
+public_subnet_cidr             = "10.1.1.0/24"
+public_subnet_cidr_secondary   = "10.1.2.0/24"
+private_subnet_cidr            = "10.1.11.0/24"
+database_subnet_cidr           = "10.1.21.0/24"
+database_subnet_cidr_secondary = "10.1.22.0/24"
+enable_nat_gateway             = true
 
 # -----------------------------------------------------------------------------
 # RDS Configuration
@@ -37,16 +43,16 @@ ecs_desired_count = 1
 # S3/CloudFront Configuration
 # -----------------------------------------------------------------------------
 
-# Update with your production domain when available
-allowed_origins        = []
+# Production domain for CORS
+allowed_origins        = ["https://www.realastrology.ai", "https://realastrology.ai"]
 cloudfront_price_class = "PriceClass_100"
 cloudfront_default_ttl = 86400
 
 # -----------------------------------------------------------------------------
-# DNS Configuration (optional - uncomment when ready)
+# DNS Configuration (optional - enable after initial deployment)
 # -----------------------------------------------------------------------------
-
-# domain_name        = "yourdomain.com"
-# create_hosted_zone = true
-# frontend_subdomain = "www"
-# api_subdomain      = "api"
+# NOTE: Deploy infrastructure first without domain, then enable for custom domain
+domain_name        = "realastrology.ai"
+create_hosted_zone = true
+frontend_subdomain = "www"
+api_subdomain      = "api"

@@ -30,7 +30,9 @@ from app.models.user import User
 
 @pytest.fixture
 async def free_user(db_session: AsyncSession) -> User:
-    """Create a user with FREE role."""
+    """Create a user with FREE role and 0 credits (to test blocking)."""
+    from app.models.user_credit import UserCredit
+
     user = User(
         id=uuid4(),
         email="free@example.com",
@@ -44,6 +46,20 @@ async def free_user(db_session: AsyncSession) -> User:
         updated_at=datetime.now(UTC),
     )
     db_session.add(user)
+    await db_session.flush()  # Flush to get user.id
+
+    # Create credit record with 0 credits to test blocking
+    user_credit = UserCredit(
+        user_id=user.id,
+        plan_type="free",
+        credits_balance=0,  # No credits!
+        credits_limit=10,
+        period_start=datetime.now(UTC),
+        period_end=None,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    db_session.add(user_credit)
     await db_session.commit()
     await db_session.refresh(user)
     return user
@@ -110,6 +126,129 @@ async def admin_user_headers(admin_user: User) -> dict[str, str]:
     """Get auth headers for admin user."""
     access_token = create_access_token(data={"sub": str(admin_user.id)})
     return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def chart_data_without_longevity() -> dict:
+    """Sample chart data WITHOUT longevity pre-calculated.
+
+    Used to test that free users are blocked when trying to access premium features.
+    """
+    base_data = {
+        "planets": [
+            {
+                "name": "Sun",
+                "longitude": 45.123,
+                "latitude": 0.002,
+                "speed": 0.985,
+                "retrograde": False,
+                "sign": "Taurus",
+                "degree": 15.123,
+                "house": 10,
+            },
+            {
+                "name": "Moon",
+                "longitude": 165.456,
+                "latitude": 5.234,
+                "speed": 13.456,
+                "retrograde": False,
+                "sign": "Virgo",
+                "degree": 15.456,
+                "house": 3,
+            },
+            {
+                "name": "Saturn",
+                "longitude": 280.0,
+                "latitude": 0.5,
+                "speed": 0.05,
+                "retrograde": False,
+                "sign": "Capricorn",
+                "degree": 10.0,
+                "house": 7,
+            },
+            {
+                "name": "Jupiter",
+                "longitude": 120.0,
+                "latitude": 1.0,
+                "speed": 0.1,
+                "retrograde": False,
+                "sign": "Leo",
+                "degree": 0.0,
+                "house": 1,
+            },
+        ],
+        "houses": [
+            {"number": 1, "cusp": 120.0, "sign": "Leo", "longitude": 120.0},
+            {"number": 2, "cusp": 150.0, "sign": "Virgo", "longitude": 150.0},
+            {"number": 3, "cusp": 180.0, "sign": "Libra", "longitude": 180.0},
+            {"number": 4, "cusp": 210.0, "sign": "Scorpio", "longitude": 210.0},
+            {"number": 5, "cusp": 240.0, "sign": "Sagittarius", "longitude": 240.0},
+            {"number": 6, "cusp": 270.0, "sign": "Capricorn", "longitude": 270.0},
+            {"number": 7, "cusp": 300.0, "sign": "Aquarius", "longitude": 300.0},
+            {"number": 8, "cusp": 330.0, "sign": "Pisces", "longitude": 330.0},
+            {"number": 9, "cusp": 0.0, "sign": "Aries", "longitude": 0.0},
+            {"number": 10, "cusp": 30.0, "sign": "Taurus", "longitude": 30.0},
+            {"number": 11, "cusp": 60.0, "sign": "Gemini", "longitude": 60.0},
+            {"number": 12, "cusp": 90.0, "sign": "Cancer", "longitude": 90.0},
+        ],
+        "aspects": [
+            {
+                "planet1": "Sun",
+                "planet2": "Moon",
+                "aspect": "trine",
+                "angle": 120.0,
+                "orb": 2.3,
+                "applying": True,
+            },
+            {
+                "planet1": "Sun",
+                "planet2": "Saturn",
+                "aspect": "trine",
+                "angle": 120.0,
+                "orb": 5.0,
+                "applying": False,
+            },
+        ],
+        "ascendant": 120.0,
+        "midheaven": 30.0,
+        "sect": "diurnal",
+        "arabic_parts": {
+            "fortune": {"longitude": 200.0, "sign": "Libra", "degree": 20.0, "house": 4},
+        },
+        # NO longevity key - this is intentional for testing credit checking
+    }
+    # Store in language-first format (same as production)
+    # Use correct language keys: "en-US" and "pt-BR"
+    return {"en-US": base_data, "pt-BR": base_data}
+
+
+@pytest.fixture
+async def free_chart_without_longevity(
+    db_session: AsyncSession,
+    free_user: User,
+    chart_data_without_longevity: dict,
+) -> BirthChart:
+    """Create a chart owned by free user WITHOUT longevity data (to test credit checking)."""
+    chart = BirthChart(
+        id=uuid4(),
+        user_id=free_user.id,
+        person_name="Free User Chart No Longevity",
+        birth_datetime=datetime(1985, 3, 20, 10, 0, tzinfo=UTC),
+        birth_timezone="Europe/London",
+        latitude=51.5074,
+        longitude=-0.1278,
+        city="London",
+        country="UK",
+        chart_data=chart_data_without_longevity,
+        house_system="placidus",
+        status="completed",
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    db_session.add(chart)
+    await db_session.commit()
+    await db_session.refresh(chart)
+    return chart
 
 
 @pytest.fixture
@@ -404,55 +543,58 @@ class TestLongevityAuthentication:
 
 
 class TestLongevityPremiumAccess:
-    """Test that longevity endpoints require premium access."""
+    """Test that longevity endpoints require premium access.
+
+    Note: Only the full /longevity endpoint requires credits.
+    The component endpoints (/hyleg, /alcochoden) are free to access
+    since they just calculate individual parts without saving data.
+    """
 
     @pytest.mark.asyncio
-    async def test_hyleg_blocks_free_user(
+    async def test_hyleg_accessible_to_free_user(
         self,
         client: AsyncClient,
         free_user_headers: dict[str, str],
-        free_chart_with_longevity: BirthChart,
+        free_chart_without_longevity: BirthChart,
     ) -> None:
-        """Free users should get 403 when accessing hyleg."""
+        """Free users can access hyleg (component endpoint, no credits required)."""
         response = await client.get(
-            f"/api/v1/charts/{free_chart_with_longevity.id}/hyleg",
+            f"/api/v1/charts/{free_chart_without_longevity.id}/hyleg",
             headers=free_user_headers,
         )
-        assert response.status_code == 403
-        data = response.json()
-        assert data["detail"]["error"] == "premium_required"
+        # Hyleg is a free component endpoint - no credit check
+        assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_alcochoden_blocks_free_user(
+    async def test_alcochoden_accessible_to_free_user(
         self,
         client: AsyncClient,
         free_user_headers: dict[str, str],
-        free_chart_with_longevity: BirthChart,
+        free_chart_without_longevity: BirthChart,
     ) -> None:
-        """Free users should get 403 when accessing alcochoden."""
+        """Free users can access alcochoden (component endpoint, no credits required)."""
         response = await client.get(
-            f"/api/v1/charts/{free_chart_with_longevity.id}/alcochoden",
+            f"/api/v1/charts/{free_chart_without_longevity.id}/alcochoden",
             headers=free_user_headers,
         )
-        assert response.status_code == 403
-        data = response.json()
-        assert data["detail"]["error"] == "premium_required"
+        # Alcochoden is a free component endpoint - no credit check
+        assert response.status_code == 200
 
     @pytest.mark.asyncio
     async def test_longevity_blocks_free_user(
         self,
         client: AsyncClient,
         free_user_headers: dict[str, str],
-        free_chart_with_longevity: BirthChart,
+        free_chart_without_longevity: BirthChart,
     ) -> None:
-        """Free users should get 403 when accessing longevity."""
+        """Free users should get 402 when accessing full longevity (requires credits)."""
         response = await client.get(
-            f"/api/v1/charts/{free_chart_with_longevity.id}/longevity",
+            f"/api/v1/charts/{free_chart_without_longevity.id}/longevity",
             headers=free_user_headers,
         )
-        assert response.status_code == 403
+        assert response.status_code == 402
         data = response.json()
-        assert data["detail"]["error"] == "premium_required"
+        assert data["detail"]["error"] == "insufficient_credits"
 
     @pytest.mark.asyncio
     async def test_hyleg_allows_premium_user(

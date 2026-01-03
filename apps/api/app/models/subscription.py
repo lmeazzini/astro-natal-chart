@@ -4,14 +4,15 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.enums import SubscriptionStatus
+from app.models.enums import PlanType, SubscriptionStatus
 
 if TYPE_CHECKING:
+    from app.models.payment import Payment
     from app.models.user import User
 
 
@@ -45,6 +46,51 @@ class Subscription(Base):
         index=True,
     )
 
+    # Plan type (for credits system)
+    plan_type: Mapped[str] = mapped_column(
+        String(50),
+        default=PlanType.FREE.value,
+        nullable=False,
+        index=True,
+    )
+
+    # Stripe integration fields
+    stripe_customer_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        index=True,
+    )
+
+    stripe_subscription_id: Mapped[str | None] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=True,
+        index=True,
+    )
+
+    stripe_price_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    # Stripe billing period
+    current_period_start: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    current_period_end: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # Cancellation flag
+    cancel_at_period_end: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
     # Dates (timezone-aware)
     started_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -72,6 +118,7 @@ class Subscription(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="subscription")
+    payments: Mapped[list["Payment"]] = relationship("Payment", back_populates="subscription")
 
     # Computed properties
     @property

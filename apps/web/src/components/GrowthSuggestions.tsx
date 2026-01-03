@@ -28,6 +28,8 @@ import {
 interface GrowthSuggestionsProps {
   chartId: string;
   initialGrowth?: Record<string, InterpretationItem> | null;
+  /** Pre-parsed growth suggestions from chart_data (already in GrowthSuggestionsData format) */
+  cachedSuggestions?: GrowthSuggestionsData | null;
 }
 
 interface CollapsibleSectionProps {
@@ -109,23 +111,30 @@ function parseGrowthItems(
   }
 }
 
-export function GrowthSuggestions({ chartId, initialGrowth }: GrowthSuggestionsProps) {
+export function GrowthSuggestions({
+  chartId,
+  initialGrowth,
+  cachedSuggestions,
+}: GrowthSuggestionsProps) {
   const { t } = useTranslation();
+  // Use cachedSuggestions directly if available, otherwise parse initialGrowth
   const [suggestions, setSuggestions] = useState<GrowthSuggestionsData | null>(
-    parseGrowthItems(initialGrowth ?? null)
+    cachedSuggestions ?? parseGrowthItems(initialGrowth ?? null)
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  // Initialize suggestions from prop when available
+  // Initialize suggestions from props when available
   useEffect(() => {
-    if (initialGrowth) {
+    if (cachedSuggestions) {
+      setSuggestions(cachedSuggestions);
+    } else if (initialGrowth) {
       const parsed = parseGrowthItems(initialGrowth);
       setSuggestions(parsed);
     }
     setInitialLoad(false);
-  }, [initialGrowth]);
+  }, [initialGrowth, cachedSuggestions]);
 
   const generateSuggestions = async () => {
     setLoading(true);

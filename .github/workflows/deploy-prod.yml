@@ -26,7 +26,7 @@ on:
       - '.gitignore'
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: us-east-2
   # Infrastructure values from Terraform outputs (configure as secrets)
   ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
   ECS_SERVICE: ${{ secrets.ECS_SERVICE_NAME }}

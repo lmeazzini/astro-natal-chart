@@ -248,7 +248,40 @@
     "viewFamousCharts": "Explorar Mapas Famosos",
     "ragKnowledgeBase": "Base de Conhecimento RAG",
     "ragKnowledgeBaseDescription": "Documentos usados para interpretações astrológicas com IA.",
-    "viewRagDocuments": "Ver Documentos"
+    "viewRagDocuments": "Ver Documentos",
+    "manageCredits": "Gerenciar Créditos e Assinatura",
+    "chart": "mapa",
+    "charts": "mapas",
+    "credits": "Créditos",
+    "creditsDescription": "Seus créditos disponíveis para funcionalidades premium",
+    "buyCredits": "Comprar Mais Créditos"
+  },
+  "premiumFeature": {
+    "creditCost": "{{count}} créditos necessários",
+    "yourCredits": "Você tem: {{count}}",
+    "unlimited": "Ilimitado",
+    "generate": "Gerar Análise",
+    "generating": "Gerando...",
+    "generatingTime": "Isso pode levar alguns segundos...",
+    "needMoreCredits": "Precisa de mais créditos?",
+    "upgradePlan": "Atualize seu plano",
+    "errors": {
+      "unauthorized": "Você não tem acesso a esta funcionalidade.",
+      "notFound": "Mapa não encontrado.",
+      "network": "Erro de rede. Tente novamente."
+    }
+  },
+  "longevity": {
+    "title": "Análise de Longevidade",
+    "description": "Calcule a expectativa de vida baseada em técnicas astrológicas tradicionais incluindo Hyleg, Alcochoden e análise de casas."
+  },
+  "saturnReturn": {
+    "title": "Retorno de Saturno",
+    "description": "Calcule seus ciclos de Retorno de Saturno e descubra o momento das grandes transições de vida."
+  },
+  "solarReturn": {
+    "title": "Revolução Solar",
+    "description": "Calcule seu mapa de Revolução Solar para qualquer ano e descubra os temas que influenciarão sua vida."
   },
   "ragDocuments": {
     "title": "Base de Conhecimento RAG",
@@ -1510,47 +1543,86 @@
       "profections": "Profecções",
       "firdaria": "Firdária",
       "solarReturn": "Revolução Solar",
+      "solar-return": "Revolução Solar",
+      "saturnReturn": "Retorno de Saturno",
+      "saturn-return": "Retorno de Saturno",
       "longevity": "Análise de Longevidade"
     }
   },
   "pricing": {
     "badge": "Planos e Preços",
     "title": "Escolha o plano ideal para você",
-    "subtitle": "Desbloqueie todo o potencial da astrologia tradicional com nossos planos Premium.",
-    "yourPlan": "Seu plano atual:",
+    "subtitle": "Desbloqueie todo o potencial da astrologia tradicional com nossos planos.",
+    "yourPlan": "Seu plano:",
     "currentPlan": "Plano Atual",
-    "downgrade": "Fazer Downgrade",
-    "getStartedFree": "Começar Grátis",
-    "subscribe": "Assinar Premium",
+    "manageSubscription": "Gerenciar assinatura",
+    "processing": "Processando...",
+    "startFree": "Começar Grátis",
+    "subscribe": "Assinar",
+    "select": "Selecionar",
     "recommended": "Recomendado",
+    "premium": "Premium",
+    "unlimited": "Ilimitado",
+    "period": "/mês",
+    "credits": "créditos",
+    "creditsPerMonth": "{{count}} créditos/mês",
     "plans": {
       "free": {
         "name": "Gratuito",
         "description": "Para começar sua jornada astrológica",
         "price": "R$ 0",
-        "period": "/mês"
+        "credits": "10 créditos"
       },
-      "premium": {
-        "name": "Premium",
-        "description": "Para astrólogos sérios que buscam profundidade",
-        "price": "R$ 29,90",
-        "period": "/mês"
+      "starter": {
+        "name": "Iniciante",
+        "description": "Para quem quer explorar mais",
+        "price": "R$ 19,90",
+        "credits": "50 créditos"
+      },
+      "pro": {
+        "name": "Profissional",
+        "description": "Para astrólogos sérios",
+        "price": "R$ 49,90",
+        "credits": "200 créditos"
+      },
+      "unlimited": {
+        "name": "Ilimitado",
+        "description": "Sem limites, sem preocupações",
+        "price": "R$ 99,90",
+        "credits": "Ilimitado"
       }
     },
     "features": {
       "natalCharts": "Mapas natais ilimitados",
+      "credits10": "10 créditos/mês",
+      "credits50": "50 créditos/mês",
+      "credits200": "200 créditos/mês",
+      "unlimitedCredits": "Créditos ilimitados",
+      "svgVisualization": "Visualização de mapa SVG",
       "basicInterpretations": "Interpretações básicas",
       "advancedInterpretations": "Interpretações avançadas com IA",
-      "chartVisualization": "Visualização de mapa SVG",
-      "horary": "Astrologia Horária",
-      "profections": "Profecções",
-      "firdaria": "Firdária",
       "solarReturn": "Revolução Solar",
-      "prioritySupport": "Suporte prioritário"
+      "saturnReturn": "Retorno de Saturno",
+      "longevityAnalysis": "Análise de Longevidade",
+      "profectionsSoon": "Profecções (em breve)",
+      "pdfReport": "Relatório PDF",
+      "emailSupport": "Suporte por email",
+      "prioritySupport": "Suporte prioritário",
+      "vipSupport": "Suporte VIP",
+      "allStarterFeatures": "Todas as features do Iniciante",
+      "allProFeatures": "Todas as features do Profissional",
+      "earlyAccess": "Acesso antecipado a novidades",
+      "discountedConsultations": "Consultas com desconto",
+      "exclusiveBadge": "Badge exclusivo"
     },
-    "comingSoon": {
-      "title": "Em breve!",
-      "description": "O sistema de assinaturas está em desenvolvimento. Enquanto isso, aproveite as funcionalidades gratuitas e fique atento para novidades!"
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "whatAreCredits": "O que são créditos?",
+      "whatAreCreditsAnswer": "Créditos são usados para acessar funcionalidades premium como interpretações com IA, relatórios PDF e análises avançadas. Cada funcionalidade consome uma quantidade específica de créditos.",
+      "doCreditsAccumulate": "Os créditos acumulam?",
+      "doCreditsAccumulateAnswer": "Não, os créditos são renovados mensalmente e não acumulam para o próximo mês. Aproveite todos os seus créditos a cada ciclo!",
+      "canICancel": "Posso cancelar a qualquer momento?",
+      "canICancelAnswer": "Sim! Você pode cancelar sua assinatura a qualquer momento. Você continuará com acesso até o final do período já pago."
     }
   },
   "landing": {

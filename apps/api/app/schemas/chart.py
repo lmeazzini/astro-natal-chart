@@ -15,7 +15,8 @@ class BirthChartCreate(BaseModel):
     person_name: str = Field(..., min_length=1, max_length=100)
     gender: str | None = Field(None, max_length=50)
     birth_datetime: datetime = Field(
-        ..., description="Birth date and time in ISO format (must be timezone-aware, preferably UTC)"
+        ...,
+        description="Birth date and time in ISO format (must be timezone-aware, preferably UTC)",
     )
     birth_timezone: str = Field(
         ..., max_length=50, description="Timezone (e.g., America/Sao_Paulo)"

@@ -11,15 +11,19 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.astro.alcochoden import calculate_alcochoden
 from app.astro.hyleg import calculate_hyleg
 from app.astro.longevity import calculate_longevity_analysis
 from app.core.context import get_locale
-from app.core.dependencies import require_premium
+from app.core.credit_config import get_feature_cost
+from app.core.dependencies import get_current_user, get_db
 from app.core.rate_limit import RateLimits, limiter
+from app.models.enums import FeatureType
 from app.models.user import User
 from app.schemas.longevity import AlcochodenResponse, HylegResponse, LongevityResponse
+from app.services import credit_service
 from app.services.chart_service import (
     ChartNotFoundError,
     ChartService,
@@ -53,7 +57,7 @@ It is determined according to the Ptolemaic method:
 - Candidate must be in a hylegical place (houses 1, 7, 9, 10, 11)
 - Candidate must be aspected by its domicile lord or a prorogatory planet
 
-**Premium Feature**: This endpoint requires premium or admin access.
+**Note**: This endpoint is part of the Longevity feature. Use /longevity for the full analysis.
 """,
     responses={
         403: {"description": "Premium access required"},
@@ -65,8 +69,9 @@ async def get_hyleg(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(get_current_user)],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     method: str = Query(
         "ptolemaic",
         pattern="^(ptolemaic)$",
@@ -162,7 +167,7 @@ It works in conjunction with the Hyleg:
 - The Alcochoden's planetary years indicate potential lifespan
 - Modifications are applied based on the Alcochoden's condition
 
-**Premium Feature**: This endpoint requires premium or admin access.
+**Note**: This endpoint is part of the Longevity feature. Use /longevity for the full analysis.
 """,
     responses={
         403: {"description": "Premium access required"},
@@ -174,8 +179,9 @@ async def get_alcochoden(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(get_current_user)],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AlcochodenResponse:
     """Get Alcochoden calculation for a chart."""
     try:
@@ -283,14 +289,15 @@ This endpoint provides the full traditional astrology longevity analysis:
 - **Alcochoden (Giver of Years)**: The planet determining lifespan
 - **Summary**: Overall assessment of vital force and potential years
 
-**Premium Feature**: This endpoint requires premium or admin access.
+**Credits Required**: This endpoint requires 3 credits (first calculation only).
+If you have already paid for this feature on this chart, no credits will be charged.
 
 **Educational Disclaimer**: These calculations are presented for historical and educational
 purposes only. They are not scientifically validated and should never be used for health
 predictions or medical decisions.
 """,
     responses={
-        403: {"description": "Premium access required"},
+        402: {"description": "Insufficient credits"},
         404: {"description": "Chart not found or not owned by user"},
     },
 )
@@ -299,8 +306,9 @@ async def get_longevity(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(get_current_user)],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     method: str = Query(
         "ptolemaic",
         pattern="^(ptolemaic)$",
@@ -337,9 +345,39 @@ async def get_longevity(
             detail="Chart data not available for this locale",
         )
 
-    # Check if longevity data is already calculated
+    # Check if longevity data is already calculated (no credits consumed for cached)
     if "longevity" in chart_data and chart_data["longevity"]:
         return LongevityResponse(**chart_data["longevity"])
+
+    # Check if feature is already unlocked (previously paid)
+    feature_unlocked = await credit_service.has_feature_unlocked(
+        db=db,
+        user_id=current_user.id,
+        chart_id=chart_id,
+        feature_type=FeatureType.LONGEVITY.value,
+    )
+
+    # If not unlocked and not admin, check for sufficient credits
+    if not feature_unlocked and not current_user.is_admin:
+        has_credits, required, available = await credit_service.has_sufficient_credits(
+            db=db,
+            user_id=current_user.id,
+            feature_type=FeatureType.LONGEVITY.value,
+        )
+        # Unlimited plans have available == -1
+        if available != -1 and not has_credits:
+            cost = get_feature_cost(FeatureType.LONGEVITY.value)
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": f"This feature requires {required} credits. You have {available} credits available.",
+                    "feature_type": FeatureType.LONGEVITY.value,
+                    "required_credits": required,
+                    "available_credits": available,
+                    "feature_cost": cost,
+                },
+            )
 
     # Calculate on-the-fly
     planets = chart_data.get("planets", [])
@@ -383,6 +421,20 @@ async def get_longevity(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to calculate longevity analysis",
+        )
+
+    # Cache the result in chart_data (flat format for consistency)
+    chart.chart_data["longevity"] = longevity
+    await db.commit()
+
+    # Consume credits only if not previously unlocked
+    if not feature_unlocked:
+        await credit_service.consume_credits(
+            db=db,
+            user_id=current_user.id,
+            feature_type=FeatureType.LONGEVITY.value,
+            resource_id=chart_id,
+            description=f"Longevity analysis for chart {chart.person_name}",
         )
 
     return LongevityResponse(**longevity)

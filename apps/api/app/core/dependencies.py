@@ -289,3 +289,73 @@ def require_role(required_role: UserRole) -> Any:
         return current_user
 
     return _check_role
+
+
+def require_credits(feature_type: str) -> Any:
+    """
+    Factory that creates a dependency to check for sufficient credits.
+
+    This dependency will:
+    1. Check if user has enough credits for the feature
+    2. Return 402 Payment Required if insufficient
+    3. Allow admins and unlimited plan users to bypass
+
+    Note: This dependency only CHECKS for credits, it does NOT consume them.
+    Credit consumption should happen in the endpoint after successful operation.
+
+    Usage:
+        @router.post("/interpret")
+        async def create_interpretation(
+            user: User = Depends(require_credits("interpretation_full")),
+            db: AsyncSession = Depends(get_db),
+        ):
+            # Do the work...
+            # Then consume credits:
+            await credit_service.consume_credits(db, user.id, "interpretation_full")
+            return result
+
+    Args:
+        feature_type: Type of feature (e.g., "interpretation_basic", "pdf_report")
+
+    Returns:
+        Dependency function that validates credit availability
+    """
+    from app.core.credit_config import get_feature_cost
+    from app.services import credit_service
+
+    async def _check_credits(
+        current_user: Annotated[User, Depends(get_current_user)],
+        db: Annotated[AsyncSession, Depends(get_db)],
+    ) -> User:
+        # Admins always have access
+        if current_user.is_admin:
+            return current_user
+
+        # Check credit availability
+        has_credits, required, available = await credit_service.has_sufficient_credits(
+            db=db,
+            user_id=current_user.id,
+            feature_type=feature_type,
+        )
+
+        # Unlimited plans (available == -1) always have access
+        if available == -1:
+            return current_user
+
+        if not has_credits:
+            cost = get_feature_cost(feature_type)
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": f"This feature requires {required} credits. You have {available} credits available.",
+                    "feature_type": feature_type,
+                    "required_credits": required,
+                    "available_credits": available,
+                    "feature_cost": cost,
+                },
+            )
+
+        return current_user
+
+    return _check_credits

@@ -5,7 +5,8 @@ These endpoints provide Saturn Return calculations and interpretations,
 including timing of past and future returns, cycle progress, and
 astrological interpretations by sign and house.
 
-PREMIUM FEATURE: These endpoints require premium or admin access.
+CREDIT FEATURE: These endpoints consume credits (2 per analysis).
+Results are cached in chart_data to avoid re-consumption.
 """
 
 from datetime import UTC, datetime
@@ -13,6 +14,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.astro.saturn_return import (
     calculate_saturn_return_analysis,
@@ -20,13 +22,16 @@ from app.astro.saturn_return import (
     get_sign_from_longitude,
 )
 from app.core.context import get_locale
-from app.core.dependencies import require_premium
+from app.core.credit_config import get_feature_cost
+from app.core.dependencies import get_current_user, get_db
 from app.core.rate_limit import RateLimits, limiter
+from app.models.enums import FeatureType
 from app.models.user import User
 from app.schemas.saturn_return import (
     SaturnReturnAnalysisSchema,
     SaturnReturnInterpretationSchema,
 )
+from app.services import credit_service
 from app.services.astro_service import convert_to_julian_day
 from app.services.chart_service import (
     ChartNotFoundError,
@@ -75,10 +80,11 @@ This endpoint calculates:
 - Current cycle progress (percentage through ~29.5 year cycle)
 - Days until next return
 
-**Premium Feature**: This endpoint requires premium or admin access.
+**Credit Cost**: 2 credits (first calculation only).
+If you have already paid for this feature on this chart, no credits will be charged.
 """,
     responses={
-        403: {"description": "Premium access required"},
+        402: {"description": "Insufficient credits"},
         404: {"description": "Chart not found or not owned by user"},
     },
 )
@@ -87,8 +93,9 @@ async def get_saturn_return(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(get_current_user)],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> SaturnReturnAnalysisSchema:
     """Get Saturn Return analysis for a chart."""
     try:
@@ -120,6 +127,42 @@ async def get_saturn_return(
             detail="Chart data not available for this locale",
         )
 
+    # Check if Saturn Return is already cached
+    cached_saturn_return = chart_data.get("saturn_return")
+    if cached_saturn_return:
+        # Return cached data without consuming credits
+        return SaturnReturnAnalysisSchema(**cached_saturn_return)
+
+    # Check if feature is already unlocked (previously paid)
+    feature_unlocked = await credit_service.has_feature_unlocked(
+        db=db,
+        user_id=current_user.id,
+        chart_id=chart_id,
+        feature_type=FeatureType.SATURN_RETURN.value,
+    )
+
+    # If not unlocked and not admin, check for sufficient credits
+    if not feature_unlocked and not current_user.is_admin:
+        has_credits, required, available = await credit_service.has_sufficient_credits(
+            db=db,
+            user_id=current_user.id,
+            feature_type=FeatureType.SATURN_RETURN.value,
+        )
+        # Unlimited plans have available == -1
+        if available != -1 and not has_credits:
+            cost = get_feature_cost(FeatureType.SATURN_RETURN.value)
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": f"This feature requires {required} credits. You have {available} credits available.",
+                    "feature_type": FeatureType.SATURN_RETURN.value,
+                    "required_credits": required,
+                    "available_credits": available,
+                    "feature_cost": cost,
+                },
+            )
+
     # Extract Saturn data from chart
     saturn_data = _get_saturn_from_chart_data(chart_data)
     if not saturn_data:
@@ -146,6 +189,20 @@ async def get_saturn_return(
         language=locale,
     )
 
+    # Cache the result in chart_data (flat format for consistency)
+    chart.chart_data["saturn_return"] = analysis
+    await db.commit()
+
+    # Consume credits only if not previously unlocked
+    if not feature_unlocked:
+        await credit_service.consume_credits(
+            db=db,
+            user_id=current_user.id,
+            feature_type=FeatureType.SATURN_RETURN.value,
+            resource_id=chart_id,
+            description=f"Saturn Return analysis for chart {chart.person_name}",
+        )
+
     return SaturnReturnAnalysisSchema(**analysis)
 
 
@@ -162,10 +219,10 @@ Provides detailed interpretations based on:
 - Natal Saturn's house placement (12 variations)
 - Current phase of the return (if applicable)
 
-**Premium Feature**: This endpoint requires premium or admin access.
+**Note**: Requires Saturn Return analysis to be generated first.
+Interpretation is included with Saturn Return calculation (no extra credits).
 """,
     responses={
-        403: {"description": "Premium access required"},
         404: {"description": "Chart not found or not owned by user"},
     },
 )
@@ -174,7 +231,7 @@ async def get_saturn_return_interp(
     request: Request,
     response: Response,
     chart_id: UUID,
-    current_user: Annotated[User, Depends(require_premium)],
+    current_user: Annotated[User, Depends(get_current_user)],
     chart_service: Annotated[ChartService, Depends(get_chart_service)],
 ) -> SaturnReturnInterpretationSchema:
     """Get Saturn Return interpretation for a chart."""

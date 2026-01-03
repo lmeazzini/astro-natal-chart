@@ -127,7 +127,14 @@ module "ecs" {
   desired_count         = var.ecs_desired_count
 
   # Secrets Manager integration
-  secret_arns = module.secrets.core_secret_arns
+  secret_arns = {
+    database_url          = module.secrets.database_url_arn
+    redis_url             = module.secrets.redis_url_arn
+    secret_key            = module.secrets.secret_key_arn
+    stripe_secret_key     = module.secrets.stripe_secret_key_arn
+    stripe_webhook_secret = module.secrets.stripe_webhook_secret_arn
+    stripe_price_ids      = module.secrets.stripe_price_ids_arn
+  }
   kms_key_arn = module.secrets.kms_key_arn
 
   # S3 integration for PDF storage
@@ -153,6 +160,11 @@ module "secrets" {
   # ECS roles for KMS policy
   ecs_task_role_arn      = module.ecs.task_role_arn
   ecs_execution_role_arn = module.ecs.execution_role_arn
+
+  # Stripe secrets (for payment processing)
+  stripe_secret_key     = var.stripe_secret_key
+  stripe_webhook_secret = var.stripe_webhook_secret
+  stripe_price_ids      = var.stripe_price_ids
 
   # Optional: OAuth and API keys can be added via variables later
   # google_oauth = var.google_oauth
@@ -252,7 +264,7 @@ module "ecr" {
   scan_on_push         = true
 
   # Lifecycle policy (cost optimization)
-  max_image_count            = 50  # Keep more images in prod for rollback
+  max_image_count            = 50 # Keep more images in prod for rollback
   untagged_image_expiry_days = 14
 
   tags = {

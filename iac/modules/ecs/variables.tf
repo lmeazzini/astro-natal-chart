@@ -230,9 +230,12 @@ variable "ssl_policy" {
 variable "secret_arns" {
   description = "Map of secret ARNs for ECS task environment variable injection"
   type = object({
-    database_url = string
-    redis_url    = string
-    secret_key   = string
+    database_url          = string
+    redis_url             = string
+    secret_key            = string
+    stripe_secret_key     = optional(string)
+    stripe_webhook_secret = optional(string)
+    stripe_price_ids      = optional(string)
   })
   default = null
 }

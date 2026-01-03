@@ -127,3 +127,32 @@ variable "api_subdomain" {
   type        = string
   default     = "api"
 }
+
+# -----------------------------------------------------------------------------
+# Stripe Variables (optional - for payment processing)
+# -----------------------------------------------------------------------------
+
+variable "stripe_secret_key" {
+  description = "Stripe Secret API Key (sk_live_...)"
+  type        = string
+  default     = null
+  sensitive   = true
+}
+
+variable "stripe_webhook_secret" {
+  description = "Stripe Webhook Signing Secret (whsec_...)"
+  type        = string
+  default     = null
+  sensitive   = true
+}
+
+variable "stripe_price_ids" {
+  description = "Stripe Price IDs for subscription plans"
+  type = object({
+    starter   = string
+    pro       = string
+    unlimited = string
+  })
+  default   = null
+  sensitive = true
+}

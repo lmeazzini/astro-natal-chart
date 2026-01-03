@@ -91,6 +91,25 @@ output "smtp_arn" {
 }
 
 # -----------------------------------------------------------------------------
+# Stripe Secret ARNs (Conditional)
+# -----------------------------------------------------------------------------
+
+output "stripe_secret_key_arn" {
+  description = "ARN of the Stripe Secret Key (null if not configured)"
+  value       = try(aws_secretsmanager_secret.stripe_secret_key[0].arn, null)
+}
+
+output "stripe_webhook_secret_arn" {
+  description = "ARN of the Stripe Webhook Secret (null if not configured)"
+  value       = try(aws_secretsmanager_secret.stripe_webhook_secret[0].arn, null)
+}
+
+output "stripe_price_ids_arn" {
+  description = "ARN of the Stripe Price IDs secret (null if not configured)"
+  value       = try(aws_secretsmanager_secret.stripe_price_ids[0].arn, null)
+}
+
+# -----------------------------------------------------------------------------
 # All Core Secret ARNs (for ECS task definition)
 # -----------------------------------------------------------------------------
 
@@ -118,7 +137,10 @@ output "total_secrets_created" {
     (var.opencage_api_key != null ? 1 : 0) +
     (var.openai_api_key != null ? 1 : 0) +
     (var.amplitude_api_key != null ? 1 : 0) +
-    (var.smtp_config != null ? 1 : 0)
+    (var.smtp_config != null ? 1 : 0) +
+    (var.stripe_secret_key != null ? 1 : 0) +
+    (var.stripe_webhook_secret != null ? 1 : 0) +
+    (var.stripe_price_ids != null ? 1 : 0)
   )
 }
 
@@ -139,5 +161,8 @@ output "all_secret_arns" {
     try(aws_secretsmanager_secret.openai[0].arn, ""),
     try(aws_secretsmanager_secret.amplitude[0].arn, ""),
     try(aws_secretsmanager_secret.smtp[0].arn, ""),
+    try(aws_secretsmanager_secret.stripe_secret_key[0].arn, ""),
+    try(aws_secretsmanager_secret.stripe_webhook_secret[0].arn, ""),
+    try(aws_secretsmanager_secret.stripe_price_ids[0].arn, ""),
   ])
 }

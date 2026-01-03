@@ -2,7 +2,6 @@
 Chart interpretation endpoints for AI-generated astrological interpretations.
 """
 
-import json
 from datetime import UTC, datetime
 from typing import Annotated, Any
 from uuid import UUID
@@ -34,7 +33,7 @@ from app.services.interpretation_service_rag import (
     InterpretationServiceRAG,
     PlanetData,
 )
-from app.services.personal_growth_service import GROWTH_PROMPT_VERSION, PersonalGrowthService
+from app.services.personal_growth_service import GROWTH_PROMPT_VERSION
 
 router = APIRouter()
 
@@ -331,96 +330,26 @@ async def get_chart_interpretations(
         # This ensures no session conflicts when creating a new session for growth
         await db.commit()
 
-        # Handle growth suggestions AFTER main transaction is committed
-        # This runs for both existing and new interpretations
-
-        # Use a single session for both checking and generating growth
-        # This prevents "session is provisioning" errors from concurrent session creation
+        # Handle growth suggestions - only return if already generated
+        # Growth is a premium feature that must be generated on-demand via
+        # POST /charts/{chart_id}/growth-suggestions (consumes 2 credits)
         async with AsyncSessionLocal() as growth_db:
-            if "growth" in regenerate_types:
-                # Growth regeneration explicitly requested
-                logger.info("Growth regeneration explicitly requested via regenerate parameter")
-                needs_generation = True
+            growth_repo = InterpretationRepository(growth_db)
+            existing_growth_dict = await growth_repo.get_growth_interpretations(
+                chart_id=chart_id, language=user_language
+            )
+
+            if existing_growth_dict:
+                # Growth was previously generated - return cached data
+                logger.info("Found existing growth interpretations in database")
+                response.growth = _get_existing_growth(existing_growth_dict)
+                response.metadata.cache_hits_db += 4  # 4 components loaded from DB
             else:
-                # Check if growth exists in database
-                logger.info("Checking for existing growth interpretations in database")
-                growth_repo = InterpretationRepository(growth_db)
-                existing_growth_dict = await growth_repo.get_growth_interpretations(
-                    chart_id=chart_id, language=user_language
+                # Growth not generated yet - user must generate via dedicated endpoint
+                logger.debug(
+                    "Growth not yet generated for chart, user must request via POST endpoint"
                 )
-
-                if existing_growth_dict:
-                    # All 4 components exist, use them
-                    logger.info("Found complete growth interpretations in database")
-                    response.growth = _get_existing_growth(existing_growth_dict)
-                    response.metadata.cache_hits_db += 4  # 4 components loaded from DB
-                    needs_generation = False
-                else:
-                    # Missing or incomplete, need to generate
-                    logger.info("Growth interpretations not found or incomplete, will generate")
-                    needs_generation = True
-
-            # Generate if needed (using same session)
-            if needs_generation:
-                logger.info("Generating growth suggestions via PersonalGrowthService")
-
-                try:
-                    growth_service = PersonalGrowthService(language=user_language, db=growth_db)
-                    growth_dict = await growth_service.generate_growth_suggestions(
-                        chart_data=chart.chart_data,
-                        chart_id=chart_id,  # Enable persistence to ChartInterpretation table
-                    )
-                    # Commit the growth session
-                    await growth_db.commit()
-
-                    # Convert growth dict to InterpretationItems and add to response
-                    # Map the keys from growth_dict to subject names
-                    growth_items = {
-                        "points": InterpretationItem(
-                            content=json.dumps(growth_dict["growth_points"], ensure_ascii=False),
-                            source="rag",
-                            rag_sources=[],
-                            is_outdated=False,
-                            cached=False,
-                            prompt_version=GROWTH_PROMPT_VERSION,
-                            generated_at=datetime.now(UTC).isoformat(),
-                        ),
-                        "challenges": InterpretationItem(
-                            content=json.dumps(growth_dict["challenges"], ensure_ascii=False),
-                            source="rag",
-                            rag_sources=[],
-                            is_outdated=False,
-                            cached=False,
-                            prompt_version=GROWTH_PROMPT_VERSION,
-                            generated_at=datetime.now(UTC).isoformat(),
-                        ),
-                        "opportunities": InterpretationItem(
-                            content=json.dumps(growth_dict["opportunities"], ensure_ascii=False),
-                            source="rag",
-                            rag_sources=[],
-                            is_outdated=False,
-                            cached=False,
-                            prompt_version=GROWTH_PROMPT_VERSION,
-                            generated_at=datetime.now(UTC).isoformat(),
-                        ),
-                        "purpose": InterpretationItem(
-                            content=json.dumps(growth_dict["purpose"], ensure_ascii=False),
-                            source="rag",
-                            rag_sources=[],
-                            is_outdated=False,
-                            cached=False,
-                            prompt_version=GROWTH_PROMPT_VERSION,
-                            generated_at=datetime.now(UTC).isoformat(),
-                        ),
-                    }
-                    response.growth = growth_items
-                    # Update metadata to reflect growth generation (4 components)
-                    response.metadata.rag_generations += 4
-                    logger.info(f"Growth suggestions generated and saved for chart {chart_id}")
-                except Exception as e:
-                    logger.error(f"Failed to generate growth suggestions for chart {chart_id}: {e}")
-                    # Set growth to empty dict on error - don't let it bubble up to fail the whole request
-                    response.growth = {}
+                response.growth = {}
 
         return response
 

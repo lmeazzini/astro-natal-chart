@@ -882,21 +882,16 @@ def calculate_birth_chart(
     # Calculate planet positions
     planets = calculate_planets(jd, house_cusps)
 
-    # Find Sun, Moon and Saturn for various calculations
+    # Find Sun and Moon for various calculations
     sun_longitude = 0.0
     sun_sign = ""
     moon_longitude = 0.0
-    saturn_longitude = 0.0
-    saturn_house = 1
     for planet in planets:
         if planet.name == "Sun":
             sun_longitude = planet.longitude
             sun_sign = planet.sign
         elif planet.name == "Moon":
             moon_longitude = planet.longitude
-        elif planet.name == "Saturn":
-            saturn_longitude = planet.longitude
-            saturn_house = planet.house
 
     # Calculate sect (day/night chart)
     sect = calculate_sect(ascendant, sun_longitude)
@@ -1000,31 +995,9 @@ def calculate_birth_chart(
     # Calculate complete sect analysis with planet classifications
     sect_analysis = calculate_sect_analysis(planets_with_dignities, sect)
 
-    # Calculate Longevity Analysis (Hyleg + Alcochoden) - Issue #134, #135
-    from app.astro.longevity import calculate_longevity_analysis
-
-    longevity = calculate_longevity_analysis(
-        planets=planets_with_dignities,
-        houses=[h.model_dump() for h in houses],
-        aspects=[a.model_dump() for a in aspects],
-        ascendant=ascendant,
-        arabic_parts=arabic_parts,
-        sect=sect,
-        birth_jd=jd,
-        sun_longitude=sun_longitude,
-        method="ptolemaic",
-        language=language,
-    )
-
-    # Calculate Saturn Return Analysis
-    from app.astro.saturn_return import calculate_saturn_return_analysis
-
-    saturn_return = calculate_saturn_return_analysis(
-        birth_jd=jd,
-        natal_saturn_longitude=saturn_longitude,
-        natal_saturn_house=saturn_house,
-        language=language,
-    )
+    # NOTE: Longevity and Saturn Return are now calculated on-demand via their
+    # respective endpoints to allow credit consumption per feature.
+    # See: /charts/{id}/longevity and /charts/{id}/saturn-return
 
     return {
         "planets": planets_with_dignities,
@@ -1041,7 +1014,5 @@ def calculate_birth_chart(
         "temperament": temperament,
         "mentality": mentality,
         "arabic_parts": arabic_parts,
-        "longevity": longevity,
-        "saturn_return": saturn_return,
         "calculation_timestamp": datetime.now(UTC).isoformat(),
     }

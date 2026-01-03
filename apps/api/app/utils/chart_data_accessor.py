@@ -58,7 +58,7 @@ def extract_language_data(chart_data: dict[str, Any], language: str = "pt-BR") -
         # Fallback to first available language
         fallback_lang = next(iter(available_languages))
         logger.warning(
-            f"Requested language '{language}' not found. " f"Falling back to '{fallback_lang}'"
+            f"Requested language '{language}' not found. Falling back to '{fallback_lang}'"
         )
         fallback_data: dict[str, Any] = chart_data[fallback_lang]
         return fallback_data

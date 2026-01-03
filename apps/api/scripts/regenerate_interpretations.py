@@ -51,7 +51,7 @@ async def regenerate_all_interpretations(languages: list[str], clear: bool = Tru
         repo = InterpretationRepository(db)
 
         for chart in charts:
-            print(f"\n{'─'*40}")
+            print(f"\n{'─' * 40}")
             print(f"Processing: {chart.person_name} ({chart.id})")
 
             # Delete existing interpretations once (for all languages)

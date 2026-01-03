@@ -31,6 +31,7 @@ const featureNames: Record<string, string> = {
   solar_return: 'Solar Return',
   saturn_return: 'Saturn Return',
   longevity: 'Longevity Analysis',
+  growth: 'Growth Suggestions',
   profections: 'Profections',
   transits: 'Transits',
 };

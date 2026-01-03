@@ -49,10 +49,10 @@ async def validate_all_charts():
         total_birth = len(birth_charts)
         logger.info(f"  Total BirthCharts: {total_birth}")
         logger.info(
-            f"  Language-first format: {lang_first_count} ({lang_first_count/total_birth*100:.1f}%)"
+            f"  Language-first format: {lang_first_count} ({lang_first_count / total_birth * 100:.1f}%)"
         )
         logger.info(
-            f"  Legacy flat format: {flat_count} ({flat_count/total_birth*100:.1f}% if total_birth else 0)"
+            f"  Legacy flat format: {flat_count} ({flat_count / total_birth * 100:.1f}% if total_birth else 0)"
         )
 
         # =================================================================
@@ -77,10 +77,10 @@ async def validate_all_charts():
         total_public = len(public_charts)
         logger.info(f"  Total PublicCharts: {total_public}")
         logger.info(
-            f"  Language-first format: {lang_first_public} ({lang_first_public/total_public*100:.1f}%)"
+            f"  Language-first format: {lang_first_public} ({lang_first_public / total_public * 100:.1f}%)"
         )
         logger.info(
-            f"  Legacy flat format: {flat_public} ({flat_public/total_public*100:.1f}% if total_public else 0)"
+            f"  Legacy flat format: {flat_public} ({flat_public / total_public * 100:.1f}% if total_public else 0)"
         )
 
         # =================================================================
@@ -106,13 +106,13 @@ async def validate_all_charts():
                     has_both += 1
 
         logger.info(
-            f"  BirthCharts with en-US: {has_en}/{total_birth} ({has_en/total_birth*100:.1f}%)"
+            f"  BirthCharts with en-US: {has_en}/{total_birth} ({has_en / total_birth * 100:.1f}%)"
         )
         logger.info(
-            f"  BirthCharts with pt-BR: {has_pt}/{total_birth} ({has_pt/total_birth*100:.1f}%)"
+            f"  BirthCharts with pt-BR: {has_pt}/{total_birth} ({has_pt / total_birth * 100:.1f}%)"
         )
         logger.info(
-            f"  BirthCharts with BOTH: {has_both}/{total_birth} ({has_both/total_birth*100:.1f}%)"
+            f"  BirthCharts with BOTH: {has_both}/{total_birth} ({has_both / total_birth * 100:.1f}%)"
         )
 
         # =================================================================

@@ -829,9 +829,9 @@ def generate_chart_data(personality: dict[str, Any]) -> dict[str, Any]:
 
 async def seed_personality(db: AsyncSession, personality: dict[str, Any]) -> None:
     """Seed a single personality with chart (interpretations generated on-demand)."""
-    logger.info(f"\n{'='*60}")
+    logger.info(f"\n{'=' * 60}")
     logger.info(f"Processing: {personality['name']}")
-    logger.info(f"{'='*60}")
+    logger.info(f"{'=' * 60}")
 
     # Generate chart data (bilingual)
     logger.info("Calculating astrological chart (en-US and pt-BR)...")
@@ -892,12 +892,12 @@ async def seed_all_personalities(clear: bool = False, verbose: bool = False) -> 
     else:
         logger.disable("app")
 
-    logger.info(f"\n{'='*60}")
+    logger.info(f"\n{'=' * 60}")
     logger.info("PUBLIC CHARTS SEEDING SCRIPT")
-    logger.info(f"{'='*60}")
+    logger.info(f"{'=' * 60}")
     logger.info(f"Total personalities to process: {len(PERSONALITIES)}")
     logger.info(f"Clear existing charts: {clear}")
-    logger.info(f"{'='*60}\n")
+    logger.info(f"{'=' * 60}\n")
 
     async with AsyncSessionLocal() as db:
         try:
@@ -926,13 +926,13 @@ async def seed_all_personalities(clear: bool = False, verbose: bool = False) -> 
                     continue
 
             # Final summary
-            logger.info(f"\n{'='*60}")
+            logger.info(f"\n{'=' * 60}")
             logger.info("SEEDING COMPLETE")
-            logger.info(f"{'='*60}")
+            logger.info(f"{'=' * 60}")
             logger.info(f"✓ Success: {success_count}/{len(PERSONALITIES)}")
             if fail_count > 0:
                 logger.warning(f"✗ Failed: {fail_count}/{len(PERSONALITIES)}")
-            logger.info(f"{'='*60}\n")
+            logger.info(f"{'=' * 60}\n")
 
         except Exception as e:
             logger.error(f"Fatal error during seeding: {e}")

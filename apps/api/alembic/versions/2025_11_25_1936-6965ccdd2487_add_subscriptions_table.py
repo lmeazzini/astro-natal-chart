@@ -52,12 +52,8 @@ def upgrade() -> None:
 
     # Create indexes
     op.create_index(op.f("ix_subscriptions_id"), "subscriptions", ["id"], unique=False)
-    op.create_index(
-        op.f("ix_subscriptions_user_id"), "subscriptions", ["user_id"], unique=True
-    )
-    op.create_index(
-        op.f("ix_subscriptions_status"), "subscriptions", ["status"], unique=False
-    )
+    op.create_index(op.f("ix_subscriptions_user_id"), "subscriptions", ["user_id"], unique=True)
+    op.create_index(op.f("ix_subscriptions_status"), "subscriptions", ["status"], unique=False)
     op.create_index(
         op.f("ix_subscriptions_expires_at"), "subscriptions", ["expires_at"], unique=False
     )

@@ -248,7 +248,40 @@
     "viewFamousCharts": "Explore Famous Charts",
     "ragKnowledgeBase": "RAG Knowledge Base",
     "ragKnowledgeBaseDescription": "Documents used for AI-enhanced astrological interpretations.",
-    "viewRagDocuments": "View Documents"
+    "viewRagDocuments": "View Documents",
+    "manageCredits": "Manage Credits & Subscription",
+    "chart": "chart",
+    "charts": "charts",
+    "credits": "Credits",
+    "creditsDescription": "Your available credits for premium features",
+    "buyCredits": "Buy More Credits"
+  },
+  "premiumFeature": {
+    "creditCost": "{{count}} credits required",
+    "yourCredits": "You have: {{count}}",
+    "unlimited": "Unlimited",
+    "generate": "Generate Analysis",
+    "generating": "Generating...",
+    "generatingTime": "This may take a few seconds...",
+    "needMoreCredits": "Need more credits?",
+    "upgradePlan": "Upgrade your plan",
+    "errors": {
+      "unauthorized": "You do not have access to this feature.",
+      "notFound": "Chart not found.",
+      "network": "Network error. Please try again."
+    }
+  },
+  "longevity": {
+    "title": "Longevity Analysis",
+    "description": "Calculate life expectancy based on traditional astrological techniques including Hyleg, Alcochoden, and house analysis."
+  },
+  "saturnReturn": {
+    "title": "Saturn Return",
+    "description": "Calculate your Saturn Return cycles and discover the timing of major life transitions."
+  },
+  "solarReturn": {
+    "title": "Solar Return",
+    "description": "Calculate your Solar Return chart for any year and discover the themes that will influence your life."
   },
   "ragDocuments": {
     "title": "RAG Knowledge Base",
@@ -1491,47 +1524,86 @@
       "profections": "Profections",
       "firdaria": "Firdaria",
       "solarReturn": "Solar Return",
+      "solar-return": "Solar Return",
+      "saturnReturn": "Saturn Return",
+      "saturn-return": "Saturn Return",
       "longevity": "Longevity Analysis"
     }
   },
   "pricing": {
     "badge": "Plans & Pricing",
     "title": "Choose the right plan for you",
-    "subtitle": "Unlock the full potential of traditional astrology with our Premium plans.",
-    "yourPlan": "Your current plan:",
+    "subtitle": "Unlock the full potential of traditional astrology with our plans.",
+    "yourPlan": "Your plan:",
     "currentPlan": "Current Plan",
-    "downgrade": "Downgrade",
-    "getStartedFree": "Get Started Free",
-    "subscribe": "Subscribe to Premium",
+    "manageSubscription": "Manage subscription",
+    "processing": "Processing...",
+    "startFree": "Start Free",
+    "subscribe": "Subscribe",
+    "select": "Select",
     "recommended": "Recommended",
+    "premium": "Premium",
+    "unlimited": "Unlimited",
+    "period": "/month",
+    "credits": "credits",
+    "creditsPerMonth": "{{count}} credits/month",
     "plans": {
       "free": {
         "name": "Free",
         "description": "To start your astrological journey",
         "price": "$0",
-        "period": "/month"
+        "credits": "10 credits"
       },
-      "premium": {
-        "name": "Premium",
-        "description": "For serious astrologers seeking depth",
+      "starter": {
+        "name": "Starter",
+        "description": "For those who want to explore more",
+        "price": "$4.90",
+        "credits": "50 credits"
+      },
+      "pro": {
+        "name": "Professional",
+        "description": "For serious astrologers",
         "price": "$9.90",
-        "period": "/month"
+        "credits": "200 credits"
+      },
+      "unlimited": {
+        "name": "Unlimited",
+        "description": "No limits, no worries",
+        "price": "$19.90",
+        "credits": "Unlimited"
       }
     },
     "features": {
       "natalCharts": "Unlimited natal charts",
+      "credits10": "10 credits/month",
+      "credits50": "50 credits/month",
+      "credits200": "200 credits/month",
+      "unlimitedCredits": "Unlimited credits",
+      "svgVisualization": "SVG chart visualization",
       "basicInterpretations": "Basic interpretations",
       "advancedInterpretations": "Advanced AI interpretations",
-      "chartVisualization": "SVG chart visualization",
-      "horary": "Horary Astrology",
-      "profections": "Profections",
-      "firdaria": "Firdaria",
       "solarReturn": "Solar Return",
-      "prioritySupport": "Priority support"
+      "saturnReturn": "Saturn Return",
+      "longevityAnalysis": "Longevity Analysis",
+      "profectionsSoon": "Profections (coming soon)",
+      "pdfReport": "PDF Report",
+      "emailSupport": "Email support",
+      "prioritySupport": "Priority support",
+      "vipSupport": "VIP support",
+      "allStarterFeatures": "All Starter features",
+      "allProFeatures": "All Professional features",
+      "earlyAccess": "Early access to new features",
+      "discountedConsultations": "Discounted consultations",
+      "exclusiveBadge": "Exclusive badge"
     },
-    "comingSoon": {
-      "title": "Coming Soon!",
-      "description": "The subscription system is under development. In the meantime, enjoy the free features and stay tuned for updates!"
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "whatAreCredits": "What are credits?",
+      "whatAreCreditsAnswer": "Credits are used to access premium features like AI interpretations, PDF reports, and advanced analyses. Each feature consumes a specific amount of credits.",
+      "doCreditsAccumulate": "Do credits accumulate?",
+      "doCreditsAccumulateAnswer": "No, credits are renewed monthly and do not carry over to the next month. Make the most of all your credits each cycle!",
+      "canICancel": "Can I cancel anytime?",
+      "canICancelAnswer": "Yes! You can cancel your subscription at any time. You will continue to have access until the end of the already paid period."
     }
   },
   "landing": {

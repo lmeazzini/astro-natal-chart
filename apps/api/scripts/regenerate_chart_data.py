@@ -186,13 +186,13 @@ async def main() -> None:
     process_birth = args.birth_charts or (not args.birth_charts and not args.public_charts)
     process_public = args.public_charts or (not args.birth_charts and not args.public_charts)
 
-    logger.info(f"\n{'='*60}")
+    logger.info(f"\n{'=' * 60}")
     logger.info("CHART DATA REGENERATION SCRIPT")
-    logger.info(f"{'='*60}")
+    logger.info(f"{'=' * 60}")
     logger.info(f"Process birth_charts: {process_birth}")
     logger.info(f"Process public_charts: {process_public}")
     logger.info(f"Dry run: {args.dry_run}")
-    logger.info(f"{'='*60}\n")
+    logger.info(f"{'=' * 60}\n")
 
     total_success = 0
     total_fail = 0
@@ -224,15 +224,15 @@ async def main() -> None:
                 logger.info(f"Public charts: {success} success, {fail} failed\n")
 
             # Final summary
-            logger.info(f"\n{'='*60}")
+            logger.info(f"\n{'=' * 60}")
             logger.info("REGENERATION COMPLETE")
-            logger.info(f"{'='*60}")
+            logger.info(f"{'=' * 60}")
             logger.info(f"✓ Total success: {total_success}")
             if total_fail > 0:
                 logger.warning(f"✗ Total failed: {total_fail}")
             if args.dry_run:
                 logger.info("(DRY RUN - no changes were made)")
-            logger.info(f"{'='*60}\n")
+            logger.info(f"{'=' * 60}\n")
 
         except Exception as e:
             logger.error(f"Fatal error during regeneration: {e}")

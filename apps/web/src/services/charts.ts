@@ -11,6 +11,9 @@ import type { MentalityData } from '@/components/MentalityCard';
 import type { LongevityData } from '@/types/longevity';
 import type { ChartTermsData, TermsTableData, TermSystem } from '@/types/terms';
 import type { PrenatalSyzygyData } from '@/components/PrenatalSyzygy';
+import type { SaturnReturnAnalysis } from '@/types/saturn_return';
+import type { SolarReturnResponse } from '@/types/solar_return';
+import type { GrowthSuggestionsData } from '@/services/interpretations';
 
 export interface BirthChartCreate {
   person_name: string;
@@ -168,6 +171,10 @@ export interface BirthChart {
     longevity?: LongevityData;
     prenatal_syzygy?: PrenatalSyzygyData;
     calculation_timestamp: string;
+    // Premium features cached data
+    saturn_return?: SaturnReturnAnalysis;
+    solar_returns?: Record<string, SolarReturnResponse>;
+    growth_suggestions?: GrowthSuggestionsData;
   } | null;
   visibility: string;
   share_uuid: string | null;

@@ -349,3 +349,74 @@ resource "aws_secretsmanager_secret_version" "smtp" {
     password = var.smtp_config.password
   })
 }
+
+# -----------------------------------------------------------------------------
+# Stripe Secrets (Conditional)
+# -----------------------------------------------------------------------------
+
+# Stripe Secret Key (for backend API calls)
+resource "aws_secretsmanager_secret" "stripe_secret_key" {
+  count = var.stripe_secret_key != null ? 1 : 0
+
+  name                    = "astro/${var.environment}/stripe-secret-key"
+  description             = "Stripe Secret API Key for payment processing"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
+
+  tags = merge(local.common_tags, {
+    Name = "astro/${var.environment}/stripe-secret-key"
+  })
+}
+
+resource "aws_secretsmanager_secret_version" "stripe_secret_key" {
+  count = var.stripe_secret_key != null ? 1 : 0
+
+  secret_id     = aws_secretsmanager_secret.stripe_secret_key[0].id
+  secret_string = var.stripe_secret_key
+}
+
+# Stripe Webhook Secret (for verifying webhook signatures)
+resource "aws_secretsmanager_secret" "stripe_webhook_secret" {
+  count = var.stripe_webhook_secret != null ? 1 : 0
+
+  name                    = "astro/${var.environment}/stripe-webhook-secret"
+  description             = "Stripe Webhook Signing Secret"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
+
+  tags = merge(local.common_tags, {
+    Name = "astro/${var.environment}/stripe-webhook-secret"
+  })
+}
+
+resource "aws_secretsmanager_secret_version" "stripe_webhook_secret" {
+  count = var.stripe_webhook_secret != null ? 1 : 0
+
+  secret_id     = aws_secretsmanager_secret.stripe_webhook_secret[0].id
+  secret_string = var.stripe_webhook_secret
+}
+
+# Stripe Price IDs (for subscription plans)
+resource "aws_secretsmanager_secret" "stripe_price_ids" {
+  count = var.stripe_price_ids != null ? 1 : 0
+
+  name                    = "astro/${var.environment}/stripe-price-ids"
+  description             = "Stripe Price IDs for subscription plans"
+  kms_key_id              = aws_kms_key.secrets.arn
+  recovery_window_in_days = 7
+
+  tags = merge(local.common_tags, {
+    Name = "astro/${var.environment}/stripe-price-ids"
+  })
+}
+
+resource "aws_secretsmanager_secret_version" "stripe_price_ids" {
+  count = var.stripe_price_ids != null ? 1 : 0
+
+  secret_id = aws_secretsmanager_secret.stripe_price_ids[0].id
+  secret_string = jsonencode({
+    starter   = var.stripe_price_ids.starter
+    pro       = var.stripe_price_ids.pro
+    unlimited = var.stripe_price_ids.unlimited
+  })
+}

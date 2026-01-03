@@ -6,6 +6,47 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
+# Local Variables for Secrets
+# -----------------------------------------------------------------------------
+
+locals {
+  # Core secrets (always included when secret_arns is provided)
+  core_secrets = var.secret_arns != null ? [
+    {
+      name      = "DATABASE_URL"
+      valueFrom = var.secret_arns.database_url
+    },
+    {
+      name      = "SECRET_KEY"
+      valueFrom = var.secret_arns.secret_key
+    },
+    {
+      name      = "REDIS_URL"
+      valueFrom = var.secret_arns.redis_url
+    }
+  ] : []
+
+  # Stripe secrets (conditionally included)
+  stripe_secrets = var.secret_arns != null ? concat(
+    var.secret_arns.stripe_secret_key != null ? [{
+      name      = "STRIPE_SECRET_KEY"
+      valueFrom = var.secret_arns.stripe_secret_key
+    }] : [],
+    var.secret_arns.stripe_webhook_secret != null ? [{
+      name      = "STRIPE_WEBHOOK_SECRET"
+      valueFrom = var.secret_arns.stripe_webhook_secret
+    }] : [],
+    var.secret_arns.stripe_price_ids != null ? [{
+      name      = "STRIPE_PRICE_IDS"
+      valueFrom = var.secret_arns.stripe_price_ids
+    }] : []
+  ) : []
+
+  # All secrets combined
+  all_secrets = concat(local.core_secrets, local.stripe_secrets)
+}
+
+# -----------------------------------------------------------------------------
 # Task Definition
 # -----------------------------------------------------------------------------
 
@@ -49,20 +90,8 @@ resource "aws_ecs_task_definition" "api" {
       ]
 
       # Secrets from Secrets Manager (injected from secrets module)
-      secrets = var.secret_arns != null ? [
-        {
-          name      = "DATABASE_URL"
-          valueFrom = var.secret_arns.database_url
-        },
-        {
-          name      = "SECRET_KEY"
-          valueFrom = var.secret_arns.secret_key
-        },
-        {
-          name      = "REDIS_URL"
-          valueFrom = var.secret_arns.redis_url
-        }
-      ] : []
+      # Includes core secrets (database, redis, jwt) and optional Stripe secrets
+      secrets = local.all_secrets
 
       # CloudWatch Logs
       logConfiguration = {

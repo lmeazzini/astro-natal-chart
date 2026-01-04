@@ -28,7 +28,9 @@ from app.models.webhook_event import WebhookEvent  # noqa: F401
 config = context.config
 
 # Override sqlalchemy.url with our DATABASE_URL (async)
-config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+# Escape % characters to prevent configparser interpolation issues
+database_url = str(settings.DATABASE_URL).replace("%", "%%")
+config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

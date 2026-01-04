@@ -26,6 +26,14 @@ locals {
     }
   ] : []
 
+  # OpenAI secret (conditionally included)
+  openai_secrets = var.secret_arns != null ? (
+    var.secret_arns.openai_api_key != null ? [{
+      name      = "OPENAI_API_KEY"
+      valueFrom = var.secret_arns.openai_api_key
+    }] : []
+  ) : []
+
   # Stripe secrets (conditionally included)
   stripe_secrets = var.secret_arns != null ? concat(
     var.secret_arns.stripe_secret_key != null ? [{
@@ -43,7 +51,7 @@ locals {
   ) : []
 
   # All secrets combined
-  all_secrets = concat(local.core_secrets, local.stripe_secrets)
+  all_secrets = concat(local.core_secrets, local.openai_secrets, local.stripe_secrets)
 }
 
 # -----------------------------------------------------------------------------
@@ -78,7 +86,7 @@ resource "aws_ecs_task_definition" "api" {
       ]
 
       # Environment variables (basic config)
-      environment = [
+      environment = concat([
         {
           name  = "ENVIRONMENT"
           value = var.environment
@@ -87,7 +95,10 @@ resource "aws_ecs_task_definition" "api" {
           name  = "PORT"
           value = tostring(var.container_port)
         }
-      ]
+      ], var.allowed_origins != "" ? [{
+        name  = "ALLOWED_ORIGINS"
+        value = var.allowed_origins
+      }] : [])
 
       # Secrets from Secrets Manager (injected from secrets module)
       # Includes core secrets (database, redis, jwt) and optional Stripe secrets

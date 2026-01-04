@@ -224,6 +224,16 @@ variable "ssl_policy" {
 }
 
 # -----------------------------------------------------------------------------
+# CORS Configuration
+# -----------------------------------------------------------------------------
+
+variable "allowed_origins" {
+  description = "Comma-separated list of allowed CORS origins"
+  type        = string
+  default     = ""
+}
+
+# -----------------------------------------------------------------------------
 # Secrets Manager Integration
 # -----------------------------------------------------------------------------
 
@@ -233,6 +243,7 @@ variable "secret_arns" {
     database_url          = string
     redis_url             = string
     secret_key            = string
+    openai_api_key        = optional(string)
     stripe_secret_key     = optional(string)
     stripe_webhook_secret = optional(string)
     stripe_price_ids      = optional(string)

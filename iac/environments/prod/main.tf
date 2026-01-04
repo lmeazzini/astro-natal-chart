@@ -132,11 +132,18 @@ module "ecs" {
   memory                = var.ecs_memory
   desired_count         = var.ecs_desired_count
 
+  # Container image from ECR
+  container_image = "${module.ecr.repository_url}:latest"
+
+  # CORS configuration
+  allowed_origins = join(",", var.allowed_origins)
+
   # Secrets Manager integration
   secret_arns = {
     database_url          = module.secrets.database_url_arn
     redis_url             = module.secrets.redis_url_arn
     secret_key            = module.secrets.secret_key_arn
+    openai_api_key        = module.secrets.openai_api_key_arn
     stripe_secret_key     = module.secrets.stripe_secret_key_arn
     stripe_webhook_secret = module.secrets.stripe_webhook_secret_arn
     stripe_price_ids      = module.secrets.stripe_price_ids_arn
@@ -172,11 +179,13 @@ module "secrets" {
   stripe_webhook_secret = var.stripe_webhook_secret
   stripe_price_ids      = var.stripe_price_ids
 
+  # API Keys
+  openai_api_key = var.openai_api_key
+
   # Optional: OAuth and API keys can be added via variables later
   # google_oauth = var.google_oauth
   # github_oauth = var.github_oauth
   # opencage_api_key = var.opencage_api_key
-  # openai_api_key = var.openai_api_key
   # amplitude_api_key = var.amplitude_api_key
 }
 

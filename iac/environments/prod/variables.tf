@@ -165,6 +165,17 @@ variable "api_subdomain" {
 }
 
 # -----------------------------------------------------------------------------
+# API Keys (optional)
+# -----------------------------------------------------------------------------
+
+variable "openai_api_key" {
+  description = "OpenAI API Key for AI interpretations"
+  type        = string
+  default     = null
+  sensitive   = true
+}
+
+# -----------------------------------------------------------------------------
 # Stripe Variables (optional - for payment processing)
 # -----------------------------------------------------------------------------
 

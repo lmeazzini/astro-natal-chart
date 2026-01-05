@@ -237,13 +237,13 @@ jobs:
       - name: Run Alembic migrations
         run: |
           # Run migrations via ECS Exec (requires --interactive flag)
-          # Using timeout to prevent hanging if the command fails to start
+          # Using "uv run" since alembic is managed by uv in the container
           timeout 300 aws ecs execute-command \
             --cluster ${{ env.ECS_CLUSTER }} \
             --task ${{ steps.get-task.outputs.task_arn }} \
             --container api \
             --interactive \
-            --command "alembic upgrade head" || {
+            --command "uv run alembic upgrade head" || {
               echo "Migration command failed or timed out"
               exit 1
             }

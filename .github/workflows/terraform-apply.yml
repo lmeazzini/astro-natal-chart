@@ -84,7 +84,7 @@ jobs:
         run: |
           set +e
           terraform plan -detailed-exitcode -out=tfplan 2>&1 | tee plan_output.txt
-          exit_code=$?
+          exit_code=${PIPESTATUS[0]}
           set -e
 
           # Exit codes: 0 = no changes, 1 = error, 2 = changes present

@@ -217,3 +217,109 @@ resource "aws_vpc_security_group_ingress_rule" "redis_from_ecs" {
     Name = "${local.name_prefix}-redis-from-ecs"
   })
 }
+
+# -----------------------------------------------------------------------------
+# Qdrant Security Group
+# -----------------------------------------------------------------------------
+# Allows inbound from ECS API tasks only.
+# Outbound to EFS for persistent storage.
+
+resource "aws_security_group" "qdrant" {
+  name        = "${local.name_prefix}-qdrant-sg"
+  description = "Security group for Qdrant vector database"
+  vpc_id      = aws_vpc.main.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-qdrant-sg"
+  })
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "qdrant_http_from_ecs" {
+  security_group_id            = aws_security_group.qdrant.id
+  description                  = "Allow HTTP API from ECS"
+  from_port                    = 6333
+  to_port                      = 6333
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.ecs.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-qdrant-http-from-ecs"
+  })
+}
+
+resource "aws_vpc_security_group_ingress_rule" "qdrant_grpc_from_ecs" {
+  security_group_id            = aws_security_group.qdrant.id
+  description                  = "Allow gRPC from ECS"
+  from_port                    = 6334
+  to_port                      = 6334
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.ecs.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-qdrant-grpc-from-ecs"
+  })
+}
+
+resource "aws_vpc_security_group_egress_rule" "qdrant_to_efs" {
+  security_group_id            = aws_security_group.qdrant.id
+  description                  = "Allow NFS to EFS"
+  from_port                    = 2049
+  to_port                      = 2049
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.efs.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-qdrant-to-efs"
+  })
+}
+
+# ECS egress to Qdrant
+resource "aws_vpc_security_group_egress_rule" "ecs_to_qdrant" {
+  security_group_id            = aws_security_group.ecs.id
+  description                  = "Allow traffic to Qdrant"
+  from_port                    = 6333
+  to_port                      = 6334
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.qdrant.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-ecs-to-qdrant"
+  })
+}
+
+# -----------------------------------------------------------------------------
+# EFS Security Group
+# -----------------------------------------------------------------------------
+# Allows inbound NFS from Qdrant only.
+# No outbound rules needed (stateful).
+
+resource "aws_security_group" "efs" {
+  name        = "${local.name_prefix}-efs-sg"
+  description = "Security group for EFS mount targets"
+  vpc_id      = aws_vpc.main.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-efs-sg"
+  })
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "efs_from_qdrant" {
+  security_group_id            = aws_security_group.efs.id
+  description                  = "Allow NFS from Qdrant"
+  from_port                    = 2049
+  to_port                      = 2049
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.qdrant.id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-efs-from-qdrant"
+  })
+}

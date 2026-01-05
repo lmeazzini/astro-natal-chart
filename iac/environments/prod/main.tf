@@ -138,6 +138,9 @@ module "ecs" {
   # CORS configuration
   allowed_origins = join(",", var.allowed_origins)
 
+  # Qdrant URL (via Cloud Map service discovery)
+  qdrant_url = module.qdrant.service_discovery_url
+
   # Secrets Manager integration
   secret_arns = {
     database_url          = module.secrets.database_url_arn
@@ -203,6 +206,43 @@ module "s3" {
   enable_logs_bucket = true
   enable_versioning  = true
   force_destroy      = false # Prevent accidental deletion in prod
+}
+
+# -----------------------------------------------------------------------------
+# EFS Module (Persistent Storage for Qdrant)
+# -----------------------------------------------------------------------------
+
+module "efs" {
+  source = "../../modules/efs"
+
+  environment           = var.environment
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_id     = module.vpc.private_subnet_id
+  efs_security_group_id = module.vpc.efs_security_group_id
+  kms_key_arn           = module.secrets.kms_key_arn
+  enable_backups        = true
+}
+
+# -----------------------------------------------------------------------------
+# Qdrant Module (Vector Database for RAG)
+# -----------------------------------------------------------------------------
+
+module "qdrant" {
+  source = "../../modules/qdrant"
+
+  environment              = var.environment
+  aws_region               = var.aws_region
+  vpc_id                   = module.vpc.vpc_id
+  private_subnet_id        = module.vpc.private_subnet_id
+  qdrant_security_group_id = module.vpc.qdrant_security_group_id
+  cluster_id               = module.ecs.cluster_id
+  cluster_name             = module.ecs.cluster_name
+  efs_file_system_id       = module.efs.file_system_id
+  efs_access_point_id      = module.efs.access_point_id
+  kms_key_arn              = module.secrets.kms_key_arn
+  cpu                      = var.qdrant_cpu
+  memory                   = var.qdrant_memory
+  qdrant_version           = var.qdrant_version
 }
 
 module "cloudfront" {

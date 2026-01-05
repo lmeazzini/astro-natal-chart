@@ -203,3 +203,25 @@ variable "stripe_price_ids" {
   default   = null
   sensitive = true
 }
+
+# -----------------------------------------------------------------------------
+# Qdrant Variables
+# -----------------------------------------------------------------------------
+
+variable "qdrant_cpu" {
+  description = "Qdrant ECS task CPU units"
+  type        = number
+  default     = 512
+}
+
+variable "qdrant_memory" {
+  description = "Qdrant ECS task memory (MB)"
+  type        = number
+  default     = 1024
+}
+
+variable "qdrant_version" {
+  description = "Qdrant Docker image version"
+  type        = string
+  default     = "v1.7.4"
+}

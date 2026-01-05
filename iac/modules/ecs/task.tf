@@ -95,9 +95,12 @@ resource "aws_ecs_task_definition" "api" {
           name  = "PORT"
           value = tostring(var.container_port)
         }
-      ], var.allowed_origins != "" ? [{
-        name  = "ALLOWED_ORIGINS"
-        value = var.allowed_origins
+        ], var.allowed_origins != "" ? [{
+          name  = "ALLOWED_ORIGINS"
+          value = var.allowed_origins
+          }] : [], var.qdrant_url != null ? [{
+          name  = "QDRANT_URL"
+          value = var.qdrant_url
       }] : [])
 
       # Secrets from Secrets Manager (injected from secrets module)

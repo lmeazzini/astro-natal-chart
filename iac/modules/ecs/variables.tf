@@ -234,6 +234,16 @@ variable "allowed_origins" {
 }
 
 # -----------------------------------------------------------------------------
+# Qdrant Configuration
+# -----------------------------------------------------------------------------
+
+variable "qdrant_url" {
+  description = "URL for Qdrant vector database (Cloud Map service discovery)"
+  type        = string
+  default     = null
+}
+
+# -----------------------------------------------------------------------------
 # Secrets Manager Integration
 # -----------------------------------------------------------------------------
 

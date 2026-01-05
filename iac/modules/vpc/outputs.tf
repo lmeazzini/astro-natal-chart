@@ -100,6 +100,16 @@ output "redis_security_group_id" {
   value       = aws_security_group.redis.id
 }
 
+output "qdrant_security_group_id" {
+  description = "ID of the Qdrant security group"
+  value       = aws_security_group.qdrant.id
+}
+
+output "efs_security_group_id" {
+  description = "ID of the EFS security group"
+  value       = aws_security_group.efs.id
+}
+
 # -----------------------------------------------------------------------------
 # NAT Gateway
 # -----------------------------------------------------------------------------

@@ -84,16 +84,8 @@ resource "aws_ecs_task_definition" "qdrant" {
         }
       }
 
-      healthCheck = {
-        command = [
-          "CMD-SHELL",
-          "curl -f http://localhost:6333/ || exit 1"
-        ]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 120
-      }
+      # Note: Health check disabled because the Qdrant image doesn't have
+      # curl or wget installed. ECS will manage container lifecycle.
     }
   ])
 

@@ -96,6 +96,7 @@ iac/**/.terraform/
 *.tfstate
 *.tfstate.*
 *.tfvars.local
+secrets.tfvars
 .terraform.lock.hcl
 crash.log
 crash.*.log
@@ -104,3 +105,6 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 iac/.env
+
+# Database seed data (contains user information)
+seed_data.json

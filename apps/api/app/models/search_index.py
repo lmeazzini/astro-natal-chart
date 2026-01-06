@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, DateTime, Index, String, Text
+from sqlalchemy import JSON, DateTime, Index, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -51,10 +51,12 @@ class SearchIndex(Base):
         onupdate=lambda: datetime.now(UTC),
     )
 
-    # Create indexes for efficient querying
+    # Create indexes and constraints for efficient querying
     __table_args__ = (
         Index("idx_search_indices_document_id", "document_id"),
         Index("idx_search_indices_index_name", "index_name"),
+        # Prevent duplicate entries for the same document in the same index
+        UniqueConstraint("index_name", "document_id", name="uq_search_indices_index_document"),
     )
 
     def __repr__(self) -> str:

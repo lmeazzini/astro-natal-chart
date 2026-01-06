@@ -12,6 +12,40 @@ How It Works:
 4. The qualifying planet becomes the Alcochoden
 5. The Alcochoden's planetary years indicate potential lifespan
 6. Modifications are applied based on the Alcochoden's condition
+
+References
+----------
+Primary Source (Implemented):
+    Ptolemy, Claudius. Tetrabiblos, Book III, Chapters 10-11.
+    "Of the Length of Life" - the foundational text for this technique.
+
+Secondary Sources:
+    - Vettius Valens. Anthology, Book III (2nd century CE)
+    - Dorotheus of Sidon. Carmen Astrologicum (1st century CE)
+    - Abu Ma'shar. Abbreviation of the Introduction to Astrology (9th century CE)
+
+Planetary Years (Traditional Sources):
+    The Minor, Middle, and Major years derive from multiple ancient sources.
+    These values represent synodic cycles and traditional attributions.
+    See: Ptolemy's Tetrabiblos and Firmicus Maternus' Mathesis.
+
+Year Type Selection (Ptolemaic):
+    - Minor Years: Planet combust, in detriment, or in fall
+    - Major Years: Planet in domicile or exaltation
+    - Middle Years: Planet peregrine or moderately dignified
+
+Modifications (Medieval Tradition):
+    - Angular houses (+3): Strongest position
+    - Succedent houses (+1): Moderate strength
+    - Cadent houses (-2): Weakest position
+    - Benefic aspects (Jupiter/Venus): +5 years
+    - Malefic aspects (Saturn/Mars): -5 years
+
+Alternative Method (NOT Implemented):
+    William Lilly. Christian Astrology (1647).
+    - Similar framework but with practical modifications
+    - Different weighting of dignities
+    - More emphasis on reception
 """
 
 from typing import Any

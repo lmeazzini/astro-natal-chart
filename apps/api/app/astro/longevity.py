@@ -6,6 +6,30 @@ combining:
 - Hyleg (Giver of Life) - the vital force significator
 - Alcochoden (Giver of Years) - the planet determining lifespan
 
+References
+----------
+This implementation follows the Ptolemaic method as described in:
+
+Primary Source:
+    Ptolemy, Claudius. Tetrabiblos, Book III, Chapters 10-11.
+
+Secondary Sources:
+    - Vettius Valens. Anthology (2nd century CE)
+    - Dorotheus of Sidon. Carmen Astrologicum (1st century CE)
+    - Abu Ma'shar. Abbreviation of the Introduction to Astrology (9th century CE)
+    - Firmicus Maternus. Mathesis (4th century CE)
+
+Alternative Method (NOT Implemented):
+    William Lilly. Christian Astrology (1647), Book III.
+    Key differences from Ptolemy:
+    - Excludes 9th house from hylegical places
+    - Uses different triplicity rulers
+    - More practical/horary-focused approach
+
+For detailed methodology, see the individual modules:
+    - app.astro.hyleg: Hyleg calculation with full algorithm documentation
+    - app.astro.alcochoden: Alcochoden with planetary years tables
+
 IMPORTANT DISCLAIMER:
 Longevity calculations are presented purely for historical and educational purposes.
 Traditional astrology's approach to predicting lifespan is not scientifically validated

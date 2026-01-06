@@ -8,6 +8,29 @@ that serves as the "Giver of Life" in a chart. It represents:
 - A key point for medical astrology and health analysis
 
 This module implements the Ptolemaic method for Hyleg determination.
+
+References
+----------
+Primary Source (Implemented):
+    Ptolemy, Claudius. Tetrabiblos, Book III, Chapters 10-11.
+    "Of the Prorogatory Places" and "Of the Hylegical Places"
+
+Secondary Sources:
+    - Vettius Valens. Anthology (2nd century CE)
+    - Dorotheus of Sidon. Carmen Astrologicum (1st century CE)
+    - Robert Schmidt. "Prenatal Concerns" (Project Hindsight)
+
+Ptolemaic Method (Implemented):
+    - Hylegical Places: Houses 1, 7, 9, 10, 11 (or 5° below ASC in 12th)
+    - Day charts: Sun → Moon → Ascendant → Part of Fortune → Prenatal Syzygy
+    - Night charts: Moon → Sun → Ascendant → Part of Fortune → Prenatal Syzygy
+    - Qualification: Must be aspected by domicile lord OR prorogatory planet
+
+Alternative Method (NOT Implemented):
+    William Lilly. Christian Astrology (1647), Book III.
+    - Hylegical Places: Houses 1, 7, 10, 11 (excludes 9th house)
+    - Different triplicity system
+    - More practical/horary approach
 """
 
 from typing import Any

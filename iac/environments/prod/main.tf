@@ -161,6 +161,13 @@ module "ecs" {
 
   # SSL/TLS for ALB (optional - requires DNS module)
   acm_certificate_arn = var.domain_name != null ? module.dns[0].alb_certificate_arn : null
+
+  # Celery configuration for background task processing
+  celery_worker_count  = 1    # Number of worker instances
+  celery_worker_cpu    = 512  # 0.5 vCPU
+  celery_worker_memory = 1024 # 1 GB
+  celery_beat_cpu      = 256  # 0.25 vCPU (scheduler is lightweight)
+  celery_beat_memory   = 512  # 0.5 GB
 }
 
 module "secrets" {

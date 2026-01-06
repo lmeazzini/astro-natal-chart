@@ -151,7 +151,7 @@ resource "aws_iam_role_policy" "ecs_task_exec" {
   })
 }
 
-# Policy for CloudWatch Logs
+# Policy for CloudWatch Logs (API)
 resource "aws_iam_role_policy" "ecs_task_logs" {
   name = "${local.name_prefix}-ecs-task-logs"
   role = aws_iam_role.ecs_task.id
@@ -167,6 +167,28 @@ resource "aws_iam_role_policy" "ecs_task_logs" {
         ]
         Resource = [
           "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${local.name_prefix}-api:*"
+        ]
+      }
+    ]
+  })
+}
+
+# Policy for CloudWatch Logs (Celery)
+resource "aws_iam_role_policy" "ecs_task_logs_celery" {
+  name = "${local.name_prefix}-ecs-task-logs-celery"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${local.name_prefix}-celery:*"
         ]
       }
     ]

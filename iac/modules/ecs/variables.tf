@@ -268,6 +268,60 @@ variable "kms_key_arn" {
 }
 
 # -----------------------------------------------------------------------------
+# Celery Configuration
+# -----------------------------------------------------------------------------
+
+variable "celery_worker_count" {
+  description = "Number of Celery worker instances (0 to disable Celery)"
+  type        = number
+  default     = 1
+}
+
+variable "celery_worker_cpu" {
+  description = "CPU units for Celery worker (256, 512, 1024, etc)"
+  type        = number
+  default     = 512
+
+  validation {
+    condition     = contains([256, 512, 1024, 2048, 4096], var.celery_worker_cpu)
+    error_message = "CPU must be a valid Fargate value: 256, 512, 1024, 2048, or 4096."
+  }
+}
+
+variable "celery_worker_memory" {
+  description = "Memory in MB for Celery worker"
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.celery_worker_memory >= 512 && var.celery_worker_memory <= 8192
+    error_message = "Memory must be between 512 MB and 8192 MB."
+  }
+}
+
+variable "celery_beat_cpu" {
+  description = "CPU units for Celery beat scheduler"
+  type        = number
+  default     = 256
+
+  validation {
+    condition     = contains([256, 512, 1024], var.celery_beat_cpu)
+    error_message = "CPU must be a valid Fargate value: 256, 512, or 1024."
+  }
+}
+
+variable "celery_beat_memory" {
+  description = "Memory in MB for Celery beat scheduler"
+  type        = number
+  default     = 512
+
+  validation {
+    condition     = var.celery_beat_memory >= 512 && var.celery_beat_memory <= 2048
+    error_message = "Memory must be between 512 MB and 2048 MB."
+  }
+}
+
+# -----------------------------------------------------------------------------
 # Tags
 # -----------------------------------------------------------------------------
 

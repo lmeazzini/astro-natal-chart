@@ -1,7 +1,7 @@
 """fix_search_indices_unique_constraint
 
 Revision ID: fix_search_indices_constraint
-Revises: 89f54823b8cd
+Revises: 9245212a9357
 Create Date: 2026-01-06 02:00:00.000000
 
 Fixes the unique constraint on search_indices table.
@@ -16,7 +16,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "fix_search_indices_constraint"
-down_revision: str | None = "89f54823b8cd"
+down_revision: str | None = "9245212a9357"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

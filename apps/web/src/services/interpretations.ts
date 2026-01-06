@@ -121,10 +121,11 @@ export const interpretationsService = {
   },
 
   /**
-   * Regenerate specific interpretation types
+   * Regenerate specific interpretation types (planets, houses, aspects, arabic_parts)
+   * Note: For growth suggestions, use generateGrowthSuggestions() instead
    * @param chartId - Chart UUID
    * @param token - Auth token
-   * @param types - Array of types to regenerate (e.g., ['planets', 'houses', 'growth'])
+   * @param types - Array of types to regenerate (e.g., ['planets', 'houses'])
    */
   async regenerate(
     chartId: string,
@@ -134,6 +135,26 @@ export const interpretationsService = {
     const regenerateParam = types && types.length > 0 ? `?regenerate=${types.join(',')}` : '';
     return apiClient.get<UnifiedInterpretationsResponse>(
       `/api/v1/charts/${chartId}/interpretations${regenerateParam}`,
+      token
+    );
+  },
+
+  /**
+   * Generate growth suggestions for a chart
+   * This uses the dedicated POST endpoint that consumes credits
+   * @param chartId - Chart UUID
+   * @param token - Auth token
+   * @param focusAreas - Optional focus areas for suggestions
+   */
+  async generateGrowthSuggestions(
+    chartId: string,
+    token: string,
+    focusAreas?: string[]
+  ): Promise<GrowthSuggestionsData> {
+    const body = focusAreas ? { focus_areas: focusAreas } : undefined;
+    return apiClient.post<GrowthSuggestionsData>(
+      `/api/v1/charts/${chartId}/growth-suggestions`,
+      body,
       token
     );
   },

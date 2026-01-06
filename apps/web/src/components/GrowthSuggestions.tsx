@@ -151,12 +151,11 @@ export function GrowthSuggestions({
         return;
       }
 
-      // Use unified interpretations endpoint with regenerate parameter for growth only
-      const data = await interpretationsService.regenerate(chartId, token, ['growth']);
+      // Use dedicated growth suggestions endpoint (POST /charts/{id}/growth-suggestions)
+      const data = await interpretationsService.generateGrowthSuggestions(chartId, token);
 
-      if (data.growth && Object.keys(data.growth).length > 0) {
-        const parsed = parseGrowthItems(data.growth);
-        setSuggestions(parsed);
+      if (data) {
+        setSuggestions(data);
       } else {
         setError(
           t('growth.errors.generateFailed', { defaultValue: 'Failed to generate suggestions' })
@@ -165,7 +164,13 @@ export function GrowthSuggestions({
     } catch (err) {
       console.error('Error generating growth suggestions:', err);
       if (err instanceof Error) {
-        if (err.message.includes('403')) {
+        if (err.message.includes('402')) {
+          setError(
+            t('growth.errors.insufficientCredits', {
+              defaultValue: 'Insufficient credits. This feature requires 2 credits.',
+            })
+          );
+        } else if (err.message.includes('403')) {
           setError(
             t('growth.errors.emailRequired', {
               defaultValue: 'Please verify your email to access this feature',
@@ -173,6 +178,12 @@ export function GrowthSuggestions({
           );
         } else if (err.message.includes('404')) {
           setError(t('growth.errors.chartNotFound', { defaultValue: 'Chart not found' }));
+        } else if (err.message.includes('429')) {
+          setError(
+            t('growth.errors.rateLimited', {
+              defaultValue: 'Too many requests. Please try again later.',
+            })
+          );
         } else {
           setError(err.message);
         }

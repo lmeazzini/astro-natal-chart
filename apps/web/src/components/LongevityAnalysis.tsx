@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getSignSymbol } from '@/utils/astro';
 import { useAstroTranslation } from '@/hooks/useAstroTranslation';
 import { HeartPulse, Clock, AlertTriangle, CheckCircle2, XCircle, Info } from 'lucide-react';
-import { PremiumFeatureGate } from './PremiumFeatureGate';
 
 // Import types from external file (only import what's directly used in this module)
 import type { HylegData, AlcochodenData, LongevityAnalysisProps } from '@/types/longevity';
@@ -436,11 +435,7 @@ export function LongevityAnalysis({ longevity, isLoading = false }: LongevityAna
 
   // Show loading skeleton
   if (isLoading) {
-    return (
-      <PremiumFeatureGate feature="longevity">
-        <LongevitySkeleton />
-      </PremiumFeatureGate>
-    );
+    return <LongevitySkeleton />;
   }
 
   if (!longevity) {
@@ -456,104 +451,102 @@ export function LongevityAnalysis({ longevity, isLoading = false }: LongevityAna
   }
 
   return (
-    <PremiumFeatureGate feature="longevity">
-      <div className="space-y-6">
-        {/* Educational Disclaimer */}
-        <Alert className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
-          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-          <AlertTitle className="text-amber-900 dark:text-amber-100">
-            {t('components.longevity.disclaimer.title', {
-              defaultValue: 'Educational Purpose Only',
+    <div className="space-y-6">
+      {/* Educational Disclaimer */}
+      <Alert className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
+        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <AlertTitle className="text-amber-900 dark:text-amber-100">
+          {t('components.longevity.disclaimer.title', {
+            defaultValue: 'Educational Purpose Only',
+          })}
+        </AlertTitle>
+        <AlertDescription className="text-amber-800 dark:text-amber-200">
+          {longevity.educational_disclaimer ||
+            t('components.longevity.disclaimer.text', {
+              defaultValue:
+                'These calculations are presented for historical and educational purposes only. They are not scientifically validated and should never be used for health predictions or medical decisions.',
             })}
-          </AlertTitle>
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
-            {longevity.educational_disclaimer ||
-              t('components.longevity.disclaimer.text', {
-                defaultValue:
-                  'These calculations are presented for historical and educational purposes only. They are not scientifically validated and should never be used for health predictions or medical decisions.',
-              })}
-          </AlertDescription>
-        </Alert>
+        </AlertDescription>
+      </Alert>
 
-        {/* Summary Card */}
-        {longevity.summary && (
-          <Card className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-3">
-                <Info className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                <span>
-                  {t('components.longevity.summary.title', { defaultValue: 'Analysis Summary' })}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {t('components.longevity.summary.vitalForce', { defaultValue: 'Vital Force' })}
-                  </p>
-                  <p className="text-sm">
-                    {longevity.summary.vital_force_planet ? (
-                      <>
-                        <span className="font-semibold">
-                          {planetSymbols[longevity.summary.vital_force_planet] || '★'}{' '}
-                          {longevity.summary.vital_force_planet}
-                        </span>
+      {/* Summary Card */}
+      {longevity.summary && (
+        <Card className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-3">
+              <Info className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <span>
+                {t('components.longevity.summary.title', { defaultValue: 'Analysis Summary' })}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  {t('components.longevity.summary.vitalForce', { defaultValue: 'Vital Force' })}
+                </p>
+                <p className="text-sm">
+                  {longevity.summary.vital_force_planet ? (
+                    <>
+                      <span className="font-semibold">
+                        {planetSymbols[longevity.summary.vital_force_planet] || '★'}{' '}
+                        {longevity.summary.vital_force_planet}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {' '}
+                        - {longevity.summary.vital_force_assessment}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {t('components.longevity.summary.notDetermined', {
+                        defaultValue: 'Could not be determined',
+                      })}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  {t('components.longevity.summary.yearsIndicator', {
+                    defaultValue: 'Years Indicator',
+                  })}
+                </p>
+                <p className="text-sm">
+                  {longevity.summary.years_planet ? (
+                    <>
+                      <span className="font-semibold">
+                        {planetSymbols[longevity.summary.years_planet] || '★'}{' '}
+                        {longevity.summary.years_planet}
+                      </span>
+                      {longevity.summary.estimated_years && (
                         <span className="text-muted-foreground">
                           {' '}
-                          - {longevity.summary.vital_force_assessment}
+                          ({longevity.summary.estimated_years}{' '}
+                          {t('components.longevity.years', { defaultValue: 'years' })})
                         </span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {t('components.longevity.summary.notDetermined', {
-                          defaultValue: 'Could not be determined',
-                        })}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {t('components.longevity.summary.yearsIndicator', {
-                      defaultValue: 'Years Indicator',
-                    })}
-                  </p>
-                  <p className="text-sm">
-                    {longevity.summary.years_planet ? (
-                      <>
-                        <span className="font-semibold">
-                          {planetSymbols[longevity.summary.years_planet] || '★'}{' '}
-                          {longevity.summary.years_planet}
-                        </span>
-                        {longevity.summary.estimated_years && (
-                          <span className="text-muted-foreground">
-                            {' '}
-                            ({longevity.summary.estimated_years}{' '}
-                            {t('components.longevity.years', { defaultValue: 'years' })})
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {t('components.longevity.summary.notDetermined', {
-                          defaultValue: 'Could not be determined',
-                        })}
-                      </span>
-                    )}
-                  </p>
-                </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {t('components.longevity.summary.notDetermined', {
+                        defaultValue: 'Could not be determined',
+                      })}
+                    </span>
+                  )}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Hyleg and Alcochoden Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {longevity.hyleg && <HylegDisplay hyleg={longevity.hyleg} />}
-          {longevity.alcochoden && <AlcochodenDisplay alcochoden={longevity.alcochoden} />}
-        </div>
+      {/* Hyleg and Alcochoden Cards */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {longevity.hyleg && <HylegDisplay hyleg={longevity.hyleg} />}
+        {longevity.alcochoden && <AlcochodenDisplay alcochoden={longevity.alcochoden} />}
       </div>
-    </PremiumFeatureGate>
+    </div>
   );
 }

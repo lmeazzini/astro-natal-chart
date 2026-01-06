@@ -30,7 +30,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { PremiumFeatureGate } from './PremiumFeatureGate';
 
 import type {
   SolarReturnResponse,
@@ -293,20 +292,12 @@ export function SolarReturnAnalysis({
 
   // Show loading skeleton
   if (isLoading) {
-    return (
-      <PremiumFeatureGate feature="solar-return">
-        <SolarReturnSkeleton />
-      </PremiumFeatureGate>
-    );
+    return <SolarReturnSkeleton />;
   }
 
   // Show error state
   if (error) {
-    return (
-      <PremiumFeatureGate feature="solar-return">
-        <SolarReturnError error={error} onRetry={onRetry} />
-      </PremiumFeatureGate>
-    );
+    return <SolarReturnError error={error} onRetry={onRetry} />;
   }
 
   if (!solarReturn) {
@@ -332,166 +323,160 @@ export function SolarReturnAnalysis({
   });
 
   return (
-    <PremiumFeatureGate feature="solar-return">
-      <div className="space-y-6">
-        {/* Year Navigator */}
-        {onYearChange && currentYear && (
-          <YearNavigator currentYear={currentYear} onYearChange={onYearChange} />
-        )}
+    <div className="space-y-6">
+      {/* Year Navigator */}
+      {onYearChange && currentYear && (
+        <YearNavigator currentYear={currentYear} onYearChange={onYearChange} />
+      )}
 
-        {/* Header Card - SR Overview */}
-        <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+      {/* Header Card - SR Overview */}
+      <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-3">
+            <Sun className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            <div className="flex-1">
+              <div className="text-lg font-semibold text-foreground">
+                {t('astrology:solarReturn.title', { defaultValue: 'Solar Return' })}{' '}
+                {chart.return_year}
+              </div>
+              <div className="text-xs text-muted-foreground font-normal mt-1">
+                {t('astrology:solarReturn.subtitle', {
+                  defaultValue: 'Annual chart for your Sun return',
+                })}
+              </div>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Return Date & Location */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  {t('astrology:solarReturn.returnDate', { defaultValue: 'Return Date' })}
+                </p>
+                <p className="font-semibold">{formattedReturnDate}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                  {t('astrology:solarReturn.location', { defaultValue: 'Location' })}
+                </p>
+                <p className="font-semibold">
+                  {chart.location.city
+                    ? `${chart.location.city}, ${chart.location.country}`
+                    : `${chart.location.latitude.toFixed(2)}°, ${chart.location.longitude.toFixed(2)}°`}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Key Positions */}
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="text-center p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                {t('astrology:solarReturn.srAscendant', { defaultValue: 'SR Ascendant' })}
+              </p>
+              <p className="text-2xl font-bold">
+                {getSignSymbol(chart.ascendant_sign)} {chart.ascendant_degree.toFixed(0)}°
+              </p>
+              <p className="text-sm text-muted-foreground">{translateSign(chart.ascendant_sign)}</p>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                {t('astrology:solarReturn.srSunHouse', { defaultValue: 'SR Sun House' })}
+              </p>
+              <p className="text-2xl font-bold">
+                <Home className="h-6 w-6 inline-block mr-1" />
+                {chart.sun_house}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t('astrology:houses.house', { defaultValue: 'House' })} {chart.sun_house}
+              </p>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                {t('astrology:solarReturn.srMidheaven', { defaultValue: 'SR Midheaven' })}
+              </p>
+              <p className="text-2xl font-bold">
+                {getSignSymbol(chart.midheaven_sign)} {chart.midheaven_degree.toFixed(0)}°
+              </p>
+              <p className="text-sm text-muted-foreground">{translateSign(chart.midheaven_sign)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Comparison to Natal Card */}
+      {comparison && (
+        <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-3">
-              <Sun className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-              <div className="flex-1">
-                <div className="text-lg font-semibold text-foreground">
-                  {t('astrology:solarReturn.title', { defaultValue: 'Solar Return' })}{' '}
-                  {chart.return_year}
-                </div>
-                <div className="text-xs text-muted-foreground font-normal mt-1">
-                  {t('astrology:solarReturn.subtitle', {
-                    defaultValue: 'Annual chart for your Sun return',
-                  })}
-                </div>
-              </div>
+              <ArrowLeftRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span>
+                {t('astrology:solarReturn.comparison', { defaultValue: 'Natal Comparison' })}
+              </span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Return Date & Location */}
+          <CardContent className="space-y-6">
+            {/* SR angles in natal houses */}
             <div className="grid sm:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {t('astrology:solarReturn.returnDate', { defaultValue: 'Return Date' })}
-                  </p>
-                  <p className="font-semibold">{formattedReturnDate}</p>
-                </div>
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  {t('astrology:solarReturn.srAscInNatal', {
+                    defaultValue: 'SR Ascendant in Natal House',
+                  })}
+                </p>
+                <p className="text-xl font-bold">{comparison.sr_asc_in_natal_house}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {t('astrology:solarReturn.location', { defaultValue: 'Location' })}
-                  </p>
-                  <p className="font-semibold">
-                    {chart.location.city
-                      ? `${chart.location.city}, ${chart.location.country}`
-                      : `${chart.location.latitude.toFixed(2)}°, ${chart.location.longitude.toFixed(2)}°`}
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  {t('astrology:solarReturn.srMcInNatal', {
+                    defaultValue: 'SR MC in Natal House',
+                  })}
+                </p>
+                <p className="text-xl font-bold">{comparison.sr_mc_in_natal_house}</p>
               </div>
             </div>
 
             <Separator />
 
-            {/* Key Positions */}
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="text-center p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  {t('astrology:solarReturn.srAscendant', { defaultValue: 'SR Ascendant' })}
-                </p>
-                <p className="text-2xl font-bold">
-                  {getSignSymbol(chart.ascendant_sign)} {chart.ascendant_degree.toFixed(0)}°
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {translateSign(chart.ascendant_sign)}
-                </p>
+            {/* SR planets in natal houses */}
+            <PlanetsInHousesDisplay
+              title={t('astrology:solarReturn.srPlanetsInNatal', {
+                defaultValue: 'SR Planets in Natal Houses',
+              })}
+              planetsInHouses={comparison.sr_planets_in_natal_houses}
+            />
+
+            <Separator />
+
+            {/* Key aspects between SR and natal */}
+            {comparison.key_aspects.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  {t('astrology:solarReturn.keyAspects', {
+                    defaultValue: 'Key Aspects (SR to Natal)',
+                  })}
+                </h4>
+                <div className="space-y-2">
+                  {comparison.key_aspects.slice(0, 6).map((aspect, idx) => (
+                    <AspectDisplay key={idx} aspect={aspect} />
+                  ))}
+                </div>
               </div>
-              <div className="text-center p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  {t('astrology:solarReturn.srSunHouse', { defaultValue: 'SR Sun House' })}
-                </p>
-                <p className="text-2xl font-bold">
-                  <Home className="h-6 w-6 inline-block mr-1" />
-                  {chart.sun_house}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('astrology:houses.house', { defaultValue: 'House' })} {chart.sun_house}
-                </p>
-              </div>
-              <div className="text-center p-3 rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  {t('astrology:solarReturn.srMidheaven', { defaultValue: 'SR Midheaven' })}
-                </p>
-                <p className="text-2xl font-bold">
-                  {getSignSymbol(chart.midheaven_sign)} {chart.midheaven_degree.toFixed(0)}°
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {translateSign(chart.midheaven_sign)}
-                </p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
+      )}
 
-        {/* Comparison to Natal Card */}
-        {comparison && (
-          <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-3">
-                <ArrowLeftRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <span>
-                  {t('astrology:solarReturn.comparison', { defaultValue: 'Natal Comparison' })}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* SR angles in natal houses */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    {t('astrology:solarReturn.srAscInNatal', {
-                      defaultValue: 'SR Ascendant in Natal House',
-                    })}
-                  </p>
-                  <p className="text-xl font-bold">{comparison.sr_asc_in_natal_house}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    {t('astrology:solarReturn.srMcInNatal', {
-                      defaultValue: 'SR MC in Natal House',
-                    })}
-                  </p>
-                  <p className="text-xl font-bold">{comparison.sr_mc_in_natal_house}</p>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* SR planets in natal houses */}
-              <PlanetsInHousesDisplay
-                title={t('astrology:solarReturn.srPlanetsInNatal', {
-                  defaultValue: 'SR Planets in Natal Houses',
-                })}
-                planetsInHouses={comparison.sr_planets_in_natal_houses}
-              />
-
-              <Separator />
-
-              {/* Key aspects between SR and natal */}
-              {comparison.key_aspects.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                    {t('astrology:solarReturn.keyAspects', {
-                      defaultValue: 'Key Aspects (SR to Natal)',
-                    })}
-                  </h4>
-                  <div className="space-y-2">
-                    {comparison.key_aspects.slice(0, 6).map((aspect, idx) => (
-                      <AspectDisplay key={idx} aspect={aspect} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Interpretation */}
-        {interpretation && <InterpretationDisplay interpretation={interpretation} />}
-      </div>
-    </PremiumFeatureGate>
+      {/* Interpretation */}
+      {interpretation && <InterpretationDisplay interpretation={interpretation} />}
+    </div>
   );
 }

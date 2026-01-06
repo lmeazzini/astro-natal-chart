@@ -23,7 +23,6 @@ import {
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
-import { PremiumFeatureGate } from './PremiumFeatureGate';
 
 import type {
   SaturnReturnAnalysis as SaturnReturnAnalysisType,
@@ -314,20 +313,12 @@ export function SaturnReturnAnalysis({
 
   // Show loading skeleton
   if (isLoading) {
-    return (
-      <PremiumFeatureGate feature="saturn-return">
-        <SaturnReturnSkeleton />
-      </PremiumFeatureGate>
-    );
+    return <SaturnReturnSkeleton />;
   }
 
   // Show error state
   if (error) {
-    return (
-      <PremiumFeatureGate feature="saturn-return">
-        <SaturnReturnError error={error} onRetry={onRetry} />
-      </PremiumFeatureGate>
-    );
+    return <SaturnReturnError error={error} onRetry={onRetry} />;
   }
 
   if (!analysis) {
@@ -343,123 +334,121 @@ export function SaturnReturnAnalysis({
   }
 
   return (
-    <PremiumFeatureGate feature="saturn-return">
-      <div className="space-y-6">
-        {/* Natal Saturn Info Card */}
-        <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-yellow-500/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-3">
-              <span className="text-3xl">♄</span>
-              <div className="flex-1">
-                <div className="text-lg font-semibold text-foreground">
-                  {t('astrology:saturnReturn.title', { defaultValue: 'Saturn Return' })}
-                </div>
-                <div className="text-xs text-muted-foreground font-normal mt-1">
-                  {t('astrology:saturnReturn.subtitle', {
-                    defaultValue: 'Major life transit occurring every ~29.5 years',
-                  })}
-                </div>
+    <div className="space-y-6">
+      {/* Natal Saturn Info Card */}
+      <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-yellow-500/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-3">
+            <span className="text-3xl">♄</span>
+            <div className="flex-1">
+              <div className="text-lg font-semibold text-foreground">
+                {t('astrology:saturnReturn.title', { defaultValue: 'Saturn Return' })}
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Natal Saturn Position */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                  {t('astrology:saturnReturn.natalSaturn', { defaultValue: 'Natal Saturn' })}
-                </p>
-                <p className="text-xl font-bold text-foreground">
-                  {getSignSymbol(analysis.natal_saturn_sign)}{' '}
-                  {translateSign(analysis.natal_saturn_sign)}{' '}
-                  {analysis.natal_saturn_degree.toFixed(1)}°
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('astrology:saturnReturn.house', { defaultValue: 'House' })}{' '}
-                  {analysis.natal_saturn_house}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                  {t('astrology:saturnReturn.currentSaturn', { defaultValue: 'Current Saturn' })}
-                </p>
-                <p className="text-lg font-semibold">
-                  {getSignSymbol(analysis.current_saturn_sign)}{' '}
-                  {translateSign(analysis.current_saturn_sign)}
-                </p>
+              <div className="text-xs text-muted-foreground font-normal mt-1">
+                {t('astrology:saturnReturn.subtitle', {
+                  defaultValue: 'Major life transit occurring every ~29.5 years',
+                })}
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Cycle Progress */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-3">
-              <Clock className="h-5 w-5" />
-              <span>
-                {t('astrology:saturnReturn.cycleProgress', { defaultValue: 'Cycle Progress' })}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {t('astrology:saturnReturn.throughCycle', {
-                    defaultValue: 'Through current cycle',
-                  })}
-                </span>
-                <span className="font-semibold">{analysis.cycle_progress_percent.toFixed(1)}%</span>
-              </div>
-              <Progress value={analysis.cycle_progress_percent} className="h-3" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Natal Saturn Position */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                {t('astrology:saturnReturn.natalSaturn', { defaultValue: 'Natal Saturn' })}
+              </p>
+              <p className="text-xl font-bold text-foreground">
+                {getSignSymbol(analysis.natal_saturn_sign)}{' '}
+                {translateSign(analysis.natal_saturn_sign)}{' '}
+                {analysis.natal_saturn_degree.toFixed(1)}°
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t('astrology:saturnReturn.house', { defaultValue: 'House' })}{' '}
+                {analysis.natal_saturn_house}
+              </p>
             </div>
-
-            {analysis.days_until_next_return && (
-              <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-                <span className="text-sm text-muted-foreground">
-                  {t('astrology:saturnReturn.daysUntilNext', {
-                    defaultValue: 'Days until next return',
-                  })}
-                </span>
-                <span className="font-semibold">
-                  {analysis.days_until_next_return.toLocaleString(locale)}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Saturn Returns Grid */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">
-            {t('astrology:saturnReturn.returns', { defaultValue: 'Saturn Returns' })}
-          </h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Current Return */}
-            {analysis.current_return && (
-              <ReturnDisplay
-                saturnReturn={analysis.current_return}
-                locale={locale}
-                isCurrent={true}
-              />
-            )}
-
-            {/* Next Return */}
-            {analysis.next_return && (
-              <ReturnDisplay saturnReturn={analysis.next_return} locale={locale} isFuture={true} />
-            )}
-
-            {/* Past Returns */}
-            {analysis.past_returns.map((sr, idx) => (
-              <ReturnDisplay key={idx} saturnReturn={sr} locale={locale} />
-            ))}
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                {t('astrology:saturnReturn.currentSaturn', { defaultValue: 'Current Saturn' })}
+              </p>
+              <p className="text-lg font-semibold">
+                {getSignSymbol(analysis.current_saturn_sign)}{' '}
+                {translateSign(analysis.current_saturn_sign)}
+              </p>
+            </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Interpretation */}
-        {interpretation && <InterpretationDisplay interpretation={interpretation} />}
+      {/* Cycle Progress */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-3">
+            <Clock className="h-5 w-5" />
+            <span>
+              {t('astrology:saturnReturn.cycleProgress', { defaultValue: 'Cycle Progress' })}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">
+                {t('astrology:saturnReturn.throughCycle', {
+                  defaultValue: 'Through current cycle',
+                })}
+              </span>
+              <span className="font-semibold">{analysis.cycle_progress_percent.toFixed(1)}%</span>
+            </div>
+            <Progress value={analysis.cycle_progress_percent} className="h-3" />
+          </div>
+
+          {analysis.days_until_next_return && (
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
+              <span className="text-sm text-muted-foreground">
+                {t('astrology:saturnReturn.daysUntilNext', {
+                  defaultValue: 'Days until next return',
+                })}
+              </span>
+              <span className="font-semibold">
+                {analysis.days_until_next_return.toLocaleString(locale)}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Saturn Returns Grid */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">
+          {t('astrology:saturnReturn.returns', { defaultValue: 'Saturn Returns' })}
+        </h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Current Return */}
+          {analysis.current_return && (
+            <ReturnDisplay
+              saturnReturn={analysis.current_return}
+              locale={locale}
+              isCurrent={true}
+            />
+          )}
+
+          {/* Next Return */}
+          {analysis.next_return && (
+            <ReturnDisplay saturnReturn={analysis.next_return} locale={locale} isFuture={true} />
+          )}
+
+          {/* Past Returns */}
+          {analysis.past_returns.map((sr, idx) => (
+            <ReturnDisplay key={idx} saturnReturn={sr} locale={locale} />
+          ))}
+        </div>
       </div>
-    </PremiumFeatureGate>
+
+      {/* Interpretation */}
+      {interpretation && <InterpretationDisplay interpretation={interpretation} />}
+    </div>
   );
 }

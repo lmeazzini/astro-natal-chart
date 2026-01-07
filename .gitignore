@@ -53,6 +53,12 @@ htmlcov/
 *.cover
 .hypothesis/
 
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+.playwright-mcp/
+
 # Database
 *.db
 *.sqlite

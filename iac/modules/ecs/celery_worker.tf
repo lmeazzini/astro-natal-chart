@@ -68,6 +68,11 @@ resource "aws_ecs_task_definition" "celery_worker" {
           name  = "QDRANT_URL"
           value = var.qdrant_url
         }
+        ] : [], var.frontend_url != null ? [
+        {
+          name  = "FRONTEND_URL"
+          value = var.frontend_url
+        }
       ] : [])
 
       # Secrets from Secrets Manager (same as API)
@@ -128,12 +133,17 @@ resource "aws_ecs_task_definition" "celery_beat" {
       essential = true
 
       # Environment variables
-      environment = [
+      environment = concat([
         {
           name  = "ENVIRONMENT"
           value = var.environment
         }
-      ]
+        ], var.frontend_url != null ? [
+        {
+          name  = "FRONTEND_URL"
+          value = var.frontend_url
+        }
+      ] : [])
 
       # Secrets from Secrets Manager (same as API)
       secrets = local.all_secrets

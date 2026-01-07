@@ -243,6 +243,12 @@ variable "qdrant_url" {
   default     = null
 }
 
+variable "frontend_url" {
+  description = "Frontend URL for email links and redirects"
+  type        = string
+  default     = null
+}
+
 # -----------------------------------------------------------------------------
 # Secrets Manager Integration
 # -----------------------------------------------------------------------------

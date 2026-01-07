@@ -101,6 +101,9 @@ resource "aws_ecs_task_definition" "api" {
           }] : [], var.qdrant_url != null ? [{
           name  = "QDRANT_URL"
           value = var.qdrant_url
+          }] : [], var.frontend_url != null ? [{
+          name  = "FRONTEND_URL"
+          value = var.frontend_url
       }] : [])
 
       # Secrets from Secrets Manager (injected from secrets module)

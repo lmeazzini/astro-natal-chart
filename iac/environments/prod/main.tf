@@ -141,6 +141,9 @@ module "ecs" {
   # Qdrant URL (via Cloud Map service discovery)
   qdrant_url = module.qdrant.service_discovery_url
 
+  # Frontend URL for email links
+  frontend_url = var.domain_name != null ? "https://${var.domain_name}" : null
+
   # Secrets Manager integration
   secret_arns = {
     database_url          = module.secrets.database_url_arn

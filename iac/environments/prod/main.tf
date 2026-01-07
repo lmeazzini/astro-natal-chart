@@ -265,8 +265,9 @@ module "cloudfront" {
   enable_versioning = true
 
   # Custom domain (optional - requires DNS module)
+  # Include both www and apex domain for proper SSL coverage
   acm_certificate_arn = var.domain_name != null ? module.dns[0].cloudfront_certificate_arn : null
-  domain_aliases      = var.domain_name != null ? [module.dns[0].frontend_fqdn] : []
+  domain_aliases      = var.domain_name != null ? [module.dns[0].frontend_fqdn, var.domain_name] : []
 }
 
 # -----------------------------------------------------------------------------

@@ -82,6 +82,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
+        env:
+          # Terraform automatically picks up TF_VAR_* environment variables
+          TF_VAR_stripe_secret_key: ${{ secrets.TF_VAR_STRIPE_SECRET_KEY }}
+          TF_VAR_stripe_webhook_secret: ${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}
+          TF_VAR_stripe_price_ids: ${{ secrets.TF_VAR_STRIPE_PRICE_IDS }}
+          TF_VAR_openai_api_key: ${{ secrets.TF_VAR_OPENAI_API_KEY }}
         run: |
           # Run terraform plan and capture exit code
           # Using pipefail to preserve exit code through pipe
@@ -151,6 +157,12 @@ jobs:
         working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
 
       - name: Terraform Apply
+        env:
+          # Terraform automatically picks up TF_VAR_* environment variables
+          TF_VAR_stripe_secret_key: ${{ secrets.TF_VAR_STRIPE_SECRET_KEY }}
+          TF_VAR_stripe_webhook_secret: ${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}
+          TF_VAR_stripe_price_ids: ${{ secrets.TF_VAR_STRIPE_PRICE_IDS }}
+          TF_VAR_openai_api_key: ${{ secrets.TF_VAR_OPENAI_API_KEY }}
         run: terraform apply -auto-approve tfplan
         working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
 

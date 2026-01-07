@@ -39,9 +39,9 @@ resource "aws_service_discovery_service" "qdrant" {
     routing_policy = "MULTIVALUE"
   }
 
-  health_check_custom_config {
-    # failure_threshold is deprecated and always defaults to 1
-  }
+  # NOTE: health_check_custom_config is NOT set here to avoid forcing replacement
+  # of existing service discovery services with registered instances.
+  # ECS handles health checks automatically via the service integration.
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-qdrant-discovery"

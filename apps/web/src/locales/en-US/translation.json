@@ -116,7 +116,9 @@
         "professional": "Professional AI interpretations"
       },
       "passwordSpecialNumber": "At least one number or special character",
-      "passwordCase": "Upper and lowercase letters"
+      "passwordCase": "Upper and lowercase letters",
+      "continueWith": "Continue with {{provider}}",
+      "passwordRequirementsTitle": "Password requirements:"
     },
     "forgotPassword": {
       "title": "Recover Password",
@@ -612,7 +614,8 @@
     "passwordUppercase": "Password must contain at least one uppercase letter",
     "passwordLowercase": "Password must contain at least one lowercase letter",
     "passwordNumber": "Password must contain at least one number",
-    "passwordSpecial": "Password must contain at least one special character"
+    "passwordSpecial": "Password must contain at least one special character",
+    "acceptTerms": "You must accept the Terms of Service and Privacy Policy"
   },
   "components": {
     "planetList": {

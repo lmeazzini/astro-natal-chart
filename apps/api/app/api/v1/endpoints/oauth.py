@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.i18n.messages import OAuthMessages
+from app.core.i18n.translator import translate
 from app.core.rate_limit import RateLimits, limiter
 from app.services.amplitude_service import amplitude_service
 from app.services.oauth_service import OAuthService, oauth
@@ -39,12 +41,15 @@ async def oauth_login(provider: str, request: Request, response: Response) -> Re
         Redirect to OAuth provider authorization URL
     """
     if provider not in ["google", "github", "facebook"]:
-        raise HTTPException(status_code=400, detail="Invalid OAuth provider")
+        raise HTTPException(status_code=400, detail=translate(OAuthMessages.INVALID_PROVIDER))
 
     # Get the OAuth client for the provider
     client = oauth.create_client(provider)
     if not client:
-        raise HTTPException(status_code=500, detail=f"OAuth provider {provider} is not configured")
+        raise HTTPException(
+            status_code=500,
+            detail=translate(OAuthMessages.PROVIDER_NOT_CONFIGURED, provider=provider),
+        )
 
     # Generate redirect URI based on provider
     if provider == "google":
@@ -56,7 +61,8 @@ async def oauth_login(provider: str, request: Request, response: Response) -> Re
 
     if not redirect_uri:
         raise HTTPException(
-            status_code=500, detail=f"Redirect URI for {provider} is not configured"
+            status_code=500,
+            detail=translate(OAuthMessages.REDIRECT_URI_NOT_CONFIGURED, provider=provider),
         )
 
     # Generate authorization URL and redirect user
@@ -83,12 +89,15 @@ async def oauth_callback(
         OAuth token response with access and refresh tokens
     """
     if provider not in ["google", "github", "facebook"]:
-        raise HTTPException(status_code=400, detail="Invalid OAuth provider")
+        raise HTTPException(status_code=400, detail=translate(OAuthMessages.INVALID_PROVIDER))
 
     # Get the OAuth client
     client = oauth.create_client(provider)
     if not client:
-        raise HTTPException(status_code=500, detail=f"OAuth provider {provider} is not configured")
+        raise HTTPException(
+            status_code=500,
+            detail=translate(OAuthMessages.PROVIDER_NOT_CONFIGURED, provider=provider),
+        )
 
     try:
         # Exchange authorization code for access token
@@ -127,7 +136,7 @@ async def oauth_callback(
         if not user_data.get("email") or not user_data.get("provider_user_id"):
             raise HTTPException(
                 status_code=400,
-                detail="Failed to retrieve required user information from OAuth provider",
+                detail=translate(OAuthMessages.FAILED_TO_RETRIEVE_USER_INFO),
             )
 
         # Get or create user
@@ -212,7 +221,10 @@ async def oauth_callback(
         )
 
         # In production, log this error
-        raise HTTPException(status_code=400, detail=f"OAuth authentication failed: {str(e)}") from e
+        raise HTTPException(
+            status_code=400,
+            detail=translate(OAuthMessages.AUTH_FAILED, error=str(e)),
+        ) from e
 
 
 @router.get("/providers")

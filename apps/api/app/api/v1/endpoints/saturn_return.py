@@ -24,6 +24,8 @@ from app.astro.saturn_return import (
 from app.core.context import get_locale
 from app.core.credit_config import get_feature_cost
 from app.core.dependencies import get_current_user, get_db
+from app.core.i18n import translate as _
+from app.core.i18n.messages import ChartMessages, CommonMessages, SaturnReturnMessages
 from app.core.rate_limit import RateLimits, limiter
 from app.models.enums import FeatureType
 from app.models.user import User
@@ -103,18 +105,18 @@ async def get_saturn_return(
     except ChartNotFoundError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from err
     except UnauthorizedAccessError as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from err
 
     if not chart.chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart has not been calculated yet",
+            detail=_(ChartMessages.NOT_CALCULATED),
         )
 
     # Get language-specific chart data
@@ -124,7 +126,7 @@ async def get_saturn_return(
     if not chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart data not available for this locale",
+            detail=_(ChartMessages.DATA_NOT_AVAILABLE),
         )
 
     # Check if Saturn Return is already cached
@@ -155,7 +157,9 @@ async def get_saturn_return(
                 status_code=status.HTTP_402_PAYMENT_REQUIRED,
                 detail={
                     "error": "insufficient_credits",
-                    "message": f"This feature requires {required} credits. You have {available} credits available.",
+                    "message": _(
+                        CommonMessages.INSUFFICIENT_CREDITS, required=required, available=available
+                    ),
                     "feature_type": FeatureType.SATURN_RETURN.value,
                     "required_credits": required,
                     "available_credits": available,
@@ -168,7 +172,7 @@ async def get_saturn_return(
     if not saturn_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Saturn data not found in chart",
+            detail=_(SaturnReturnMessages.SATURN_NOT_FOUND),
         )
 
     natal_saturn_longitude, natal_saturn_house = saturn_data
@@ -240,18 +244,18 @@ async def get_saturn_return_interp(
     except ChartNotFoundError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from err
     except UnauthorizedAccessError as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from err
 
     if not chart.chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart has not been calculated yet",
+            detail=_(ChartMessages.NOT_CALCULATED),
         )
 
     # Get language-specific chart data
@@ -261,7 +265,7 @@ async def get_saturn_return_interp(
     if not chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart data not available for this locale",
+            detail=_(ChartMessages.DATA_NOT_AVAILABLE),
         )
 
     # Extract Saturn data from chart
@@ -269,7 +273,7 @@ async def get_saturn_return_interp(
     if not saturn_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Saturn data not found in chart",
+            detail=_(SaturnReturnMessages.SATURN_NOT_FOUND),
         )
 
     natal_saturn_longitude, natal_saturn_house = saturn_data

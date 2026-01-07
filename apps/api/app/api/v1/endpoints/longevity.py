@@ -19,6 +19,8 @@ from app.astro.longevity import calculate_longevity_analysis
 from app.core.context import get_locale
 from app.core.credit_config import get_feature_cost
 from app.core.dependencies import get_current_user, get_db
+from app.core.i18n import translate as _
+from app.core.i18n.messages import ChartMessages, CommonMessages, LongevityMessages
 from app.core.rate_limit import RateLimits, limiter
 from app.models.enums import FeatureType
 from app.models.user import User
@@ -84,18 +86,18 @@ async def get_hyleg(
     except ChartNotFoundError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from err
     except UnauthorizedAccessError as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from err
 
     if not chart.chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart has not been calculated yet",
+            detail=_(ChartMessages.NOT_CALCULATED),
         )
 
     # Get language-specific chart data
@@ -105,7 +107,7 @@ async def get_hyleg(
     if not chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart data not available for this locale",
+            detail=_(ChartMessages.DATA_NOT_AVAILABLE),
         )
 
     # Check if longevity data is already calculated
@@ -147,7 +149,7 @@ async def get_hyleg(
     if hyleg is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to calculate Hyleg",
+            detail=_(LongevityMessages.HYLEG_CALCULATION_FAILED),
         )
 
     return HylegResponse(**hyleg)
@@ -189,18 +191,18 @@ async def get_alcochoden(
     except ChartNotFoundError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from err
     except UnauthorizedAccessError as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from err
 
     if not chart.chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart has not been calculated yet",
+            detail=_(ChartMessages.NOT_CALCULATED),
         )
 
     # Get language-specific chart data
@@ -210,7 +212,7 @@ async def get_alcochoden(
     if not chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart data not available for this locale",
+            detail=_(ChartMessages.DATA_NOT_AVAILABLE),
         )
 
     # Check if longevity data is already calculated
@@ -271,7 +273,7 @@ async def get_alcochoden(
     if alcochoden is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to calculate Alcochoden",
+            detail=_(LongevityMessages.ALCOCHODEN_CALCULATION_FAILED),
         )
 
     return AlcochodenResponse(**alcochoden)
@@ -321,18 +323,18 @@ async def get_longevity(
     except ChartNotFoundError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from err
     except UnauthorizedAccessError as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from err
 
     if not chart.chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart has not been calculated yet",
+            detail=_(ChartMessages.NOT_CALCULATED),
         )
 
     # Get language-specific chart data
@@ -342,7 +344,7 @@ async def get_longevity(
     if not chart_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Chart data not available for this locale",
+            detail=_(ChartMessages.DATA_NOT_AVAILABLE),
         )
 
     # Check if longevity data is already calculated (no credits consumed for cached)
@@ -371,7 +373,9 @@ async def get_longevity(
                 status_code=status.HTTP_402_PAYMENT_REQUIRED,
                 detail={
                     "error": "insufficient_credits",
-                    "message": f"This feature requires {required} credits. You have {available} credits available.",
+                    "message": _(
+                        CommonMessages.INSUFFICIENT_CREDITS, required=required, available=available
+                    ),
                     "feature_type": FeatureType.LONGEVITY.value,
                     "required_credits": required,
                     "available_credits": available,
@@ -420,7 +424,7 @@ async def get_longevity(
     if longevity is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to calculate longevity analysis",
+            detail=_(LongevityMessages.ANALYSIS_FAILED),
         )
 
     # Cache the result in chart_data (flat format for consistency)

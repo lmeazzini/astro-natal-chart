@@ -398,7 +398,7 @@ async def create_chart(
                 await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Chart processing unavailable. Please try again later.",
+                detail=_(ChartMessages.PROCESSING_UNAVAILABLE),
             )
 
         # Store task_id on chart for tracking
@@ -416,7 +416,7 @@ async def create_chart(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating birth chart: {str(e)}",
+            detail=_(ChartMessages.CREATE_ERROR, error=str(e)),
         ) from e
 
 
@@ -518,12 +518,12 @@ async def get_chart_status(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -605,12 +605,12 @@ async def get_chart(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -651,12 +651,12 @@ async def update_chart(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -693,12 +693,12 @@ async def delete_chart(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -762,7 +762,7 @@ async def generate_chart_pdf(
         if not chart.chart_data or chart.status != "completed":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Chart must be fully calculated before generating PDF. Wait for chart calculations to complete.",
+                detail=_(ChartMessages.STILL_PROCESSING),
             )
 
         # Atomically acquire PDF generation lock (prevents race conditions)
@@ -781,7 +781,7 @@ async def generate_chart_pdf(
             await db.refresh(chart)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"PDF is already being generated for this chart. Task ID: {chart.pdf_task_id}. Please wait for the current generation to complete.",
+                detail=_(ChartMessages.PDF_ALREADY_GENERATING),
             )
 
         # Dispatch Celery task now that we have the lock
@@ -799,7 +799,7 @@ async def generate_chart_pdf(
             await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="PDF generation service temporarily unavailable. Please try again later.",
+                detail=_(ChartMessages.PDF_FAILED),
             ) from e
 
         # Update with task ID for tracking
@@ -807,7 +807,7 @@ async def generate_chart_pdf(
         await db.commit()
 
         return {
-            "message": "PDF generation started",
+            "message": _(ChartMessages.PDF_GENERATION_STARTED),
             "chart_id": str(chart_id),
             "task_id": task.id,
         }
@@ -817,12 +817,12 @@ async def generate_chart_pdf(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -880,7 +880,7 @@ async def get_pdf_status(
             else:
                 return PDFDownloadResponse(
                     status="generating",
-                    message="PDF generation is in progress. Please check back in a few moments.",
+                    message=_(ChartMessages.PDF_GENERATING),
                 )
 
         # PDF exists - determine download URL
@@ -900,7 +900,7 @@ async def get_pdf_status(
                 # Failed to generate presigned URL
                 return PDFDownloadResponse(
                     status="failed",
-                    message="Failed to generate download URL. Please try again.",
+                    message=_(ChartMessages.S3_DOWNLOAD_FAILED),
                     generated_at=chart.pdf_generated_at,
                 )
         else:
@@ -912,18 +912,18 @@ async def get_pdf_status(
             download_url=download_url,
             expires_in=expires_in,
             generated_at=chart.pdf_generated_at,
-            message="PDF is ready for download.",
+            message=_(ChartMessages.PDF_READY),
         )
 
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -968,7 +968,7 @@ async def download_chart_pdf(
         if not chart.pdf_url:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="PDF not generated yet. Call POST /charts/{id}/generate-pdf first.",
+                detail=_(ChartMessages.PDF_NOT_GENERATED),
             )
 
         # Generate filename
@@ -992,7 +992,7 @@ async def download_chart_pdf(
             if not download_url:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to generate download URL from S3. Please try again.",
+                    detail=_(ChartMessages.S3_DOWNLOAD_FAILED),
                 )
 
             # Return presigned URL in JSON response
@@ -1015,12 +1015,12 @@ async def download_chart_pdf(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None
 
 
@@ -1085,11 +1085,11 @@ async def recalculate_chart(
         if not task or not task.id:
             logger.error(f"Failed to queue recalculation task for chart {chart_id}")
             chart.status = "failed"
-            chart.error_message = "Task queue unavailable. Please try again."
+            chart.error_message = "Task queue unavailable"
             await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Chart recalculation unavailable. Please try again later.",
+                detail=_(ChartMessages.PROCESSING_UNAVAILABLE),
             )
 
         chart.task_id = task.id
@@ -1102,10 +1102,10 @@ async def recalculate_chart(
     except ChartNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Birth chart not found",
+            detail=_(ChartMessages.CHART_NOT_FOUND),
         ) from None
     except UnauthorizedAccessError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this birth chart",
+            detail=_(ChartMessages.ACCESS_DENIED),
         ) from None

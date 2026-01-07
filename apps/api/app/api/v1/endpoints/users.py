@@ -11,6 +11,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
+from app.core.i18n.messages import (
+    AuthMessages,
+    OAuthMessages,
+    ProfileMessages,
+    StorageMessages,
+)
+from app.core.i18n.translator import translate
 from app.core.rate_limit import RateLimits, limiter
 from app.models.user import User
 from app.repositories.user_repository import OAuthAccountRepository
@@ -338,7 +345,7 @@ async def disconnect_oauth_provider(
     if not current_user.password_hash and len(all_accounts) <= 1:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot disconnect last OAuth provider without setting a password first",
+            detail=translate(OAuthMessages.CANNOT_DISCONNECT_LAST),
         )
 
     # Find the specific OAuth account to disconnect
@@ -350,7 +357,7 @@ async def disconnect_oauth_provider(
     if not account_to_delete:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OAuth connection for {provider} not found",
+            detail=translate(OAuthMessages.CONNECTION_NOT_FOUND, provider=provider),
         )
 
     # Delete the OAuth account
@@ -399,7 +406,10 @@ async def upload_avatar(
     if file.content_type not in s3_service.ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type. Allowed types: {', '.join(s3_service.ALLOWED_IMAGE_TYPES.keys())}",
+            detail=translate(
+                StorageMessages.INVALID_FILE_TYPE,
+                allowed_types=", ".join(s3_service.ALLOWED_IMAGE_TYPES.keys()),
+            ),
         )
 
     # Read file content
@@ -409,7 +419,10 @@ async def upload_avatar(
     if len(contents) > s3_service.MAX_AVATAR_SIZE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File too large. Maximum size is {s3_service.MAX_AVATAR_SIZE // (1024 * 1024)}MB",
+            detail=translate(
+                StorageMessages.FILE_TOO_LARGE,
+                max_size=str(s3_service.MAX_AVATAR_SIZE // (1024 * 1024)),
+            ),
         )
 
     try:
@@ -428,7 +441,7 @@ async def upload_avatar(
         if not s3_url:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to upload avatar",
+                detail=translate(StorageMessages.UPLOAD_FAILED),
             )
 
         # Update user avatar_url
@@ -438,7 +451,7 @@ async def upload_avatar(
 
         return AvatarUploadResponse(
             avatar_url=s3_url,
-            message="Avatar uploaded successfully",
+            message=translate(StorageMessages.UPLOAD_SUCCESS),
         )
 
     except ValueError as e:
@@ -507,13 +520,13 @@ async def get_public_profile(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            detail=translate(AuthMessages.USER_NOT_FOUND),
         )
 
     if not user.profile_public:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="This profile is private",
+            detail=translate(ProfileMessages.PROFILE_PRIVATE),
         )
 
     return user

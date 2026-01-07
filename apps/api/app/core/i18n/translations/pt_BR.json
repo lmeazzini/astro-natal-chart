@@ -47,7 +47,18 @@
     "pdf_ready": "PDF pronto para download",
     "pdf_failed": "Falha ao gerar PDF",
     "unverified_chart_limit": "Você atingiu o limite de {limit} mapas para contas não verificadas. Verifique seu email para criar mais mapas.",
-    "unverified_pdf_blocked": "A geração de PDF está disponível apenas para contas verificadas. Verifique seu email para desbloquear esta funcionalidade."
+    "unverified_pdf_blocked": "A geração de PDF está disponível apenas para contas verificadas. Verifique seu email para desbloquear esta funcionalidade.",
+    "access_denied": "Você não tem acesso a este mapa natal",
+    "not_calculated": "O mapa ainda não foi calculado",
+    "data_not_available": "Dados do mapa não disponíveis para este idioma",
+    "processing_unavailable": "Processamento do mapa indisponível. Tente novamente mais tarde.",
+    "pdf_not_generated": "PDF ainda não foi gerado. Chame POST /charts/{id}/generate-pdf primeiro.",
+    "still_processing": "O mapa ainda está sendo processado. Aguarde até que os cálculos sejam concluídos.",
+    "public_not_found": "Mapa público '{slug}' não encontrado",
+    "pdf_already_generating": "O PDF já está sendo gerado para este mapa. Aguarde a conclusão da geração atual.",
+    "pdf_generation_started": "Geração do PDF iniciada",
+    "s3_download_failed": "Falha ao gerar URL de download. Tente novamente.",
+    "create_error": "Erro ao criar mapa natal: {error}"
   },
   "user": {
     "profile_updated": "Perfil atualizado com sucesso",
@@ -62,6 +73,117 @@
     "forbidden": "Acesso negado",
     "bad_request": "Requisição inválida",
     "success": "Operação realizada com sucesso",
-    "rate_limit_exceeded": "Limite de requisições excedido. Tente novamente em alguns minutos."
+    "rate_limit_exceeded": "Limite de requisições excedido. Tente novamente em alguns minutos.",
+    "insufficient_credits": "Esta funcionalidade requer {required} créditos. Você tem {available} créditos disponíveis."
+  },
+  "longevity": {
+    "hyleg_calculation_failed": "Falha ao calcular Hyleg",
+    "alcochoden_calculation_failed": "Falha ao calcular Alcochoden",
+    "analysis_failed": "Falha ao calcular análise de longevidade"
+  },
+  "saturn_return": {
+    "saturn_not_found": "Dados de Saturno não encontrados no mapa"
+  },
+  "solar_return": {
+    "sun_not_found": "Dados do Sol não encontrados no mapa",
+    "max_range_exceeded": "O intervalo máximo é de 20 anos",
+    "invalid_year_range": "O ano final deve ser maior ou igual ao ano inicial"
+  },
+  "oauth": {
+    "invalid_provider": "Provedor OAuth inválido",
+    "provider_not_configured": "Provedor OAuth {provider} não está configurado",
+    "redirect_uri_not_configured": "URI de redirecionamento para {provider} não está configurada",
+    "auth_failed": "Falha na autenticação OAuth: {error}",
+    "connection_not_found": "Conexão OAuth para {provider} não encontrada",
+    "cannot_disconnect_last": "Não é possível desconectar o último provedor OAuth sem definir uma senha primeiro",
+    "failed_to_retrieve_user_info": "Falha ao obter informações do usuário do provedor OAuth"
+  },
+  "storage": {
+    "invalid_file_type": "Tipo de arquivo inválido. Tipos permitidos: {allowed_types}",
+    "file_too_large": "Arquivo muito grande. Tamanho máximo é {max_size}MB",
+    "upload_failed": "Falha ao fazer upload do arquivo",
+    "upload_success": "Arquivo enviado com sucesso"
+  },
+  "profile": {
+    "private": "Este perfil é privado"
+  },
+  "admin": {
+    "cannot_modify_own_role": "Não é possível modificar seu próprio papel",
+    "cannot_modify_admin": "Não é possível modificar o papel de outro administrador",
+    "cannot_remove_last_admin": "Não é possível remover o papel do último administrador"
+  },
+  "geocoding": {
+    "location_not_found": "Localização não encontrada: {location}",
+    "search_failed": "Falha ao buscar localização: {error}",
+    "coordinates_failed": "Falha ao obter coordenadas: {error}",
+    "timezone_not_found": "Fuso horário '{timezone}' não encontrado"
+  },
+  "stripe": {
+    "invalid_plan_type": "Tipo de plano inválido: {plan_type}",
+    "price_not_configured": "Preço não configurado para o plano: {plan_type}",
+    "invalid_signature": "Assinatura inválida",
+    "not_configured": "Processamento de pagamentos não está configurado",
+    "already_subscribed": "Você já possui uma assinatura ativa. Use o portal do cliente para gerenciá-la.",
+    "no_billing_account": "Conta de cobrança não encontrada. Por favor, assine primeiro.",
+    "no_subscription_to_cancel": "Nenhuma assinatura ativa para cancelar",
+    "cancelled_at_period_end": "Sua assinatura será cancelada no final do período de faturamento.",
+    "cancelled_immediately": "Sua assinatura foi cancelada imediatamente.",
+    "no_subscription_to_reactivate": "Nenhuma assinatura para reativar",
+    "not_scheduled_for_cancellation": "Assinatura não está agendada para cancelamento",
+    "subscription_reactivated": "Sua assinatura foi reativada."
+  },
+  "email": {
+    "password_reset_subject": "Recuperação de Senha - Real Astrology",
+    "password_changed_subject": "Senha Alterada com Sucesso - Real Astrology",
+    "verify_email_subject": "Verifique seu Email - Real Astrology",
+    "welcome_subject": "Bem-vindo ao Real Astrology!",
+    "greeting": "Olá, {name}!",
+    "footer_copyright": "© {year} Real Astrology. Todos os direitos reservados.",
+    "button_not_working": "Se o botão não funcionar, copie e cole este link no seu navegador:",
+    "password_reset_title": "Recuperação de Senha",
+    "password_reset_intro": "Recebemos uma solicitação para redefinir a senha da sua conta no Real Astrology.",
+    "password_reset_action": "Se você fez essa solicitação, clique no botão abaixo para criar uma nova senha:",
+    "password_reset_button": "Redefinir Senha",
+    "password_reset_expiry": "Este link expira em {hours} hora(s).",
+    "password_reset_ignore": "Se você não solicitou a redefinição de senha, ignore este email. Sua senha permanecerá inalterada.",
+    "password_changed_title": "Senha Alterada",
+    "password_changed_success": "Sua senha foi alterada com sucesso.",
+    "password_changed_warning": "Se você não fez essa alteração, entre em contato com nosso suporte imediatamente.",
+    "password_changed_login": "Fazer Login",
+    "verify_email_title": "Bem-vindo ao Real Astrology!",
+    "verify_email_intro": "Obrigado por se cadastrar no Real Astrology. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.",
+    "verify_email_action": "Clique no botão abaixo para verificar seu email:",
+    "verify_email_button": "Verificar Email",
+    "verify_email_expiry": "Este link expira em 24 horas.",
+    "verify_email_ignore": "Se você não criou uma conta no Real Astrology, ignore este email."
+  },
+  "pdf": {
+    "chart_info": "Informações do Mapa",
+    "planets": "Planetas",
+    "planetary_positions": "Posições Planetárias",
+    "planetary_interpretations": "Interpretações Planetárias",
+    "houses": "Casas",
+    "house_cusps": "Cúspides das Casas",
+    "house_interpretations": "Interpretações das Casas",
+    "aspects": "Aspectos",
+    "main_aspects": "Aspectos Principais",
+    "aspect_interpretations": "Interpretações dos Aspectos",
+    "planet": "Planeta",
+    "sign": "Signo",
+    "degree": "Grau",
+    "house": "Casa",
+    "dignity": "Dignidade",
+    "retrograde": "Retrógrado",
+    "aspect": "Aspecto",
+    "orb": "Orbe",
+    "house_system": "Sistema de Casas",
+    "zodiac_type": "Tipo de Zodíaco",
+    "ascendant": "Ascendente",
+    "midheaven": "Meio do Céu (MC)",
+    "page_of": "Página {page} de {total}",
+    "traditional_astrology": "Astrologia Tradicional",
+    "report_generated": "Relatório gerado em {date}",
+    "continued": "Continuação",
+    "continues_next": "Continua na próxima página"
   }
 }

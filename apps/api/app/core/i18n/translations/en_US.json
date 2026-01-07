@@ -47,7 +47,18 @@
     "pdf_ready": "PDF ready for download",
     "pdf_failed": "Failed to generate PDF",
     "unverified_chart_limit": "You have reached the limit of {limit} charts for unverified accounts. Please verify your email to create more charts.",
-    "unverified_pdf_blocked": "PDF generation is only available for verified accounts. Please verify your email to unlock this feature."
+    "unverified_pdf_blocked": "PDF generation is only available for verified accounts. Please verify your email to unlock this feature.",
+    "access_denied": "You don't have access to this birth chart",
+    "not_calculated": "Chart has not been calculated yet",
+    "data_not_available": "Chart data not available for this locale",
+    "processing_unavailable": "Chart processing unavailable. Please try again later.",
+    "pdf_not_generated": "PDF not generated yet. Call POST /charts/{id}/generate-pdf first.",
+    "still_processing": "Chart is still processing. Please wait until calculations are complete.",
+    "public_not_found": "Public chart '{slug}' not found",
+    "pdf_already_generating": "PDF is already being generated for this chart. Please wait for the current generation to complete.",
+    "pdf_generation_started": "PDF generation started",
+    "s3_download_failed": "Failed to generate download URL. Please try again.",
+    "create_error": "Error creating birth chart: {error}"
   },
   "user": {
     "profile_updated": "Profile updated successfully",
@@ -62,6 +73,117 @@
     "forbidden": "Access denied",
     "bad_request": "Invalid request",
     "success": "Operation completed successfully",
-    "rate_limit_exceeded": "Rate limit exceeded. Please try again in a few minutes."
+    "rate_limit_exceeded": "Rate limit exceeded. Please try again in a few minutes.",
+    "insufficient_credits": "This feature requires {required} credits. You have {available} credits available."
+  },
+  "longevity": {
+    "hyleg_calculation_failed": "Failed to calculate Hyleg",
+    "alcochoden_calculation_failed": "Failed to calculate Alcochoden",
+    "analysis_failed": "Failed to calculate longevity analysis"
+  },
+  "saturn_return": {
+    "saturn_not_found": "Saturn data not found in chart"
+  },
+  "solar_return": {
+    "sun_not_found": "Sun data not found in chart",
+    "max_range_exceeded": "Maximum range is 20 years",
+    "invalid_year_range": "End year must be greater than or equal to start year"
+  },
+  "oauth": {
+    "invalid_provider": "Invalid OAuth provider",
+    "provider_not_configured": "OAuth provider {provider} is not configured",
+    "redirect_uri_not_configured": "Redirect URI for {provider} is not configured",
+    "auth_failed": "OAuth authentication failed: {error}",
+    "connection_not_found": "OAuth connection for {provider} not found",
+    "cannot_disconnect_last": "Cannot disconnect last OAuth provider without setting a password first",
+    "failed_to_retrieve_user_info": "Failed to retrieve required user information from OAuth provider"
+  },
+  "storage": {
+    "invalid_file_type": "Invalid file type. Allowed types: {allowed_types}",
+    "file_too_large": "File too large. Maximum size is {max_size}MB",
+    "upload_failed": "Failed to upload file",
+    "upload_success": "File uploaded successfully"
+  },
+  "profile": {
+    "private": "This profile is private"
+  },
+  "admin": {
+    "cannot_modify_own_role": "Cannot modify your own role",
+    "cannot_modify_admin": "Cannot modify another admin's role",
+    "cannot_remove_last_admin": "Cannot remove role from last admin"
+  },
+  "geocoding": {
+    "location_not_found": "Location not found: {location}",
+    "search_failed": "Failed to search location: {error}",
+    "coordinates_failed": "Failed to get coordinates: {error}",
+    "timezone_not_found": "Timezone '{timezone}' not found"
+  },
+  "stripe": {
+    "invalid_plan_type": "Invalid plan type: {plan_type}",
+    "price_not_configured": "Price not configured for plan: {plan_type}",
+    "invalid_signature": "Invalid signature",
+    "not_configured": "Payment processing is not configured",
+    "already_subscribed": "You already have an active subscription. Use the customer portal to manage it.",
+    "no_billing_account": "No billing account found. Please subscribe first.",
+    "no_subscription_to_cancel": "No active subscription to cancel",
+    "cancelled_at_period_end": "Your subscription will be cancelled at the end of the billing period.",
+    "cancelled_immediately": "Your subscription has been cancelled immediately.",
+    "no_subscription_to_reactivate": "No subscription to reactivate",
+    "not_scheduled_for_cancellation": "Subscription is not scheduled for cancellation",
+    "subscription_reactivated": "Your subscription has been reactivated."
+  },
+  "email": {
+    "password_reset_subject": "Password Recovery - Real Astrology",
+    "password_changed_subject": "Password Changed Successfully - Real Astrology",
+    "verify_email_subject": "Verify Your Email - Real Astrology",
+    "welcome_subject": "Welcome to Real Astrology!",
+    "greeting": "Hello, {name}!",
+    "footer_copyright": "© {year} Real Astrology. All rights reserved.",
+    "button_not_working": "If the button doesn't work, copy and paste this link into your browser:",
+    "password_reset_title": "Password Recovery",
+    "password_reset_intro": "We received a request to reset the password for your Real Astrology account.",
+    "password_reset_action": "If you made this request, click the button below to create a new password:",
+    "password_reset_button": "Reset Password",
+    "password_reset_expiry": "This link expires in {hours} hour(s).",
+    "password_reset_ignore": "If you did not request a password reset, please ignore this email. Your password will remain unchanged.",
+    "password_changed_title": "Password Changed",
+    "password_changed_success": "Your password has been changed successfully.",
+    "password_changed_warning": "If you did not make this change, please contact our support immediately.",
+    "password_changed_login": "Log In",
+    "verify_email_title": "Welcome to Real Astrology!",
+    "verify_email_intro": "Thank you for signing up with Real Astrology. To start using all the platform features, we need to verify your email address.",
+    "verify_email_action": "Click the button below to verify your email:",
+    "verify_email_button": "Verify Email",
+    "verify_email_expiry": "This link expires in 24 hours.",
+    "verify_email_ignore": "If you did not create an account with Real Astrology, please ignore this email."
+  },
+  "pdf": {
+    "chart_info": "Chart Information",
+    "planets": "Planets",
+    "planetary_positions": "Planetary Positions",
+    "planetary_interpretations": "Planetary Interpretations",
+    "houses": "Houses",
+    "house_cusps": "House Cusps",
+    "house_interpretations": "House Interpretations",
+    "aspects": "Aspects",
+    "main_aspects": "Main Aspects",
+    "aspect_interpretations": "Aspect Interpretations",
+    "planet": "Planet",
+    "sign": "Sign",
+    "degree": "Degree",
+    "house": "House",
+    "dignity": "Dignity",
+    "retrograde": "Retrograde",
+    "aspect": "Aspect",
+    "orb": "Orb",
+    "house_system": "House System",
+    "zodiac_type": "Zodiac Type",
+    "ascendant": "Ascendant",
+    "midheaven": "Midheaven (MC)",
+    "page_of": "Page {page} of {total}",
+    "traditional_astrology": "Traditional Astrology",
+    "report_generated": "Report generated on {date}",
+    "continued": "Continued",
+    "continues_next": "Continues on next page"
   }
 }

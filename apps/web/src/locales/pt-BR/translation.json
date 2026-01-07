@@ -116,7 +116,9 @@
         "professional": "Interpretações profissionais com IA"
       },
       "passwordSpecialNumber": "Pelo menos um número ou caractere especial",
-      "passwordCase": "Letras maiúsculas e minúsculas"
+      "passwordCase": "Letras maiúsculas e minúsculas",
+      "continueWith": "Continuar com {{provider}}",
+      "passwordRequirementsTitle": "Requisitos da senha:"
     },
     "forgotPassword": {
       "title": "Recuperar Senha",
@@ -608,7 +610,8 @@
     "passwordUppercase": "Senha deve conter pelo menos uma letra maiúscula",
     "passwordLowercase": "Senha deve conter pelo menos uma letra minúscula",
     "passwordNumber": "Senha deve conter pelo menos um número",
-    "passwordSpecial": "Senha deve conter pelo menos um caractere especial"
+    "passwordSpecial": "Senha deve conter pelo menos um caractere especial",
+    "acceptTerms": "Você deve aceitar os Termos de Uso e a Política de Privacidade"
   },
   "components": {
     "planetList": {

@@ -11,6 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import require_verified_admin
+from app.core.i18n.messages import AdminMessages, AuthMessages
+from app.core.i18n.translator import translate
 from app.core.rate_limit import RateLimits, limiter
 from app.models.chart import AuditLog, BirthChart
 from app.models.enums import UserRole
@@ -91,7 +93,7 @@ async def get_user_detail(
     # Get user
     user = await db.get(User, user_id)
     if not user or user.deleted_at:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=translate(AuthMessages.USER_NOT_FOUND))
 
     # Count user's charts
     chart_count_stmt = select(func.count(BirthChart.id)).where(
@@ -143,20 +145,20 @@ async def update_user_role(
     # Get target user
     user = await db.get(User, user_id)
     if not user or user.deleted_at:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=translate(AuthMessages.USER_NOT_FOUND))
 
     # Prevent self-modification
     if user.id == admin_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot modify your own role",
+            detail=translate(AdminMessages.CANNOT_MODIFY_OWN_ROLE),
         )
 
     # Prevent modifying another admin (already checked it's not self above)
     if user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot modify another admin's role",
+            detail=translate(AdminMessages.CANNOT_MODIFY_ADMIN),
         )
 
     # If demoting an admin, check if there's at least one other admin
@@ -169,7 +171,7 @@ async def update_user_role(
         if admin_count <= 1:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot remove role from last admin",
+                detail=translate(AdminMessages.CANNOT_REMOVE_LAST_ADMIN),
             )
 
     # Update role
@@ -442,7 +444,7 @@ async def get_subscription_history(
     # Verify user exists
     user = await db.get(User, user_id)
     if not user or user.deleted_at:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=translate(AuthMessages.USER_NOT_FOUND))
 
     history = await subscription_service.get_subscription_history(
         db=db,

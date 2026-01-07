@@ -6,6 +6,9 @@ from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from app.core.i18n.messages import PasswordMessages
+from app.core.i18n.translator import translate
+
 
 class LoginRequest(BaseModel):
     """Schema for login request."""
@@ -101,13 +104,13 @@ class PasswordResetConfirm(BaseModel):
     def validate_password_strength(cls, v: str) -> str:
         """Valida força da senha."""
         if len(v) < 8:
-            raise ValueError("Senha deve ter no mínimo 8 caracteres")
+            raise ValueError(translate(PasswordMessages.PASSWORD_TOO_SHORT))
         if not any(c.isupper() for c in v):
-            raise ValueError("Senha deve conter pelo menos uma letra maiúscula")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_UPPERCASE))
         if not any(c.islower() for c in v):
-            raise ValueError("Senha deve conter pelo menos uma letra minúscula")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_LOWERCASE))
         if not any(c.isdigit() for c in v):
-            raise ValueError("Senha deve conter pelo menos um número")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_DIGIT))
         return v
 
     @field_validator("password_confirm")
@@ -115,7 +118,7 @@ class PasswordResetConfirm(BaseModel):
     def passwords_match(cls, v: str, info: Any) -> str:
         """Valida que as senhas coincidem."""
         if "new_password" in info.data and v != info.data["new_password"]:
-            raise ValueError("As senhas não coincidem")
+            raise ValueError(translate(PasswordMessages.PASSWORDS_DONT_MATCH))
         return v
 
     class Config:

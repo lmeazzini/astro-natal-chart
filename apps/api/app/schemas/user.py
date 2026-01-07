@@ -8,6 +8,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, ValidationInfo, field_validator
 
+from app.core.i18n.messages import PasswordMessages, ValidationMessages
+from app.core.i18n.translator import translate
+
 
 class UserType(str, Enum):
     """User type enumeration."""
@@ -44,13 +47,13 @@ class UserCreate(UserBase):
     def validate_password_strength(cls, v: str) -> str:
         """Validate password strength."""
         if not any(c.isupper() for c in v):
-            raise ValueError("Password must contain at least one uppercase letter")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_UPPERCASE))
         if not any(c.islower() for c in v):
-            raise ValueError("Password must contain at least one lowercase letter")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_LOWERCASE))
         if not any(c.isdigit() for c in v):
-            raise ValueError("Password must contain at least one number")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_DIGIT))
         if not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in v):
-            raise ValueError("Password must contain at least one special character")
+            raise ValueError(translate(PasswordMessages.PASSWORD_MISSING_SPECIAL))
         return v
 
     @field_validator("password_confirm")
@@ -58,7 +61,7 @@ class UserCreate(UserBase):
     def passwords_match(cls, v: str, info: ValidationInfo) -> str:
         """Validate that passwords match."""
         if "password" in info.data and v != info.data["password"]:
-            raise ValueError("Passwords do not match")
+            raise ValueError(translate(PasswordMessages.PASSWORDS_DONT_MATCH))
         return v
 
     @field_validator("accept_terms")
@@ -66,7 +69,7 @@ class UserCreate(UserBase):
     def validate_terms_accepted(cls, v: bool) -> bool:
         """Validate that user has accepted terms."""
         if not v:
-            raise ValueError("You must accept the terms of service and privacy policy")
+            raise ValueError(translate(ValidationMessages.MUST_ACCEPT_TERMS))
         return v
 
 

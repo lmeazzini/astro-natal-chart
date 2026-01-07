@@ -19,6 +19,8 @@ from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 
 from app.core.config import settings
+from app.core.i18n.messages import EmailMessages
+from app.core.i18n.translator import translate
 
 
 class EmailService:
@@ -227,6 +229,7 @@ class EmailService:
         user_name: str,
         reset_url: str,
         expires_hours: int = 1,
+        locale: str | None = None,
     ) -> bool:
         """
         Envia email de recuperação de senha.
@@ -236,11 +239,26 @@ class EmailService:
             user_name: Nome do usuário
             reset_url: URL para resetar senha
             expires_hours: Horas até expiração do link
+            locale: User locale for translations (e.g., 'pt-BR', 'en-US')
 
         Returns:
             True se enviado com sucesso
         """
-        subject = "Recuperação de Senha - Real Astrology"
+        # Get translations
+        subject = translate(EmailMessages.PASSWORD_RESET_SUBJECT, locale=locale)
+        title = translate(EmailMessages.PASSWORD_RESET_TITLE, locale=locale)
+        greeting = translate(EmailMessages.GREETING, locale=locale, name=user_name)
+        intro = translate(EmailMessages.PASSWORD_RESET_INTRO, locale=locale)
+        action = translate(EmailMessages.PASSWORD_RESET_ACTION, locale=locale)
+        button_text = translate(EmailMessages.PASSWORD_RESET_BUTTON, locale=locale)
+        expiry = translate(
+            EmailMessages.PASSWORD_RESET_EXPIRY, locale=locale, hours=str(expires_hours)
+        )
+        ignore = translate(EmailMessages.PASSWORD_RESET_IGNORE, locale=locale)
+        button_help = translate(EmailMessages.BUTTON_NOT_WORKING, locale=locale)
+        copyright_text = translate(
+            EmailMessages.FOOTER_COPYRIGHT, locale=locale, year=str(datetime.now().year)
+        )
 
         html_body = f"""
         <!DOCTYPE html>
@@ -252,40 +270,40 @@ class EmailService:
         <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #1a2035; background-color: #faf9f6; margin: 0; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(26, 31, 54, 0.08);">
                 <div style="background: #1a1f36; padding: 40px 24px; text-align: center;">
-                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">Recuperação de Senha</h1>
+                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">{title}</h1>
                 </div>
                 <div style="padding: 40px 32px;">
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Olá, <strong style="color: #1a1f36;">{user_name}</strong>!</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">{greeting}</p>
 
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Recebemos uma solicitação para redefinir a senha da sua conta no Real Astrology.</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">{intro}</p>
 
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 24px;">Se você fez essa solicitação, clique no botão abaixo para criar uma nova senha:</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 24px;">{action}</p>
 
                     <div style="text-align: center; margin: 32px 0;">
                         <a href="{reset_url}"
                            style="background-color: #d4a84b; color: #1a1f36; padding: 16px 32px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(212, 168, 75, 0.3);">
-                            Redefinir Senha
+                            {button_text}
                         </a>
                     </div>
 
                     <p style="color: #606780; font-size: 14px; background: #faf9f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        <strong style="color: #1a1f36;">Atenção:</strong> Este link expira em <strong>{expires_hours} hora(s)</strong>.
+                        <strong style="color: #1a1f36;">⏰</strong> {expiry}
                     </p>
 
                     <p style="color: #606780; font-size: 14px; margin-top: 16px;">
-                        Se você não solicitou a redefinição de senha, ignore este email. Sua senha permanecerá inalterada.
+                        {ignore}
                     </p>
 
                     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 28px 0;">
 
                     <p style="color: #606780; font-size: 12px;">
-                        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+                        {button_help}<br>
                         <a href="{reset_url}" style="color: #d4a84b; word-break: break-all;">{reset_url}</a>
                     </p>
                 </div>
                 <div style="background: #1a1f36; padding: 24px; text-align: center;">
                     <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
-                        © 2025 Real Astrology. Todos os direitos reservados.
+                        {copyright_text}
                     </p>
                 </div>
             </div>
@@ -294,21 +312,21 @@ class EmailService:
         """
 
         text_body = f"""
-        Recuperação de Senha - Real Astrology
+        {title}
 
-        Olá, {user_name}!
+        {greeting}
 
-        Recebemos uma solicitação para redefinir a senha da sua conta.
+        {intro}
 
-        Para criar uma nova senha, acesse o link abaixo:
+        {action}
         {reset_url}
 
-        Este link expira em {expires_hours} hora(s).
+        {expiry}
 
-        Se você não solicitou a redefinição de senha, ignore este email.
+        {ignore}
 
         ---
-        © 2025 Real Astrology
+        {copyright_text}
         """
 
         return await self.send_email(to_email, subject, html_body, text_body)
@@ -317,6 +335,7 @@ class EmailService:
         self,
         to_email: str,
         user_name: str,
+        locale: str | None = None,
     ) -> bool:
         """
         Envia email de confirmação de senha alterada.
@@ -324,11 +343,21 @@ class EmailService:
         Args:
             to_email: Email do destinatário
             user_name: Nome do usuário
+            locale: User locale for translations (e.g., 'pt-BR', 'en-US')
 
         Returns:
             True se enviado com sucesso
         """
-        subject = "Senha Alterada com Sucesso - Real Astrology"
+        # Get translations
+        subject = translate(EmailMessages.PASSWORD_CHANGED_SUBJECT, locale=locale)
+        title = translate(EmailMessages.PASSWORD_CHANGED_TITLE, locale=locale)
+        greeting = translate(EmailMessages.GREETING, locale=locale, name=user_name)
+        success_msg = translate(EmailMessages.PASSWORD_CHANGED_SUCCESS, locale=locale)
+        warning = translate(EmailMessages.PASSWORD_CHANGED_WARNING, locale=locale)
+        login_button = translate(EmailMessages.PASSWORD_CHANGED_LOGIN, locale=locale)
+        copyright_text = translate(
+            EmailMessages.FOOTER_COPYRIGHT, locale=locale, year=str(datetime.now().year)
+        )
 
         html_body = f"""
         <!DOCTYPE html>
@@ -340,7 +369,7 @@ class EmailService:
         <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #1a2035; background-color: #faf9f6; margin: 0; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(26, 31, 54, 0.08);">
                 <div style="background: #1a1f36; padding: 40px 24px; text-align: center;">
-                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">Senha Alterada</h1>
+                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">{title}</h1>
                 </div>
                 <div style="padding: 40px 32px;">
                     <div style="text-align: center; margin-bottom: 24px;">
@@ -349,24 +378,24 @@ class EmailService:
                         </div>
                     </div>
 
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Olá, <strong style="color: #1a1f36;">{user_name}</strong>!</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">{greeting}</p>
 
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Sua senha foi alterada com sucesso.</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">{success_msg}</p>
 
                     <p style="color: #606780; font-size: 14px; background: #faf9f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        Se você não fez essa alteração, entre em contato com nosso suporte imediatamente.
+                        {warning}
                     </p>
 
                     <div style="text-align: center; margin: 32px 0;">
                         <a href="{settings.FRONTEND_URL}/login"
                            style="background-color: #d4a84b; color: #1a1f36; padding: 16px 32px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(212, 168, 75, 0.3);">
-                            Fazer Login
+                            {login_button}
                         </a>
                     </div>
                 </div>
                 <div style="background: #1a1f36; padding: 24px; text-align: center;">
                     <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
-                        © 2025 Real Astrology. Todos os direitos reservados.
+                        {copyright_text}
                     </p>
                 </div>
             </div>
@@ -375,18 +404,18 @@ class EmailService:
         """
 
         text_body = f"""
-        Senha Alterada com Sucesso - Real Astrology
+        {title}
 
-        Olá, {user_name}!
+        {greeting}
 
-        Sua senha foi alterada com sucesso.
+        {success_msg}
 
-        Se você não fez essa alteração, entre em contato com nosso suporte imediatamente.
+        {warning}
 
-        Acesse: {settings.FRONTEND_URL}/login
+        {settings.FRONTEND_URL}/login
 
         ---
-        © 2025 Real Astrology
+        {copyright_text}
         """
 
         return await self.send_email(to_email, subject, html_body, text_body)
@@ -396,6 +425,7 @@ class EmailService:
         to_email: str,
         user_name: str,
         verification_url: str,
+        locale: str | None = None,
     ) -> bool:
         """
         Envia email de verificação de conta.
@@ -404,11 +434,24 @@ class EmailService:
             to_email: Email do destinatário
             user_name: Nome do usuário
             verification_url: URL para verificar email (com token)
+            locale: User locale for translations (e.g., 'pt-BR', 'en-US')
 
         Returns:
             True se enviado com sucesso
         """
-        subject = "Verifique seu Email - Real Astrology"
+        # Get translations
+        subject = translate(EmailMessages.VERIFY_EMAIL_SUBJECT, locale=locale)
+        title = translate(EmailMessages.VERIFY_EMAIL_TITLE, locale=locale)
+        greeting = translate(EmailMessages.GREETING, locale=locale, name=user_name)
+        intro = translate(EmailMessages.VERIFY_EMAIL_INTRO, locale=locale)
+        action = translate(EmailMessages.VERIFY_EMAIL_ACTION, locale=locale)
+        button_text = translate(EmailMessages.VERIFY_EMAIL_BUTTON, locale=locale)
+        expiry = translate(EmailMessages.VERIFY_EMAIL_EXPIRY, locale=locale)
+        ignore = translate(EmailMessages.VERIFY_EMAIL_IGNORE, locale=locale)
+        button_help = translate(EmailMessages.BUTTON_NOT_WORKING, locale=locale)
+        copyright_text = translate(
+            EmailMessages.FOOTER_COPYRIGHT, locale=locale, year=str(datetime.now().year)
+        )
 
         html_body = f"""
         <!DOCTYPE html>
@@ -420,40 +463,40 @@ class EmailService:
         <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #1a2035; background-color: #faf9f6; margin: 0; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(26, 31, 54, 0.08);">
                 <div style="background: #1a1f36; padding: 40px 24px; text-align: center;">
-                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">Bem-vindo ao Real Astrology!</h1>
+                    <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #d4a84b; font-size: 24px; margin: 0;">{title}</h1>
                 </div>
                 <div style="padding: 40px 32px;">
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Olá, <strong style="color: #1a1f36;">{user_name}</strong>!</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">{greeting}</p>
 
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">Obrigado por se cadastrar no Real Astrology. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 16px;">{intro}</p>
 
-                    <p style="font-size: 15px; color: #606780; margin-bottom: 24px;">Clique no botão abaixo para verificar seu email:</p>
+                    <p style="font-size: 15px; color: #606780; margin-bottom: 24px;">{action}</p>
 
                     <div style="text-align: center; margin: 32px 0;">
                         <a href="{verification_url}"
                            style="background-color: #d4a84b; color: #1a1f36; padding: 16px 32px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 15px; box-shadow: 0 4px 16px rgba(212, 168, 75, 0.3);">
-                            Verificar Email
+                            {button_text}
                         </a>
                     </div>
 
                     <p style="color: #606780; font-size: 14px; background: #faf9f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        <strong style="color: #1a1f36;">Atenção:</strong> Este link expira em <strong>24 horas</strong>.
+                        <strong style="color: #1a1f36;">⏰</strong> {expiry}
                     </p>
 
                     <p style="color: #606780; font-size: 14px; margin-top: 16px;">
-                        Se você não criou uma conta no Real Astrology, ignore este email.
+                        {ignore}
                     </p>
 
                     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 28px 0;">
 
                     <p style="color: #606780; font-size: 12px;">
-                        Se o botão não funcionar, copie e cole este link no seu navegador:<br>
+                        {button_help}<br>
                         <a href="{verification_url}" style="color: #d4a84b; word-break: break-all;">{verification_url}</a>
                     </p>
                 </div>
                 <div style="background: #1a1f36; padding: 24px; text-align: center;">
                     <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0;">
-                        © 2025 Real Astrology. Todos os direitos reservados.<br>
+                        {copyright_text}<br>
                         <a href="{settings.FRONTEND_URL}" style="color: #d4a84b;">realastrology.ai</a>
                     </p>
                 </div>
@@ -463,21 +506,21 @@ class EmailService:
         """
 
         text_body = f"""
-        Bem-vindo ao Real Astrology!
+        {title}
 
-        Olá, {user_name}!
+        {greeting}
 
-        Obrigado por se cadastrar no Real Astrology. Para começar a usar todos os recursos da plataforma, precisamos verificar seu endereço de email.
+        {intro}
 
-        Para verificar seu email, acesse o link abaixo:
+        {action}
         {verification_url}
 
-        Este link expira em 24 horas.
+        {expiry}
 
-        Se você não criou uma conta no Real Astrology, ignore este email.
+        {ignore}
 
         ---
-        © 2025 Real Astrology
+        {copyright_text}
         realastrology.ai
         """
 

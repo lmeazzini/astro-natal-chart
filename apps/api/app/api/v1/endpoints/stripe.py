@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
+from app.core.i18n import translate as _
+from app.core.i18n.messages import StripeMessages
 from app.models.enums import PlanType, SubscriptionStatus
 from app.models.subscription import Subscription
 from app.models.user import User
@@ -88,7 +90,7 @@ async def create_checkout_session(
     if not stripe_service.enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Payment processing is not configured",
+            detail=_(StripeMessages.NOT_CONFIGURED),
         )
 
     # Validate plan type
@@ -99,7 +101,7 @@ async def create_checkout_session(
     ]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid plan type: {request.plan_type}",
+            detail=_(StripeMessages.INVALID_PLAN_TYPE, plan_type=request.plan_type),
         )
 
     # Get price ID for plan
@@ -107,7 +109,7 @@ async def create_checkout_session(
     if not price_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Price not configured for plan: {request.plan_type}",
+            detail=_(StripeMessages.PRICE_NOT_CONFIGURED, plan_type=request.plan_type),
         )
 
     # Check if user already has active subscription
@@ -116,7 +118,7 @@ async def create_checkout_session(
     if existing and existing.stripe_subscription_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You already have an active subscription. Use the customer portal to manage it.",
+            detail=_(StripeMessages.ALREADY_SUBSCRIBED),
         )
 
     # Get or create Stripe customer
@@ -182,7 +184,7 @@ async def create_portal_session(
     if not stripe_service.enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Payment processing is not configured",
+            detail=_(StripeMessages.NOT_CONFIGURED),
         )
 
     subscription_repo = SubscriptionRepository(db)
@@ -191,7 +193,7 @@ async def create_portal_session(
     if not subscription or not subscription.stripe_customer_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No billing account found. Please subscribe first.",
+            detail=_(StripeMessages.NO_BILLING_ACCOUNT),
         )
 
     return_url = request.return_url or f"{settings.FRONTEND_URL}/account"
@@ -261,7 +263,7 @@ async def cancel_subscription(
     if not stripe_service.enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Payment processing is not configured",
+            detail=_(StripeMessages.NOT_CONFIGURED),
         )
 
     subscription_repo = SubscriptionRepository(db)
@@ -270,7 +272,7 @@ async def cancel_subscription(
     if not subscription or not subscription.stripe_subscription_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No active subscription to cancel",
+            detail=_(StripeMessages.NO_SUBSCRIPTION_TO_CANCEL),
         )
 
     # Cancel via Stripe
@@ -285,9 +287,9 @@ async def cancel_subscription(
     await db.commit()
 
     message = (
-        "Your subscription will be cancelled at the end of the billing period."
+        _(StripeMessages.CANCELLED_AT_PERIOD_END)
         if request.at_period_end
-        else "Your subscription has been cancelled immediately."
+        else _(StripeMessages.CANCELLED_IMMEDIATELY)
     )
 
     logger.info(
@@ -317,7 +319,7 @@ async def reactivate_subscription(
     if not stripe_service.enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Payment processing is not configured",
+            detail=_(StripeMessages.NOT_CONFIGURED),
         )
 
     subscription_repo = SubscriptionRepository(db)
@@ -326,13 +328,13 @@ async def reactivate_subscription(
     if not subscription or not subscription.stripe_subscription_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No subscription to reactivate",
+            detail=_(StripeMessages.NO_SUBSCRIPTION_TO_REACTIVATE),
         )
 
     if not subscription.cancel_at_period_end:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Subscription is not scheduled for cancellation",
+            detail=_(StripeMessages.NOT_SCHEDULED_FOR_CANCELLATION),
         )
 
     # Reactivate via Stripe
@@ -349,7 +351,7 @@ async def reactivate_subscription(
 
     return CancelSubscriptionResponse(
         success=True,
-        message="Your subscription has been reactivated.",
+        message=_(StripeMessages.SUBSCRIPTION_REACTIVATED),
         cancel_at_period_end=False,
         current_period_end=subscription.current_period_end,
     )
@@ -409,7 +411,7 @@ async def stripe_webhook(
     if not stripe_service.enabled:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Stripe not configured",
+            detail=_(StripeMessages.NOT_CONFIGURED),
         )
 
     # Get raw body
@@ -422,7 +424,7 @@ async def stripe_webhook(
         logger.error(f"Webhook signature verification failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid signature",
+            detail=_(StripeMessages.INVALID_SIGNATURE),
         ) from e
 
     # Process the event

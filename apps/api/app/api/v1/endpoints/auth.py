@@ -9,6 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
+from app.core.i18n.messages import AuthMessages
+from app.core.i18n.translator import translate
 from app.core.rate_limit import RateLimits, limiter
 from app.core.security import decode_token
 from app.models.user import User
@@ -173,7 +175,7 @@ async def refresh_token(
         if not payload:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token",
+                detail=translate(AuthMessages.INVALID_TOKEN),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -181,7 +183,7 @@ async def refresh_token(
         if payload.get("type") != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type",
+                detail=translate(AuthMessages.INVALID_TOKEN_TYPE),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -190,7 +192,7 @@ async def refresh_token(
         if not user_id_str:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload",
+                detail=translate(AuthMessages.INVALID_TOKEN_PAYLOAD),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -211,7 +213,7 @@ async def refresh_token(
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token",
+            detail=translate(AuthMessages.INVALID_TOKEN),
             headers={"WWW-Authenticate": "Bearer"},
         ) from None
 

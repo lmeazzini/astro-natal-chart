@@ -80,14 +80,24 @@ jobs:
         run: terraform init
         working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
 
+      - name: Generate secrets.tfvars
+        run: |
+          # Generate tfvars file from secrets
+          # Note: stripe_price_ids is a JSON object that needs HCL conversion
+          cat > secrets.auto.tfvars <<EOF
+          stripe_secret_key     = "${{ secrets.TF_VAR_STRIPE_SECRET_KEY }}"
+          stripe_webhook_secret = "${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}"
+          openai_api_key        = "${{ secrets.TF_VAR_OPENAI_API_KEY }}"
+          stripe_price_ids = {
+            starter   = "price_1SlXOpPXpwjspox5OxqyuCy0"
+            pro       = "price_1SlXP4PXpwjspox59oZbls3b"
+            unlimited = "price_1SlXPLPXpwjspox5PbJheOVJ"
+          }
+          EOF
+        working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
       - name: Terraform Plan
         id: plan
-        env:
-          # Terraform automatically picks up TF_VAR_* environment variables
-          TF_VAR_stripe_secret_key: ${{ secrets.TF_VAR_STRIPE_SECRET_KEY }}
-          TF_VAR_stripe_webhook_secret: ${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}
-          TF_VAR_stripe_price_ids: ${{ secrets.TF_VAR_STRIPE_PRICE_IDS }}
-          TF_VAR_openai_api_key: ${{ secrets.TF_VAR_OPENAI_API_KEY }}
         run: |
           # Run terraform plan and capture exit code
           # Using pipefail to preserve exit code through pipe
@@ -156,13 +166,22 @@ jobs:
         run: terraform init
         working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
 
+      - name: Generate secrets.tfvars
+        run: |
+          # Generate tfvars file from secrets (same as plan step)
+          cat > secrets.auto.tfvars <<EOF
+          stripe_secret_key     = "${{ secrets.TF_VAR_STRIPE_SECRET_KEY }}"
+          stripe_webhook_secret = "${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}"
+          openai_api_key        = "${{ secrets.TF_VAR_OPENAI_API_KEY }}"
+          stripe_price_ids = {
+            starter   = "price_1SlXOpPXpwjspox5OxqyuCy0"
+            pro       = "price_1SlXP4PXpwjspox59oZbls3b"
+            unlimited = "price_1SlXPLPXpwjspox5PbJheOVJ"
+          }
+          EOF
+        working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
+
       - name: Terraform Apply
-        env:
-          # Terraform automatically picks up TF_VAR_* environment variables
-          TF_VAR_stripe_secret_key: ${{ secrets.TF_VAR_STRIPE_SECRET_KEY }}
-          TF_VAR_stripe_webhook_secret: ${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}
-          TF_VAR_stripe_price_ids: ${{ secrets.TF_VAR_STRIPE_PRICE_IDS }}
-          TF_VAR_openai_api_key: ${{ secrets.TF_VAR_OPENAI_API_KEY }}
         run: terraform apply -auto-approve tfplan
         working-directory: iac/environments/${{ needs.determine-environment.outputs.environment }}
 

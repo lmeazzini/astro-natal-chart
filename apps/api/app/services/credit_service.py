@@ -8,6 +8,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.credit_config import (
+    LOW_CREDITS_THRESHOLD_PERCENT,
     PLAN_CREDIT_LIMITS,
     get_credit_limit,
     get_feature_cost,
@@ -362,6 +363,26 @@ async def consume_credits(
         },
     )
 
+    # Check if credits are low and track warning
+    credits_limit = user_credit.credits_limit
+    if credits_limit and credits_limit > 0:
+        threshold = int(credits_limit * LOW_CREDITS_THRESHOLD_PERCENT)
+        if new_balance <= threshold and (new_balance + required) > threshold:
+            # Only track once when crossing the threshold
+            amplitude_service.track(
+                event_type="credits_low_warning",
+                user_id=str(user_id),
+                event_properties={
+                    "balance_remaining": new_balance,
+                    "credits_limit": credits_limit,
+                    "threshold_percent": int(LOW_CREDITS_THRESHOLD_PERCENT * 100),
+                    "plan_type": user_credit.plan_type,
+                },
+            )
+            logger.bind(user_id=str(user_id)).info(
+                f"Low credits warning: {new_balance}/{credits_limit} credits remaining"
+            )
+
     logger.bind(user_id=str(user_id)).debug(
         f"Consumed {required} credits for {feature_type}, balance: {new_balance}"
     )
@@ -426,6 +447,73 @@ async def add_bonus_credits(
 
     logger.bind(user_id=str(user_id), admin_id=str(admin_user.id)).info(
         f"Added {amount} bonus credits, new balance: {new_balance}"
+    )
+
+    return transaction
+
+
+async def refund_credits(
+    db: AsyncSession,
+    user_id: UUID,
+    amount: int,
+    admin_user: User,
+    reason: str | None = None,
+    original_transaction_id: UUID | None = None,
+) -> CreditTransaction:
+    """
+    Refund credits to a user.
+
+    Args:
+        db: Database session
+        user_id: User UUID
+        amount: Number of credits to refund
+        admin_user: Admin performing the action
+        reason: Optional reason for the refund
+        original_transaction_id: Optional ID of the original transaction being refunded
+
+    Returns:
+        CreditTransaction record
+    """
+    transaction_repo = CreditTransactionRepository(db)
+
+    user_credit = await get_or_create_user_credits(db, user_id)
+
+    now = datetime.now(UTC)
+    new_balance = user_credit.credits_balance + amount
+
+    user_credit.credits_balance = new_balance
+    user_credit.updated_at = now
+
+    transaction = CreditTransaction(
+        user_id=user_id,
+        transaction_type=TransactionType.REFUND.value,
+        amount=amount,
+        balance_after=new_balance,
+        description=reason or "Credits refunded by admin",
+        created_at=now,
+    )
+
+    await db.commit()
+    await db.refresh(user_credit)
+    await transaction_repo.create(transaction)
+
+    # Track with Amplitude
+    amplitude_service.track(
+        event_type="credits_refunded",
+        user_id=str(user_id),
+        event_properties={
+            "amount": amount,
+            "balance_after": new_balance,
+            "refunded_by_admin_id": str(admin_user.id),
+            "reason": reason or "no_reason_provided",
+            "original_transaction_id": str(original_transaction_id)
+            if original_transaction_id
+            else None,
+        },
+    )
+
+    logger.bind(user_id=str(user_id), admin_id=str(admin_user.id)).info(
+        f"Refunded {amount} credits, new balance: {new_balance}"
     )
 
     return transaction

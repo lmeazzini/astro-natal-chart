@@ -373,7 +373,8 @@ async def handle_invoice_payment_succeeded(
 
     # Reset credits for new billing period (monthly renewal)
     # Only reset if this is a renewal (not the first payment)
-    if invoice.get("billing_reason") == "subscription_cycle":
+    is_renewal = invoice.get("billing_reason") == "subscription_cycle"
+    if is_renewal:
         from app.services.credit_service import reset_monthly_credits
 
         await reset_monthly_credits(db, subscription.user_id)
@@ -382,6 +383,20 @@ async def handle_invoice_payment_succeeded(
 
     amount_paid = invoice.get("amount_paid", 0)
     currency = invoice.get("currency", "brl")
+
+    # Track subscription renewal with Amplitude
+    if is_renewal:
+        amplitude_service.track(
+            event_type="subscription_renewed",
+            user_id=str(subscription.user_id),
+            event_properties={
+                "plan_type": subscription.plan_type,
+                "amount": amount_paid,
+                "currency": currency,
+                "stripe_subscription_id": invoice_subscription,
+                "source": "stripe_webhook",
+            },
+        )
 
     # Track with Amplitude
     amplitude_service.track(

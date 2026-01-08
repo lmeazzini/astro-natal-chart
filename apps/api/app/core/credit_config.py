@@ -6,6 +6,9 @@ Defines credit limits per plan and credit costs per feature.
 
 from app.models.enums import FeatureType, PlanType
 
+# Threshold for low credits warning (percentage of limit)
+LOW_CREDITS_THRESHOLD_PERCENT = 0.20  # 20% of limit
+
 # Credit limits per plan (None = unlimited)
 PLAN_CREDIT_LIMITS: dict[str, int | None] = {
     PlanType.FREE.value: 10,

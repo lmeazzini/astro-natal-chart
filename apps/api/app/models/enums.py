@@ -100,6 +100,7 @@ class TransactionType(str, Enum):
     - RESET: Monthly credit reset
     - UPGRADE: Credits adjusted due to plan upgrade
     - BONUS: Promotional credits added by admin
+    - REFUND: Credits refunded by admin
     """
 
     DEBIT = "debit"
@@ -107,6 +108,7 @@ class TransactionType(str, Enum):
     RESET = "reset"
     UPGRADE = "upgrade"
     BONUS = "bonus"
+    REFUND = "refund"
 
     def __str__(self) -> str:
         return self.value

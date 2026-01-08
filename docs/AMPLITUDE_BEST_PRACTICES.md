@@ -1,8 +1,8 @@
 # Amplitude Analytics - Best Practices Manual
 
-> 📊 **Version**: 2.0.0
-> 📅 **Last Updated**: 2025-01-26
-> 🔗 **Related Issues**: #83 (Initial Setup), #217-#223 (Implementation Phases)
+> 📊 **Version**: 2.1.0
+> 📅 **Last Updated**: 2026-01-07
+> 🔗 **Related Issues**: #83 (Initial Setup), #217-#223 (Implementation Phases), #305 (Credit & Subscription Events)
 
 ---
 
@@ -29,8 +29,8 @@ Amplitude Analytics is integrated into the Real Astrology application to track u
 - ✅ Backend: `apps/api/app/services/amplitude_service.py`
 - ✅ Frontend: `apps/web/src/services/amplitude.ts`
 - ✅ **Session Replay**: `@amplitude/plugin-session-replay-browser` (100% sample rate)
-- ✅ **Fully Implemented**: ~75 events across 9 categories
-- ✅ **Coverage**: Authentication, Charts, Session, Navigation, Premium, Content, Errors, Profile, Password Reset, Email Verification
+- ✅ **Fully Implemented**: ~80 events across 10 categories
+- ✅ **Coverage**: Authentication, Charts, Session, Navigation, Premium, Content, Errors, Profile, Password Reset, Email Verification, Credits
 - ✅ **Session Tracking**: Handled automatically by Amplitude SDK (`defaultTracking.sessions: true`)
 
 **Key Principles**:
@@ -834,7 +834,7 @@ function MyPage() {
 }
 ```
 
-### Premium/Subscription Events (Issue #220)
+### Premium/Subscription Events (Issue #220, #305)
 
 | Event Name | Location | Properties | Triggered When |
 |-----------|----------|-----------|----------------|
@@ -846,6 +846,52 @@ function MyPage() {
 | `subscription_extended` | Backend: `subscription_service.py` | `extend_days`, `previous_expires_at`, `new_expires_at`, `source` | Admin extends subscription |
 | `subscription_revoked` | Backend: `subscription_service.py` | `was_active`, `days_remaining`, `revoked_by_admin_id`, `source` | Admin revokes subscription |
 | `subscription_expired` | Backend: `subscription_service.py` | `expired_at`, `source` | System auto-expires subscription |
+| `subscription_renewed` | Backend: `stripe_webhook_handler.py` | `plan_type`, `amount`, `currency`, `stripe_subscription_id`, `source` | Subscription auto-renews via Stripe |
+
+### Credit Events (Issue #305)
+
+| Event Name | Location | Properties | Triggered When |
+|-----------|----------|-----------|----------------|
+| `credits_allocated` | Backend: `credit_service.py` | `plan_type`, `credits_allocated`, `is_unlimited`, `source` | Credits allocated on plan change |
+| `credits_consumed` | Backend: `credit_service.py` | `feature_type`, `credits_consumed`, `balance_after`, `plan_type` | Credits consumed for a feature |
+| `insufficient_credits` | Backend: `credit_service.py` | `feature_type`, `required`, `available`, `plan_type` | User attempts action without enough credits |
+| `bonus_credits_added` | Backend: `credit_service.py` | `amount`, `balance_after`, `added_by_admin_id`, `reason` | Admin adds bonus credits |
+| `credits_reset` | Backend: `credit_service.py` | `plan_type`, `old_balance`, `new_balance`, `source` | Monthly credit reset |
+| `credits_low_warning` | Backend: `credit_service.py` | `balance_remaining`, `credits_limit`, `threshold_percent`, `plan_type` | Credits drop below 20% threshold |
+| `credits_refunded` | Backend: `credit_service.py` | `amount`, `balance_after`, `refunded_by_admin_id`, `reason`, `original_transaction_id` | Admin refunds credits |
+
+**Event Details**:
+
+#### `subscription_renewed`
+**Description**: Subscription auto-renewed via Stripe webhook when billing cycle completes.
+
+**Properties**:
+- `plan_type` (string): Current plan type (`"starter"`, `"pro"`, `"unlimited"`)
+- `amount` (number): Payment amount in cents
+- `currency` (string): Currency code (`"brl"`)
+- `stripe_subscription_id` (string): Stripe subscription ID
+- `source` (string): Always `"stripe_webhook"`
+
+#### `credits_low_warning`
+**Description**: Tracked when user's credit balance drops below 20% of their plan limit (e.g., 2 credits remaining on a 10-credit plan).
+
+**Properties**:
+- `balance_remaining` (number): Credits remaining after consumption
+- `credits_limit` (number): Total credits limit for the plan
+- `threshold_percent` (number): Warning threshold percentage (20)
+- `plan_type` (string): User's plan type
+
+**Note**: Only tracked once when crossing the threshold, not on every consumption below threshold.
+
+#### `credits_refunded`
+**Description**: Admin refunds credits to a user (e.g., for service issues or goodwill).
+
+**Properties**:
+- `amount` (number): Credits refunded
+- `balance_after` (number): New credit balance
+- `refunded_by_admin_id` (string): Admin UUID who performed refund
+- `reason` (string): Reason for refund
+- `original_transaction_id` (string | null): ID of original transaction if applicable
 
 **Event Details**:
 
@@ -1820,6 +1866,12 @@ Before adding a new event, complete this checklist:
 
 ## Changelog
 
+**Version 2.1.0** (2026-01-07):
+- Added Credit Events section (Issue #305)
+- New events: `subscription_renewed`, `credits_low_warning`, `credits_refunded`
+- Updated Implementation Status to include credit tracking
+- Added detailed event documentation for new events
+
 **Version 2.0.0** (2025-01-26):
 - Complete event catalog with ~70 events
 - Added Authentication Events section (10 events)
@@ -1856,6 +1908,6 @@ To update this manual:
 
 ---
 
-**Last Updated**: 2025-01-26
+**Last Updated**: 2026-01-07
 **Maintainer**: Development Team
-**Version**: 2.0.0
+**Version**: 2.1.0

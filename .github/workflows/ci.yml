@@ -187,8 +187,9 @@ jobs:
     continue-on-error: true
     # Add a timeout to prevent infinite runs
     timeout-minutes: 20
-    # Only run E2E on main/dev branches or PRs to main/dev
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev'))
+    # Skip E2E tests when called from deployment workflow (workflow_call) to avoid blocking deployments
+    # Only run E2E on direct pushes or PRs to main/dev
+    if: github.event_name != 'workflow_call' && (github.event_name == 'push' || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev')))
 
     services:
       postgres:

@@ -179,6 +179,12 @@ variable "openai_api_key" {
 # Stripe Variables (optional - for payment processing)
 # -----------------------------------------------------------------------------
 
+variable "stripe_publishable_key" {
+  description = "Stripe Publishable API Key (pk_live_...)"
+  type        = string
+  default     = null
+}
+
 variable "stripe_secret_key" {
   description = "Stripe Secret API Key (sk_live_...)"
   type        = string

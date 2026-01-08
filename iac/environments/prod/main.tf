@@ -144,6 +144,9 @@ module "ecs" {
   # Frontend URL for email links
   frontend_url = var.domain_name != null ? "https://${var.domain_name}" : null
 
+  # Stripe publishable key (public, safe for environment variables)
+  stripe_publishable_key = var.stripe_publishable_key
+
   # Secrets Manager integration
   secret_arns = {
     database_url          = module.secrets.database_url_arn

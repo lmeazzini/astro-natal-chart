@@ -249,6 +249,12 @@ variable "frontend_url" {
   default     = null
 }
 
+variable "stripe_publishable_key" {
+  description = "Stripe publishable key (public, safe to expose)"
+  type        = string
+  default     = null
+}
+
 # -----------------------------------------------------------------------------
 # Secrets Manager Integration
 # -----------------------------------------------------------------------------

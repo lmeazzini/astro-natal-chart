@@ -104,6 +104,9 @@ resource "aws_ecs_task_definition" "api" {
           }] : [], var.frontend_url != null ? [{
           name  = "FRONTEND_URL"
           value = var.frontend_url
+          }] : [], var.stripe_publishable_key != null ? [{
+          name  = "STRIPE_PUBLISHABLE_KEY"
+          value = var.stripe_publishable_key
       }] : [])
 
       # Secrets from Secrets Manager (injected from secrets module)

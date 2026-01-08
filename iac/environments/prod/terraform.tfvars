@@ -56,3 +56,8 @@ domain_name        = "realastrology.ai"
 create_hosted_zone = true
 frontend_subdomain = "www"
 api_subdomain      = "api"
+
+# -----------------------------------------------------------------------------
+# Stripe Configuration (payment processing)
+# -----------------------------------------------------------------------------
+stripe_publishable_key = "pk_live_51Sl86OPXpwjspox5W9FSVQJNxyKmEucewdiLdpUmSlIgHAUxzio52MO0OPvF5onNDeIduhRAmMKQ5UGsbpzYTkot00kh1UMNzX"

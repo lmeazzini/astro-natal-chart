@@ -1941,5 +1941,57 @@
   "footer": {
     "rights": "Todos os direitos reservados.",
     "allRightsReserved": "Todos os direitos reservados."
+  },
+  "admin": {
+    "title": "Portal Administrativo",
+    "exitAdmin": "Sair do Admin",
+    "comingSoon": "Em Breve",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Usuários",
+      "auditLogs": "Logs de Auditoria"
+    },
+    "roles": {
+      "free": "Gratuito",
+      "premium": "Premium",
+      "admin": "Admin"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Visão geral das estatísticas do sistema",
+      "usersByRole": "Usuários por Plano",
+      "usersByRoleDesc": "Distribuição de usuários por tipo de plano",
+      "quickLinks": "Acesso Rápido"
+    },
+    "stats": {
+      "totalUsers": "Total de Usuários",
+      "totalCharts": "Total de Mapas",
+      "activeUsers": "Usuários Ativos",
+      "verifiedUsers": "Usuários Verificados"
+    },
+    "users": {
+      "title": "Usuários",
+      "subtitle": "Gerencie contas de usuários e permissões",
+      "filters": "Filtros",
+      "searchPlaceholder": "Buscar por nome ou email...",
+      "filterByRole": "Filtrar por plano",
+      "allRoles": "Todos os Planos",
+      "name": "Nome",
+      "email": "Email",
+      "role": "Plano",
+      "status": "Status",
+      "verified": "Verificado",
+      "created": "Criado em",
+      "noName": "Sem nome",
+      "noUsers": "Nenhum usuário encontrado",
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "showing": "Mostrando {{from}}-{{to}} de {{total}} usuários",
+      "page": "Página {{page}} de {{total}}"
+    },
+    "errors": {
+      "fetchStats": "Erro ao carregar estatísticas",
+      "fetchUsers": "Erro ao carregar usuários"
+    }
   }
 }

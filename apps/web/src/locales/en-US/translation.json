@@ -1922,5 +1922,57 @@
   "footer": {
     "rights": "All rights reserved.",
     "allRightsReserved": "All rights reserved."
+  },
+  "admin": {
+    "title": "Admin Portal",
+    "exitAdmin": "Exit Admin",
+    "comingSoon": "Coming Soon",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "auditLogs": "Audit Logs"
+    },
+    "roles": {
+      "free": "Free",
+      "premium": "Premium",
+      "admin": "Admin"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your system statistics",
+      "usersByRole": "Users by Role",
+      "usersByRoleDesc": "Distribution of users across different roles",
+      "quickLinks": "Quick Links"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "totalCharts": "Total Charts",
+      "activeUsers": "Active Users",
+      "verifiedUsers": "Verified Users"
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Manage user accounts and permissions",
+      "filters": "Filters",
+      "searchPlaceholder": "Search by name or email...",
+      "filterByRole": "Filter by role",
+      "allRoles": "All Roles",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "verified": "Verified",
+      "created": "Created",
+      "noName": "No name",
+      "noUsers": "No users found",
+      "active": "Active",
+      "inactive": "Inactive",
+      "showing": "Showing {{from}}-{{to}} of {{total}} users",
+      "page": "Page {{page}} of {{total}}"
+    },
+    "errors": {
+      "fetchStats": "Failed to load statistics",
+      "fetchUsers": "Failed to load users"
+    }
   }
 }

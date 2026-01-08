@@ -30,6 +30,10 @@ import { BlogPage } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
 import { SubscriptionSuccessPage } from './pages/SubscriptionSuccess';
 import { CookieBanner } from './components/CookieBanner';
+import { AdminRoute } from './components/AdminRoute';
+import { AdminLayout } from './layouts/AdminLayout';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminUsers } from './pages/admin/AdminUsers';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { FeatureList } from './components/FeatureList';
 import { ThemeProvider } from './components/theme-provider';
@@ -84,6 +88,18 @@ function App() {
                   {/* Blog */}
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogPostPage />} />
+                  {/* Admin Portal */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminRoute>
+                        <AdminLayout />
+                      </AdminRoute>
+                    }
+                  >
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="users" element={<AdminUsers />} />
+                  </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
                 <CookieBanner />

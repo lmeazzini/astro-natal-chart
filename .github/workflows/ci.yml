@@ -7,7 +7,12 @@ on:
     branches: [main, dev]
   workflow_call:
     # Allow this workflow to be called by other workflows (e.g., deploy-prod.yml)
-    # No inputs needed - CI checks are consistent across all callers
+    inputs:
+      skip_e2e:
+        description: 'Skip E2E tests (used by deployment workflow)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   # Backend tests
@@ -187,9 +192,9 @@ jobs:
     continue-on-error: true
     # Add a timeout to prevent infinite runs
     timeout-minutes: 20
-    # Skip E2E tests when called from deployment workflow (workflow_call) to avoid blocking deployments
-    # Only run E2E on direct pushes or PRs to main/dev
-    if: github.event_name != 'workflow_call' && (github.event_name == 'push' || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev')))
+    # Skip E2E tests when skip_e2e input is true (deployment workflow)
+    # Only run E2E on main/dev branches or PRs to main/dev
+    if: ${{ !inputs.skip_e2e && (github.event_name == 'push' || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev'))) }}
 
     services:
       postgres:

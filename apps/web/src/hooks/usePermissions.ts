@@ -46,11 +46,12 @@ export function usePermissions(): PermissionFlags {
   const { user, isAuthenticated } = useAuth();
 
   const role = user?.role ?? null;
+  const isSuperuser = user?.is_superuser ?? false;
 
   return {
     isFree: role === 'free' || role === null,
-    isPremium: role === 'premium' || role === 'admin',
-    isAdmin: role === 'admin',
+    isPremium: role === 'premium' || role === 'admin' || isSuperuser,
+    isAdmin: role === 'admin' || isSuperuser,
     role,
     isAuthenticated,
   };

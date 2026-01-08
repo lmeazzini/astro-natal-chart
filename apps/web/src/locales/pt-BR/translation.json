@@ -1995,5 +1995,45 @@
       "fetchStats": "Erro ao carregar estatísticas",
       "fetchUsers": "Erro ao carregar usuários"
     }
+  },
+  "credits": {
+    "credits": "créditos",
+    "buyCredits": "Comprar Créditos",
+    "upgrade": "Fazer Upgrade",
+    "insufficient": {
+      "title": "Créditos Insuficientes",
+      "description": "Você precisa de mais créditos para usar esta funcionalidade.",
+      "upgrade_hint": "Faça upgrade do seu plano ou compre créditos para desbloquear funcionalidades premium."
+    }
+  },
+  "creditPurchase": {
+    "title": "Comprar Créditos",
+    "subtitle": "Créditos nunca expiram!",
+    "notAvailable": "Pacotes de créditos não estão disponíveis no momento.",
+    "loadError": "Erro ao carregar pacotes de créditos. Tente novamente.",
+    "checkoutError": "Erro ao iniciar o checkout. Tente novamente.",
+    "bestValue": "Melhor Valor",
+    "perCredit": "por crédito",
+    "neverExpire": "Créditos comprados nunca expiram",
+    "buyNow": "Comprar Agora",
+    "save": "Economize"
+  },
+  "subscriptionSuccess": {
+    "title": "Assinatura Confirmada!",
+    "description": "Parabéns! Sua assinatura foi ativada com sucesso.",
+    "creditsActivated": "Seus créditos foram ativados",
+    "accessMessage": "Agora você tem acesso a todas as funcionalidades premium do seu plano. Seus créditos serão renovados automaticamente a cada mês.",
+    "goToDashboard": "Ir para o Dashboard",
+    "exploreCharts": "Explorar meus mapas",
+    "emailConfirmation": "Você receberá um email de confirmação com os detalhes da sua assinatura. Caso tenha dúvidas, entre em contato com nosso suporte."
+  },
+  "purchaseSuccess": {
+    "title": "Compra Concluída!",
+    "description": "Seus créditos foram adicionados à sua conta.",
+    "creditsAdded": "Créditos adicionados à sua conta",
+    "neverExpire": "Seus créditos comprados nunca expiram e estão prontos para uso imediato.",
+    "goToDashboard": "Ir para o Dashboard",
+    "exploreCharts": "Explorar meus mapas",
+    "emailConfirmation": "Você receberá um email de confirmação com os detalhes da sua compra. Se tiver dúvidas, entre em contato com nosso suporte."
   }
 }

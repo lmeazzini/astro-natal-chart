@@ -15,6 +15,7 @@ class UserCreditResponse(BaseModel):
     credits_used: int = Field(..., description="Credits used in current period")
     usage_percentage: float = Field(..., description="Percentage of credits used (0-100)")
     is_unlimited: bool = Field(..., description="Whether the plan has unlimited credits")
+    purchased_credits: int = Field(0, description="Purchased credits (never expire)")
     period_start: datetime = Field(..., description="Current billing period start")
     period_end: datetime | None = Field(None, description="Current billing period end")
     days_until_reset: int | None = Field(None, description="Days until credit reset")

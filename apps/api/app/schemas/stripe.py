@@ -1,6 +1,7 @@
 """Stripe-related Pydantic schemas."""
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -116,6 +117,33 @@ class StripeConfigResponse(BaseModel):
     publishable_key: str
     enabled: bool
     plans: dict[str, dict[str, str | int | None]]
+    credit_packs: dict[str, dict[str, str | int | None]] | None = None
+
+
+class CreateCreditPurchaseRequest(BaseModel):
+    """Request to create a credit purchase checkout session."""
+
+    credit_pack: Literal["small", "medium", "large"] = Field(
+        ...,
+        description="Credit pack to purchase: small (10), medium (25), or large (50)",
+    )
+    success_url: str | None = Field(
+        None,
+        description="Custom success URL (optional, defaults to frontend)",
+    )
+    cancel_url: str | None = Field(
+        None,
+        description="Custom cancel URL (optional, defaults to pricing page)",
+    )
+
+
+class CreditPackInfo(BaseModel):
+    """Credit pack details for display."""
+
+    name: str
+    credits: int
+    price_brl: int
+    price_id: str | None = None
 
 
 class WebhookEventRead(BaseModel):

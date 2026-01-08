@@ -29,6 +29,13 @@ if settings.STRIPE_PRICE_PRO:
 if settings.STRIPE_PRICE_UNLIMITED:
     PRICE_PLAN_MAP[settings.STRIPE_PRICE_UNLIMITED] = PlanType.UNLIMITED.value
 
+# Map credit pack names to Stripe price IDs
+CREDIT_PACK_PRICE_MAP: dict[str, str | None] = {
+    "small": settings.STRIPE_PRICE_CREDITS_SMALL,
+    "medium": settings.STRIPE_PRICE_CREDITS_MEDIUM,
+    "large": settings.STRIPE_PRICE_CREDITS_LARGE,
+}
+
 
 class StripeService:
     """Service for Stripe payment operations."""
@@ -135,6 +142,83 @@ class StripeService:
             "session_id": session.id,
             "checkout_url": session.url or "",
         }
+
+    def create_credit_purchase_session(
+        self,
+        user_id: str,
+        customer_id: str,
+        credit_pack: str,
+        success_url: str,
+        cancel_url: str,
+    ) -> dict[str, str]:
+        """
+        Create a Stripe Checkout session for one-time credit purchase.
+
+        Args:
+            user_id: Internal user ID
+            customer_id: Stripe customer ID
+            credit_pack: Credit pack name (small, medium, large)
+            success_url: URL to redirect after successful payment
+            cancel_url: URL to redirect if payment is cancelled
+
+        Returns:
+            Dict with session_id and checkout_url
+
+        Raises:
+            ValueError: If credit pack is invalid or price not configured
+        """
+        if not self.enabled:
+            raise RuntimeError("Stripe is not configured")
+
+        price_id = CREDIT_PACK_PRICE_MAP.get(credit_pack)
+        if not price_id:
+            raise ValueError(f"Price not configured for credit pack: {credit_pack}")
+
+        session = stripe.checkout.Session.create(
+            customer=customer_id,
+            mode="payment",  # One-time payment, not subscription
+            line_items=[
+                {
+                    "price": price_id,
+                    "quantity": 1,
+                }
+            ],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": user_id,
+                "credit_pack": credit_pack,
+                "type": "credit_purchase",
+            },
+            payment_method_types=["card"],
+            allow_promotion_codes=True,
+            billing_address_collection="auto",
+            customer_update={
+                "address": "auto",
+                "name": "auto",
+            },
+        )
+
+        logger.info(
+            f"Created Stripe credit purchase session: {session.id} "
+            f"for user {user_id}, pack: {credit_pack}"
+        )
+        return {
+            "session_id": session.id,
+            "checkout_url": session.url or "",
+        }
+
+    def get_credit_pack_price_id(self, credit_pack: str) -> str | None:
+        """
+        Get Stripe price ID for a credit pack.
+
+        Args:
+            credit_pack: Credit pack name (small, medium, large)
+
+        Returns:
+            Stripe price ID or None if not configured
+        """
+        return CREDIT_PACK_PRICE_MAP.get(credit_pack)
 
     def create_portal_session(
         self,

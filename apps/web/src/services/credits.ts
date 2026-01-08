@@ -12,6 +12,7 @@ export interface UserCreditsResponse {
   credits_used: number;
   usage_percentage: number;
   is_unlimited: boolean;
+  purchased_credits: number;
   period_start: string;
   period_end: string | null;
   days_until_reset: number | null;
@@ -19,7 +20,7 @@ export interface UserCreditsResponse {
 
 export interface CreditTransaction {
   id: string;
-  transaction_type: 'debit' | 'credit' | 'reset' | 'upgrade' | 'bonus';
+  transaction_type: 'debit' | 'credit' | 'reset' | 'upgrade' | 'bonus' | 'purchase';
   amount: number;
   balance_after: number;
   feature_type: string | null;

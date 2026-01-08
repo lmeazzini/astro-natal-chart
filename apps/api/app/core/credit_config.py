@@ -39,6 +39,37 @@ PLAN_PRICES_BRL: dict[str, int] = {
     PlanType.UNLIMITED.value: 50000,  # R$ 500,00
 }
 
+# Credit packs for one-time purchase (never expire)
+CREDIT_PACKS: dict[str, dict[str, int | str]] = {
+    "small": {
+        "name": "Small Pack",
+        "credits": 10,
+        "price_brl": 1499,  # R$ 14,99
+    },
+    "medium": {
+        "name": "Medium Pack",
+        "credits": 25,
+        "price_brl": 2999,  # R$ 29,99
+    },
+    "large": {
+        "name": "Large Pack",
+        "credits": 50,
+        "price_brl": 4999,  # R$ 49,99
+    },
+}
+
+
+def get_credit_pack(pack_name: str) -> dict[str, int | str] | None:
+    """Get credit pack details by name.
+
+    Args:
+        pack_name: Pack name (small, medium, large)
+
+    Returns:
+        Pack details dict or None if not found.
+    """
+    return CREDIT_PACKS.get(pack_name)
+
 
 def get_credit_limit(plan_type: str) -> int | None:
     """Get credit limit for a plan type.

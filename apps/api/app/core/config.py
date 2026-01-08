@@ -190,10 +190,16 @@ class Settings(BaseSettings):
     STRIPE_PRICE_STARTER: str | None = None  # Stripe Price ID for Starter plan
     STRIPE_PRICE_PRO: str | None = None  # Stripe Price ID for Pro plan
     STRIPE_PRICE_UNLIMITED: str | None = None  # Stripe Price ID for Unlimited plan
+    # Credit pack prices (one-time purchases)
+    STRIPE_CREDIT_PRICES: str | None = None  # JSON object from AWS Secrets Manager
+    STRIPE_PRICE_CREDITS_SMALL: str | None = None  # Price ID for small credit pack
+    STRIPE_PRICE_CREDITS_MEDIUM: str | None = None  # Price ID for medium credit pack
+    STRIPE_PRICE_CREDITS_LARGE: str | None = None  # Price ID for large credit pack
 
     @model_validator(mode="after")
     def parse_stripe_price_ids(self) -> Self:
-        """Parse STRIPE_PRICE_IDS JSON into individual price fields."""
+        """Parse STRIPE_PRICE_IDS and STRIPE_CREDIT_PRICES JSON into individual fields."""
+        # Parse subscription plan prices
         if self.STRIPE_PRICE_IDS:
             try:
                 price_ids = json.loads(self.STRIPE_PRICE_IDS)
@@ -206,6 +212,27 @@ class Settings(BaseSettings):
                         object.__setattr__(self, "STRIPE_PRICE_UNLIMITED", price_ids["unlimited"])
             except json.JSONDecodeError:
                 pass  # Invalid JSON, ignore
+
+        # Parse credit pack prices
+        if self.STRIPE_CREDIT_PRICES:
+            try:
+                credit_prices = json.loads(self.STRIPE_CREDIT_PRICES)
+                if isinstance(credit_prices, dict):
+                    if not self.STRIPE_PRICE_CREDITS_SMALL and "small" in credit_prices:
+                        object.__setattr__(
+                            self, "STRIPE_PRICE_CREDITS_SMALL", credit_prices["small"]
+                        )
+                    if not self.STRIPE_PRICE_CREDITS_MEDIUM and "medium" in credit_prices:
+                        object.__setattr__(
+                            self, "STRIPE_PRICE_CREDITS_MEDIUM", credit_prices["medium"]
+                        )
+                    if not self.STRIPE_PRICE_CREDITS_LARGE and "large" in credit_prices:
+                        object.__setattr__(
+                            self, "STRIPE_PRICE_CREDITS_LARGE", credit_prices["large"]
+                        )
+            except json.JSONDecodeError:
+                pass  # Invalid JSON, ignore
+
         return self
 
     @property

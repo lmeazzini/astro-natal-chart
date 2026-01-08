@@ -29,6 +29,7 @@ import { PricingPage } from './pages/Pricing';
 import { BlogPage } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
 import { SubscriptionSuccessPage } from './pages/SubscriptionSuccess';
+import { PurchaseSuccessPage } from './pages/PurchaseSuccess';
 import { CookieBanner } from './components/CookieBanner';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminLayout } from './layouts/AdminLayout';
@@ -85,6 +86,7 @@ function App() {
                   {/* Pricing */}
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+                  <Route path="/purchase/success" element={<PurchaseSuccessPage />} />
                   {/* Blog */}
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogPostPage />} />

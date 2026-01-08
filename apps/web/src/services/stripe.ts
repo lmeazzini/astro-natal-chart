@@ -4,6 +4,13 @@
 
 import { apiClient } from './api';
 
+export interface CreditPack {
+  name: string;
+  credits: number;
+  price_brl: number;
+  price_id: string | null;
+}
+
 export interface StripeConfig {
   publishable_key: string;
   enabled: boolean;
@@ -15,6 +22,9 @@ export interface StripeConfig {
       price_brl: number;
     };
   };
+  credit_packs: {
+    [key: string]: CreditPack;
+  } | null;
 }
 
 export interface CheckoutSessionResponse {
@@ -151,4 +161,29 @@ export async function redirectToCheckout(planType: 'starter' | 'pro' | 'unlimite
 export async function redirectToPortal(): Promise<void> {
   const { portal_url } = await createPortalSession();
   window.location.href = portal_url;
+}
+
+export type CreditPackType = 'small' | 'medium' | 'large';
+
+/**
+ * Create a checkout session for credit purchase
+ */
+export async function createCreditPurchaseSession(
+  creditPack: CreditPackType,
+  successUrl?: string,
+  cancelUrl?: string
+): Promise<CheckoutSessionResponse> {
+  return apiClient.post<CheckoutSessionResponse>('/api/v1/stripe/purchase-credits', {
+    credit_pack: creditPack,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+  });
+}
+
+/**
+ * Redirect to credit purchase checkout
+ */
+export async function redirectToCreditPurchase(creditPack: CreditPackType): Promise<void> {
+  const { checkout_url } = await createCreditPurchaseSession(creditPack);
+  window.location.href = checkout_url;
 }

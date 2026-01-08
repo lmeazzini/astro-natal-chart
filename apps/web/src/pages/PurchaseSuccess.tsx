@@ -1,5 +1,5 @@
 /**
- * Subscription Success Page - Shown after successful Stripe checkout
+ * Purchase Success Page - Shown after successful credit pack purchase
  */
 
 import { useEffect, useRef } from 'react';
@@ -10,9 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useCredits } from '@/contexts/CreditsContext';
 import { amplitudeService } from '@/services/amplitude';
-import { CheckCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { CheckCircle, Coins, ArrowRight } from 'lucide-react';
 
-export function SubscriptionSuccessPage() {
+export function PurchaseSuccessPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { refreshCredits } = useCredits();
@@ -22,12 +22,12 @@ export function SubscriptionSuccessPage() {
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // Refresh credits to get the new plan
+    // Refresh credits to get the new balance
     refreshCredits();
 
     // Track conversion (only once)
     if (!hasTracked.current && sessionId) {
-      amplitudeService.track('subscription_completed', {
+      amplitudeService.track('credit_purchase_completed', {
         session_id: sessionId,
         source: 'stripe_checkout',
         ...(user?.id && { user_id: user.id }),
@@ -45,28 +45,25 @@ export function SubscriptionSuccessPage() {
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
           <CardTitle className="text-2xl">
-            {t('subscriptionSuccess.title', 'Subscription Confirmed!')}
+            {t('purchaseSuccess.title', 'Purchase Complete!')}
           </CardTitle>
           <CardDescription>
-            {t(
-              'subscriptionSuccess.description',
-              'Congratulations! Your subscription has been activated successfully.'
-            )}
+            {t('purchaseSuccess.description', 'Your credits have been added to your account.')}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           <div className="p-4 bg-muted/50 rounded-lg space-y-2">
             <div className="flex items-center justify-center gap-2 text-primary">
-              <Sparkles className="h-5 w-5" />
+              <Coins className="h-5 w-5" />
               <span className="font-medium">
-                {t('subscriptionSuccess.creditsActivated', 'Your credits have been activated')}
+                {t('purchaseSuccess.creditsAdded', 'Credits added to your account')}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
               {t(
-                'subscriptionSuccess.accessMessage',
-                'You now have access to all premium features of your plan. Your credits will be renewed automatically each month.'
+                'purchaseSuccess.neverExpire',
+                'Your purchased credits never expire and are ready to use immediately.'
               )}
             </p>
           </div>
@@ -74,21 +71,19 @@ export function SubscriptionSuccessPage() {
           <div className="space-y-3">
             <Button asChild className="w-full">
               <Link to="/dashboard">
-                {t('subscriptionSuccess.goToDashboard', 'Go to Dashboard')}
+                {t('purchaseSuccess.goToDashboard', 'Go to Dashboard')}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/charts">
-                {t('subscriptionSuccess.exploreCharts', 'Explore my charts')}
-              </Link>
+              <Link to="/charts">{t('purchaseSuccess.exploreCharts', 'Explore my charts')}</Link>
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground">
             {t(
-              'subscriptionSuccess.emailConfirmation',
-              'You will receive an email confirmation with your subscription details. If you have any questions, please contact our support.'
+              'purchaseSuccess.emailConfirmation',
+              'You will receive an email confirmation with your purchase details. If you have any questions, please contact our support.'
             )}
           </p>
         </CardContent>

@@ -101,6 +101,7 @@ class TransactionType(str, Enum):
     - UPGRADE: Credits adjusted due to plan upgrade
     - BONUS: Promotional credits added by admin
     - REFUND: Credits refunded by admin
+    - PURCHASE: One-time credit purchase
     """
 
     DEBIT = "debit"
@@ -109,6 +110,7 @@ class TransactionType(str, Enum):
     UPGRADE = "upgrade"
     BONUS = "bonus"
     REFUND = "refund"
+    PURCHASE = "purchase"
 
     def __str__(self) -> str:
         return self.value

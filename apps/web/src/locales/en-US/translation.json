@@ -1976,5 +1976,45 @@
       "fetchStats": "Failed to load statistics",
       "fetchUsers": "Failed to load users"
     }
+  },
+  "credits": {
+    "credits": "credits",
+    "buyCredits": "Buy Credits",
+    "upgrade": "Upgrade Plan",
+    "insufficient": {
+      "title": "Insufficient Credits",
+      "description": "You need more credits to use this feature.",
+      "upgrade_hint": "Upgrade your plan or buy credits to unlock premium features."
+    }
+  },
+  "creditPurchase": {
+    "title": "Buy Credits",
+    "subtitle": "Credits never expire!",
+    "notAvailable": "Credit packs are not available at this time.",
+    "loadError": "Failed to load credit packs. Please try again.",
+    "checkoutError": "Failed to start checkout. Please try again.",
+    "bestValue": "Best Value",
+    "perCredit": "per credit",
+    "neverExpire": "Purchased credits never expire",
+    "buyNow": "Buy Now",
+    "save": "Save"
+  },
+  "subscriptionSuccess": {
+    "title": "Subscription Confirmed!",
+    "description": "Congratulations! Your subscription has been activated successfully.",
+    "creditsActivated": "Your credits have been activated",
+    "accessMessage": "You now have access to all premium features of your plan. Your credits will be renewed automatically each month.",
+    "goToDashboard": "Go to Dashboard",
+    "exploreCharts": "Explore my charts",
+    "emailConfirmation": "You will receive an email confirmation with your subscription details. If you have any questions, please contact our support."
+  },
+  "purchaseSuccess": {
+    "title": "Purchase Complete!",
+    "description": "Your credits have been added to your account.",
+    "creditsAdded": "Credits added to your account",
+    "neverExpire": "Your purchased credits never expire and are ready to use immediately.",
+    "goToDashboard": "Go to Dashboard",
+    "exploreCharts": "Explore my charts",
+    "emailConfirmation": "You will receive an email confirmation with your purchase details. If you have any questions, please contact our support."
   }
 }

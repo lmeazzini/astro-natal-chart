@@ -8,6 +8,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.credit_config import CREDIT_PACKS
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.core.i18n import translate as _
@@ -22,6 +23,7 @@ from app.schemas.stripe import (
     CancelSubscriptionResponse,
     CheckoutSessionResponse,
     CreateCheckoutSessionRequest,
+    CreateCreditPurchaseRequest,
     CreatePortalSessionRequest,
     PaymentHistoryResponse,
     PaymentRead,
@@ -44,8 +46,18 @@ async def get_stripe_config() -> StripeConfigResponse:
     """
     Get public Stripe configuration for frontend.
 
-    Returns publishable key and plan pricing info.
+    Returns publishable key, plan pricing info, and credit pack info.
     """
+    # Build credit packs with price IDs
+    credit_packs_config = {}
+    for pack_name, pack_info in CREDIT_PACKS.items():
+        credit_packs_config[pack_name] = {
+            "name": pack_info["name"],
+            "credits": pack_info["credits"],
+            "price_brl": pack_info["price_brl"],
+            "price_id": stripe_service.get_credit_pack_price_id(pack_name),
+        }
+
     return StripeConfigResponse(
         publishable_key=settings.STRIPE_PUBLISHABLE_KEY or "",
         enabled=stripe_service.enabled,
@@ -69,6 +81,7 @@ async def get_stripe_config() -> StripeConfigResponse:
                 "price_brl": 50000,  # R$ 500,00 in cents
             },
         },
+        credit_packs=credit_packs_config,
     )
 
 
@@ -159,6 +172,70 @@ async def create_checkout_session(
     )
 
     logger.info(f"Created checkout session for user {current_user.id}, plan: {request.plan_type}")
+
+    return CheckoutSessionResponse(
+        session_id=result["session_id"],
+        checkout_url=result["checkout_url"],
+    )
+
+
+@router.post(
+    "/purchase-credits",
+    response_model=CheckoutSessionResponse,
+    summary="Create credit purchase checkout session",
+)
+async def purchase_credits(
+    request: CreateCreditPurchaseRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> CheckoutSessionResponse:
+    """
+    Create a Stripe Checkout session for one-time credit purchase.
+
+    Redirects user to Stripe's hosted checkout page to purchase credits.
+    Credits are added to the user's account immediately after payment.
+    Purchased credits never expire.
+    """
+    if not stripe_service.enabled:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=_(StripeMessages.NOT_CONFIGURED),
+        )
+
+    # Check if price is configured for this pack
+    price_id = stripe_service.get_credit_pack_price_id(request.credit_pack)
+    if not price_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=_(StripeMessages.PRICE_NOT_CONFIGURED, plan_type=request.credit_pack),
+        )
+
+    # Get or create Stripe customer
+    customer_id = stripe_service.get_or_create_customer(
+        user_id=str(current_user.id),
+        email=current_user.email,
+        name=current_user.full_name,
+    )
+
+    # Build URLs
+    success_url = (
+        request.success_url
+        or f"{settings.FRONTEND_URL}/purchase/success?session_id={{CHECKOUT_SESSION_ID}}"
+    )
+    cancel_url = request.cancel_url or f"{settings.FRONTEND_URL}/pricing"
+
+    # Create credit purchase checkout session
+    result = stripe_service.create_credit_purchase_session(
+        user_id=str(current_user.id),
+        customer_id=customer_id,
+        credit_pack=request.credit_pack,
+        success_url=success_url,
+        cancel_url=cancel_url,
+    )
+
+    logger.info(
+        f"Created credit purchase session for user {current_user.id}, pack: {request.credit_pack}"
+    )
 
     return CheckoutSessionResponse(
         session_id=result["session_id"],

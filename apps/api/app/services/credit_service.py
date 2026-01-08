@@ -519,6 +519,78 @@ async def refund_credits(
     return transaction
 
 
+async def add_purchased_credits(
+    db: AsyncSession,
+    user_id: UUID,
+    amount: int,
+    credit_pack: str,
+    stripe_session_id: str,
+) -> CreditTransaction:
+    """
+    Add purchased credits to a user's account.
+
+    Purchased credits:
+    - Are tracked separately in the purchased_credits field
+    - Are added to the total credits_balance
+    - Never expire (unlike subscription credits that reset monthly)
+    - Are consumed after subscription credits run out
+
+    Args:
+        db: Database session
+        user_id: User UUID
+        amount: Number of credits purchased
+        credit_pack: Credit pack name (small, medium, large)
+        stripe_session_id: Stripe checkout session ID for tracking
+
+    Returns:
+        CreditTransaction record
+    """
+    transaction_repo = CreditTransactionRepository(db)
+
+    user_credit = await get_or_create_user_credits(db, user_id)
+
+    now = datetime.now(UTC)
+    new_balance = user_credit.credits_balance + amount
+    new_purchased = user_credit.purchased_credits + amount
+
+    user_credit.credits_balance = new_balance
+    user_credit.purchased_credits = new_purchased
+    user_credit.updated_at = now
+
+    transaction = CreditTransaction(
+        user_id=user_id,
+        transaction_type=TransactionType.PURCHASE.value,
+        amount=amount,
+        balance_after=new_balance,
+        description=f"Purchased {amount} credits ({credit_pack} pack)",
+        created_at=now,
+    )
+
+    await db.commit()
+    await db.refresh(user_credit)
+    await transaction_repo.create(transaction)
+
+    # Track with Amplitude
+    amplitude_service.track(
+        event_type="credits_purchased",
+        user_id=str(user_id),
+        event_properties={
+            "amount": amount,
+            "credit_pack": credit_pack,
+            "balance_after": new_balance,
+            "purchased_credits_total": new_purchased,
+            "stripe_session_id": stripe_session_id,
+        },
+    )
+
+    logger.bind(user_id=str(user_id)).info(
+        f"Purchased {amount} credits ({credit_pack} pack), "
+        f"new balance: {new_balance}, purchased total: {new_purchased}"
+    )
+
+    return transaction
+
+
 async def reset_monthly_credits(
     db: AsyncSession,
     user_id: UUID,

@@ -8,6 +8,7 @@ import stripe
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.credit_config import get_credit_pack
 from app.models.enums import PlanType, SubscriptionChangeType, SubscriptionStatus, UserRole
 from app.models.payment import Payment
 from app.models.subscription import Subscription
@@ -20,7 +21,7 @@ from app.repositories.subscription_repository import SubscriptionRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.webhook_event_repository import WebhookEventRepository
 from app.services.amplitude_service import amplitude_service
-from app.services.credit_service import allocate_credits
+from app.services.credit_service import add_purchased_credits, allocate_credits
 from app.services.stripe_service import stripe_service
 
 
@@ -62,6 +63,76 @@ async def _create_subscription_history(
     return await history_repo.create(history)
 
 
+async def handle_credit_purchase_completed(
+    db: AsyncSession,
+    event: stripe.Event,
+) -> None:
+    """
+    Handle checkout.session.completed for one-time credit purchase.
+
+    Adds purchased credits to user account.
+    """
+    session: dict[str, Any] = event.data.object  # type: ignore[assignment]
+    metadata = session.get("metadata", {})
+    user_id_str = metadata.get("user_id") if metadata else None
+    credit_pack = metadata.get("credit_pack") if metadata else None
+    session_id = session.get("id", "unknown")
+
+    if not user_id_str:
+        logger.error(f"Credit purchase missing user_id in metadata: {session_id}")
+        return
+
+    if not credit_pack:
+        logger.error(f"Credit purchase missing credit_pack in metadata: {session_id}")
+        return
+
+    user_id = UUID(user_id_str)
+    user_repo = UserRepository(db)
+    audit_repo = AuditRepository(db)
+
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        logger.error(f"User not found for credit purchase: {user_id}")
+        return
+
+    # Get credit pack details
+    pack_details = get_credit_pack(credit_pack)
+    if not pack_details:
+        logger.error(f"Invalid credit pack: {credit_pack}")
+        return
+
+    credits_amount = int(pack_details["credits"])
+
+    # Add purchased credits
+    await add_purchased_credits(
+        db=db,
+        user_id=user_id,
+        amount=credits_amount,
+        credit_pack=credit_pack,
+        stripe_session_id=session_id,
+    )
+
+    # Create audit log
+    await audit_repo.create_log(
+        user_id=user_id,
+        action="credits_purchased",
+        resource_type="credit_purchase",
+        resource_id=None,
+        extra_data={
+            "stripe_session_id": session_id,
+            "credit_pack": credit_pack,
+            "credits_amount": credits_amount,
+        },
+    )
+
+    await db.commit()
+
+    logger.info(
+        f"Credit purchase completed for user {user_id}: "
+        f"{credits_amount} credits ({credit_pack} pack)"
+    )
+
+
 async def handle_checkout_session_completed(
     db: AsyncSession,
     event: stripe.Event,
@@ -69,9 +140,20 @@ async def handle_checkout_session_completed(
     """
     Handle checkout.session.completed event.
 
-    Creates or updates subscription when a checkout is completed.
+    Routes to appropriate handler based on session mode:
+    - payment: One-time credit purchase
+    - subscription: Subscription creation/update
     """
     session: dict[str, Any] = event.data.object  # type: ignore[assignment]
+    mode = session.get("mode")
+
+    # Route based on session mode
+    if mode == "payment":
+        # One-time credit purchase
+        await handle_credit_purchase_completed(db, event)
+        return
+
+    # Subscription checkout (mode == "subscription")
     metadata = session.get("metadata", {})
     user_id_str = metadata.get("user_id") if metadata else None
     session_id = session.get("id", "unknown")

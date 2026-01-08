@@ -56,6 +56,13 @@ class UserCredit(Base):
         nullable=False,
     )
 
+    # Purchased credits (one-time purchases, never expire)
+    purchased_credits: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+
     # Monthly credit limit (NULL = unlimited for UNLIMITED plan)
     credits_limit: Mapped[int | None] = mapped_column(
         Integer,

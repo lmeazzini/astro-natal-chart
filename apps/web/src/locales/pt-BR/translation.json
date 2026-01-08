@@ -1038,7 +1038,8 @@
         "authRequired": "Autenticação necessária para visualizar os dados de termos.",
         "chartNotFound": "Mapa não encontrado.",
         "networkError": "Não foi possível conectar. Verifique sua conexão.",
-        "noChartId": "ID do mapa não fornecido."
+        "noChartId": "ID do mapa não fornecido.",
+        "chartNotCalculated": "O mapa ainda está sendo calculado. Aguarde alguns instantes e tente novamente."
       }
     }
   },

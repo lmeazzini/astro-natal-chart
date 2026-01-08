@@ -174,6 +174,17 @@ export function PlanetaryTerms({ chartId, isLoading = false }: PlanetaryTermsPro
         if (message.includes('network') || message.includes('fetch')) {
           return { type: 'network', message: t('components.planetaryTerms.errors.networkError') };
         }
+        // Handle 400 errors - chart not calculated yet
+        if (
+          message.includes('400') ||
+          message.includes('not been calculated') ||
+          message.includes('no planet data')
+        ) {
+          return {
+            type: 'noData',
+            message: t('components.planetaryTerms.errors.chartNotCalculated'),
+          };
+        }
       }
       return { type: 'unknown', message: t('components.planetaryTerms.noTermData') };
     };

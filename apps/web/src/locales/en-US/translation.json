@@ -1042,7 +1042,8 @@
         "authRequired": "Authentication required to view term data.",
         "chartNotFound": "Chart not found.",
         "networkError": "Unable to connect. Please check your connection.",
-        "noChartId": "No chart ID provided."
+        "noChartId": "No chart ID provided.",
+        "chartNotCalculated": "The chart is still being calculated. Please wait a moment and try again."
       }
     }
   },

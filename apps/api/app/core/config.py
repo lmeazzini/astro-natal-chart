@@ -3,9 +3,10 @@ Application configuration using Pydantic Settings.
 Loads environment variables from .env file.
 """
 
-from typing import Literal
+import json
+from typing import Literal, Self
 
-from pydantic import PostgresDsn, RedisDsn
+from pydantic import PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -185,9 +186,27 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str | None = None
     STRIPE_PUBLISHABLE_KEY: str | None = None
     STRIPE_WEBHOOK_SECRET: str | None = None
+    STRIPE_PRICE_IDS: str | None = None  # JSON object from AWS Secrets Manager
     STRIPE_PRICE_STARTER: str | None = None  # Stripe Price ID for Starter plan
     STRIPE_PRICE_PRO: str | None = None  # Stripe Price ID for Pro plan
     STRIPE_PRICE_UNLIMITED: str | None = None  # Stripe Price ID for Unlimited plan
+
+    @model_validator(mode="after")
+    def parse_stripe_price_ids(self) -> Self:
+        """Parse STRIPE_PRICE_IDS JSON into individual price fields."""
+        if self.STRIPE_PRICE_IDS:
+            try:
+                price_ids = json.loads(self.STRIPE_PRICE_IDS)
+                if isinstance(price_ids, dict):
+                    if not self.STRIPE_PRICE_STARTER and "starter" in price_ids:
+                        object.__setattr__(self, "STRIPE_PRICE_STARTER", price_ids["starter"])
+                    if not self.STRIPE_PRICE_PRO and "pro" in price_ids:
+                        object.__setattr__(self, "STRIPE_PRICE_PRO", price_ids["pro"])
+                    if not self.STRIPE_PRICE_UNLIMITED and "unlimited" in price_ids:
+                        object.__setattr__(self, "STRIPE_PRICE_UNLIMITED", price_ids["unlimited"])
+            except json.JSONDecodeError:
+                pass  # Invalid JSON, ignore
+        return self
 
     @property
     def stripe_enabled(self) -> bool:

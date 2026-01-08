@@ -50,13 +50,26 @@ export function BlogPage() {
   const loadData = React.useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getBlogPosts({
+      // Try current locale first
+      let data = await getBlogPosts({
         category,
         tag,
         page,
         page_size: pageSize,
         locale: currentLocale,
       });
+
+      // Fallback to pt-BR if no posts found in current locale
+      if (data.items.length === 0 && currentLocale !== 'pt-BR') {
+        data = await getBlogPosts({
+          category,
+          tag,
+          page,
+          page_size: pageSize,
+          locale: 'pt-BR',
+        });
+      }
+
       setPosts(data.items);
       setTotalPages(data.total_pages);
     } catch (error) {
@@ -72,7 +85,14 @@ export function BlogPage() {
 
   const loadMetadata = React.useCallback(async () => {
     try {
-      const data = await getBlogMetadata(currentLocale);
+      // Try current locale first
+      let data = await getBlogMetadata(currentLocale);
+
+      // Fallback to pt-BR if no posts found in current locale
+      if (data.total_posts === 0 && currentLocale !== 'pt-BR') {
+        data = await getBlogMetadata('pt-BR');
+      }
+
       setMetadata(data);
     } catch (error) {
       console.error('Error loading blog metadata:', error);

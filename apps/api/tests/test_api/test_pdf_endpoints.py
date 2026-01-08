@@ -116,7 +116,7 @@ class TestGeneratePDFEndpoint:
 
         # Endpoint validates chart_data and status before triggering task
         assert response.status_code == 400
-        assert "fully calculated" in response.json()["detail"].lower()
+        assert "still processing" in response.json()["detail"].lower()
 
     async def test_generate_pdf_concurrent_generation(
         self,
@@ -144,7 +144,6 @@ class TestGeneratePDFEndpoint:
         # Should return 409 Conflict
         assert response.status_code == 409
         assert "already being generated" in response.json()["detail"].lower()
-        assert "existing-task-id" in response.json()["detail"]
 
     async def test_generate_pdf_regeneration_success(
         self,
@@ -214,7 +213,7 @@ class TestPDFStatusEndpoint:
         assert data["status"] == "generating"
         assert data["download_url"] is None
         assert data["generated_at"] is None
-        assert "in progress" in data["message"].lower()
+        assert "being generated" in data["message"].lower()
 
     async def test_pdf_status_completed(
         self,

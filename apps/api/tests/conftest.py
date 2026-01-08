@@ -9,6 +9,8 @@ import os
 # IMPORTANT: Set environment variables BEFORE any app imports
 # This ensures rate limiting is disabled before the limiter is initialized
 os.environ["RATE_LIMIT_ENABLED"] = "false"
+# Set English locale for tests to ensure consistent error messages
+os.environ["DEFAULT_LOCALE"] = "en-US"
 
 import asyncio  # noqa: E402
 from collections.abc import AsyncGenerator  # noqa: E402

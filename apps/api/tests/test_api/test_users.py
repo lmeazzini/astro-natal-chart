@@ -524,7 +524,7 @@ class TestAvatarUpload:
         assert response.status_code == 200
         data = response.json()
         assert "avatar_url" in data
-        assert data["message"] == "Avatar uploaded successfully"
+        assert data["message"] == "File uploaded successfully"
 
     async def test_upload_avatar_png(self, client: AsyncClient, auth_headers: dict):
         """Test uploading a valid PNG avatar."""

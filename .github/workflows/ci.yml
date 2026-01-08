@@ -277,7 +277,7 @@ jobs:
                   user = User(
                       id=uuid.uuid4(),
                       email='e2e-test@example.com',
-                      hashed_password=get_password_hash('Test123!@#'),
+                      password_hash=get_password_hash('Test123!@#'),
                       full_name='E2E Test User',
                       is_active=True,
                       email_verified=True,

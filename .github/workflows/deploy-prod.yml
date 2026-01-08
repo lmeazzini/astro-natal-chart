@@ -37,13 +37,11 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Run CI checks first (skip E2E to avoid blocking deployment)
+  # Run CI checks first
   # ---------------------------------------------------------------------------
   ci:
     name: CI Checks
     uses: ./.github/workflows/ci.yml
-    with:
-      skip_e2e: true
 
   # ---------------------------------------------------------------------------
   # Build and push backend Docker image to ECR

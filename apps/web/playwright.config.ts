@@ -14,6 +14,12 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI */
   workers: process.env.CI ? 1 : undefined,
+  /* Global timeout for each test */
+  timeout: 60 * 1000,
+  /* Timeout for expect() calls */
+  expect: {
+    timeout: 10 * 1000,
+  },
   /* Reporter to use */
   reporter: process.env.CI
     ? [['github'], ['html', { open: 'never' }]]

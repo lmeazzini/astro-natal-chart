@@ -309,6 +309,19 @@ jobs:
             sleep 2
           done
 
+      - name: Start frontend server
+        working-directory: ./apps/web
+        env:
+          VITE_API_URL: http://localhost:8000
+        run: |
+          npm run dev &
+          # Wait for frontend to be ready
+          for i in {1..30}; do
+            curl -s http://localhost:5173 && break
+            echo "Waiting for frontend... ($i)"
+            sleep 2
+          done
+
       - name: Run E2E tests
         working-directory: ./apps/web
         env:
@@ -317,6 +330,7 @@ jobs:
           E2E_TEST_USER_EMAIL: e2e-test@example.com
           E2E_TEST_USER_PASSWORD: Test123!@#
           VITE_API_URL: http://localhost:8000
+          PLAYWRIGHT_SKIP_WEBSERVER: 'true'
         run: npm run e2e:chromium
 
       - name: Upload Playwright report

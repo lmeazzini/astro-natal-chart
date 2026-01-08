@@ -36,7 +36,8 @@
     "methodology": "Methodology",
     "logout": "Logout",
     "login": "Login",
-    "register": "Sign Up"
+    "register": "Sign Up",
+    "admin": "Admin"
   },
   "publicCharts": {
     "title": "Famous People's Birth Charts",

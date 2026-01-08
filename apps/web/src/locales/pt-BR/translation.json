@@ -36,7 +36,8 @@
     "methodology": "Metodologia",
     "logout": "Sair",
     "login": "Entrar",
-    "register": "Cadastrar"
+    "register": "Cadastrar",
+    "admin": "Admin"
   },
   "publicCharts": {
     "title": "Mapas de Pessoas Famosas",
